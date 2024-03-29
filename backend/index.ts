@@ -2,8 +2,11 @@ import express, { Request, Response } from "express";
 
 const app = express();
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello world");
+app.get("/api/test", (req: Request, res: Response) => {
+  console.log("hi");
+  res.status(200).json({
+    msg: "Ini dari backend",
+  });
 });
 
 app.listen(5000, () => {

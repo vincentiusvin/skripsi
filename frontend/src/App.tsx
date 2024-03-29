@@ -1,13 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 
 function App() {
   const [count, setCount] = useState(0);
+  const [iniDariExpress, setIniDariExpress] = useState<{ msg: string }>();
+  useEffect(() => {
+    fetch("/api/test")
+      .then((x) => x.json())
+      .then((x) => setIniDariExpress(x));
+  }, []);
 
   return (
     <>
+      <div>{iniDariExpress?.msg}</div>
       <div>
         <a href="https://vitejs.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
