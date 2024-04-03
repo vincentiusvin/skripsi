@@ -1,5 +1,3 @@
-import { RequestHandler } from "express";
-
 export type EmptyParams = never; // Param itu data kiriman yang ada di URL, http://website/api/items?page=1
 export type EmptyResBody = never; // ResBody itu jawaban dari server
 export type EmptyReqBody = never; // ReqBody itu data kiriman yang gaada di url
@@ -19,15 +17,23 @@ export type EmptyLocals = never;
 
 // Lalu register fungsinya ke index.ts dan exports.d.ts
 
-// Testing typing
+// Top type dari RequestHandler itu:
+// type parent = RequestHandler<never, unknown, never, never, never>;
 
-type subclass = RequestHandler<
-  unknown,
-  never,
-  unknown,
-  unknown,
-  Record<string, never>
->;
-type parent = RequestHandler<never, unknown, never, never, never>;
+// Dog --extends--> Animal
 
-type check = subclass extends parent ? true : false;
+// RequestHandler itu fungsi
+// Params, ReqBody, ReqQuery, dan Locals itu properti di parameter fungsi
+// Mereka contravariant terhadap generic kita
+// Gen<Dog> <--extends-- Gen<Animal>
+
+// ResBody beda sendiri, dia itu return type di method pada parameter fungsi
+// Dia covariant terhadap generic kita
+// Gen<Dog> --extends--> Gen<Animal>
+
+// never --subclass--> unknown
+
+// bisa di-check langsung
+// type subclass = RequestHandler<unknown, never, never, never, unknown>;
+
+// type check = subclass extends parent ? true : false;
