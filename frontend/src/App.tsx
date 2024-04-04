@@ -8,8 +8,8 @@ import viteLogo from "/vite.svg";
 function App() {
   const [count, setCount] = useState(0);
 
-  const { data, error } = useSWR("/api/test", () =>
-    new APIContext("GET /api/test").fetch("/api/test", {
+  const { data } = useSWR("/api/test", (url) =>
+    new APIContext("GET /api/test").fetch(url, {
       query: {
         name: "Udin",
       },

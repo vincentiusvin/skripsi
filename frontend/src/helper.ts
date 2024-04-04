@@ -7,12 +7,24 @@ type APIError = Error & {
 };
 
 /**
- * Class yang dipakai cuma buat inject typing ke fungsi.
- * Cara pakainya dengan:
+ * Class yang dipakai buat inject typing ke
+ * fungsi {@link APIContext#fetch}.
  *
- * `new APIContext("key_dari_backend").fetch(url, string)`
+ * Cara pakainya dengan:
+ * ```ts
+ * new APIContext("key_dari_backend").fetch(url, string)
+ * ```
+ * atau dengan SWR:
+ * ```ts
+ * const { data, } = useSWR("/api/test", (url) =>
+ *   new APIContext("GET /api/test").fetch(url, { body: {} })
+ * );
+ * ```
  */
 export class APIContext<T extends keyof API> {
+  /**
+   * @param _key Key API yang di-define di backend
+   */
   constructor(_key: T) {}
 
   /**
