@@ -1,70 +1,72 @@
-import { RequestHandler } from "express";
-import type { API } from "../../backend/src/exports";
+import { stringify } from "qs";
+import { API } from "../../backend/src/exports";
 
 type APIError = Error & {
   info: { msg: string };
   status: number;
 };
 
-function serializeQuery(query: Record<string, unknown>) {
-  function split([key, value]: [string, unknown]): [string, string][] {
-    if (value == null) {
-      return [];
+/**
+ * Class yang dipakai cuma buat inject typing ke fungsi.
+ * Cara pakainya dengan:
+ *
+ * `new APIContext("key_dari_backend").fetch(url, string)`
+ */
+export class APIContext<T extends keyof API> {
+  constructor(_key: T) {}
+
+  /**
+   * Mirip kaya {@link fetch | fetch API (built-in)}, dengan beberapa perbedaan:
+   * Ada type inference.
+   * Body dan Query diparse secara otomatis.
+   * Content-Type default json
+   */
+  async fetch(
+    url: string,
+    options?: Omit<RequestInit, "body" | "query"> & {
+      body?: API[T]["ReqBody"];
+      query?: API[T]["ReqQuery"];
     }
-    if (Array.isArray(value)) {
-      return value.map<[string, string]>((x) => [key, x.toString()]);
-    } else {
-      return [[key, value.toString()]];
+  ): Promise<API[T]["ResBody"]> {
+    const { query, body } = options || {};
+    const urlWithParams = query
+      ? url +
+        stringify(query, {
+          addQueryPrefix: true,
+        })
+      : url;
+    const stringBody = body ? JSON.stringify(body) : null;
+
+    if (!options) {
+      options = {};
     }
-  }
-  return new URLSearchParams(
-    Object.entries(query).flatMap<[string, string]>(split)
-  );
-}
 
-export async function apiFetch<T extends keyof API>(
-  url: string,
-  options: {
-    query?: API[T] extends RequestHandler<
-      never,
-      unknown,
-      never,
-      infer ReqQuery,
-      never
-    >
-      ? ReqQuery
-      : undefined;
-    body?: API[T] extends RequestHandler<
-      never,
-      unknown,
-      infer ReqBody,
-      never,
-      never
-    >
-      ? ReqBody
-      : undefined;
-  }
-): Promise<
-  API[T] extends RequestHandler<never, infer ResBody, never, never, never>
-    ? ResBody
-    : never
-> {
-  const { query, body } = options;
-  const urlWithParams = query ? url + "?" + serializeQuery(query) : url;
-  const stringBody = body ? JSON.stringify(body) : null;
+    if (!(options?.headers instanceof Headers)) {
+      options.headers = new Headers(options.headers ? options.headers : {});
+    }
 
-  const res = await fetch(urlWithParams, {
-    body: stringBody,
-  });
+    if (!options.headers.has("Content-Type")) {
+      options.headers.append("Content-Type", "application/json");
+    }
 
-  if (!res.ok) {
-    const error = new Error(
-      "An error occurred while fetching the data."
-    ) as APIError;
-    error.info = await res.json();
-    error.status = res.status;
-    throw error;
+    const res = await fetch(urlWithParams, {
+      ...options,
+      body: stringBody,
+    });
+
+    if (!res.ok) {
+      const error = new Error(
+        "An error occurred while fetching the data."
+      ) as APIError;
+      error.info = await res.json();
+      error.status = res.status;
+      throw error;
+    }
+
+    return res.json();
   }
 
-  return res.json();
+  arrayFetch(arr: Parameters<this["fetch"]>) {
+    return this.fetch(arr[0], arr[1]);
+  }
 }

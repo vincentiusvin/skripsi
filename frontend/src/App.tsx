@@ -1,25 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import useSWR from "swr";
 import "./App.css";
 import reactLogo from "./assets/react.svg";
-import { apiFetch } from "./helper";
+import { APIContext } from "./helper";
 import viteLogo from "/vite.svg";
 
 function App() {
   const [count, setCount] = useState(0);
-  const [iniDariExpress, setIniDariExpress] = useState<string>();
-  useEffect(() => {
-    apiFetch<"GET /api/test">("/api/test", {
+
+  const { data, error } = useSWR("/api/test", () =>
+    new APIContext("GET /api/test").fetch("/api/test", {
       query: {
-        name: "udin",
+        name: "Udin",
       },
-    }).then((x) => {
-      setIniDariExpress(x.msg);
-    });
-  }, []);
+    })
+  );
 
   return (
     <>
-      <div>{iniDariExpress}</div>
+      <div>{data?.msg}</div>
       <div>
         <a href="https://vitejs.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
