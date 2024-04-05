@@ -1,10 +1,15 @@
 import { stringify } from "qs";
 import { API } from "../../../backend/src/exports";
 
-type APIError = Error & {
+export class APIError extends Error {
   info: { msg: string };
-  status: number;
-};
+  status?: number;
+  constructor(msg: string, info?: { msg: string }, status?: number) {
+    super(msg);
+    this.info = info ?? { msg: "Unknown error" };
+    this.status = status;
+  }
+}
 
 /**
  * Class yang dipakai buat inject typing ke
@@ -67,12 +72,11 @@ export class APIContext<T extends keyof API> {
     });
 
     if (!res.ok) {
-      const error = new Error(
-        "An error occurred while fetching the data."
+      throw new APIError(
+        "An error occurred while fetching the data.",
+        await res.json(),
+        res.status
       ) as APIError;
-      error.info = await res.json();
-      error.status = res.status;
-      throw error;
     }
 
     return res.json();

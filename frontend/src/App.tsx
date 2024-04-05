@@ -1,7 +1,8 @@
-import { Snackbar } from "@mui/material";
+import { Alert, Snackbar } from "@mui/material";
 import { useState } from "react";
 import { SWRConfig } from "swr";
 import "./App.css";
+import { APIError } from "./helpers/fetch";
 import Content from "./routes/Content";
 
 function App() {
@@ -13,8 +14,10 @@ function App() {
       value={{
         errorRetryCount: 0,
         onError: (err) => {
-          setErrorMessage(err.msg);
-          setErrorOpen(true);
+          if (err instanceof APIError) {
+            setErrorMessage(`${err.status} - ${err.info.msg}`);
+            setErrorOpen(true);
+          }
         },
       }}
     >
@@ -24,7 +27,11 @@ function App() {
         open={errorOpen}
         onClose={() => setErrorOpen(false)}
         message={errorMessage}
-      />
+      >
+        <Alert onClose={() => setErrorOpen(false)} severity="error">
+          {errorMessage}
+        </Alert>
+      </Snackbar>
       <Content />
     </SWRConfig>
   );

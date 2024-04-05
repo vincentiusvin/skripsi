@@ -2,10 +2,7 @@ import useSWR from "swr";
 import { APIContext } from "../helpers/fetch";
 
 function Nav() {
-  const { data, error } = useSWR(
-    "/api/session",
-    new APIContext("GetSession").fetch
-  );
+  const { data } = useSWR("/api/session", new APIContext("GetSession").fetch);
 
   return (
     <>
