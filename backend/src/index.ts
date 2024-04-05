@@ -1,11 +1,27 @@
 import express from "express";
-import { getTest } from "./routes/test";
-import { postTest } from "./routes/test2";
+import session from "express-session";
+import { deleteSession, getSession, putSession } from "./routes/session";
+import { logger } from "./utils/logger";
 
 const app = express();
 
-app.get("/api/test", getTest);
-app.post("/api/test", postTest);
+app.use(logger);
+
+declare module "express-session" {
+  interface SessionData {
+    user_id?: string;
+  }
+}
+
+app.use(
+  session({
+    secret: "secret",
+  })
+);
+
+app.get("/api/session", getSession);
+app.put("/api/session", putSession);
+app.delete("/api/session", deleteSession);
 
 app.listen(5000, () => {
   console.log("Server listening on port 5000");

@@ -5,7 +5,7 @@ export type EmptyReqQuery = never; // ReqQuery itu data yang ada langsung di pat
 export type EmptyLocals = never;
 
 // Untuk template bisa ikutin ini:
-// const fn: RequestHandler<
+// export const fn: RequestHandler<
 //   EmptyParams,
 //   EmptyResBody,
 //   EmptyReqBody,

@@ -1,14 +1,14 @@
 import { RequestHandler } from "express";
-import { getTest } from "./routes/test";
-import { postTest } from "./routes/test2";
+import { deleteSession, getSession, putSession } from "./routes/session";
 
 /**
  * Pasang function-function RequestHandler yang dibuat kesini.
  * Untuk string keynya bebas, usahakan dibuat deskriptif.
  */
 type _api = {
-  "POST /api/test": typeof postTest;
-  "GET /api/test": typeof getTest;
+  GetSession: typeof getSession;
+  PutSession: typeof putSession;
+  DeleteSession: typeof deleteSession;
 };
 
 /**
@@ -22,23 +22,15 @@ type _api = {
  */
 type ExtractRequestHandler<
   T extends RequestHandler<never, unknown, never, never, never>
-> = {
-  ResBody: T extends RequestHandler<never, infer ResBody, never, never, never>
-    ? ResBody
-    : never;
-  ReqBody: T extends RequestHandler<never, unknown, infer ReqBody, never, never>
-    ? ReqBody
-    : never;
-  ReqQuery: T extends RequestHandler<
-    never,
-    unknown,
-    never,
-    infer ReqQuery,
-    never
-  >
-    ? ReqQuery
-    : never;
-};
+> = T extends RequestHandler<
+  never,
+  infer ResBody,
+  infer ReqBody,
+  infer ReqQuery,
+  never
+>
+  ? { ResBody: ResBody; ReqBody: ReqBody; ReqQuery: ReqQuery }
+  : { ResBody: never; ReqBody: never; ReqQuery: never };
 
 /**
  * Export informasi type pada RequestHandler yang diregister diatas.
