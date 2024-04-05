@@ -1,25 +1,32 @@
+import { Snackbar } from "@mui/material";
+import { useState } from "react";
+import { SWRConfig } from "swr";
 import "./App.css";
-import Nav from "./Nav";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import Content from "./routes/Content";
 
 function App() {
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   return (
-    <>
-      <Nav />
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <SWRConfig
+      value={{
+        errorRetryCount: 0,
+        onError: (err) => {
+          setErrorMessage(err.msg);
+          setErrorOpen(true);
+        },
+      }}
+    >
+      <Snackbar
+        autoHideDuration={3000}
+        anchorOrigin={{ horizontal: "center", vertical: "top" }}
+        open={errorOpen}
+        onClose={() => setErrorOpen(false)}
+        message={errorMessage}
+      />
+      <Content />
+    </SWRConfig>
   );
 }
 

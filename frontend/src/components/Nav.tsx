@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { APIContext } from "./helper";
+import { APIContext } from "../helpers/fetch";
 
 function Nav() {
   const { data, error } = useSWR(
@@ -10,9 +10,6 @@ function Nav() {
   return (
     <>
       <div>Hello, {data?.user_name}</div>
-      <br />
-      <button onClick={() => setCount((count) => count + 1)}>Login</button>
-      <button onClick={() => setCount((count) => count + 1)}>Logout</button>
     </>
   );
 }

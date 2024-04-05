@@ -1,5 +1,5 @@
 import { stringify } from "qs";
-import { API } from "../../backend/src/exports";
+import { API } from "../../../backend/src/exports";
 
 type APIError = Error & {
   info: { msg: string };

@@ -1,4 +1,4 @@
-import express from "express";
+import express, { json } from "express";
 import session from "express-session";
 import { deleteSession, getSession, putSession } from "./routes/session";
 import { logger } from "./utils/logger";
@@ -18,6 +18,8 @@ app.use(
     secret: "secret",
   })
 );
+
+app.use(json());
 
 app.get("/api/session", getSession);
 app.put("/api/session", putSession);
