@@ -3,10 +3,10 @@ import { API } from "../../../backend/src/exports";
 
 export class APIError extends Error {
   info: { msg: string };
-  status?: number;
-  constructor(msg: string, info?: { msg: string }, status?: number) {
+  status: number;
+  constructor(msg: string, info: { msg: string }, status: number) {
     super(msg);
-    this.info = info ?? { msg: "Unknown error" };
+    this.info = info;
     this.status = status;
   }
 }
@@ -71,15 +71,17 @@ export class APIContext<T extends keyof API> {
       body: stringBody,
     });
 
+    const content = await res.json().catch(() => ({ msg: "Unknown error" }));
+
     if (!res.ok) {
       throw new APIError(
         "An error occurred while fetching the data.",
-        await res.json(),
+        content,
         res.status
       ) as APIError;
     }
 
-    return res.json();
+    return content;
   }
 
   arrayFetch(arr: Parameters<this["fetch"]>) {

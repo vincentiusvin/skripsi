@@ -16,8 +16,10 @@ function App() {
         onError: (err) => {
           if (err instanceof APIError) {
             setErrorMessage(`${err.status} - ${err.info.msg}`);
-            setErrorOpen(true);
+          } else if (err instanceof Error) {
+            setErrorMessage(`${err.message}`);
           }
+          setErrorOpen(true);
         },
       }}
     >
