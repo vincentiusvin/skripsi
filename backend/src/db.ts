@@ -28,18 +28,29 @@ if (
   process.exit(-1);
 }
 
-export const dialect = new MysqlDialect({
-  pool: createPool({
-    database: DATABASE_NAME,
-    password: DATABASE_PASSWORD,
-    user: DATABASE_USER,
-    host: DATABASE_HOST,
-    port: DATABASE_PORT,
-  }),
+const connectionPool = createPool({
+  database: DATABASE_NAME,
+  password: DATABASE_PASSWORD,
+  user: DATABASE_USER,
+  host: DATABASE_HOST,
+  port: DATABASE_PORT,
+});
+
+connectionPool.getConnection((err, conn) => {
+  if (err) {
+    console.log("Failed to acquire database connection!");
+    console.log(err);
+    process.exit(-1);
+  } else {
+    console.log("Database connected!");
+  }
+  connectionPool.releaseConnection(conn);
+});
+
+const dialect = new MysqlDialect({
+  pool: connectionPool,
 });
 
 export const db = new Kysely<any>({
   dialect,
 });
-
-console.log("Database connected.");
