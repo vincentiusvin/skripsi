@@ -29,7 +29,7 @@ if (
   process.exit(-1);
 }
 
-const connectionPool = createPool({
+export const dbPool = createPool({
   database: DATABASE_NAME,
   password: DATABASE_PASSWORD,
   user: DATABASE_USER,
@@ -37,7 +37,7 @@ const connectionPool = createPool({
   port: DATABASE_PORT,
 });
 
-connectionPool.getConnection((err, conn) => {
+dbPool.getConnection((err, conn) => {
   if (err) {
     console.log("Failed to acquire database connection!");
     console.log(err);
@@ -45,11 +45,11 @@ connectionPool.getConnection((err, conn) => {
   } else {
     console.log("Database connected!");
   }
-  connectionPool.releaseConnection(conn);
+  dbPool.releaseConnection(conn);
 });
 
 const dialect = new MysqlDialect({
-  pool: connectionPool,
+  pool: dbPool,
 });
 
 export const db = new Kysely<DB>({

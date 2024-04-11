@@ -1,8 +1,11 @@
 import express, { json } from "express";
-import session from "express-session";
+import MySQLStore from "express-mysql-session";
+import session, * as _Session from "express-session";
+import { dbPool } from "./db";
 import { deleteSession, getSession, putSession } from "./routes/session";
 import { postUser } from "./routes/user";
 import { logger } from "./utils/logger";
+const MySQLSessionStore = MySQLStore(_Session);
 
 const app = express();
 
@@ -14,9 +17,14 @@ declare module "express-session" {
   }
 }
 
+const store = new MySQLSessionStore({}, dbPool);
+
 app.use(
   session({
     secret: "secret",
+    resave: false,
+    saveUninitialized: false,
+    store: store,
   })
 );
 
