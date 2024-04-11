@@ -1,14 +1,19 @@
+import { Button, TextField } from "@mui/material";
+import { useState } from "react";
 import useSWRMutation from "swr/mutation";
 import Nav from "../components/Nav";
 import { APIContext } from "../helpers/fetch";
 
 function Content() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
   const { trigger: login } = useSWRMutation("/api/session", (url) =>
     new APIContext("PutSession").fetch(url, {
       method: "PUT",
       body: {
-        user_name: "udin",
-        user_password: "password",
+        user_name: username,
+        user_password: password,
       },
     })
   );
@@ -19,31 +24,34 @@ function Content() {
     })
   );
 
+  const { trigger: register } = useSWRMutation(
+    ["/api/user", username, password],
+    ([url, username, password]) =>
+      new APIContext("PutSession").fetch(url, {
+        method: "POST",
+        body: {
+          user_name: username,
+          user_password: password,
+        },
+      })
+  );
+
   return (
     <>
       <Nav />
-
-      <br />
-
-      <button
-        onClick={() => {
-          login();
-        }}
-      >
-        Login
-      </button>
-      <button
-        onClick={() => {
-          logout();
-        }}
-      >
-        Logout
-      </button>
-
-      <h1>Vite + React</h1>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <TextField
+        onChange={(e) => setUsername(e.target.value)}
+        label="Username"
+        sx={{ display: "block" }}
+      ></TextField>
+      <TextField
+        onChange={(e) => setPassword(e.target.value)}
+        label="Password"
+        sx={{ display: "block" }}
+      ></TextField>
+      <Button onClick={() => login()}>Login</Button>
+      <Button onClick={() => register()}>Register</Button>
+      <Button onClick={() => logout()}>Logout</Button>
     </>
   );
 }

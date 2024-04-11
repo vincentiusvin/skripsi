@@ -1,4 +1,5 @@
 import { Kysely, MysqlDialect } from "kysely";
+import { DB } from "kysely-codegen";
 import { createPool } from "mysql2";
 import { loadEnv } from "./env";
 
@@ -51,6 +52,6 @@ const dialect = new MysqlDialect({
   pool: connectionPool,
 });
 
-export const db = new Kysely<any>({
+export const db = new Kysely<DB>({
   dialect,
 });

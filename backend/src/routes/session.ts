@@ -1,4 +1,6 @@
+import { compareSync } from "bcrypt";
 import { RequestHandler } from "express";
+import { db } from "../db";
 import {
   EmptyLocals,
   EmptyParams,
@@ -13,11 +15,19 @@ export const getSession: RequestHandler<
   EmptyReqBody,
   EmptyReqQuery,
   EmptyLocals
-> = function (req, res) {
-  const user = req.session.user_id;
+> = async function (req, res) {
+  const userId = req.session.user_id;
+  const user =
+    userId &&
+    (await db
+      .selectFrom("users")
+      .select(["name"])
+      .where("id", "=", userId)
+      .executeTakeFirst());
+
   if (user) {
     res.status(200).json({
-      user_name: "Logged User",
+      user_name: user.name,
     });
   } else {
     res.status(200).json({
@@ -33,15 +43,31 @@ export const putSession: RequestHandler<
   { user_name: string; user_password: string },
   EmptyReqQuery,
   EmptyLocals
-> = function (req, res) {
-  const { user_password } = req.body;
-  if (user_password === "password") {
-    req.session.user_id = "/user/1";
+> = async function (req, res) {
+  const { user_password, user_name } = req.body;
+
+  const user = await db
+    .selectFrom("users")
+    .select(["name", "password", "id"])
+    .where("users.name", "=", user_name)
+    .executeTakeFirst();
+
+  if (!user) {
+    res.status(400).json({
+      msg: "Wrong credentials!",
+    });
+    return;
+  }
+
+  const check = compareSync(user_password, user?.password);
+
+  if (check) {
+    req.session.user_id = user.id;
     res.status(200).json({
-      user_name: "Logged User",
+      user_name: user.name,
     });
   } else {
-    res.status(401).json({
+    res.status(400).json({
       msg: "Wrong credentials!",
     });
   }

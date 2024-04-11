@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import { deleteSession, getSession, putSession } from "./routes/session";
+import { postUser } from "./routes/user";
 
 /**
  * Pasang function-function RequestHandler yang dibuat kesini.
@@ -9,6 +10,7 @@ type _api = {
   GetSession: typeof getSession;
   PutSession: typeof putSession;
   DeleteSession: typeof deleteSession;
+  PostUser: typeof postUser;
 };
 
 /**
