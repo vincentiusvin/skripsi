@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon src/index.ts",
-    "db-gen": "kysely-codegen"
+    "db:generate-types": "kysely-codegen --out-file ./src/db/db_types.d.ts",
+    "db:migrate": "ts-node src/migrate.ts",
+    "db": "npm run db:migrate && npm run db:generate-types"
   },
   "author": "",
   "license": "ISC",

@@ -15,4 +15,4 @@ export type EmptyLocals = never;
 //   return;
 // };
 
-// Lalu register fungsinya ke index.ts dan exports.d.ts
+// Lalu register fungsinya ke index.ts, di _api dan juga app

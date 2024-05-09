@@ -1,7 +1,7 @@
 import { Kysely, MysqlDialect } from "kysely";
-import { DB } from "kysely-codegen";
 import { createPool } from "mysql2";
-import { loadEnv } from "./env";
+import { loadEnv } from "../env";
+import { DB } from "./db_types";
 
 loadEnv();
 

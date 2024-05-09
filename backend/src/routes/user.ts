@@ -1,6 +1,6 @@
 import { hashSync } from "bcrypt";
 import { RequestHandler } from "express";
-import { db } from "../db";
+import { db } from "../db/db";
 import { EmptyLocals, EmptyParams, EmptyReqQuery } from "../template";
 
 export const postUser: RequestHandler<

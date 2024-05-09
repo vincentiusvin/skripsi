@@ -1,6 +1,6 @@
 import { compareSync } from "bcrypt";
 import { RequestHandler } from "express";
-import { db } from "../db";
+import { db } from "../db/db";
 import {
   EmptyLocals,
   EmptyParams,
