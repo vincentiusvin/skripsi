@@ -11,7 +11,7 @@ import {
 // Get logged in user
 export const getSession: RequestHandler<
   EmptyParams,
-  { user_name: string },
+  { user_name: string; logged: boolean },
   EmptyReqBody,
   EmptyReqQuery,
   EmptyLocals
@@ -28,10 +28,12 @@ export const getSession: RequestHandler<
   if (user) {
     res.status(200).json({
       user_name: user.name,
+      logged: true,
     });
   } else {
     res.status(200).json({
       user_name: "Guest",
+      logged: false,
     });
   }
 };

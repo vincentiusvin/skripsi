@@ -1,6 +1,7 @@
 import { Box, Button, Stack } from "@mui/material";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
+import { Link } from "wouter";
 import { APIContext } from "../helpers/fetch";
 
 function Nav() {
@@ -19,7 +20,11 @@ function Nav() {
       justifyContent={"space-between"}
     >
       <Box>Hello, {data?.user_name}</Box>
-      <Button onClick={() => logout()}>Logout</Button>
+      {data?.logged ? (
+        <Button onClick={() => logout()}>Logout</Button>
+      ) : (
+        <Link to={"/auth"}>Login</Link>
+      )}
     </Stack>
   );
 }
