@@ -1,7 +1,6 @@
 import { Alert, Snackbar } from "@mui/material";
 import { useState } from "react";
 import { SWRConfig } from "swr";
-import "./App.css";
 import { APIError } from "./helpers/fetch";
 import Content from "./routes/Content";
 

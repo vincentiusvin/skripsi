@@ -1,4 +1,4 @@
-import { Button, TextField } from "@mui/material";
+import { Box, Button, TextField } from "@mui/material";
 import { useState } from "react";
 import useSWRMutation from "swr/mutation";
 import Nav from "../components/Nav";
@@ -37,7 +37,7 @@ function Content() {
   );
 
   return (
-    <>
+    <Box>
       <Nav />
       <TextField
         onChange={(e) => setUsername(e.target.value)}
@@ -52,7 +52,7 @@ function Content() {
       <Button onClick={() => login()}>Login</Button>
       <Button onClick={() => register()}>Register</Button>
       <Button onClick={() => logout()}>Logout</Button>
-    </>
+    </Box>
   );
 }
 
