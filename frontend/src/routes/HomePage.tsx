@@ -1,7 +1,11 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
 function HomePage() {
-  return <Box>Welcome to our app!</Box>;
+  return (
+    <Box>
+      <Typography>Welcome to our app!</Typography>
+    </Box>
+  );
 }
 
 export default HomePage;

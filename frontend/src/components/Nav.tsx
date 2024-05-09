@@ -1,4 +1,4 @@
-import { Box, Button, Stack } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { Link } from "wouter";
@@ -19,12 +19,28 @@ function Nav() {
       alignItems={"center"}
       justifyContent={"space-between"}
     >
-      <Box>Hello, {data?.user_name}</Box>
-      {data?.logged ? (
-        <Button onClick={() => logout()}>Logout</Button>
-      ) : (
-        <Link to={"/auth"}>Login</Link>
-      )}
+      <Stack>
+        <Link to={"/home"}>
+          <Button>Home</Button>
+        </Link>
+      </Stack>
+      <Stack
+        direction={"row"}
+        spacing={2}
+        alignItems={"center"}
+        justifyContent={"space-between"}
+      >
+        <Box>
+          <Typography>Hello, {data?.user_name}</Typography>
+        </Box>
+        {data?.logged ? (
+          <Button onClick={() => logout()}>Logout</Button>
+        ) : (
+          <Link to={"/auth"}>
+            <Button>Login</Button>
+          </Link>
+        )}
+      </Stack>
     </Stack>
   );
 }

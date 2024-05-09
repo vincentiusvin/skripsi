@@ -1,5 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close";
-import { IconButton } from "@mui/material";
+import { IconButton, Typography } from "@mui/material";
 import { SnackbarProvider, closeSnackbar, enqueueSnackbar } from "notistack";
 import { SWRConfig } from "swr";
 import { Route, Switch } from "wouter";
@@ -28,12 +28,12 @@ function App() {
           onError: (err) => {
             if (err instanceof APIError) {
               enqueueSnackbar({
-                message: `${err.info.msg}`,
+                message: <Typography>{err.info.msg}</Typography>,
                 variant: "error",
               });
             } else if (err instanceof Error) {
               enqueueSnackbar({
-                message: err.message,
+                message: <Typography>{err.message}</Typography>,
                 variant: "error",
               });
             }
