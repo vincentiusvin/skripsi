@@ -1,14 +1,12 @@
-import { Alert, Snackbar } from "@mui/material";
-import { useState } from "react";
+import CloseIcon from "@mui/icons-material/Close";
+import { IconButton } from "@mui/material";
+import { SnackbarProvider, closeSnackbar, enqueueSnackbar } from "notistack";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { SWRConfig } from "swr";
 import { APIError } from "./helpers/fetch";
 import Auth from "./routes/Auth";
 
 function App() {
-  const [errorOpen, setErrorOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
   const router = createBrowserRouter([{ path: "/", element: <Auth /> }]);
 
   return (
@@ -17,26 +15,32 @@ function App() {
         errorRetryCount: 0,
         onError: (err) => {
           if (err instanceof APIError) {
-            setErrorMessage(`${err.status} - ${err.info.msg}`);
+            enqueueSnackbar({
+              message: `${err.info.msg}`,
+              variant: "error",
+            });
           } else if (err instanceof Error) {
-            setErrorMessage(`${err.message}`);
+            enqueueSnackbar({
+              message: err.message,
+              variant: "error",
+            });
           }
-          setErrorOpen(true);
         },
       }}
     >
-      <Snackbar
-        autoHideDuration={3000}
-        anchorOrigin={{ horizontal: "center", vertical: "top" }}
-        open={errorOpen}
-        onClose={() => setErrorOpen(false)}
-        message={errorMessage}
+      <SnackbarProvider
+        anchorOrigin={{
+          horizontal: "center",
+          vertical: "top",
+        }}
+        action={(key) => (
+          <IconButton onClick={() => closeSnackbar(key)}>
+            <CloseIcon />
+          </IconButton>
+        )}
       >
-        <Alert onClose={() => setErrorOpen(false)} severity="error">
-          {errorMessage}
-        </Alert>
-      </Snackbar>
-      <RouterProvider router={router} />
+        <RouterProvider router={router} />
+      </SnackbarProvider>
     </SWRConfig>
   );
 }
