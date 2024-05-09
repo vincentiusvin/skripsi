@@ -4,7 +4,7 @@ import useSWRMutation from "swr/mutation";
 import Nav from "../components/Nav";
 import { APIContext } from "../helpers/fetch";
 
-function Content() {
+function Auth() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -15,12 +15,6 @@ function Content() {
         user_name: username,
         user_password: password,
       },
-    })
-  );
-
-  const { trigger: logout } = useSWRMutation("/api/session", (url) =>
-    new APIContext("PutSession").fetch(url, {
-      method: "DELETE",
     })
   );
 
@@ -51,9 +45,8 @@ function Content() {
       ></TextField>
       <Button onClick={() => login()}>Login</Button>
       <Button onClick={() => register()}>Register</Button>
-      <Button onClick={() => logout()}>Logout</Button>
     </Box>
   );
 }
 
-export default Content;
+export default Auth;
