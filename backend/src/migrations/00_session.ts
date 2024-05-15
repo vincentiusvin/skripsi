@@ -16,7 +16,7 @@ ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFE
 CREATE INDEX "IDX_session_expire" ON "session" ("expire");
  */
 
-export async function up(db: Kysely<any>): Promise<void> {
+export async function up(db: Kysely<unknown>): Promise<void> {
   await sql`CREATE TABLE "session" (
     "sid" varchar NOT NULL COLLATE "default",
     "sess" json NOT NULL,
@@ -32,7 +32,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   );
 }
 
-export async function down(db: Kysely<any>): Promise<void> {
+export async function down(db: Kysely<unknown>): Promise<void> {
   await db.schema.dropIndex("IDX_session_expire").execute();
   await db.schema.dropTable("session").execute();
 }
