@@ -24,9 +24,12 @@ function Nav() {
       alignItems={"center"}
       justifyContent={"space-between"}
     >
-      <Stack>
+      <Stack direction={"row"} spacing={5}>
         <Link to={"/"}>
           <Button>Home</Button>
+        </Link>
+        <Link to={"/orgs"}>
+          <Button>Orgs</Button>
         </Link>
       </Stack>
       <Stack

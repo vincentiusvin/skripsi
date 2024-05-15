@@ -21,16 +21,14 @@ function AuthPage() {
     })
   );
 
-  const { trigger: register } = useSWRMutation(
-    ["/api/user", username, password],
-    ([url, username, password]) =>
-      new APIContext("PostUser").fetch(url, {
-        method: "POST",
-        body: {
-          user_name: username,
-          user_password: password,
-        },
-      })
+  const { trigger: register } = useSWRMutation("/api/user", (url) =>
+    new APIContext("PostUser").fetch(url, {
+      method: "POST",
+      body: {
+        user_name: username,
+        user_password: password,
+      },
+    })
   );
 
   function onSuccess() {

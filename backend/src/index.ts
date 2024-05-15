@@ -2,9 +2,11 @@ import express, { RequestHandler, json } from "express";
 import MySQLStore from "express-mysql-session";
 import session, * as _Session from "express-session";
 import { dbPool } from "./db/db";
+import { getOrgs, postOrgs } from "./routes/orgs";
 import { deleteSession, getSession, putSession } from "./routes/session";
 import { postUser } from "./routes/user";
 import { logger } from "./utils/logger";
+import { validateLogged } from "./utils/validate";
 const MySQLSessionStore = MySQLStore(_Session);
 
 const app = express();
@@ -34,6 +36,9 @@ app.get("/api/session", getSession);
 app.put("/api/session", putSession);
 app.delete("/api/session", deleteSession);
 
+app.get("/api/orgs", getOrgs);
+app.post("/api/orgs", validateLogged, postOrgs);
+
 app.post("/api/user", postUser);
 
 app.listen(5000, () => {
@@ -49,6 +54,8 @@ type _api = {
   PutSession: typeof putSession;
   DeleteSession: typeof deleteSession;
   PostUser: typeof postUser;
+  PostOrgs: typeof postOrgs;
+  GetOrgs: typeof getOrgs;
 };
 
 /**

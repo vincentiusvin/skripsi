@@ -6,6 +6,7 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 
 export interface Orgs {
   created_at: Generated<Date>;
+  description: string;
   id: Generated<number>;
   name: string;
 }

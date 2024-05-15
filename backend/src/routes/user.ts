@@ -13,12 +13,12 @@ export const postUser: RequestHandler<
   const { user_name, user_password } = req.body;
 
   if (user_name.length === 0) {
-    res.status(400).json({ msg: "Username cannot be empty!" });
+    res.status(400).json({ msg: "Username tidak boleh kosong!" });
     return;
   }
 
   if (user_password.length === 0) {
-    res.status(400).json({ msg: "Password cannot be empty!" });
+    res.status(400).json({ msg: "Password tidak boleh kosong!" });
     return;
   }
 
@@ -29,7 +29,7 @@ export const postUser: RequestHandler<
     .execute();
 
   if (similar.length !== 0) {
-    res.status(400).json({ msg: "Username is already taken!" });
+    res.status(400).json({ msg: "Sudah ada username dengan nama yang sama!" });
     return;
   }
 
@@ -43,5 +43,5 @@ export const postUser: RequestHandler<
     })
     .execute();
 
-  res.status(201).json({ msg: "User created successfully!" });
+  res.status(201).json({ msg: "User berhasil dibuat!" });
 };
