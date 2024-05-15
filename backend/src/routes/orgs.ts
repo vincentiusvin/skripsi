@@ -67,9 +67,9 @@ export const getOrgDetail: RequestHandler<
       jsonArrayFrom(
         eb
           .selectFrom("orgs_users")
-          .innerJoin("users", "orgs_users.users_id", "users.id")
+          .innerJoin("users", "orgs_users.user_id", "users.id")
           .select(["users.id as id", "users.name as name"])
-          .whereRef("orgs_users.orgs_id", "=", "orgs.id")
+          .whereRef("orgs_users.org_id", "=", "orgs.id")
       ).as("org_users"),
     ])
     .where("id", "=", id)
@@ -154,8 +154,8 @@ export const postOrgs: RequestHandler<
       await db
         .insertInto("orgs_users")
         .values({
-          users_id: userID,
-          orgs_id: org.id,
+          user_id: userID,
+          org_id: org.id,
           permission: "Owner",
         })
         .execute();
