@@ -1,5 +1,5 @@
-import { Box, Button, TextField, Typography } from "@mui/material";
-import { closeSnackbar, enqueueSnackbar } from "notistack";
+import { Button, Grid, TextField, Typography } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import useSWRMutation from "swr/mutation";
 import { useLocation } from "wouter";
@@ -34,45 +34,50 @@ function AuthPage() {
   );
 
   function onSuccess() {
-    const redirectTimeout = setTimeout(() => {
-      setLocation("/");
-    }, 5000);
     enqueueSnackbar({
-      message: (
-        <Typography>
-          Login success! You will be redirected to the home page in five
-          seconds...
-        </Typography>
-      ),
-      action: (id) => (
-        <Button
-          onClick={() => {
-            closeSnackbar(id);
-            clearTimeout(redirectTimeout);
-          }}
-        >
-          Cancel
-        </Button>
-      ),
+      message: <Typography>Login success!</Typography>,
+      autoHideDuration: 5000,
       variant: "success",
     });
+    setLocation("/");
   }
 
   return (
-    <Box>
-      <TextField
-        onChange={(e) => setUsername(e.target.value)}
-        label="Username"
-        sx={{ display: "block" }}
-      ></TextField>
-      <TextField
-        onChange={(e) => setPassword(e.target.value)}
-        label="Password"
-        sx={{ display: "block" }}
-      ></TextField>
-      <Button onClick={() => login().then(onSuccess)}>Login</Button>
-      <Button onClick={() => register()}>Register</Button>
-    </Box>
+    <Grid container height={"100%"} alignItems={"center"}>
+      <Grid item xs={6}>
+        Hello
+      </Grid>
+      <Grid item xs={6} alignItems={"center"}>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              onChange={(e) => setUsername(e.target.value)}
+              label="Username"
+              sx={{ display: "block" }}
+            ></TextField>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              onChange={(e) => setPassword(e.target.value)}
+              label="Password"
+              sx={{ display: "block" }}
+            ></TextField>
+          </Grid>
+          <Grid item xs={6}>
+            <Button fullWidth onClick={() => login().then(onSuccess)}>
+              Login
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Button fullWidth onClick={() => register()}>
+              Register
+            </Button>
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
   );
 }
 

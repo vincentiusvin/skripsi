@@ -1,10 +1,10 @@
-import { Box, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 
 function HomePage() {
   return (
-    <Box>
-      <Typography>Welcome to our app!</Typography>
-    </Box>
+    <Typography variant="h4" fontWeight="bold" align="center">
+      Welcome to our app!
+    </Typography>
   );
 }
 

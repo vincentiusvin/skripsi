@@ -1,3 +1,4 @@
+import { Login, Logout } from "@mui/icons-material";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
@@ -16,6 +17,10 @@ function Nav() {
     <Stack
       direction={"row"}
       spacing={2}
+      paddingY={2}
+      paddingX={4}
+      boxShadow={2}
+      color={"primary.main"}
       alignItems={"center"}
       justifyContent={"space-between"}
     >
@@ -34,10 +39,24 @@ function Nav() {
           <Typography>Hello, {data?.user_name}</Typography>
         </Box>
         {data?.logged ? (
-          <Button onClick={() => logout()}>Logout</Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<Logout />}
+            onClick={() => logout()}
+          >
+            Log Out
+          </Button>
         ) : (
           <Link to={"/auth"}>
-            <Button>Login</Button>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<Login />}
+              onClick={() => logout()}
+            >
+              Log In
+            </Button>
           </Link>
         )}
       </Stack>
