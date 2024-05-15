@@ -1,4 +1,4 @@
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, TextField, Typography } from "@mui/material";
 import { closeSnackbar, enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import useSWRMutation from "swr/mutation";
@@ -38,8 +38,12 @@ function AuthPage() {
       setLocation("/");
     }, 5000);
     enqueueSnackbar({
-      message:
-        "Login success! You will be redirected to the home page in five seconds...",
+      message: (
+        <Typography>
+          Login success! You will be redirected to the home page in five
+          seconds...
+        </Typography>
+      ),
       action: (id) => (
         <Button
           onClick={() => {
