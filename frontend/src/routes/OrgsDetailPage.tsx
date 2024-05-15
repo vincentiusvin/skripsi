@@ -45,6 +45,9 @@ function OrgsDetailPage() {
         <Grid item xs={12}>
           <Typography>{data.org_phone}</Typography>
         </Grid>
+        <Grid item xs={12}>
+          <Typography>Members</Typography>
+        </Grid>
       </Grid>
     );
   } else {

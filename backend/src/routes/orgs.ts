@@ -1,4 +1,5 @@
 import { RequestHandler } from "express";
+import { jsonArrayFrom } from "kysely/helpers/mysql";
 import { db } from "../db/db";
 import {
   EmptyLocals,
@@ -45,12 +46,19 @@ export const getOrgDetail: RequestHandler<
 
   const org = await db
     .selectFrom("orgs")
-    .select([
+    .select((eb) => [
       "id as org_id",
       "name as org_name",
       "description as org_description",
       "address as org_address",
       "phone as org_phone",
+      jsonArrayFrom(
+        eb
+          .selectFrom("orgs_users")
+          .innerJoin("users", "orgs_users.users_id", "users.id")
+          .select(["users.id as id", "users.name as name"])
+          .whereRef("orgs_users.orgs_id", "=", "orgs.id")
+      ).as("org_users"),
     ])
     .where("id", "=", id)
     .executeTakeFirst();
