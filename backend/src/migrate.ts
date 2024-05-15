@@ -1,9 +1,11 @@
 import { promises as fs } from "fs";
-import { FileMigrationProvider, Migrator } from "kysely";
+import { FileMigrationProvider, Migrator, NO_MIGRATIONS } from "kysely";
 import path from "path";
 import { db } from "./db/db";
 
-async function migrateToLatest() {
+const ARGS = ["latest", "down", "up", "init"] as const;
+
+async function migrate(option: (typeof ARGS)[number]) {
   const migrator = new Migrator({
     db: db,
     provider: new FileMigrationProvider({
@@ -14,7 +16,18 @@ async function migrateToLatest() {
     }),
   });
 
-  const { error, results } = await migrator.migrateToLatest();
+  let migrationResult;
+  if (option == "init") {
+    migrationResult = await migrator.migrateTo(NO_MIGRATIONS);
+  } else if (option == "down") {
+    migrationResult = await migrator.migrateDown();
+  } else if (option == "up") {
+    migrationResult = await migrator.migrateUp();
+  } else {
+    migrationResult = await migrator.migrateToLatest();
+  }
+
+  const { error, results } = migrationResult;
 
   results?.forEach((it) => {
     if (it.status === "Success") {
@@ -41,4 +54,4 @@ async function migrateToLatest() {
   await db.destroy();
 }
 
-migrateToLatest();
+migrate("latest");
