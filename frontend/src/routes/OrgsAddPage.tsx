@@ -40,7 +40,7 @@ function OrgsAddPage() {
         },
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session"] });
+      queryClient.invalidateQueries({ queryKey: ["orgs"] });
       enqueueSnackbar({
         message: <Typography>Login success!</Typography>,
         autoHideDuration: 5000,

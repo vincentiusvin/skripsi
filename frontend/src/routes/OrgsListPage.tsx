@@ -16,7 +16,7 @@ import { APIContext } from "../helpers/fetch";
 
 function OrgsListPage() {
   const { data } = useQuery({
-    queryKey: ["orgs"],
+    queryKey: ["orgs", "collection"],
     queryFn: () => new APIContext("GetOrgs").fetch("/api/orgs"),
   });
 

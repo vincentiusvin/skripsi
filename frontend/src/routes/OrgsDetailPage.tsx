@@ -16,7 +16,7 @@ function OrgsDetailPage() {
   const [, setLocation] = useLocation();
 
   const { data } = useQuery({
-    queryKey: ["orgs"],
+    queryKey: ["orgs", "detail"],
     queryFn: () => new APIContext("GetOrgDetail").fetch(`/api/orgs/${id}`),
     retry: (failureCount, error) => {
       if (error instanceof APIError || failureCount > 3) {
@@ -68,8 +68,8 @@ function OrgsDetailPage() {
         <Grid item xs={12}>
           <Typography>Members</Typography>
           <List>
-            {data.org_users.map((x) => (
-              <ListItem>{x.name}</ListItem>
+            {data.org_users.map((x, i) => (
+              <ListItem key={i}>{x.name}</ListItem>
             ))}
           </List>
         </Grid>
