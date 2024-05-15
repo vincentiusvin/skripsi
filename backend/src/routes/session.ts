@@ -1,12 +1,6 @@
 import { compareSync } from "bcryptjs";
 import { db } from "../db/db";
-import {
-  EmptyLocals,
-  EmptyParams,
-  EmptyReqBody,
-  EmptyReqQuery,
-  RH,
-} from "../template";
+import { EmptyLocals, EmptyParams, EmptyReqBody, EmptyReqQuery, RH } from "../template";
 
 // Get logged in user
 export const getSession: RH<
@@ -19,11 +13,7 @@ export const getSession: RH<
   const userId = req.session.user_id;
   const user =
     userId &&
-    (await db
-      .selectFrom("users")
-      .select(["name"])
-      .where("id", "=", userId)
-      .executeTakeFirst());
+    (await db.selectFrom("users").select(["name"]).where("id", "=", userId).executeTakeFirst());
 
   if (user) {
     res.status(200).json({

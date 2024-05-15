@@ -24,12 +24,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 
   await sql`ALTER TABLE "session"
     ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE`.execute(
-    db
+    db,
   );
 
-  await sql`CREATE INDEX "IDX_session_expire" ON "session" ("expire")`.execute(
-    db
-  );
+  await sql`CREATE INDEX "IDX_session_expire" ON "session" ("expire")`.execute(db);
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {

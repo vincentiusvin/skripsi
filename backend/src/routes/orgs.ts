@@ -1,12 +1,6 @@
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { db } from "../db/db";
-import {
-  EmptyLocals,
-  EmptyParams,
-  EmptyReqBody,
-  EmptyReqQuery,
-  RH,
-} from "../template";
+import { EmptyLocals, EmptyParams, EmptyReqBody, EmptyReqQuery, RH } from "../template";
 
 export const getOrgs: RH<
   EmptyParams,
@@ -68,16 +62,14 @@ export const getOrgDetail: RH<
           .selectFrom("orgs_users")
           .innerJoin("users", "orgs_users.user_id", "users.id")
           .select(["users.id as id", "users.name as name"])
-          .whereRef("orgs_users.org_id", "=", "orgs.id")
+          .whereRef("orgs_users.org_id", "=", "orgs.id"),
       ).as("org_users"),
     ])
     .where("id", "=", id)
     .executeTakeFirst();
 
   if (!org) {
-    res
-      .status(404)
-      .json({ msg: "Organisasi yang dicari tidak dapat ditemukan!" });
+    res.status(404).json({ msg: "Organisasi yang dicari tidak dapat ditemukan!" });
     return;
   }
 
@@ -97,8 +89,7 @@ export const postOrgs: RH<
   EmptyReqQuery,
   EmptyLocals
 > = async function (req, res) {
-  const { org_name, org_description, org_address, org_phone, org_image } =
-    req.body;
+  const { org_name, org_description, org_address, org_phone, org_image } = req.body;
   const userID = req.session.user_id!;
 
   if (org_name.length === 0) {
@@ -128,9 +119,7 @@ export const postOrgs: RH<
     .execute();
 
   if (sameName.length !== 0) {
-    res
-      .status(400)
-      .json({ msg: "Sudah ada organisasi dengan nama yang sama!" });
+    res.status(400).json({ msg: "Sudah ada organisasi dengan nama yang sama!" });
     return;
   }
   try {

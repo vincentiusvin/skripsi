@@ -33,9 +33,7 @@ function OrgsListPage() {
             <Link to={`/orgs/${x.org_id}`}>
               <Card variant="elevation">
                 <CardActionArea>
-                  {x.org_image && (
-                    <CardMedia component="img" height={300} src={x.org_image} />
-                  )}
+                  {x.org_image && <CardMedia component="img" height={300} src={x.org_image} />}
                   <CardContent>
                     <Stack direction={"row"} alignItems={"center"} spacing={2}>
                       <Box>

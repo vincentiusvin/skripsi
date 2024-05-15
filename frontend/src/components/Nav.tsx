@@ -40,12 +40,7 @@ function Nav() {
           <Button>Orgs</Button>
         </Link>
       </Stack>
-      <Stack
-        direction={"row"}
-        spacing={2}
-        alignItems={"center"}
-        justifyContent={"space-between"}
-      >
+      <Stack direction={"row"} spacing={2} alignItems={"center"} justifyContent={"space-between"}>
         <Box>
           <Typography>Hello, {data?.user_name}</Typography>
         </Box>

@@ -44,7 +44,7 @@ export class APIContext<T extends keyof API> {
     options?: Omit<RequestInit, "body" | "query"> & {
       body?: API[T]["ReqBody"];
       query?: API[T]["ReqQuery"];
-    }
+    },
   ): Promise<API[T]["ResBody"]> {
     const { query, body } = options || {};
     const urlWithParams = query
@@ -78,7 +78,7 @@ export class APIContext<T extends keyof API> {
       throw new APIError(
         "An error occurred while fetching the data.",
         content,
-        res.status
+        res.status,
       ) as APIError;
     }
 

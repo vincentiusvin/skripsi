@@ -1,12 +1,6 @@
 import { ThemeProvider } from "@emotion/react";
 import CloseIcon from "@mui/icons-material/Close";
-import {
-  Box,
-  CssBaseline,
-  Divider,
-  IconButton,
-  createTheme,
-} from "@mui/material";
+import { Box, CssBaseline, Divider, IconButton, createTheme } from "@mui/material";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { SnackbarProvider, closeSnackbar } from "notistack";
 import { Route, Switch } from "wouter";

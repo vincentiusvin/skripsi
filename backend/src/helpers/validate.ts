@@ -1,10 +1,5 @@
 import { RequestHandler } from "express";
-import {
-  EmptyLocals,
-  EmptyParams,
-  EmptyReqBody,
-  EmptyReqQuery,
-} from "../template";
+import { EmptyLocals, EmptyParams, EmptyReqBody, EmptyReqQuery } from "../template";
 
 export const validateLogged: RequestHandler<
   EmptyParams,

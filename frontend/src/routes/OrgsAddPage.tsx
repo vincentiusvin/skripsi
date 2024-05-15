@@ -1,13 +1,5 @@
 import { AddAPhoto, ArrowBack, Save } from "@mui/icons-material";
-import {
-  Avatar,
-  Button,
-  Grid,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Avatar, Button, Grid, Paper, Stack, TextField, Typography } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
@@ -65,12 +57,7 @@ function OrgsAddPage() {
         </Typography>
       </Grid>
       <Grid item xs={2}>
-        <Button
-          variant="contained"
-          fullWidth
-          endIcon={<Save />}
-          onClick={() => addOrg()}
-        >
+        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addOrg()}>
           Simpan
         </Button>
       </Grid>
@@ -110,9 +97,7 @@ function OrgsAddPage() {
                     height: 100,
                   }}
                 />
-                <Typography>
-                  Drag and Drop or Click to upload an image!
-                </Typography>
+                <Typography>Drag and Drop or Click to upload an image!</Typography>
               </Stack>
             )}
           </ImageDropzone>

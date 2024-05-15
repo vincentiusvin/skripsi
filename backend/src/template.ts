@@ -11,14 +11,8 @@ export type RH<
   ResBody = EmptyResBody,
   ReqBody = EmptyReqBody,
   ReqQuery = EmptyReqQuery,
-  Locals extends Record<string, unknown> = EmptyLocals
-> = RequestHandler<
-  Params,
-  ResBody | { msg: string },
-  ReqBody,
-  ReqQuery,
-  Locals
->;
+  Locals extends Record<string, unknown> = EmptyLocals,
+> = RequestHandler<Params, ResBody | { msg: string }, ReqBody, ReqQuery, Locals>;
 
 // Untuk template bisa ikutin ini:
 // export const fn: RH<

@@ -34,13 +34,13 @@ async function migrate(option: (typeof ARGS)[number]) {
       console.log(
         `migration "${it.migrationName}" was ${
           it.direction === "Up" ? "executed" : "rollbacked"
-        } successfully`
+        } successfully`,
       );
     } else if (it.status === "Error") {
       console.error(
         `failed to ${
           it.direction === "Up" ? "execute" : "rollback"
-        } migration "${it.migrationName}"`
+        } migration "${it.migrationName}"`,
       );
     }
   });

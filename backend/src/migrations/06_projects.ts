@@ -5,12 +5,8 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .createTable("projects")
     .addColumn("id", "serial", (col) => col.primaryKey())
     .addColumn("name", "text", (col) => col.notNull())
-    .addColumn("org_id", "integer", (build) =>
-      build.references("orgs.id").notNull()
-    )
-    .addColumn("created_at", "timestamp", (col) =>
-      col.defaultTo(sql`NOW()`).notNull()
-    )
+    .addColumn("org_id", "integer", (build) => build.references("orgs.id").notNull())
+    .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
     .execute();
 }
 

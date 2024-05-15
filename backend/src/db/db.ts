@@ -20,9 +20,7 @@ if (
   DATABASE_USER === undefined ||
   Number.isNaN(DATABASE_PORT)
 ) {
-  console.log(
-    "Database is improperly configured! Make sure all the fields are filled."
-  );
+  console.log("Database is improperly configured! Make sure all the fields are filled.");
   process.exit(-1);
 }
 

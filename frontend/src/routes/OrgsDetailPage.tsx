@@ -1,12 +1,5 @@
 import { ArrowBack, Edit } from "@mui/icons-material";
-import {
-  Avatar,
-  Button,
-  Grid,
-  List,
-  ListItem,
-  Typography,
-} from "@mui/material";
+import { Avatar, Button, Grid, List, ListItem, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "wouter";
 import { APIContext, APIError } from "../helpers/fetch";
