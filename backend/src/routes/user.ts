@@ -1,9 +1,8 @@
-import { hashSync } from "bcrypt";
-import { RequestHandler } from "express";
+import { hashSync } from "bcryptjs";
 import { db } from "../db/db";
-import { EmptyLocals, EmptyParams, EmptyReqQuery } from "../template";
+import { EmptyLocals, EmptyParams, EmptyReqQuery, RH } from "../template";
 
-export const postUser: RequestHandler<
+export const postUser: RH<
   EmptyParams,
   { msg: string },
   { user_name: string; user_password: string },

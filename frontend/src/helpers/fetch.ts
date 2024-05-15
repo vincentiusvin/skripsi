@@ -1,5 +1,5 @@
 import { stringify } from "qs";
-import type { API } from "../../../backend/src/index";
+import type { API } from "../../../backend/src/routes";
 
 export class APIError extends Error {
   info: { msg: string };

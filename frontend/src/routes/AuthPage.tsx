@@ -21,7 +21,7 @@ function AuthPage() {
     })
   );
 
-  const { trigger: register } = useSWRMutation("/api/user", (url) =>
+  const { trigger: register } = useSWRMutation("/api/users", (url) =>
     new APIContext("PostUser").fetch(url, {
       method: "POST",
       body: {

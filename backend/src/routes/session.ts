@@ -1,15 +1,15 @@
-import { compareSync } from "bcrypt";
-import { RequestHandler } from "express";
+import { compareSync } from "bcryptjs";
 import { db } from "../db/db";
 import {
   EmptyLocals,
   EmptyParams,
   EmptyReqBody,
   EmptyReqQuery,
+  RH,
 } from "../template";
 
 // Get logged in user
-export const getSession: RequestHandler<
+export const getSession: RH<
   EmptyParams,
   { user_name: string; logged: boolean },
   EmptyReqBody,
@@ -39,9 +39,9 @@ export const getSession: RequestHandler<
 };
 
 // Login
-export const putSession: RequestHandler<
+export const putSession: RH<
   EmptyParams,
-  { user_name: string } | { msg: string },
+  { user_name: string },
   { user_name: string; user_password: string },
   EmptyReqQuery,
   EmptyLocals
@@ -76,7 +76,7 @@ export const putSession: RequestHandler<
 };
 
 // Logout
-export const deleteSession: RequestHandler<
+export const deleteSession: RH<
   EmptyParams,
   { msg: string },
   EmptyReqBody,

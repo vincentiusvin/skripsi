@@ -1,4 +1,3 @@
-import { RequestHandler } from "express";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { db } from "../db/db";
 import {
@@ -6,9 +5,10 @@ import {
   EmptyParams,
   EmptyReqBody,
   EmptyReqQuery,
+  RH,
 } from "../template";
 
-export const getOrgs: RequestHandler<
+export const getOrgs: RH<
   EmptyParams,
   {
     org_id: number;
@@ -34,21 +34,20 @@ export const getOrgs: RequestHandler<
   return;
 };
 
-export const getOrgDetail: RequestHandler<
+export const getOrgDetail: RH<
   { id: number },
-  | {
-      org_id: number;
-      org_name: string;
-      org_description: string;
-      org_address: string;
-      org_phone: string;
-      org_users: {
-        id: number;
-        name: string;
-      }[];
-      org_image: string | null;
-    }
-  | { msg: string },
+  {
+    org_id: number;
+    org_name: string;
+    org_description: string;
+    org_address: string;
+    org_phone: string;
+    org_users: {
+      id: number;
+      name: string;
+    }[];
+    org_image: string | null;
+  },
   EmptyReqBody,
   EmptyReqQuery,
   EmptyLocals
@@ -85,7 +84,7 @@ export const getOrgDetail: RequestHandler<
   res.json(org);
 };
 
-export const postOrgs: RequestHandler<
+export const postOrgs: RH<
   EmptyParams,
   { msg: string },
   {
