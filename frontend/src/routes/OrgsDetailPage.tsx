@@ -13,16 +13,19 @@ import { APIContext, APIError } from "../helpers/fetch";
 
 function OrgsDetailPage() {
   const { id } = useParams();
-  const { data, error } = useQuery({
-    queryKey: ["orgs"],
-    queryFn: () => new APIContext("GetOrgDetail").fetch(`/api/orgs/${id}`),
-  });
-
   const [, setLocation] = useLocation();
 
-  if (error instanceof APIError) {
-    setLocation("/orgs");
-  }
+  const { data } = useQuery({
+    queryKey: ["orgs"],
+    queryFn: () => new APIContext("GetOrgDetail").fetch(`/api/orgs/${id}`),
+    retry: (failureCount, error) => {
+      if (error instanceof APIError || failureCount > 3) {
+        setLocation("/orgs");
+        return false;
+      }
+      return true;
+    },
+  });
 
   if (data) {
     return (
