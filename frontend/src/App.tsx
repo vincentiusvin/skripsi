@@ -61,7 +61,7 @@ function App() {
           <CssBaseline />
           <Nav />
           <Divider />
-          <Box mx={4} height={"100%"}>
+          <Box mx={4} flexGrow={1}>
             <Switch>
               <Route path={"/"} component={HomePage} />
               <Route path={"/auth"} component={AuthPage} />

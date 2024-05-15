@@ -58,6 +58,7 @@ function AuthPage() {
           <Grid item xs={12}>
             <TextField
               fullWidth
+              type="password"
               onChange={(e) => setPassword(e.target.value)}
               label="Password"
               sx={{ display: "block" }}
