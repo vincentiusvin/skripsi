@@ -18,6 +18,25 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface Categories {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  name: string;
+  type: string;
+}
+
+export interface CategoriesOrgs {
+  category_id: number;
+  created_at: Generated<Timestamp>;
+  org_id: number;
+}
+
+export interface CategoriesProjects {
+  category_id: number;
+  created_at: Generated<Timestamp>;
+  project_id: number;
+}
+
 export interface Orgs {
   address: string;
   created_at: Generated<Timestamp>;
@@ -30,9 +49,16 @@ export interface Orgs {
 
 export interface OrgsUsers {
   created_at: Generated<Timestamp>;
-  orgs_id: number;
+  org_id: number;
   permission: string;
-  users_id: number;
+  user_id: number;
+}
+
+export interface Projects {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  name: string;
+  org_id: number;
 }
 
 export interface Session {
@@ -49,8 +75,12 @@ export interface Users {
 }
 
 export interface DB {
+  categories: Categories;
+  categories_orgs: CategoriesOrgs;
+  categories_projects: CategoriesProjects;
   orgs: Orgs;
   orgs_users: OrgsUsers;
+  projects: Projects;
   session: Session;
   users: Users;
 }

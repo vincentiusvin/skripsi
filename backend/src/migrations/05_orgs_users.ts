@@ -3,17 +3,17 @@ import { Kysely, sql } from "kysely";
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable("orgs_users")
-    .addColumn("orgs_id", "integer")
-    .addColumn("users_id", "integer")
+    .addColumn("org_id", "integer", (build) =>
+      build.references("orgs.id").notNull()
+    )
+    .addColumn("user_id", "integer", (build) =>
+      build.references("users.id").notNull()
+    )
     .addColumn("permission", "text", (col) => col.notNull())
-    .addForeignKeyConstraint("orgs_users_orgs_fk", ["orgs_id"], "orgs", ["id"])
-    .addForeignKeyConstraint("orgs_users_users_fk", ["users_id"], "users", [
-      "id",
-    ])
-    .addPrimaryKeyConstraint("orgs_users_pk", ["orgs_id", "users_id"])
     .addColumn("created_at", "timestamp", (col) =>
       col.defaultTo(sql`NOW()`).notNull()
     )
+    .addPrimaryKeyConstraint("orgs_users_pk", ["org_id", "user_id"])
     .execute();
 }
 
