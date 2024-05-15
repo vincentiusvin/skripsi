@@ -4,7 +4,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable("categories_projects")
     .addColumn("project_id", "integer", (build) =>
-      build.references("orgs.id").notNull()
+      build.references("projects.id").notNull()
     )
     .addColumn("category_id", "integer", (build) =>
       build.references("categories.id").notNull()
@@ -12,7 +12,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("created_at", "timestamp", (col) =>
       col.defaultTo(sql`NOW()`).notNull()
     )
-    .addPrimaryKeyConstraint("categories_projects_fk", [
+    .addPrimaryKeyConstraint("categories_projects_pk", [
       "project_id",
       "category_id",
     ])
