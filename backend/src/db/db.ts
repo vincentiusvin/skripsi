@@ -1,5 +1,5 @@
-import { Kysely, MysqlDialect } from "kysely";
-import { createPool } from "mysql2";
+import { Kysely, PostgresDialect } from "kysely";
+import { Pool } from "pg";
 import { DB } from "./db_types";
 
 const {
@@ -26,7 +26,7 @@ if (
   process.exit(-1);
 }
 
-export const dbPool = createPool({
+export const dbPool = new Pool({
   database: DATABASE_NAME,
   password: DATABASE_PASSWORD,
   user: DATABASE_USER,
@@ -34,18 +34,18 @@ export const dbPool = createPool({
   port: DATABASE_PORT,
 });
 
-dbPool.getConnection((err, conn) => {
-  if (err) {
+dbPool.connect((err, client, done) => {
+  if (err || !client) {
     console.log("Failed to acquire database connection!");
     console.log(err);
     process.exit(-1);
   } else {
     console.log("Database connected!");
   }
-  dbPool.releaseConnection(conn);
+  done();
 });
 
-const dialect = new MysqlDialect({
+const dialect = new PostgresDialect({
   pool: dbPool,
 });
 

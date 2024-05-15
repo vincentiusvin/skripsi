@@ -3,8 +3,8 @@ import { Kysely, sql } from "kysely";
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable("orgs_users")
-    .addColumn("orgs_id", "bigint", (col) => col.unsigned())
-    .addColumn("users_id", "bigint", (col) => col.unsigned())
+    .addColumn("orgs_id", "integer")
+    .addColumn("users_id", "integer")
     .addColumn("permission", "text", (col) => col.notNull())
     .addForeignKeyConstraint("orgs_users_orgs_fk", ["orgs_id"], "orgs", ["id"])
     .addForeignKeyConstraint("orgs_users_users_fk", ["users_id"], "users", [

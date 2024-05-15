@@ -1,13 +1,15 @@
 import express, { RequestHandler, json } from "express";
-import MySQLStore from "express-mysql-session";
-import session, * as _Session from "express-session";
+import session from "express-session";
 import { dbPool } from "./db/db";
 import { getOrgDetail, getOrgs, postOrgs } from "./routes/orgs";
 import { deleteSession, getSession, putSession } from "./routes/session";
 import { postUser } from "./routes/user";
 import { logger } from "./utils/logger";
 import { validateLogged } from "./utils/validate";
-const MySQLSessionStore = MySQLStore(_Session);
+import connectPgSimple = require("connect-pg-simple");
+import _session = require("express-session");
+
+const pgSession = connectPgSimple(_session);
 
 const app = express();
 
@@ -19,7 +21,9 @@ declare module "express-session" {
   }
 }
 
-const store = new MySQLSessionStore({}, dbPool);
+const store = new pgSession({
+  pool: dbPool,
+});
 
 app.use(
   session({
