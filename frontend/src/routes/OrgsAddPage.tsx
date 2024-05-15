@@ -8,13 +8,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useMutation } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import useSWRMutation from "swr/mutation";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import ImageDropzone from "../components/Dropzone";
 import { APIContext } from "../helpers/fetch";
 import { fileToBase64DataURL } from "../helpers/file";
+import { queryClient } from "../helpers/queryclient";
 
 function OrgsAddPage() {
   const [orgName, setOrgName] = useState("");
@@ -23,18 +24,31 @@ function OrgsAddPage() {
   const [orgPhone, setOrgPhone] = useState("");
   const [orgImage, setOrgImage] = useState<string | null>(null);
 
-  const { trigger: addOrg } = useSWRMutation("/api/orgs", (url) =>
-    new APIContext("PostOrgs").fetch(url, {
-      method: "POST",
-      body: {
-        org_name: orgName,
-        org_description: orgDesc,
-        org_address: orgAddress,
-        org_phone: orgPhone,
-        ...(orgImage && { org_image: orgImage }),
-      },
-    })
-  );
+  const [, setLocation] = useLocation();
+
+  const { mutate: addOrg } = useMutation({
+    mutationKey: ["session"],
+    mutationFn: () =>
+      new APIContext("PostOrgs").fetch("/api/orgs", {
+        method: "POST",
+        body: {
+          org_name: orgName,
+          org_description: orgDesc,
+          org_address: orgAddress,
+          org_phone: orgPhone,
+          ...(orgImage && { org_image: orgImage }),
+        },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["session"] });
+      enqueueSnackbar({
+        message: <Typography>Login success!</Typography>,
+        autoHideDuration: 5000,
+        variant: "success",
+      });
+      setLocation("/");
+    },
+  });
 
   return (
     <Grid container spacing={2} mt={2}>
@@ -55,14 +69,7 @@ function OrgsAddPage() {
           variant="contained"
           fullWidth
           endIcon={<Save />}
-          onClick={() =>
-            addOrg().then((x) => {
-              enqueueSnackbar({
-                message: <Typography>{x.msg}</Typography>,
-                variant: "success",
-              });
-            })
-          }
+          onClick={() => addOrg()}
         >
           Simpan
         </Button>

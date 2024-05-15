@@ -10,12 +10,15 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { APIContext } from "../helpers/fetch";
 
 function OrgsListPage() {
-  const { data } = useSWR("/api/orgs", new APIContext("GetOrgs").fetch);
+  const { data } = useQuery({
+    queryKey: ["orgs"],
+    queryFn: () => new APIContext("GetOrgs").fetch("/api/orgs"),
+  });
 
   return (
     <Box mt={4}>

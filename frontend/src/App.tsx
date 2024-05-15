@@ -5,15 +5,14 @@ import {
   CssBaseline,
   Divider,
   IconButton,
-  Typography,
   createTheme,
 } from "@mui/material";
-import { SnackbarProvider, closeSnackbar, enqueueSnackbar } from "notistack";
-import { SWRConfig } from "swr";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { SnackbarProvider, closeSnackbar } from "notistack";
 import { Route, Switch } from "wouter";
 import "./App.css";
 import Nav from "./components/Nav";
-import { APIError } from "./helpers/fetch";
+import { queryClient } from "./helpers/queryclient";
 import AuthPage from "./routes/AuthPage";
 import HomePage from "./routes/HomePage";
 import OrgsAddPage from "./routes/OrgsAddPage";
@@ -41,24 +40,7 @@ function App() {
           </IconButton>
         )}
       >
-        <SWRConfig
-          value={{
-            errorRetryCount: 0,
-            onError: (err) => {
-              if (err instanceof APIError) {
-                enqueueSnackbar({
-                  message: <Typography>{err.info.msg}</Typography>,
-                  variant: "error",
-                });
-              } else if (err instanceof Error) {
-                enqueueSnackbar({
-                  message: <Typography>{err.message}</Typography>,
-                  variant: "error",
-                });
-              }
-            },
-          }}
-        >
+        <QueryClientProvider client={queryClient}>
           <CssBaseline />
           <Nav />
           <Divider />
@@ -71,7 +53,7 @@ function App() {
               <Route path={"/orgs/:id"} component={OrgsDetailPage} />
             </Switch>
           </Box>
-        </SWRConfig>
+        </QueryClientProvider>
       </SnackbarProvider>
     </ThemeProvider>
   );

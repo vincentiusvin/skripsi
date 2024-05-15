@@ -7,23 +7,24 @@ import {
   ListItem,
   Typography,
 } from "@mui/material";
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "wouter";
 import { APIContext, APIError } from "../helpers/fetch";
 
 function OrgsDetailPage() {
   const { id } = useParams();
-  const { data, error } = useSWR(
-    `/api/orgs/${id}`,
-    new APIContext("GetOrgDetail").fetch
-  );
+  const { data, error } = useQuery({
+    queryKey: ["orgs"],
+    queryFn: () => new APIContext("GetOrgDetail").fetch(`/api/orgs/${id}`),
+  });
+
   const [, setLocation] = useLocation();
 
   if (error instanceof APIError) {
     setLocation("/orgs");
   }
 
-  if (data && !("msg" in data)) {
+  if (data) {
     return (
       <Grid container mt={2}>
         <Grid item xs={1}>

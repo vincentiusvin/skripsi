@@ -17,13 +17,14 @@ export class APIError extends Error {
  *
  * Cara pakainya dengan:
  * ```ts
- * new APIContext("key_dari_backend").fetch(url, string)
+ * new APIContext("key_dari_backend").fetch(url, options)
  * ```
- * atau dengan SWR:
+ * atau dengan useQuery:
  * ```ts
- * const { data, } = useSWR("/api/test", (url) =>
- *   new APIContext("GET /api/test").fetch(url, { body: {} })
- * );
+ * const { data } = useQuery({
+ *   queryKey: ["tests"],
+ *   queryFn: () => new APIContext("key_dari_backend").fetch(url, options),
+ * });
  * ```
  */
 export class APIContext<T extends keyof API> {
@@ -86,5 +87,9 @@ export class APIContext<T extends keyof API> {
 
   arrayFetch(arr: Parameters<this["fetch"]>) {
     return this.fetch(arr[0], arr[1]);
+  }
+
+  curriedFetch(url: string) {
+    return (opts: Parameters<typeof this.fetch>[1]) => this.fetch(url, opts);
   }
 }
