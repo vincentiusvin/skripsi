@@ -36,8 +36,14 @@ function OrgsDetailPage() {
             Edit
           </Button>
         </Grid>
-        <Grid item>
+        <Grid item xs={12}>
           <Typography>{data.org_description}</Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography>{data.org_address}</Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography>{data.org_phone}</Typography>
         </Grid>
       </Grid>
     );

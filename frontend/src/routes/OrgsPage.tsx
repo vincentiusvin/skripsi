@@ -17,6 +17,8 @@ import { APIContext } from "../helpers/fetch";
 function OrgsPage() {
   const [orgName, setOrgName] = useState("");
   const [orgDesc, setOrgDesc] = useState("");
+  const [orgAddress, setOrgAddress] = useState("");
+  const [orgPhone, setOrgPhone] = useState("");
 
   const { trigger: addOrg } = useSWRMutation("/api/orgs", (url) =>
     new APIContext("PostOrgs").fetch(url, {
@@ -24,6 +26,8 @@ function OrgsPage() {
       body: {
         org_name: orgName,
         org_description: orgDesc,
+        org_address: orgAddress,
+        org_phone: orgPhone,
       },
     })
   );
@@ -54,13 +58,21 @@ function OrgsPage() {
         fullWidth
         onChange={(e) => setOrgName(e.target.value)}
         label="Name"
-        sx={{ display: "block" }}
       ></TextField>
       <TextField
         fullWidth
         onChange={(e) => setOrgDesc(e.target.value)}
         label="Description"
-        sx={{ display: "block" }}
+      ></TextField>
+      <TextField
+        fullWidth
+        onChange={(e) => setOrgAddress(e.target.value)}
+        label="Address"
+      ></TextField>
+      <TextField
+        fullWidth
+        onChange={(e) => setOrgPhone(e.target.value)}
+        label="Phone"
       ></TextField>
       <Button
         variant="contained"

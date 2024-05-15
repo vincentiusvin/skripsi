@@ -5,10 +5,12 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   : ColumnType<T, T | undefined, T>;
 
 export interface Orgs {
+  address: string;
   created_at: Generated<Date>;
   description: string;
   id: Generated<number>;
   name: string;
+  phone: string;
 }
 
 export interface OrgsUsers {
