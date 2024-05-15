@@ -1,5 +1,5 @@
 import { ArrowBack, Edit } from "@mui/icons-material";
-import { Button, Grid, Typography } from "@mui/material";
+import { Button, Grid, List, ListItem, Typography } from "@mui/material";
 import useSWR from "swr";
 import { Link, useLocation, useParams } from "wouter";
 import { APIContext, APIError } from "../helpers/fetch";
@@ -47,6 +47,11 @@ function OrgsDetailPage() {
         </Grid>
         <Grid item xs={12}>
           <Typography>Members</Typography>
+          <List>
+            {data.org_users.map((x) => (
+              <ListItem>{x.name}</ListItem>
+            ))}
+          </List>
         </Grid>
       </Grid>
     );

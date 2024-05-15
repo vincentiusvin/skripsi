@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { jsonArrayFrom } from "kysely/helpers/mysql";
+import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { db } from "../db/db";
 import {
   EmptyLocals,
@@ -36,6 +36,10 @@ export const getOrgDetail: RequestHandler<
       org_description: string;
       org_address: string;
       org_phone: string;
+      org_users: {
+        id: number;
+        name: string;
+      }[];
     }
   | { msg: string },
   EmptyReqBody,
@@ -132,18 +136,20 @@ export const postOrgs: RequestHandler<
           address: org_address,
           phone: org_phone,
         })
+        .returning("id")
         .executeTakeFirst();
 
-      if (org.insertId) {
-        await db
-          .insertInto("orgs_users")
-          .values({
-            users_id: userID,
-            orgs_id: Number(org.insertId),
-            permission: "Owner",
-          })
-          .execute();
+      if (!org) {
+        throw new Error("Data not inserted!");
       }
+      await db
+        .insertInto("orgs_users")
+        .values({
+          users_id: userID,
+          orgs_id: org.id,
+          permission: "Owner",
+        })
+        .execute();
     });
     res.status(201).json({ msg: "Organisasi berhasil dibuat!" });
   } catch (error) {
