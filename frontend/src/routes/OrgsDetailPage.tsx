@@ -1,5 +1,12 @@
 import { ArrowBack, Edit } from "@mui/icons-material";
-import { Button, Grid, List, ListItem, Typography } from "@mui/material";
+import {
+  Avatar,
+  Button,
+  Grid,
+  List,
+  ListItem,
+  Typography,
+} from "@mui/material";
 import useSWR from "swr";
 import { Link, useLocation, useParams } from "wouter";
 import { APIContext, APIError } from "../helpers/fetch";
@@ -36,6 +43,15 @@ function OrgsDetailPage() {
             Edit
           </Button>
         </Grid>
+        {data.org_image && (
+          <Grid item xs={12}>
+            <Avatar
+              src={data.org_image}
+              variant="rounded"
+              sx={{ height: "250px", width: "250px", margin: "auto" }}
+            ></Avatar>
+          </Grid>
+        )}
         <Grid item xs={12}>
           <Typography>{data.org_description}</Typography>
         </Grid>

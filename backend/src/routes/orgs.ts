@@ -10,7 +10,12 @@ import {
 
 export const getOrgs: RequestHandler<
   EmptyParams,
-  { org_id: number; org_name: string; org_description: string }[],
+  {
+    org_id: number;
+    org_name: string;
+    org_description: string;
+    org_image: string | null;
+  }[],
   EmptyReqBody,
   EmptyReqQuery,
   EmptyLocals
@@ -21,6 +26,7 @@ export const getOrgs: RequestHandler<
       "id as org_id",
       "name as org_name",
       "description as org_description",
+      "image as org_image",
     ])
     .execute();
 
@@ -40,6 +46,7 @@ export const getOrgDetail: RequestHandler<
         id: number;
         name: string;
       }[];
+      org_image: string | null;
     }
   | { msg: string },
   EmptyReqBody,
@@ -56,6 +63,7 @@ export const getOrgDetail: RequestHandler<
       "description as org_description",
       "address as org_address",
       "phone as org_phone",
+      "image as org_image",
       jsonArrayFrom(
         eb
           .selectFrom("orgs_users")
@@ -67,15 +75,14 @@ export const getOrgDetail: RequestHandler<
     .where("id", "=", id)
     .executeTakeFirst();
 
-  if (org) {
-    res.json(org);
-  } else {
+  if (!org) {
     res
       .status(404)
       .json({ msg: "Organisasi yang dicari tidak dapat ditemukan!" });
+    return;
   }
 
-  return;
+  res.json(org);
 };
 
 export const postOrgs: RequestHandler<
@@ -86,11 +93,13 @@ export const postOrgs: RequestHandler<
     org_description: string;
     org_address: string;
     org_phone: string;
+    org_image?: string;
   },
   EmptyReqQuery,
   EmptyLocals
 > = async function (req, res) {
-  const { org_name, org_description, org_address, org_phone } = req.body;
+  const { org_name, org_description, org_address, org_phone, org_image } =
+    req.body;
   const userID = req.session.user_id!;
 
   if (org_name.length === 0) {
@@ -125,7 +134,6 @@ export const postOrgs: RequestHandler<
       .json({ msg: "Sudah ada organisasi dengan nama yang sama!" });
     return;
   }
-
   try {
     await db.transaction().execute(async () => {
       const org = await db
@@ -135,6 +143,7 @@ export const postOrgs: RequestHandler<
           description: org_description,
           address: org_address,
           phone: org_phone,
+          ...(org_image && { image: org_image }),
         })
         .returning("id")
         .executeTakeFirst();

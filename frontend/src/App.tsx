@@ -16,8 +16,9 @@ import Nav from "./components/Nav";
 import { APIError } from "./helpers/fetch";
 import AuthPage from "./routes/AuthPage";
 import HomePage from "./routes/HomePage";
+import OrgsAddPage from "./routes/OrgsAddPage";
 import OrgsDetailPage from "./routes/OrgsDetailPage";
-import OrgsPage from "./routes/OrgsPage";
+import OrgsListPage from "./routes/OrgsListPage";
 
 const theme = createTheme({
   palette: {
@@ -65,7 +66,8 @@ function App() {
             <Switch>
               <Route path={"/"} component={HomePage} />
               <Route path={"/auth"} component={AuthPage} />
-              <Route path={"/orgs"} component={OrgsPage} />
+              <Route path={"/orgs"} component={OrgsListPage} />
+              <Route path={"/orgs/add"} component={OrgsAddPage} />
               <Route path={"/orgs/:id"} component={OrgsDetailPage} />
             </Switch>
           </Box>
