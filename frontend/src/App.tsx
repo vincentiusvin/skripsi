@@ -40,14 +40,10 @@ function App() {
           },
         }}
       >
+        <Nav />
         <Switch>
+          <Route path={"/"} component={HomePage} />
           <Route path={"/auth"} component={AuthPage} />
-          <Route path={"/"}>
-            <Nav />
-            <Switch>
-              <Route path={"/"} component={HomePage} />
-            </Switch>
-          </Route>
         </Switch>
       </SWRConfig>
     </SnackbarProvider>

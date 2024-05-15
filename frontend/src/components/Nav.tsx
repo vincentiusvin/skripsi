@@ -20,7 +20,7 @@ function Nav() {
       justifyContent={"space-between"}
     >
       <Stack>
-        <Link to={"/home"}>
+        <Link to={"/"}>
           <Button>Home</Button>
         </Link>
       </Stack>

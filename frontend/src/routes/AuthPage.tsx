@@ -3,7 +3,6 @@ import { closeSnackbar, enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import useSWRMutation from "swr/mutation";
 import { useLocation } from "wouter";
-import Nav from "../components/Nav";
 import { APIContext } from "../helpers/fetch";
 
 function AuthPage() {
@@ -57,7 +56,6 @@ function AuthPage() {
 
   return (
     <Box>
-      <Nav />
       <TextField
         onChange={(e) => setUsername(e.target.value)}
         label="Username"
