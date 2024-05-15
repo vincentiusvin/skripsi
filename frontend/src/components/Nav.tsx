@@ -19,7 +19,6 @@ function Nav() {
       spacing={2}
       paddingY={2}
       paddingX={4}
-      boxShadow={2}
       color={"primary.main"}
       alignItems={"center"}
       justifyContent={"space-between"}

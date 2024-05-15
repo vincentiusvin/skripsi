@@ -3,6 +3,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
   CssBaseline,
+  Divider,
   IconButton,
   Typography,
   createTheme,
@@ -15,6 +16,7 @@ import Nav from "./components/Nav";
 import { APIError } from "./helpers/fetch";
 import AuthPage from "./routes/AuthPage";
 import HomePage from "./routes/HomePage";
+import OrgsDetailPage from "./routes/OrgsDetailPage";
 import OrgsPage from "./routes/OrgsPage";
 
 const theme = createTheme({
@@ -58,11 +60,13 @@ function App() {
         >
           <CssBaseline />
           <Nav />
+          <Divider />
           <Box mx={4} height={"100%"}>
             <Switch>
               <Route path={"/"} component={HomePage} />
               <Route path={"/auth"} component={AuthPage} />
               <Route path={"/orgs"} component={OrgsPage} />
+              <Route path={"/orgs/:id"} component={OrgsDetailPage} />
             </Switch>
           </Box>
         </SWRConfig>

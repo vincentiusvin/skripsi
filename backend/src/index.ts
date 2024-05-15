@@ -2,7 +2,7 @@ import express, { RequestHandler, json } from "express";
 import MySQLStore from "express-mysql-session";
 import session, * as _Session from "express-session";
 import { dbPool } from "./db/db";
-import { getOrgs, postOrgs } from "./routes/orgs";
+import { getOrgDetail, getOrgs, postOrgs } from "./routes/orgs";
 import { deleteSession, getSession, putSession } from "./routes/session";
 import { postUser } from "./routes/user";
 import { logger } from "./utils/logger";
@@ -38,6 +38,7 @@ app.delete("/api/session", deleteSession);
 
 app.get("/api/orgs", getOrgs);
 app.post("/api/orgs", validateLogged, postOrgs);
+app.get("/api/orgs/:id", getOrgDetail);
 
 app.post("/api/user", postUser);
 
@@ -56,6 +57,7 @@ type _api = {
   PostUser: typeof postUser;
   PostOrgs: typeof postOrgs;
   GetOrgs: typeof getOrgs;
+  GetOrgDetail: typeof getOrgDetail;
 };
 
 /**
