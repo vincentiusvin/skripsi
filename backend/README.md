@@ -37,7 +37,7 @@ RH itu generic, bisa kita masukin tipe data yang kita mau biar kodenya type-safe
 export const fn: RH<{
   ResBody: { msg: string };
 }> = async function (req, res) {
-  return;
+  res.json({ msg: "Halo" });
 };
 ```
 

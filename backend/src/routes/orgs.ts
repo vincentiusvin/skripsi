@@ -21,8 +21,7 @@ export const getOrgs: RH<{
     ])
     .execute();
 
-  res.json(orgs);
-  return;
+  res.status(200).json(orgs);
 };
 
 export const getOrgDetail: RH<{
@@ -66,7 +65,7 @@ export const getOrgDetail: RH<{
     throw new NotFoundError("Organisasi yang dicari tidak dapat ditemukan!");
   }
 
-  res.json(org);
+  res.status(200).json(org);
 };
 
 export const postOrgs: RH<{
@@ -137,6 +136,4 @@ export const postOrgs: RH<{
   } catch (error) {
     throw new Error("Request gagal!");
   }
-
-  return;
 };
