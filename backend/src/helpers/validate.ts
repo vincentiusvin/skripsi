@@ -1,13 +1,8 @@
-import { RequestHandler } from "express";
-import { EmptyLocals, EmptyParams, EmptyReqBody, EmptyReqQuery } from "../template";
+import { RH } from "./types";
 
-export const validateLogged: RequestHandler<
-  EmptyParams,
-  { msg: string },
-  EmptyReqBody,
-  EmptyReqQuery,
-  EmptyLocals
-> = function (req, res, next) {
+export const validateLogged: RH<{
+  ResBody: { msg: string };
+}> = function (req, res, next) {
   if (req.session.user_id) {
     next();
   } else {

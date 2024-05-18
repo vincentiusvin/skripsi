@@ -1,19 +1,15 @@
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { db } from "../db/db";
-import { EmptyLocals, EmptyParams, EmptyReqBody, EmptyReqQuery, RH } from "../template";
+import { RH } from "../helpers/types";
 
-export const getOrgs: RH<
-  EmptyParams,
-  {
+export const getOrgs: RH<{
+  ResBody: {
     org_id: number;
     org_name: string;
     org_description: string;
     org_image: string | null;
-  }[],
-  EmptyReqBody,
-  EmptyReqQuery,
-  EmptyLocals
-> = async function (req, res) {
+  }[];
+}> = async function (req, res) {
   const orgs = await db
     .selectFrom("orgs")
     .select([
@@ -28,9 +24,9 @@ export const getOrgs: RH<
   return;
 };
 
-export const getOrgDetail: RH<
-  { id: number },
-  {
+export const getOrgDetail: RH<{
+  ReqParams: { id: number };
+  ResBody: {
     org_id: number;
     org_name: string;
     org_description: string;
@@ -41,11 +37,8 @@ export const getOrgDetail: RH<
       name: string;
     }[];
     org_image: string | null;
-  },
-  EmptyReqBody,
-  EmptyReqQuery,
-  EmptyLocals
-> = async function (req, res) {
+  };
+}> = async function (req, res) {
   const id = req.params.id;
 
   const org = await db
@@ -76,19 +69,16 @@ export const getOrgDetail: RH<
   res.json(org);
 };
 
-export const postOrgs: RH<
-  EmptyParams,
-  { msg: string },
-  {
+export const postOrgs: RH<{
+  ResBody: { msg: string };
+  ReqBody: {
     org_name: string;
     org_description: string;
     org_address: string;
     org_phone: string;
     org_image?: string;
-  },
-  EmptyReqQuery,
-  EmptyLocals
-> = async function (req, res) {
+  };
+}> = async function (req, res) {
   const { org_name, org_description, org_address, org_phone, org_image } = req.body;
   const userID = req.session.user_id!;
 

@@ -1,15 +1,11 @@
 import { compareSync } from "bcryptjs";
 import { db } from "../db/db";
-import { EmptyLocals, EmptyParams, EmptyReqBody, EmptyReqQuery, RH } from "../template";
+import { RH } from "../helpers/types";
 
 // Get logged in user
-export const getSession: RH<
-  EmptyParams,
-  { user_name: string; logged: boolean },
-  EmptyReqBody,
-  EmptyReqQuery,
-  EmptyLocals
-> = async function (req, res) {
+export const getSession: RH<{
+  ResBody: { user_name: string; logged: boolean };
+}> = async function (req, res) {
   const userId = req.session.user_id;
   const user =
     userId &&
@@ -29,13 +25,10 @@ export const getSession: RH<
 };
 
 // Login
-export const putSession: RH<
-  EmptyParams,
-  { user_name: string },
-  { user_name: string; user_password: string },
-  EmptyReqQuery,
-  EmptyLocals
-> = async function (req, res) {
+export const putSession: RH<{
+  ResBody: { user_name: string };
+  ReqBody: { user_name: string; user_password: string };
+}> = async function (req, res) {
   const { user_password, user_name } = req.body;
 
   const user = await db
@@ -66,13 +59,7 @@ export const putSession: RH<
 };
 
 // Logout
-export const deleteSession: RH<
-  EmptyParams,
-  { msg: string },
-  EmptyReqBody,
-  EmptyReqQuery,
-  EmptyLocals
-> = function (req, res) {
+export const deleteSession: RH<{ ResBody: { msg: string } }> = function (req, res) {
   req.session.destroy(() => {
     res.status(200).json({
       msg: "Success",

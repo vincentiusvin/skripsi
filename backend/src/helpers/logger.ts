@@ -1,13 +1,6 @@
-import { RequestHandler } from "express";
-import { EmptyLocals, EmptyParams, EmptyReqBody, EmptyReqQuery, EmptyResBody } from "../template";
+import { RH } from "./types";
 
-export const logger: RequestHandler<
-  EmptyParams,
-  EmptyResBody,
-  EmptyReqBody,
-  EmptyReqQuery,
-  EmptyLocals
-> = function (req, res, next) {
+export const logger: RH = function (req, res, next) {
   res.on("finish", () => {
     console.log(`${req.method} ${req.originalUrl} --- ${res.statusCode} ${res.statusMessage}`);
   });

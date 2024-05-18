@@ -1,14 +1,11 @@
 import { hashSync } from "bcryptjs";
 import { db } from "../db/db";
-import { EmptyLocals, EmptyParams, EmptyReqQuery, RH } from "../template";
+import { RH } from "../helpers/types";
 
-export const postUser: RH<
-  EmptyParams,
-  { msg: string },
-  { user_name: string; user_password: string },
-  EmptyReqQuery,
-  EmptyLocals
-> = async function (req, res) {
+export const postUser: RH<{
+  ResBody: { msg: string };
+  ReqBody: { user_name: string; user_password: string };
+}> = async function (req, res) {
   const { user_name, user_password } = req.body;
 
   if (user_name.length === 0) {
