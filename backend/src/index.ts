@@ -1,6 +1,7 @@
 import express, { json } from "express";
 import session from "express-session";
 import { dbPool } from "./db/db";
+import { errorHandler } from "./helpers/error";
 import { logger } from "./helpers/logger";
 import { registerRoutes } from "./routes";
 import connectPgSimple = require("connect-pg-simple");
@@ -34,6 +35,8 @@ app.use(
 app.use(json());
 
 registerRoutes(app);
+
+app.use(errorHandler);
 
 app.listen(5000, () => {
   console.log("Server listening on port 5000");

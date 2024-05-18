@@ -1,5 +1,6 @@
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { db } from "../db/db";
+import { ClientError, NotFoundError } from "../helpers/error";
 import { RH } from "../helpers/types";
 
 export const getOrgs: RH<{
@@ -62,8 +63,7 @@ export const getOrgDetail: RH<{
     .executeTakeFirst();
 
   if (!org) {
-    res.status(404).json({ msg: "Organisasi yang dicari tidak dapat ditemukan!" });
-    return;
+    throw new NotFoundError("Organisasi yang dicari tidak dapat ditemukan!");
   }
 
   res.json(org);
@@ -83,23 +83,19 @@ export const postOrgs: RH<{
   const userID = req.session.user_id!;
 
   if (org_name.length === 0) {
-    res.status(400).json({ msg: "Nama tidak boleh kosong!" });
-    return;
+    throw new ClientError("Nama tidak boleh kosong!");
   }
 
   if (org_description.length === 0) {
-    res.status(400).json({ msg: "Deskripsi tidak boleh kosong!" });
-    return;
+    throw new ClientError("Deskripsi tidak boleh kosong!");
   }
 
   if (org_address.length === 0) {
-    res.status(400).json({ msg: "Alamat tidak boleh kosong!" });
-    return;
+    throw new ClientError("Alamat tidak boleh kosong!");
   }
 
   if (org_phone.length === 0) {
-    res.status(400).json({ msg: "Nomor telepon tidak boleh kosong!" });
-    return;
+    throw new ClientError("Nomor telepon tidak boleh kosong!");
   }
 
   const sameName = await db
@@ -109,8 +105,7 @@ export const postOrgs: RH<{
     .execute();
 
   if (sameName.length !== 0) {
-    res.status(400).json({ msg: "Sudah ada organisasi dengan nama yang sama!" });
-    return;
+    throw new ClientError("Sudah ada organisasi dengan nama yang sama!");
   }
   try {
     await db.transaction().execute(async () => {
@@ -140,8 +135,7 @@ export const postOrgs: RH<{
     });
     res.status(201).json({ msg: "Organisasi berhasil dibuat!" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: "Request gagal!" });
+    throw new Error("Request gagal!");
   }
 
   return;

@@ -1,5 +1,6 @@
 import { compareSync } from "bcryptjs";
 import { db } from "../db/db";
+import { ClientError } from "../helpers/error";
 import { RH } from "../helpers/types";
 
 // Get logged in user
@@ -38,10 +39,7 @@ export const putSession: RH<{
     .executeTakeFirst();
 
   if (!user) {
-    res.status(400).json({
-      msg: "Wrong credentials!",
-    });
-    return;
+    throw new ClientError("Wrong credentials!");
   }
 
   const check = compareSync(user_password, user?.password);
@@ -52,9 +50,7 @@ export const putSession: RH<{
       user_name: user.name,
     });
   } else {
-    res.status(400).json({
-      msg: "Wrong credentials!",
-    });
+    throw new ClientError("Wrong credentials!");
   }
 };
 

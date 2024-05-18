@@ -1,3 +1,4 @@
+import { AuthError } from "./error";
 import { RH } from "./types";
 
 export const validateLogged: RH<{
@@ -6,6 +7,6 @@ export const validateLogged: RH<{
   if (req.session.user_id) {
     next();
   } else {
-    res.status(401).json({ msg: "You need to be logged in!" });
+    throw new AuthError("You need to be logged in!");
   }
 };

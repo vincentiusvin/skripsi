@@ -1,5 +1,6 @@
 import { hashSync } from "bcryptjs";
 import { db } from "../db/db";
+import { ClientError } from "../helpers/error";
 import { RH } from "../helpers/types";
 
 export const postUser: RH<{
@@ -9,13 +10,11 @@ export const postUser: RH<{
   const { user_name, user_password } = req.body;
 
   if (user_name.length === 0) {
-    res.status(400).json({ msg: "Username tidak boleh kosong!" });
-    return;
+    throw new ClientError("Username tidak boleh kosong!");
   }
 
   if (user_password.length === 0) {
-    res.status(400).json({ msg: "Password tidak boleh kosong!" });
-    return;
+    throw new ClientError("Password tidak boleh kosong!");
   }
 
   const similar = await db
@@ -25,8 +24,7 @@ export const postUser: RH<{
     .execute();
 
   if (similar.length !== 0) {
-    res.status(400).json({ msg: "Sudah ada username dengan nama yang sama!" });
-    return;
+    throw new ClientError("Sudah ada username dengan nama yang sama!");
   }
 
   const encrypt = hashSync(user_password, 10);
