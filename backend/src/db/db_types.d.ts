@@ -1,9 +1,8 @@
 import type { ColumnType } from "kysely";
 
-export type Generated<T> =
-  T extends ColumnType<infer S, infer I, infer U>
-    ? ColumnType<S, I | undefined, U>
-    : ColumnType<T, T | undefined, T>;
+export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
+  ? ColumnType<S, I | undefined, U>
+  : ColumnType<T, T | undefined, T>;
 
 export type Json = JsonValue;
 
@@ -19,13 +18,6 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-export interface Categories {
-  created_at: Generated<Timestamp>;
-  id: Generated<number>;
-  name: string;
-  type: string;
-}
-
 export interface CategoriesOrgs {
   category_id: number;
   created_at: Generated<Timestamp>;
@@ -38,7 +30,19 @@ export interface CategoriesProjects {
   project_id: number;
 }
 
-export interface Orgs {
+export interface MsCategoryOrgs {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  name: string;
+}
+
+export interface MsCategoryProjects {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  name: string;
+}
+
+export interface MsOrgs {
   address: string;
   created_at: Generated<Timestamp>;
   description: string;
@@ -48,6 +52,20 @@ export interface Orgs {
   phone: string;
 }
 
+export interface MsProjects {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  name: string;
+  org_id: number;
+}
+
+export interface MsUsers {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  name: string;
+  password: string;
+}
+
 export interface OrgsUsers {
   created_at: Generated<Timestamp>;
   org_id: number;
@@ -55,11 +73,10 @@ export interface OrgsUsers {
   user_id: number;
 }
 
-export interface Projects {
+export interface ProjectsUsers {
   created_at: Generated<Timestamp>;
-  id: Generated<number>;
-  name: string;
-  org_id: number;
+  project_id: number;
+  user_id: number;
 }
 
 export interface Session {
@@ -68,20 +85,15 @@ export interface Session {
   sid: string;
 }
 
-export interface Users {
-  created_at: Generated<Timestamp>;
-  id: Generated<number>;
-  name: string;
-  password: string;
-}
-
 export interface DB {
-  categories: Categories;
   categories_orgs: CategoriesOrgs;
   categories_projects: CategoriesProjects;
-  orgs: Orgs;
+  ms_category_orgs: MsCategoryOrgs;
+  ms_category_projects: MsCategoryProjects;
+  ms_orgs: MsOrgs;
+  ms_projects: MsProjects;
+  ms_users: MsUsers;
   orgs_users: OrgsUsers;
-  projects: Projects;
+  projects_users: ProjectsUsers;
   session: Session;
-  users: Users;
 }

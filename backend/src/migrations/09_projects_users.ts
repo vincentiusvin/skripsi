@@ -2,15 +2,14 @@ import { Kysely, sql } from "kysely";
 
 export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
-    .createTable("orgs_users")
-    .addColumn("org_id", "integer", (build) => build.references("ms_orgs.id").notNull())
+    .createTable("projects_users")
+    .addColumn("project_id", "integer", (build) => build.references("ms_projects.id").notNull())
     .addColumn("user_id", "integer", (build) => build.references("ms_users.id").notNull())
-    .addColumn("permission", "text", (col) => col.notNull())
     .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
-    .addPrimaryKeyConstraint("orgs_users_pk", ["org_id", "user_id"])
+    .addPrimaryKeyConstraint("projects_users_pk", ["project_id", "user_id"])
     .execute();
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
-  await db.schema.dropTable("orgs_users").execute();
+  await db.schema.dropTable("projects_users").execute();
 }

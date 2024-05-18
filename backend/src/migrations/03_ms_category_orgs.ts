@@ -2,17 +2,13 @@ import { Kysely, sql } from "kysely";
 
 export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
-    .createTable("orgs")
+    .createTable("ms_category_orgs")
     .addColumn("id", "serial", (col) => col.primaryKey())
-    .addColumn("name", "text", (col) => col.notNull().unique())
-    .addColumn("description", "text", (col) => col.notNull())
-    .addColumn("phone", "text", (col) => col.notNull())
-    .addColumn("address", "text", (col) => col.notNull())
-    .addColumn("image", "text")
+    .addColumn("name", "text", (col) => col.notNull())
     .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
     .execute();
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
-  await db.schema.dropTable("orgs").execute();
+  await db.schema.dropTable("ms_category_orgs").execute();
 }
