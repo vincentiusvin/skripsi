@@ -12,7 +12,7 @@ export const getOrgs: RH<{
   }[];
 }> = async function (req, res) {
   const orgs = await db
-    .selectFrom("orgs")
+    .selectFrom("ms_orgs")
     .select([
       "id as org_id",
       "name as org_name",
@@ -42,7 +42,7 @@ export const getOrgDetail: RH<{
   const id = req.params.id;
 
   const org = await db
-    .selectFrom("orgs")
+    .selectFrom("ms_orgs")
     .select((eb) => [
       "id as org_id",
       "name as org_name",
@@ -53,9 +53,9 @@ export const getOrgDetail: RH<{
       jsonArrayFrom(
         eb
           .selectFrom("orgs_users")
-          .innerJoin("users", "orgs_users.user_id", "users.id")
-          .select(["users.id as id", "users.name as name"])
-          .whereRef("orgs_users.org_id", "=", "orgs.id"),
+          .innerJoin("ms_users", "orgs_users.user_id", "ms_users.id")
+          .select(["ms_users.id as id", "ms_users.name as name"])
+          .whereRef("orgs_users.org_id", "=", "ms_orgs.id"),
       ).as("org_users"),
     ])
     .where("id", "=", id)
@@ -98,7 +98,7 @@ export const postOrgs: RH<{
   }
 
   const sameName = await db
-    .selectFrom("orgs")
+    .selectFrom("ms_orgs")
     .select(["name"])
     .where("name", "=", org_name)
     .execute();
@@ -109,7 +109,7 @@ export const postOrgs: RH<{
   try {
     await db.transaction().execute(async () => {
       const org = await db
-        .insertInto("orgs")
+        .insertInto("ms_orgs")
         .values({
           name: org_name,
           description: org_description,

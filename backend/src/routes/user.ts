@@ -18,9 +18,9 @@ export const postUser: RH<{
   }
 
   const similar = await db
-    .selectFrom("users")
+    .selectFrom("ms_users")
     .select("id")
-    .where("users.name", "=", user_name)
+    .where("ms_users.name", "=", user_name)
     .execute();
 
   if (similar.length !== 0) {
@@ -30,7 +30,7 @@ export const postUser: RH<{
   const encrypt = hashSync(user_password, 10);
 
   await db
-    .insertInto("users")
+    .insertInto("ms_users")
     .values({
       name: user_name,
       password: encrypt,

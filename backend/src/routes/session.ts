@@ -10,7 +10,7 @@ export const getSession: RH<{
   const userId = req.session.user_id;
   const user =
     userId &&
-    (await db.selectFrom("users").select(["name"]).where("id", "=", userId).executeTakeFirst());
+    (await db.selectFrom("ms_users").select(["name"]).where("id", "=", userId).executeTakeFirst());
 
   if (user) {
     res.status(200).json({
@@ -33,9 +33,9 @@ export const putSession: RH<{
   const { user_password, user_name } = req.body;
 
   const user = await db
-    .selectFrom("users")
+    .selectFrom("ms_users")
     .select(["name", "password", "id"])
-    .where("users.name", "=", user_name)
+    .where("ms_users.name", "=", user_name)
     .executeTakeFirst();
 
   if (!user) {
