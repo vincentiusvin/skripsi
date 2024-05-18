@@ -18,12 +18,14 @@
     "@mui/material": "^5.15.15",
     "@tanstack/react-query": "^5.36.0",
     "@types/mui-image": "^1.0.5",
+    "dayjs": "^1.11.11",
     "notistack": "^3.0.1",
     "qs": "^6.12.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
     "remove": "^0.1.5",
+    "socket.io-client": "^4.7.5",
     "wouter": "^3.1.2"
   },
   "devDependencies": {

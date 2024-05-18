@@ -5,21 +5,25 @@ import { RH } from "../helpers/types";
 
 // Get logged in user
 export const getSession: RH<{
-  ResBody: { user_name: string; logged: boolean };
+  ResBody: { user_name: string; logged: true; user_id: number } | { logged: false };
 }> = async function (req, res) {
   const userId = req.session.user_id;
   const user =
     userId &&
-    (await db.selectFrom("ms_users").select(["name"]).where("id", "=", userId).executeTakeFirst());
+    (await db
+      .selectFrom("ms_users")
+      .select(["name as user_name", "id as user_id"])
+      .where("id", "=", userId)
+      .executeTakeFirst());
 
   if (user) {
     res.status(200).json({
-      user_name: user.name,
+      user_name: user.user_name,
+      user_id: user.user_id,
       logged: true,
     });
   } else {
     res.status(200).json({
-      user_name: "Guest",
       logged: false,
     });
   }

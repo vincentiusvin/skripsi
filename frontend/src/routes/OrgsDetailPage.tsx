@@ -12,7 +12,7 @@ function OrgsDetailPage() {
     queryKey: ["orgs", "detail"],
     queryFn: () => new APIContext("GetOrgDetail").fetch(`/api/orgs/${id}`),
     retry: (failureCount, error) => {
-      if (error instanceof APIError || failureCount > 3) {
+      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
         setLocation("/orgs");
         return false;
       }

@@ -1,5 +1,7 @@
 import express, { json } from "express";
 import session from "express-session";
+import { createServer } from "node:http";
+import { Server } from "socket.io";
 import { dbPool } from "./db/db";
 import { errorHandler } from "./helpers/error";
 import { logger } from "./helpers/logger";
@@ -10,6 +12,10 @@ import _session = require("express-session");
 const pgSession = connectPgSimple(_session);
 
 const app = express();
+const server = createServer(app);
+const io = new Server(server, {
+  path: "/api/chat",
+});
 
 app.use(logger);
 
@@ -23,21 +29,23 @@ const store = new pgSession({
   pool: dbPool,
 });
 
-app.use(
-  session({
-    secret: "secret",
-    resave: false,
-    saveUninitialized: false,
-    store: store,
-  }),
-);
+const sessionMiddleware = session({
+  secret: "secret",
+  resave: false,
+  saveUninitialized: false,
+  store: store,
+});
+
+app.use(sessionMiddleware);
 
 app.use(json());
 
-registerRoutes(app);
+io.engine.use(sessionMiddleware);
+
+registerRoutes(app, io);
 
 app.use(errorHandler);
 
-app.listen(5000, () => {
+server.listen(5000, () => {
   console.log("Server listening on port 5000");
 });
