@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 
 type RequestHandlerOptions = {
-  // Param itu data kiriman yang ada di URL, http://website/api/items?page=1.
+  // Param itu data kiriman yang ada di pathnya, http://website/api/user/1.
   Params?: Record<string, unknown>;
   // ResBody itu jawaban dari server. Declare untuk request yang sukses aja.
   // Request gagal formatnya bakal pakai {msg: string} tapi ga usah dimasukkin ke sini.
@@ -9,7 +9,7 @@ type RequestHandlerOptions = {
   ResBody?: Record<string, unknown> | Record<string, unknown>[];
   // ReqBody itu data kiriman yang dtaruh di body, bukan di url.
   ReqBody?: Record<string, unknown>;
-  // ReqQuery itu data yang ada langsung di pathnya, http://website/api/user/1>
+  // ReqQuery itu data yang ada habis path, http://website/api/items?page=1
   ReqQuery?: Record<string, unknown>;
   // Variabel yang di-set secara lokal di variabel res. Untuk pass info ke handler selanjutnya.
   Locals?: Record<string, unknown>;

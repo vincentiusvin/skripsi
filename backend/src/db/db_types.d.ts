@@ -30,6 +30,12 @@ export interface CategoriesProjects {
   project_id: number;
 }
 
+export interface ChatroomsUsers {
+  chatroom_id: number;
+  created_at: Generated<Timestamp>;
+  user_id: number;
+}
+
 export interface MsCategoryOrgs {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
@@ -40,6 +46,21 @@ export interface MsCategoryProjects {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
   name: string;
+}
+
+export interface MsChatrooms {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  name: string;
+  project_id: number | null;
+}
+
+export interface MsMessages {
+  chatroom_id: number;
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  message: string;
+  users_id: number;
 }
 
 export interface MsOrgs {
@@ -89,8 +110,11 @@ export interface Session {
 export interface DB {
   categories_orgs: CategoriesOrgs;
   categories_projects: CategoriesProjects;
+  chatrooms_users: ChatroomsUsers;
   ms_category_orgs: MsCategoryOrgs;
   ms_category_projects: MsCategoryProjects;
+  ms_chatrooms: MsChatrooms;
+  ms_messages: MsMessages;
   ms_orgs: MsOrgs;
   ms_projects: MsProjects;
   ms_users: MsUsers;
