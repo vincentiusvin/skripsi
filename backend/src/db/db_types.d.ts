@@ -60,7 +60,7 @@ export interface MsMessages {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
   message: string;
-  users_id: number;
+  user_id: number;
 }
 
 export interface MsOrgs {
