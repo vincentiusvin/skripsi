@@ -29,21 +29,14 @@ import { APIContext, APIError } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 import { socket } from "../helpers/socket";
 
-type MessagePend = string;
-
 type MessageAcc = {
   message: string;
   user_id: number;
   created_at: Date;
 };
 
-function Chatroom(props: {
-  chatroom_id: number;
-  name: string;
-  onSend: (msg: MessagePend) => void;
-  onRoomEdit: () => void;
-}) {
-  const { onSend, chatroom_id, name, onRoomEdit } = props;
+function Chatroom(props: { chatroom_id: number; name: string }) {
+  const { chatroom_id, name } = props;
 
   const [draft, setDraft] = useState("");
 
@@ -65,6 +58,36 @@ function Chatroom(props: {
         setEditRoomName(x.chatroom_name);
         return x;
       }),
+  });
+
+  const { data: messages } = useQuery({
+    queryKey: ["messages", "detail", chatroom_id],
+    queryFn: () => new APIContext("GetMessages").fetch(`/api/chatrooms/${chatroom_id}/messages`),
+  });
+
+  const { mutate: sendMessage } = useMutation({
+    mutationKey: ["messages", "detail", chatroom_id],
+    mutationFn: async () => {
+      if (!chatroom) {
+        return;
+      }
+      const res = await new APIContext("PostMessages").fetch(
+        `/api/chatrooms/${chatroom.chatroom_id}/messages`,
+        {
+          method: "POST",
+          body: {
+            message: draft,
+          },
+        },
+      );
+      setDraft("");
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["messages", "detail", chatroom_id],
+      });
+    },
   });
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -100,7 +123,7 @@ function Chatroom(props: {
       if (!sessionData || !chatroom) {
         throw new Error("Anda harus login!");
       }
-      const res = await new APIContext("PostChatrooms").fetch(
+      const res = await new APIContext("PutChatroom").fetch(
         `/api/chatrooms/${chatroom.chatroom_id}`,
         {
           method: "PUT",
@@ -113,7 +136,6 @@ function Chatroom(props: {
       return res;
     },
     onSuccess: (x) => {
-      onRoomEdit();
       queryClient.invalidateQueries({
         queryKey: ["chatrooms"],
       });
@@ -278,12 +300,12 @@ function Chatroom(props: {
         </Stack>
       </Paper>
       <Stack mt={2} marginLeft={2} spacing={1} overflow={"auto"} flexGrow={1} flexBasis={0}>
-        {chatroom?.chatroom_messages.map((x, i) => (
+        {messages?.map((x, i) => (
           <Stack
             key={i}
             direction={"row"}
             spacing={2}
-            ref={i === chatroom.chatroom_messages.length - 1 ? bottomRef : null}
+            ref={i === messages.length - 1 ? bottomRef : null}
           >
             <Avatar></Avatar>
             <Box>
@@ -305,8 +327,7 @@ function Chatroom(props: {
         <TextField
           onKeyDown={(event) => {
             if (event.key === "Enter") {
-              onSend(draft);
-              setDraft("");
+              sendMessage();
             }
           }}
           value={draft}
@@ -319,8 +340,7 @@ function Chatroom(props: {
         ></TextField>
         <Button
           onClick={() => {
-            onSend(draft);
-            setDraft("");
+            sendMessage();
           }}
           variant="contained"
         >
@@ -390,16 +410,6 @@ function ChatroomPage() {
     },
   });
 
-  function sendMessage(chatroom_id: number, msg: string) {
-    if (msg.length === 0) {
-      enqueueSnackbar({
-        message: <Typography>Cannot send empty message!</Typography>,
-        variant: "error",
-      });
-    }
-    socket?.emit("msgPend", chatroom_id, msg);
-  }
-
   useEffect(() => {
     if (chatrooms === undefined) {
       return;
@@ -409,21 +419,16 @@ function ChatroomPage() {
     socket.on("connect", () => {
       setConnected(true);
     });
-    socket.on("roomEdit", () => {
+    socket.on("roomUpdate", () => {
       queryClient.invalidateQueries({
         queryKey: ["chatrooms"],
       });
     });
-    socket.on("msgAcc", (chatroom_id: number, msg: string) => {
+    socket.on("msg", (chatroom_id: number, msg: string) => {
       const msgObj: MessageAcc = JSON.parse(msg);
       queryClient.setQueryData(
         ["chatrooms", "detail", chatroom_id],
-        (old: API["GetChatroomDetail"]["ResBody"]) => {
-          const temp = { ...old };
-          temp.chatroom_messages = [...temp.chatroom_messages];
-          temp.chatroom_messages.push(msgObj);
-          return temp;
-        },
+        (old: API["GetMessages"]["ResBody"]) => [...old, msgObj],
       );
     });
     socket.on("disconnect", () => {
@@ -470,7 +475,7 @@ function ChatroomPage() {
         <Tabs
           orientation="vertical"
           value={activeRoom}
-          onChange={(e, newRoomId) => {
+          onChange={(_e, newRoomId) => {
             setActiveRoom(newRoomId);
           }}
         >
@@ -483,13 +488,7 @@ function ChatroomPage() {
         {chatrooms?.map(
           (x, i) =>
             activeRoom === x.chatroom_id && (
-              <Chatroom
-                key={i}
-                chatroom_id={x.chatroom_id}
-                name={x.chatroom_name}
-                onSend={(msg) => sendMessage(x.chatroom_id, msg)}
-                onRoomEdit={() => socket.emit("roomEdit", x.chatroom_id)}
-              />
+              <Chatroom key={i} chatroom_id={x.chatroom_id} name={x.chatroom_name} />
             ),
         )}
       </Grid>
