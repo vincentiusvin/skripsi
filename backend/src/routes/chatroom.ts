@@ -162,6 +162,7 @@ export const getChatrooms: RH<{
       "ms_chatrooms.project_id",
       "ms_chatrooms.created_at as chatroom_created_at",
     ])
+    .orderBy("chatroom_id", "desc")
     .where("id", "in", (eb) =>
       eb.selectFrom("chatrooms_users").select("chatroom_id").where("user_id", "=", user_id),
     )
