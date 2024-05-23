@@ -1,7 +1,14 @@
 import type { Express, RequestHandler } from "express";
 import { ExtractRH } from "./helpers/types";
 import { validateLogged } from "./helpers/validate";
-import { getChatroomDetail, getChatrooms, postChatrooms, putChatroom } from "./routes/chatroom";
+import {
+  getChatroomDetail,
+  getChatrooms,
+  getMessages,
+  postChatrooms,
+  postMessages,
+  putChatroom,
+} from "./routes/chatroom";
 import { getOrgDetail, getOrgs, postOrgs } from "./routes/orgs";
 import { deleteSession, getSession, putSession } from "./routes/session";
 import { getUser, postUser } from "./routes/user";
@@ -19,9 +26,13 @@ export function registerRoutes(app: Express) {
   app.get("/api/users", getUser);
 
   app.get("/api/chatrooms", validateLogged, getChatrooms as RequestHandler);
+  app.post("/api/chatrooms", validateLogged, postChatrooms as RequestHandler);
+
   app.get("/api/chatrooms/:chatroom_id", validateLogged, getChatroomDetail as RequestHandler);
   app.put("/api/chatrooms/:chatroom_id", validateLogged, putChatroom as RequestHandler);
-  app.post("/api/chatrooms", validateLogged, postChatrooms as RequestHandler);
+
+  app.get("/api/chatrooms/:chatroom_id/messages", validateLogged, getMessages as RequestHandler);
+  app.post("/api/chatrooms/:chatroom_id/messages", validateLogged, postMessages as RequestHandler);
 }
 
 /**
@@ -32,14 +43,22 @@ type _api = {
   GetSession: typeof getSession;
   PutSession: typeof putSession;
   DeleteSession: typeof deleteSession;
+
+  GetOrgs: typeof getOrgs;
+  PostOrgs: typeof postOrgs;
+  GetOrgDetail: typeof getOrgDetail;
+
   PostUser: typeof postUser;
   GetUser: typeof getUser;
-  PostOrgs: typeof postOrgs;
-  GetOrgs: typeof getOrgs;
-  GetOrgDetail: typeof getOrgDetail;
+
   GetChatrooms: typeof getChatrooms;
   PostChatrooms: typeof postChatrooms;
+
   GetChatroomDetail: typeof getChatroomDetail;
+  PutChatroom: typeof putChatroom;
+
+  GetMessages: typeof getMessages;
+  PostMessages: typeof postMessages;
 };
 
 /**

@@ -1,4 +1,5 @@
 import { jsonArrayFrom } from "kysely/helpers/postgres";
+import { io } from "..";
 import { db } from "../db/db";
 import { AuthError, ClientError } from "../helpers/error";
 import { RH } from "../helpers/types";
@@ -63,18 +64,15 @@ export const postMessages: RH<{
   const chatroom_id = Number(chatroom_id_str);
   const user_id = req.session.user_id!;
 
-  const user = await db
+  const users = await db
     .selectFrom("chatrooms_users")
     .select("chatrooms_users.user_id")
-    .where((eb) =>
-      eb.and({
-        chatroom_id: chatroom_id,
-        user_id: user_id,
-      }),
-    )
-    .executeTakeFirst();
+    .where("chatroom_id", "=", chatroom_id)
+    .execute();
 
-  if (!user) {
+  const user_ids = users.map((x) => x.user_id);
+
+  if (!user_ids.includes(user_id)) {
     throw new AuthError("Anda tidak memiliki akses untuk mengirim pesan ini!");
   }
 
@@ -91,6 +89,10 @@ export const postMessages: RH<{
   if (!ret) {
     throw new Error("Pesan tidak terkirim!");
   }
+
+  const socks = await io.fetchSockets();
+  const filtered = socks.filter((x) => user_ids.includes(x.data.userId));
+  filtered.forEach((x) => x.emit("msg", chatroom_id, JSON.stringify(ret)));
 
   res.status(200).json(ret);
 };
@@ -209,6 +211,12 @@ export const putChatroom: RH<{
   const { chatroom_id: chatroom_id_str } = req.params;
   const chatroom_id = Number(chatroom_id_str);
 
+  const old_users = await db
+    .selectFrom("chatrooms_users")
+    .select("user_id")
+    .where("chatrooms_users.chatroom_id", "=", chatroom_id)
+    .execute();
+
   if (name) {
     if (name.length === 0) {
       throw new ClientError("Nama chatroom tidak boleh kosong!");
@@ -233,6 +241,18 @@ export const putChatroom: RH<{
       }
     });
   }
+
+  const new_users = await db
+    .selectFrom("chatrooms_users")
+    .select("user_id")
+    .where("chatrooms_users.chatroom_id", "=", chatroom_id)
+    .execute();
+
+  const users_to_notify = [...old_users.map((x) => x.user_id), ...new_users.map((x) => x.user_id)];
+
+  const socks = await io.fetchSockets();
+  const filtered = socks.filter((x) => users_to_notify.includes(x.data.userId));
+  filtered.forEach((x) => x.emit("roomUpdate"));
 
   res.status(200).json({
     msg: "Update successful!",
