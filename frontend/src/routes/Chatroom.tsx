@@ -426,7 +426,6 @@ function ChatroomPage() {
     });
     socket.on("msg", (chatroom_id: number, msg: string) => {
       const msgObj: MessageAcc = JSON.parse(msg);
-      console.log("run");
       queryClient.setQueryData(
         ["messages", "detail", chatroom_id],
         (old: API["GetMessages"]["ResBody"]) => (old ? [...old, msgObj] : [msgObj]),
