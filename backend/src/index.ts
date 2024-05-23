@@ -1,9 +1,9 @@
-import express, { json } from "express";
+import express, { Request, json } from "express";
 import session from "express-session";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import { dbPool } from "./db/db";
-import { errorHandler } from "./helpers/error";
+import { AuthError, errorHandler } from "./helpers/error";
 import { logger } from "./helpers/logger";
 import { registerRoutes } from "./routes";
 import connectPgSimple = require("connect-pg-simple");
@@ -41,6 +41,17 @@ app.use(sessionMiddleware);
 app.use(json());
 
 io.engine.use(sessionMiddleware);
+
+io.use((sock, next) => {
+  const req = sock.request as Request;
+  const userId = req.session.user_id;
+  sock.data.userId = userId;
+  if (!userId) {
+    next(new AuthError("Anda harus login!"));
+  } else {
+    next();
+  }
+});
 
 registerRoutes(app);
 

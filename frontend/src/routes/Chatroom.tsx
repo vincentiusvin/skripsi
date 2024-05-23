@@ -96,7 +96,7 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
     if (bottomRef.current !== null) {
       bottomRef.current.scrollIntoView(true);
     }
-  }, [chatroom]);
+  }, [messages]);
 
   const [editRoomNameOpen, setEditRoomNameOpen] = useState(false);
   const [editRoomMembersOpen, setEditRoomMembersOpen] = useState(false);
@@ -426,9 +426,10 @@ function ChatroomPage() {
     });
     socket.on("msg", (chatroom_id: number, msg: string) => {
       const msgObj: MessageAcc = JSON.parse(msg);
+      console.log("run");
       queryClient.setQueryData(
-        ["chatrooms", "detail", chatroom_id],
-        (old: API["GetMessages"]["ResBody"]) => [...old, msgObj],
+        ["messages", "detail", chatroom_id],
+        (old: API["GetMessages"]["ResBody"]) => (old ? [...old, msgObj] : [msgObj]),
       );
     });
     socket.on("disconnect", () => {
@@ -437,9 +438,9 @@ function ChatroomPage() {
 
     return () => {
       socket.off("connect");
-      socket.off("msgAcc");
       socket.off("disconnect");
-      socket.off("roomEdit");
+      socket.off("roomUpdate");
+      socket.off("msg");
       socket.disconnect();
     };
   }, [chatrooms, sessionData?.logged && sessionData.user_id]);
