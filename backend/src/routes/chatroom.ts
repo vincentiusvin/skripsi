@@ -61,6 +61,11 @@ export const postMessages: RH<{
 }> = async function (req, res) {
   const { chatroom_id: chatroom_id_str } = req.params;
   const { message } = req.body;
+
+  if (message.length === 0) {
+    throw new ClientError("Pesan tidak boleh kosong!");
+  }
+
   const chatroom_id = Number(chatroom_id_str);
   const user_id = req.session.user_id!;
 
