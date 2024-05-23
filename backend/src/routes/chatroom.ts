@@ -4,6 +4,9 @@ import { db } from "../db/db";
 import { AuthError, ClientError } from "../helpers/error";
 import { RH } from "../helpers/types";
 
+// Manipulasi data semuanya dilakuin lewat http.
+// Socket cuma dipakai buat broadcast perubahan ke user.
+
 export const getMessages: RH<{
   Params: {
     chatroom_id: string;
@@ -201,6 +204,10 @@ export const postChatrooms: RH<{
       )
       .execute();
   });
+
+  const socks = await io.fetchSockets();
+  const filtered = socks.filter((x) => user_ids.includes(x.data.userId));
+  filtered.forEach((x) => x.emit("roomUpdate"));
 
   res.status(201).json({
     msg: "Room created!",

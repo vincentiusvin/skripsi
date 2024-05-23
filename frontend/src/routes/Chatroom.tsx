@@ -83,11 +83,6 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
       setDraft("");
       return res;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["messages", "detail", chatroom_id],
-      });
-    },
   });
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -136,9 +131,6 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
       return res;
     },
     onSuccess: (x) => {
-      queryClient.invalidateQueries({
-        queryKey: ["chatrooms"],
-      });
       enqueueSnackbar({
         variant: "success",
         message: <Typography>{x.msg}</Typography>,
@@ -399,9 +391,6 @@ function ChatroomPage() {
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["chatrooms"],
-      });
       enqueueSnackbar({
         message: <Typography>Room created!</Typography>,
         variant: "success",
@@ -411,10 +400,9 @@ function ChatroomPage() {
   });
 
   useEffect(() => {
-    if (chatrooms === undefined) {
+    if (!sessionData?.logged) {
       return;
     }
-
     socket.connect();
     socket.on("connect", () => {
       setConnected(true);
@@ -442,7 +430,7 @@ function ChatroomPage() {
       socket.off("msg");
       socket.disconnect();
     };
-  }, [chatrooms, sessionData?.logged && sessionData.user_id]);
+  }, [sessionData?.logged && sessionData.user_id]);
 
   if (!sessionData?.logged) {
     return null;
