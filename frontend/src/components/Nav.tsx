@@ -39,6 +39,9 @@ function Nav() {
         <Link to={"/orgs"}>
           <Button>Orgs</Button>
         </Link>
+        <Link to={"/projects"}>
+          <Button>Projects</Button>
+        </Link>
       </Stack>
       <Stack direction={"row"} spacing={2} alignItems={"center"} justifyContent={"space-between"}>
         <Box>
