@@ -10,6 +10,7 @@ import {
   putChatroom,
 } from "./routes/chatroom";
 import { getOrgDetail, getOrgs, postOrgs } from "./routes/orgs";
+import { addProjects, getProjects, getProjectsDetail } from "./routes/projects";
 import { deleteSession, getSession, putSession } from "./routes/session";
 import { getUser, postUser } from "./routes/user";
 
@@ -33,6 +34,11 @@ export function registerRoutes(app: Express) {
 
   app.get("/api/chatrooms/:chatroom_id/messages", validateLogged, getMessages as RequestHandler);
   app.post("/api/chatrooms/:chatroom_id/messages", validateLogged, postMessages as RequestHandler);
+
+  //projects api
+  app.get("/api/projects", getProjects);
+  app.get("/api/projects/:id", getProjectsDetail);
+  app.post("/api/projects", addProjects);
 }
 
 /**
@@ -59,6 +65,11 @@ type _api = {
 
   GetMessages: typeof getMessages;
   PostMessages: typeof postMessages;
+
+  //projects for front end
+  getProjects: typeof getProjects;
+  getProjectsDetail: typeof getProjectsDetail;
+  addProjects: typeof addProjects;
 };
 
 /**

@@ -42,6 +42,9 @@ function Nav() {
         <Link to={"/chatroom"}>
           <Button>Chat</Button>
         </Link>
+        <Link to={"/projects"}>
+          <Button>Projects</Button>
+        </Link>
       </Stack>
       <Stack direction={"row"} spacing={2} alignItems={"center"} justifyContent={"space-between"}>
         {data?.logged ? (

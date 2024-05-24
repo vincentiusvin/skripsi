@@ -75,6 +75,7 @@ export interface MsOrgs {
 
 export interface MsProjects {
   created_at: Generated<Timestamp>;
+  description: string;
   id: Generated<number>;
   name: string;
   org_id: number;
