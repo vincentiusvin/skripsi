@@ -12,6 +12,9 @@ import HomePage from "./routes/HomePage";
 import OrgsAddPage from "./routes/OrgsAddPage";
 import OrgsDetailPage from "./routes/OrgsDetailPage";
 import OrgsListPage from "./routes/OrgsListPage";
+import ProjectDetailPage from "./routes/ProjectDetailPage";
+import ProjectsAddPage from "./routes/ProjectsAddPage";
+import ProjectListPage from "./routes/ProjectsListPage";
 
 const theme = createTheme({
   palette: {
@@ -45,6 +48,9 @@ function App() {
               <Route path={"/orgs"} component={OrgsListPage} />
               <Route path={"/orgs/add"} component={OrgsAddPage} />
               <Route path={"/orgs/:id"} component={OrgsDetailPage} />
+              <Route path={"/projects"} component={ProjectListPage} />
+              <Route path={"/projects/add"} component={ProjectsAddPage} />
+              <Route path={"/projects/:id"} component={ProjectDetailPage} />
             </Switch>
           </Box>
         </QueryClientProvider>
