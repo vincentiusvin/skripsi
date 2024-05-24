@@ -38,9 +38,9 @@ async function migrate(option: (typeof ARGS)[number]) {
       );
     } else if (it.status === "Error") {
       console.error(
-        `failed to ${
-          it.direction === "Up" ? "execute" : "rollback"
-        } migration "${it.migrationName}"`,
+        `failed to ${it.direction === "Up" ? "execute" : "rollback"} migration "${
+          it.migrationName
+        }"`,
       );
     }
   });

@@ -8,6 +8,7 @@ import "./App.css";
 import Nav from "./components/Nav";
 import { queryClient } from "./helpers/queryclient";
 import AuthPage from "./routes/AuthPage";
+import ChatroomPage from "./routes/Chatroom";
 import HomePage from "./routes/HomePage";
 import OrgsAddPage from "./routes/OrgsAddPage";
 import OrgsDetailPage from "./routes/OrgsDetailPage";
@@ -48,6 +49,7 @@ function App() {
               <Route path={"/orgs"} component={OrgsListPage} />
               <Route path={"/orgs/add"} component={OrgsAddPage} />
               <Route path={"/orgs/:id"} component={OrgsDetailPage} />
+              <Route path={"/chatroom"} component={ChatroomPage} />
               <Route path={"/projects"} component={ProjectListPage} />
               <Route path={"/projects/add"} component={ProjectsAddPage} />
               <Route path={"/projects/:id"} component={ProjectDetailPage} />

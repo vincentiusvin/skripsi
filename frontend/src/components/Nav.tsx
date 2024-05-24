@@ -39,23 +39,28 @@ function Nav() {
         <Link to={"/orgs"}>
           <Button>Orgs</Button>
         </Link>
+        <Link to={"/chatroom"}>
+          <Button>Chat</Button>
+        </Link>
         <Link to={"/projects"}>
           <Button>Projects</Button>
         </Link>
       </Stack>
       <Stack direction={"row"} spacing={2} alignItems={"center"} justifyContent={"space-between"}>
-        <Box>
-          <Typography>Hello, {data?.user_name}</Typography>
-        </Box>
         {data?.logged ? (
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<Logout />}
-            onClick={() => logout()}
-          >
-            Log Out
-          </Button>
+          <>
+            <Box>
+              <Typography>Hello, {data.user_name}</Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<Logout />}
+              onClick={() => logout()}
+            >
+              Log Out
+            </Button>
+          </>
         ) : (
           <Link to={"/auth"}>
             <Button

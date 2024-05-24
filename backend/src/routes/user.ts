@@ -39,3 +39,14 @@ export const postUser: RH<{
 
   res.status(201).json({ msg: "User berhasil dibuat!" });
 };
+
+export const getUser: RH<{
+  ResBody: { user_id: number; user_name: string }[];
+}> = async function (req, res) {
+  const result = await db
+    .selectFrom("ms_users")
+    .select(["ms_users.id as user_id", "ms_users.name as user_name"])
+    .execute();
+
+  res.status(200).json(result);
+};
