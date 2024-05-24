@@ -3,7 +3,7 @@ import { Button, Grid, Stack, TextField, Typography } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
@@ -12,6 +12,8 @@ function projectsAddPage() {
   const [projectDesc, setProjectDesc] = useState("");
   const [orgId, setOrgId] = useState("");
   const orgIdNumber = Number(orgId);
+
+  const [, setLocation] = useLocation();
 
   const { mutate: addProject } = useMutation({
     mutationKey: ["session"],
@@ -31,7 +33,7 @@ function projectsAddPage() {
         autoHideDuration: 5000,
         variant: "success",
       });
-      //what is set location used for ???
+      setLocation("/projects");
     },
   });
 
