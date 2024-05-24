@@ -292,28 +292,32 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
         </Stack>
       </Paper>
       <Stack mt={2} marginLeft={2} spacing={1} overflow={"auto"} flexGrow={1} flexBasis={0}>
-        {messages?.map((x, i) => (
-          <Stack
-            key={i}
-            direction={"row"}
-            spacing={2}
-            ref={i === messages.length - 1 ? bottomRef : null}
-          >
-            <Avatar></Avatar>
-            <Box>
-              <Typography
-                sx={{
-                  wordBreak: "break-word",
-                }}
-              >
-                {x.message}
-              </Typography>
-              <Typography variant="caption">
-                {dayjs(x.created_at).format("ddd[,] D[/]M[/]YY HH:mm:ss")}
-              </Typography>
-            </Box>
-          </Stack>
-        ))}
+        {messages?.map((x, i) => {
+          const user = usersData?.find((u) => u.user_id === x.user_id);
+          return (
+            <Stack
+              key={i}
+              direction={"row"}
+              spacing={2}
+              ref={i === messages.length - 1 ? bottomRef : null}
+            >
+              <Avatar></Avatar>
+              <Box>
+                {!!user && <Typography fontWeight={"bold"}>{user.user_name}</Typography>}
+                <Typography
+                  sx={{
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {x.message}
+                </Typography>
+                <Typography variant="caption">
+                  {dayjs(x.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+                </Typography>
+              </Box>
+            </Stack>
+          );
+        })}
       </Stack>
       <Stack my={2} direction={"row"} display={"flex"} spacing={2}>
         <TextField
