@@ -1,5 +1,15 @@
 import { AddAPhoto, ArrowBack, Save } from "@mui/icons-material";
-import { Avatar, Button, Grid, Paper, Stack, TextField, Typography } from "@mui/material";
+import {
+  Avatar,
+  Button,
+  Grid,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
@@ -41,6 +51,10 @@ function OrgsAddPage() {
       setLocation("/");
     },
   });
+
+  // const handleChange = (event: SelectChangeEvent) => {
+  //   setAge(event.target.value as string);
+  // };
 
   return (
     <Grid container spacing={2} mt={2}>
@@ -125,6 +139,16 @@ function OrgsAddPage() {
             onChange={(e) => setOrgPhone(e.target.value)}
             label="Phone"
           ></TextField>
+          <Select
+            // value={age}
+            label="Test"
+
+            // onChange={handleChange}
+          >
+            <MenuItem value={10}>Ten</MenuItem>
+            <MenuItem value={20}>Twenty</MenuItem>
+            <MenuItem value={30}>Thirty</MenuItem>
+          </Select>
         </Stack>
       </Grid>
     </Grid>
