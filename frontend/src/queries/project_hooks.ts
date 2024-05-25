@@ -24,14 +24,16 @@ export function useAddProjects(opts: {
   name: string;
   desc: string;
   org_id: number;
+  category: number;
   onSuccess?: () => void;
 }) {
-  const { name, desc, org_id, onSuccess } = opts;
+  const { name, desc, org_id, category, onSuccess } = opts;
   return useMutation({
     mutationFn: () =>
       new APIContext("addProjects").fetch("/api/projects", {
         method: "POST",
         body: {
+          category_id: category,
           project_name: name,
           project_desc: desc,
           org_id: org_id,

@@ -1,9 +1,23 @@
 import { AddAPhoto, ArrowBack, Save } from "@mui/icons-material";
-import { Avatar, Button, Grid, Paper, Stack, TextField, Typography } from "@mui/material";
+import {
+  Avatar,
+  Button,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import ImageDropzone from "../components/Dropzone";
+import { APIContext, APIError } from "../helpers/fetch";
 import { fileToBase64DataURL } from "../helpers/file";
 import { useAddOrg } from "../queries/org_hooks";
 
@@ -13,6 +27,7 @@ function OrgsAddPage() {
   const [orgAddress, setOrgAddress] = useState("");
   const [orgPhone, setOrgPhone] = useState("");
   const [orgImage, setOrgImage] = useState<string | null>(null);
+  const [orgCategory, setOrgCategory] = useState<number | "">("");
 
   const [, setLocation] = useLocation();
 
@@ -21,13 +36,25 @@ function OrgsAddPage() {
     desc: orgDesc,
     address: orgAddress,
     phone: orgPhone,
+    category: Number(orgCategory),
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Added successful!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });
-      setLocation("/");
+  });
+
+  // Fetch categories from the backend API
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => new APIContext("GetOrgsCategory").fetch(`/api/category`),
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
+        setLocation("/");
+        return false;
+      }
+      return true;
     },
   });
 
@@ -114,6 +141,23 @@ function OrgsAddPage() {
             onChange={(e) => setOrgPhone(e.target.value)}
             label="Phone"
           ></TextField>
+          <FormControl>
+            <InputLabel id="demo-simple-select-label">Category</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={orgCategory}
+              onChange={(e) => setOrgCategory(Number(e.target.value))}
+              label="Category"
+            >
+              {categories &&
+                categories.map((category) => (
+                  <MenuItem key={category.category_id} value={category.category_id}>
+                    {category.category_name}
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
         </Stack>
       </Grid>
     </Grid>

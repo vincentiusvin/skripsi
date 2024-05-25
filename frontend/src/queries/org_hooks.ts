@@ -22,6 +22,7 @@ export function useAddOrg(opts: {
   desc: string;
   address: string;
   phone: string;
+  category: number;
   image?: string;
   onSuccess?: () => void;
 }) {
