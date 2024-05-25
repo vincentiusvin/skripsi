@@ -19,16 +19,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { API } from "../../../backend/src/routes";
-import { APIContext, APIError } from "../helpers/fetch";
-import { queryClient } from "../helpers/queryclient";
-import { socket } from "../helpers/socket";
+import { APIError } from "../helpers/fetch";
 import {
+  useChatSocket,
+  useChatroom,
   useChatroomDetail,
   useCreateRoom,
   useEditRoom,
@@ -37,12 +35,6 @@ import {
 } from "../queries/chat_hooks";
 import { useSession } from "../queries/sesssion_hooks";
 import { useUsers } from "../queries/user_hooks";
-
-type MessageAcc = {
-  message: string;
-  user_id: number;
-  created_at: Date;
-};
 
 function Chatroom(props: { chatroom_id: number; name: string }) {
   const { chatroom_id, name } = props;
@@ -314,23 +306,31 @@ function ChatroomPage() {
   const [, setLocation] = useLocation();
 
   const { data: sessionData } = useSession();
-  const { data: chatrooms } = useQuery({
-    queryKey: ["chatrooms", "collection", sessionData?.logged && sessionData.user_id],
-    queryFn: () =>
-      new APIContext("GetChatrooms").fetch("/api/chatrooms").then((x) => {
-        if (activeRoom !== false && !x.map((y) => y.chatroom_id).includes(activeRoom)) {
-          setActiveRoom(false);
-        }
-        return x;
-      }),
-    retry: (failureCount, error) => {
+
+  const { data: chatrooms } = useChatroom(
+    sessionData?.logged ? sessionData.user_id : undefined,
+    (failureCount, error) => {
       if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
         setLocation("/");
         return false;
       }
       return true;
     },
-  });
+  );
+
+  useEffect(() => {
+    if (!chatrooms) {
+      setActiveRoom(false);
+      return;
+    }
+    if (activeRoom === false) {
+      return;
+    }
+    const found = chatrooms.map((x) => x.chatroom_id).includes(activeRoom);
+    if (!found) {
+      setActiveRoom(false);
+    }
+  }, [chatrooms]);
 
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [addRoomName, setAddRoomName] = useState("");
@@ -347,38 +347,15 @@ function ChatroomPage() {
     },
   );
 
-  useEffect(() => {
-    if (!sessionData?.logged) {
-      return;
-    }
-    socket.connect();
-    socket.on("connect", () => {
+  useChatSocket({
+    userId: sessionData?.logged ? sessionData.user_id : undefined,
+    onConnect: () => {
       setConnected(true);
-    });
-    socket.on("roomUpdate", () => {
-      queryClient.invalidateQueries({
-        queryKey: ["chatrooms"],
-      });
-    });
-    socket.on("msg", (chatroom_id: number, msg: string) => {
-      const msgObj: MessageAcc = JSON.parse(msg);
-      queryClient.setQueryData(
-        ["messages", "detail", chatroom_id],
-        (old: API["GetMessages"]["ResBody"]) => (old ? [...old, msgObj] : [msgObj]),
-      );
-    });
-    socket.on("disconnect", () => {
+    },
+    onDisconnect: () => {
       setConnected(false);
-    });
-
-    return () => {
-      socket.off("connect");
-      socket.off("disconnect");
-      socket.off("roomUpdate");
-      socket.off("msg");
-      socket.disconnect();
-    };
-  }, [sessionData?.logged && sessionData.user_id]);
+    },
+  });
 
   if (!sessionData?.logged) {
     return null;
