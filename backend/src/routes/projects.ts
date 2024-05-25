@@ -9,13 +9,20 @@ export const getProjects: RH<{
     project_name: string;
     org_id: number;
   }[];
+  ReqQuery: {
+    org_id: string;
+  };
 }> = async function (req, res) {
-  const projects = await db
+  const id = req.query.org_id;
+  let projects = db
     .selectFrom("ms_projects")
-    .select(["id as project_id", "name as project_name", "org_id"])
-    .execute();
+    .select(["id as project_id", "name as project_name", "org_id"]);
+  if (id != undefined) {
+    projects = projects.where("org_id", "=", Number(id));
+  }
+  const result = await projects.execute();
 
-  res.status(200).json(projects);
+  res.status(200).json(result);
 };
 
 export const getProjectsDetail: RH<{
