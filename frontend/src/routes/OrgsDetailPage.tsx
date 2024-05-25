@@ -1,23 +1,19 @@
 import { ArrowBack, Edit } from "@mui/icons-material";
 import { Avatar, Button, Grid, List, ListItem, Typography } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "wouter";
-import { APIContext, APIError } from "../helpers/fetch";
+import { APIError } from "../helpers/fetch";
+import { useOrgDetail } from "../queries/org_hooks";
 
 function OrgsDetailPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
 
-  const { data } = useQuery({
-    queryKey: ["orgs", "detail"],
-    queryFn: () => new APIContext("GetOrgDetail").fetch(`/api/orgs/${id}`),
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
-        setLocation("/orgs");
-        return false;
-      }
-      return true;
-    },
+  const { data } = useOrgDetail(id!, (failureCount, error) => {
+    if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+      setLocation("/orgs");
+      return false;
+    }
+    return true;
   });
 
   if (data) {

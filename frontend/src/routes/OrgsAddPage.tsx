@@ -1,13 +1,11 @@
 import { AddAPhoto, ArrowBack, Save } from "@mui/icons-material";
 import { Avatar, Button, Grid, Paper, Stack, TextField, Typography } from "@mui/material";
-import { useMutation } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import ImageDropzone from "../components/Dropzone";
-import { APIContext } from "../helpers/fetch";
 import { fileToBase64DataURL } from "../helpers/file";
-import { queryClient } from "../helpers/queryclient";
+import { useAddOrg } from "../queries/org_hooks";
 
 function OrgsAddPage() {
   const [orgName, setOrgName] = useState("");
@@ -18,20 +16,12 @@ function OrgsAddPage() {
 
   const [, setLocation] = useLocation();
 
-  const { mutate: addOrg } = useMutation({
-    mutationFn: () =>
-      new APIContext("PostOrgs").fetch("/api/orgs", {
-        method: "POST",
-        body: {
-          org_name: orgName,
-          org_description: orgDesc,
-          org_address: orgAddress,
-          org_phone: orgPhone,
-          ...(orgImage && { org_image: orgImage }),
-        },
-      }),
+  const { mutate: addOrg } = useAddOrg({
+    name: orgName,
+    desc: orgDesc,
+    address: orgAddress,
+    phone: orgPhone,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orgs"] });
       enqueueSnackbar({
         message: <Typography>Added successful!</Typography>,
         autoHideDuration: 5000,

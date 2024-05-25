@@ -1,11 +1,9 @@
 import { ArrowBack, Save } from "@mui/icons-material";
 import { Button, Grid, Stack, TextField, Typography } from "@mui/material";
-import { useMutation } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { APIContext } from "../helpers/fetch";
-import { queryClient } from "../helpers/queryclient";
+import { useAddProjects } from "../queries/project_hooks";
 
 function projectsAddPage() {
   const [projectName, setProjectName] = useState("");
@@ -15,18 +13,11 @@ function projectsAddPage() {
 
   const [, setLocation] = useLocation();
 
-  const { mutate: addProject } = useMutation({
-    mutationFn: () =>
-      new APIContext("addProjects").fetch("/api/projects", {
-        method: "POST",
-        body: {
-          project_name: projectName,
-          project_desc: projectDesc,
-          org_id: orgIdNumber,
-        },
-      }),
+  const { mutate: addProject } = useAddProjects({
+    desc: projectDesc,
+    name: projectName,
+    org_id: orgIdNumber,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
       enqueueSnackbar({
         message: <Typography>Added successful</Typography>,
         autoHideDuration: 5000,
