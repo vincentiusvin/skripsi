@@ -37,6 +37,7 @@ export const getOrgDetail: RH<{
       name: string;
     }[];
     org_image: string | null;
+    org_categories: string[];
   };
 }> = async function (req, res) {
   const id = req.params.id;
@@ -44,12 +45,12 @@ export const getOrgDetail: RH<{
   const org = await db
     .selectFrom("ms_orgs")
     .select((eb) => [
-      "id as org_id",
-      "name as org_name",
-      "description as org_description",
-      "address as org_address",
-      "phone as org_phone",
-      "image as org_image",
+      "ms_orgs.id as org_id",
+      "ms_orgs.name as org_name",
+      "ms_orgs.description as org_description",
+      "ms_orgs.address as org_address",
+      "ms_orgs.phone as org_phone",
+      "ms_orgs.image as org_image",
       jsonArrayFrom(
         eb
           .selectFrom("orgs_users")
@@ -57,16 +58,34 @@ export const getOrgDetail: RH<{
           .select(["ms_users.id as id", "ms_users.name as name"])
           .whereRef("orgs_users.org_id", "=", "ms_orgs.id"),
       ).as("org_users"),
+      jsonArrayFrom(
+        eb
+          .selectFrom("categories_orgs")
+          .innerJoin("ms_category_orgs", "categories_orgs.category_id", "ms_category_orgs.id")
+          .select(["ms_category_orgs.name as category_name"])
+          .whereRef("categories_orgs.org_id", "=", "ms_orgs.id"),
+      ).as("org_categories"),
     ])
-    .where("id", "=", id)
+    .where("ms_orgs.id", "=", id)
     .executeTakeFirst();
 
   if (!org) {
     throw new NotFoundError("Organisasi yang dicari tidak dapat ditemukan!");
   }
 
-  res.status(200).json(org);
+  // Extract category names from the org object
+  const orgCategories = org.org_categories.map((category: { category_name: string }) => category.category_name);
+
+  // Return modified org object with org_categories
+  const modifiedOrg = {
+    ...org,
+    org_categories: orgCategories,
+  };
+
+  res.status(200).json(modifiedOrg);
 };
+
+
 
 export const postOrgs: RH<{
   ResBody: { msg: string };
@@ -76,9 +95,10 @@ export const postOrgs: RH<{
     org_address: string;
     org_phone: string;
     org_image?: string;
+    org_category: number;
   };
 }> = async function (req, res) {
-  const { org_name, org_description, org_address, org_phone, org_image } = req.body;
+  const { org_name, org_description, org_address, org_phone, org_image, org_category } = req.body;
   const userID = req.session.user_id!;
 
   if (org_name.length === 0) {
@@ -97,6 +117,8 @@ export const postOrgs: RH<{
     throw new ClientError("Nomor telepon tidak boleh kosong!");
   }
 
+  if (!org_category) throw new ClientError("Kategori tidak boleh kosong!");
+
   const sameName = await db
     .selectFrom("ms_orgs")
     .select(["name"])
@@ -106,6 +128,7 @@ export const postOrgs: RH<{
   if (sameName.length !== 0) {
     throw new ClientError("Sudah ada organisasi dengan nama yang sama!");
   }
+
   try {
     await db.transaction().execute(async () => {
       const org = await db
@@ -123,6 +146,15 @@ export const postOrgs: RH<{
       if (!org) {
         throw new Error("Data not inserted!");
       }
+
+      await db
+        .insertInto("categories_orgs")
+        .values({
+          org_id: org.id,
+          category_id: org_category,
+        })
+        .execute();
+
       await db
         .insertInto("orgs_users")
         .values({
@@ -136,4 +168,18 @@ export const postOrgs: RH<{
   } catch (error) {
     throw new Error("Request gagal!");
   }
+};
+
+export const getOrgsCategory: RH<{
+  ResBody: {
+    category_id: number;
+    category_name: string;
+  }[];
+}> = async function (req, res) {
+  const categories = await db
+    .selectFrom("ms_category_orgs")
+    .select(["id as category_id", "name as category_name"])
+    .execute();
+
+  res.status(200).json(categories);
 };

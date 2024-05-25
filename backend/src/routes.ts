@@ -9,8 +9,8 @@ import {
   postMessages,
   putChatroom,
 } from "./routes/chatroom";
-import { getOrgDetail, getOrgs, postOrgs } from "./routes/orgs";
-import { addProjects, getProjects, getProjectsDetail } from "./routes/projects";
+import { getOrgDetail, getOrgs, getOrgsCategory, postOrgs } from "./routes/orgs";
+import { addProjects, getProjectCategory, getProjects, getProjectsDetail } from "./routes/projects";
 import { deleteSession, getSession, putSession } from "./routes/session";
 import { getUser, postUser } from "./routes/user";
 
@@ -22,6 +22,7 @@ export function registerRoutes(app: Express) {
   app.get("/api/orgs", getOrgs);
   app.post("/api/orgs", validateLogged, postOrgs as RequestHandler);
   app.get("/api/orgs/:id", getOrgDetail);
+  app.get("/api/category", getOrgsCategory);
 
   app.post("/api/users", postUser);
   app.get("/api/users", getUser);
@@ -39,6 +40,7 @@ export function registerRoutes(app: Express) {
   app.get("/api/projects", getProjects);
   app.get("/api/projects/:id", getProjectsDetail);
   app.post("/api/projects", addProjects);
+  app.get("/api/projects-category", getProjectCategory);
 }
 
 /**
@@ -53,6 +55,7 @@ type _api = {
   GetOrgs: typeof getOrgs;
   PostOrgs: typeof postOrgs;
   GetOrgDetail: typeof getOrgDetail;
+  GetOrgsCategory: typeof getOrgsCategory;
 
   PostUser: typeof postUser;
   GetUser: typeof getUser;
@@ -70,6 +73,7 @@ type _api = {
   getProjects: typeof getProjects;
   getProjectsDetail: typeof getProjectsDetail;
   addProjects: typeof addProjects;
+  getProjectsCategory: typeof getProjectCategory;
 };
 
 /**

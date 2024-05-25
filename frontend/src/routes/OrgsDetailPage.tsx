@@ -5,6 +5,7 @@ import {
   Card,
   CardActionArea,
   CardContent,
+  Chip,
   Container,
   Grid,
   Paper,
@@ -128,32 +129,16 @@ function OrgsDetailPage() {
             </Grid>
           ))}
         </Grid>
-        {/* {data.org_image && (
-          <Grid item xs={12}>
-            <Avatar
-              src={data.org_image}
-              variant="rounded"
-              sx={{ height: "250px", width: "250px", margin: "auto" }}
-            ></Avatar>
-          </Grid>
-        )}
         <Grid item xs={12}>
-          <Typography>{data.org_description}</Typography>
-        </Grid>
-        <Grid item xs={12}>
-          <Typography>{data.org_address}</Typography>
-        </Grid>
-        <Grid item xs={12}>
-          <Typography>{data.org_phone}</Typography>
-        </Grid>
-        <Grid item xs={12}>
-          <Typography>Members</Typography>
-          <List>
-            {data.org_users.map((x, i) => (
-              <ListItem key={i}>{x.name}</ListItem>
+          <Typography>Categories</Typography>
+          <Grid container spacing={1}>
+            {data.org_categories.map((category, index) => (
+              <Grid item key={index}>
+                <Chip label={category} />
+              </Grid>
             ))}
-          </List>
-        </Grid> */}
+          </Grid>
+        </Grid>
       </Grid>
     );
   } else {
