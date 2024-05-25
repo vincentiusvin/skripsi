@@ -1,10 +1,9 @@
 import { Button, Grid, TextField, Typography } from "@mui/material";
-import { useMutation } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { APIContext } from "../helpers/fetch";
-import { queryClient } from "../helpers/queryclient";
+import { useLogin } from "../queries/sesssion_hooks";
+import { useRegister } from "../queries/user_hooks";
 
 function AuthPage() {
   const [username, setUsername] = useState("");
@@ -12,38 +11,16 @@ function AuthPage() {
 
   const [, setLocation] = useLocation();
 
-  const { mutate: login } = useMutation({
-    mutationKey: ["session"],
-    mutationFn: () =>
-      new APIContext("PutSession").fetch("/api/session", {
-        body: {
-          user_name: username,
-          user_password: password,
-        },
-        method: "PUT",
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session"] });
-      enqueueSnackbar({
-        message: <Typography>Login success!</Typography>,
-        autoHideDuration: 5000,
-        variant: "success",
-      });
-      setLocation("/");
-    },
+  const { mutate: login } = useLogin(username, password, () => {
+    enqueueSnackbar({
+      message: <Typography>Login success!</Typography>,
+      autoHideDuration: 5000,
+      variant: "success",
+    });
+    setLocation("/");
   });
 
-  const { mutate: register } = useMutation({
-    mutationKey: ["users"],
-    mutationFn: () =>
-      new APIContext("PostUser").fetch("/api/users", {
-        body: {
-          user_name: username,
-          user_password: password,
-        },
-        method: "POST",
-      }),
-  });
+  const { mutate: register } = useRegister(username, password);
 
   return (
     <Grid container height={"100%"} alignItems={"center"}>

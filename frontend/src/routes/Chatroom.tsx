@@ -28,6 +28,8 @@ import { API } from "../../../backend/src/routes";
 import { APIContext, APIError } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 import { socket } from "../helpers/socket";
+import { useSession } from "../queries/sesssion_hooks";
+import { useUsers } from "../queries/user_hooks";
 
 type MessageAcc = {
   message: string;
@@ -40,16 +42,8 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
 
   const [draft, setDraft] = useState("");
 
-  const { data: sessionData } = useQuery({
-    queryKey: ["session"],
-    queryFn: () => new APIContext("GetSession").fetch("/api/session"),
-  });
-
-  const { data: usersData } = useQuery({
-    queryKey: ["users"],
-    queryFn: () => new APIContext("GetUser").fetch("/api/users"),
-  });
-
+  const { data: sessionData } = useSession();
+  const { data: usersData } = useUsers();
   const { data: chatroom } = useQuery({
     queryKey: ["chatrooms", "detail", chatroom_id],
     queryFn: () =>
@@ -66,7 +60,6 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
   });
 
   const { mutate: sendMessage } = useMutation({
-    mutationKey: ["messages", "detail", chatroom_id],
     mutationFn: async () => {
       if (!chatroom) {
         return;
@@ -113,7 +106,6 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
   });
 
   const { mutate: editRoom } = useMutation({
-    mutationKey: ["chatrooms"],
     mutationFn: async () => {
       if (!sessionData || !chatroom) {
         throw new Error("Anda harus login!");
@@ -353,11 +345,7 @@ function ChatroomPage() {
 
   const [, setLocation] = useLocation();
 
-  const { data: sessionData } = useQuery({
-    queryKey: ["session"],
-    queryFn: () => new APIContext("GetSession").fetch("/api/session"),
-  });
-
+  const { data: sessionData } = useSession();
   const { data: chatrooms } = useQuery({
     queryKey: ["chatrooms", "collection", sessionData?.logged && sessionData.user_id],
     queryFn: () =>
@@ -380,7 +368,6 @@ function ChatroomPage() {
   const [addRoomName, setAddRoomName] = useState("");
 
   const { mutate: createRoom } = useMutation({
-    mutationKey: ["chatrooms"],
     mutationFn: async () => {
       if (!sessionData?.logged) {
         return;

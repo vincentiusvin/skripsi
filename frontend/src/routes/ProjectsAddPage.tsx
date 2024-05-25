@@ -16,7 +16,6 @@ function projectsAddPage() {
   const [, setLocation] = useLocation();
 
   const { mutate: addProject } = useMutation({
-    mutationKey: ["session"],
     mutationFn: () =>
       new APIContext("addProjects").fetch("/api/projects", {
         method: "POST",

@@ -19,7 +19,6 @@ function OrgsAddPage() {
   const [, setLocation] = useLocation();
 
   const { mutate: addOrg } = useMutation({
-    mutationKey: ["session"],
     mutationFn: () =>
       new APIContext("PostOrgs").fetch("/api/orgs", {
         method: "POST",

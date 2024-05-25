@@ -1,26 +1,11 @@
 import { Login, Logout } from "@mui/icons-material";
 import { Box, Button, Stack, Typography } from "@mui/material";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { APIContext } from "../helpers/fetch";
-import { queryClient } from "../helpers/queryclient";
+import { useLogout, useSession } from "../queries/sesssion_hooks";
 
 function Nav() {
-  const { data } = useQuery({
-    queryKey: ["session"],
-    queryFn: () => new APIContext("GetSession").fetch("/api/session"),
-  });
-
-  const { mutate: logout } = useMutation({
-    mutationKey: ["session"],
-    mutationFn: () =>
-      new APIContext("DeleteSession").fetch("/api/session", {
-        method: "DELETE",
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session"] });
-    },
-  });
+  const { data } = useSession();
+  const { mutate: logout } = useLogout();
 
   return (
     <Stack

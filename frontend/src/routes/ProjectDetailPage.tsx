@@ -1,23 +1,23 @@
 import { ArrowBack, Edit } from "@mui/icons-material";
 import { Button, Grid, Typography } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "wouter";
-import { APIContext, APIError } from "../helpers/fetch";
+import { APIError } from "../helpers/fetch";
+import { useProjectDetail } from "../queries/project_hooks";
 
 function ProjectDetailPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
 
-  const { data } = useQuery({
-    queryKey: ["projects", "detail"],
-    queryFn: () => new APIContext("getProjectsDetail").fetch(`/api/projects/${id}`),
-    retry: (failureCount, error) => {
-      if (error instanceof APIError || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
+  if (id === undefined) {
+    setLocation("/projects");
+  }
+
+  const { data } = useProjectDetail(id!, (failureCount, error) => {
+    if (error instanceof APIError || failureCount > 3) {
+      setLocation("/projects");
+      return false;
+    }
+    return true;
   });
 
   if (data) {
