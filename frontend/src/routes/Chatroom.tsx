@@ -26,9 +26,9 @@ import { useLocation } from "wouter";
 import { APIError } from "../helpers/fetch";
 import {
   useChatSocket,
-  useChatroom,
+  useChatroomByUserId,
   useChatroomDetail,
-  useCreateRoom,
+  useCreatePersonalRoom,
   useEditRoom,
   useMessage,
   useSendMessage,
@@ -36,18 +36,22 @@ import {
 import { useSession } from "../queries/sesssion_hooks";
 import { useUsers } from "../queries/user_hooks";
 
-function Chatroom(props: { chatroom_id: number; name: string }) {
-  const { chatroom_id, name } = props;
-
+export function ChatroomContent(props: {
+  messages: {
+    message: string;
+    user_name: string;
+    user_avatar?: string;
+    created_at: Date;
+  }[];
+  onSend: (msg: string) => void;
+}) {
+  const { messages, onSend } = props;
   const [draft, setDraft] = useState("");
 
-  const { data: sessionData } = useSession();
-  const { data: usersData } = useUsers();
-  const { data: chatroom } = useChatroomDetail(chatroom_id);
-  const { data: messages } = useMessage(chatroom_id);
-  const { mutate: sendMessage } = useSendMessage(chatroom_id, draft, () => {
+  function send() {
     setDraft("");
-  });
+    onSend(draft);
+  }
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -57,24 +61,78 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
     }
   }, [messages]);
 
-  useEffect(() => {
-    if (chatroom) {
-      setEditRoomMembers(chatroom.chatroom_users.map((x) => x.user_id));
-      setEditRoomName(chatroom.chatroom_name);
-    }
-  }, [chatroom]);
+  return (
+    <>
+      <Stack mt={2} marginLeft={2} spacing={1} overflow={"auto"} flexGrow={1} flexBasis={0}>
+        {messages?.map((x, i) => (
+          <Stack
+            key={i}
+            direction={"row"}
+            spacing={2}
+            ref={i === messages.length - 1 ? bottomRef : null}
+          >
+            <Avatar></Avatar>
+            <Box>
+              <Typography fontWeight={"bold"}>{x.user_name}</Typography>
+              <Typography
+                sx={{
+                  wordBreak: "break-word",
+                }}
+              >
+                {x.message}
+              </Typography>
+              <Typography variant="caption">
+                {dayjs(x.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+              </Typography>
+            </Box>
+          </Stack>
+        ))}
+      </Stack>
+      <Stack my={2} direction={"row"} display={"flex"} spacing={2}>
+        <TextField
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              send();
+            }
+          }}
+          value={draft}
+          sx={{
+            flexGrow: 1,
+          }}
+          onChange={(e) => {
+            setDraft(e.target.value);
+          }}
+        ></TextField>
+        <Button onClick={send} variant="contained">
+          <Send />
+        </Button>
+      </Stack>
+    </>
+  );
+}
+
+export function ChatroomHeader(props: {
+  chatroom_name: string;
+  chatroom_users: number[];
+  onEditName: (name: string) => void;
+  onEditMembers: (members: number[]) => void;
+  onLeave: () => void;
+}) {
+  const { chatroom_name, chatroom_users, onEditName, onEditMembers, onLeave } = props;
+
+  const { data: users } = useUsers();
 
   const [editRoomNameOpen, setEditRoomNameOpen] = useState(false);
   const [editRoomMembersOpen, setEditRoomMembersOpen] = useState(false);
-  const [editRoomName, setEditRoomName] = useState("");
-  const [editRoomMembers, setEditRoomMembers] = useState<number[]>([]);
+  const [editRoomName, setEditRoomName] = useState(chatroom_name);
+  const [editRoomMembers, setEditRoomMembers] = useState<number[]>(chatroom_users);
 
-  const inUsers: typeof usersData & [] = [];
-  const pendingUsers: typeof usersData & [] = [];
-  const outUsers: typeof usersData & [] = [];
+  const inUsers: typeof users & [] = [];
+  const pendingUsers: typeof users & [] = [];
+  const outUsers: typeof users & [] = [];
 
-  usersData?.forEach((x) => {
-    if (chatroom?.chatroom_users.map((x) => x.user_id).includes(x.user_id)) {
+  users?.forEach((x) => {
+    if (chatroom_users.includes(x.user_id)) {
       inUsers.push(x);
     } else if (editRoomMembers.includes(x.user_id)) {
       pendingUsers.push(x);
@@ -83,22 +141,8 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
     }
   });
 
-  const { mutate: editRoom } = useEditRoom(chatroom_id, editRoomName, editRoomMembers, () => {
-    enqueueSnackbar({
-      variant: "success",
-      message: <Typography>Ruangan berhasil diedit!</Typography>,
-    });
-  });
-
-  if (!sessionData?.logged) {
-    return null;
-  }
-  if (!chatroom) {
-    return <Skeleton />;
-  }
-
   return (
-    <Stack height={"100%"} display={"flex"}>
+    <>
       <Dialog open={editRoomNameOpen} onClose={() => setEditRoomNameOpen(false)}>
         <DialogTitle>Rename room</DialogTitle>
         <DialogContent>
@@ -112,7 +156,7 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
         <DialogActions>
           <Button
             onClick={() => {
-              editRoom();
+              onEditName(editRoomName);
               setEditRoomNameOpen(false);
             }}
           >
@@ -120,7 +164,7 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
           </Button>
         </DialogActions>
       </Dialog>
-      {usersData && (
+      {users && (
         <Dialog open={editRoomMembersOpen} onClose={() => setEditRoomMembersOpen(false)}>
           <DialogTitle>Add members</DialogTitle>
           <DialogContent
@@ -193,7 +237,7 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
           <DialogActions>
             <Button
               onClick={() => {
-                editRoom();
+                onEditMembers(editRoomMembers);
                 setEditRoomMembersOpen(false);
               }}
             >
@@ -205,7 +249,7 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
       <Paper>
         <Stack direction={"row"} justifyContent={"space-between"}>
           <Typography variant="h5" fontWeight={"bold"} my={1}>
-            {name}
+            {chatroom_name}
           </Typography>
           <Stack direction={"row"} spacing={2}>
             <Button
@@ -226,16 +270,7 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
               startIcon={<Logout />}
               variant="outlined"
               onClick={() => {
-                if (!chatroom) {
-                  return;
-                }
-                setEditRoomMembers(
-                  chatroom.chatroom_users
-                    .filter((x) => x.user_id !== sessionData.user_id)
-                    .map((x) => x.user_id),
-                );
-                setEditRoomName(chatroom.chatroom_name);
-                editRoom();
+                onLeave();
               }}
             >
               Leave Room
@@ -243,58 +278,81 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
           </Stack>
         </Stack>
       </Paper>
-      <Stack mt={2} marginLeft={2} spacing={1} overflow={"auto"} flexGrow={1} flexBasis={0}>
-        {messages?.map((x, i) => {
-          const user = usersData?.find((u) => u.user_id === x.user_id);
-          return (
-            <Stack
-              key={i}
-              direction={"row"}
-              spacing={2}
-              ref={i === messages.length - 1 ? bottomRef : null}
-            >
-              <Avatar></Avatar>
-              <Box>
-                {!!user && <Typography fontWeight={"bold"}>{user.user_name}</Typography>}
-                <Typography
-                  sx={{
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {x.message}
-                </Typography>
-                <Typography variant="caption">
-                  {dayjs(x.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
-                </Typography>
-              </Box>
-            </Stack>
-          );
-        })}
-      </Stack>
-      <Stack my={2} direction={"row"} display={"flex"} spacing={2}>
-        <TextField
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              sendMessage();
-            }
-          }}
-          value={draft}
-          sx={{
-            flexGrow: 1,
-          }}
-          onChange={(e) => {
-            setDraft(e.target.value);
-          }}
-        ></TextField>
-        <Button
-          onClick={() => {
-            sendMessage();
-          }}
-          variant="contained"
-        >
-          <Send />
-        </Button>
-      </Stack>
+    </>
+  );
+}
+
+function Chatroom(props: { chatroom_id: number }) {
+  const { chatroom_id } = props;
+
+  const { data: sessionData } = useSession();
+  const { data: chatroom } = useChatroomDetail(chatroom_id);
+
+  const { data: messages } = useMessage(chatroom_id);
+  const { data: users } = useUsers();
+  const reshaped_messages = [];
+
+  if (users && messages) {
+    const user_lookup: Record<string, (typeof users)[0]> = {};
+    for (const user of users) {
+      user_lookup[user.user_id] = user;
+    }
+
+    for (const message of messages) {
+      const uid = message.user_id;
+      const user = user_lookup[uid];
+      reshaped_messages.push({
+        user_name: user.user_name,
+        ...message,
+      });
+    }
+  }
+
+  const { mutate: sendMessage } = useSendMessage(chatroom_id);
+
+  const { mutate: editRoom } = useEditRoom(chatroom_id, () => {
+    enqueueSnackbar({
+      variant: "success",
+      message: <Typography>Ruangan berhasil diedit!</Typography>,
+    });
+  });
+
+  if (!sessionData?.logged) {
+    return null;
+  }
+  if (!chatroom) {
+    return <Skeleton />;
+  }
+
+  return (
+    <Stack height={"100%"} display={"flex"}>
+      <ChatroomHeader
+        chatroom_name={chatroom.chatroom_name}
+        chatroom_users={chatroom.chatroom_users.map((x) => x.user_id)}
+        onLeave={() => {
+          editRoom({
+            user_ids: chatroom.chatroom_users
+              .map((x) => x.user_id)
+              .filter((x) => x !== sessionData.user_id),
+          });
+        }}
+        onEditMembers={(members) => {
+          editRoom({
+            user_ids: members,
+          });
+        }}
+        onEditName={(name) => {
+          editRoom({
+            name: name,
+          });
+        }}
+      />
+      <ChatroomContent
+        onSend={(msg) => {
+          sendMessage(msg);
+        }}
+        messages={reshaped_messages}
+      />
     </Stack>
   );
 }
@@ -307,7 +365,7 @@ function ChatroomPage() {
 
   const { data: sessionData } = useSession();
 
-  const { data: chatrooms } = useChatroom(
+  const { data: chatrooms } = useChatroomByUserId(
     sessionData?.logged ? sessionData.user_id : undefined,
     (failureCount, error) => {
       if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
@@ -335,7 +393,7 @@ function ChatroomPage() {
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [addRoomName, setAddRoomName] = useState("");
 
-  const { mutate: createRoom } = useCreateRoom(
+  const { mutate: createRoom } = useCreatePersonalRoom(
     addRoomName,
     sessionData?.logged ? [sessionData.user_id] : [],
     () => {
@@ -400,9 +458,7 @@ function ChatroomPage() {
       <Grid item xs={10} lg={11}>
         {chatrooms?.map(
           (x, i) =>
-            activeRoom === x.chatroom_id && (
-              <Chatroom key={i} chatroom_id={x.chatroom_id} name={x.chatroom_name} />
-            ),
+            activeRoom === x.chatroom_id && <Chatroom key={i} chatroom_id={x.chatroom_id} />,
         )}
       </Grid>
     </Grid>

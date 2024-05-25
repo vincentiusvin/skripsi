@@ -3,14 +3,23 @@ import { ExtractRH } from "./helpers/types";
 import { validateLogged } from "./helpers/validate";
 import {
   getChatroomDetail,
-  getChatrooms,
   getMessages,
+  getPersonalChatrooms,
+  getProjectChatrooms,
   postChatrooms,
   postMessages,
   putChatroom,
 } from "./routes/chatroom";
 import { getOrgDetail, getOrgs, getOrgsCategory, postOrgs } from "./routes/orgs";
-import { addProjects, getProjectCategory, getProjects, getProjectsDetail } from "./routes/projects";
+import {
+  addProjectMember,
+  addProjects,
+  deleteProjectMember,
+  getProjectCategory,
+  getProjectMembership,
+  getProjects,
+  getProjectsDetail,
+} from "./routes/projects";
 import { deleteSession, getSession, putSession } from "./routes/session";
 import { getUser, postUser } from "./routes/user";
 
@@ -26,8 +35,8 @@ export function registerRoutes(app: Express) {
 
   app.post("/api/users", postUser);
   app.get("/api/users", getUser);
+  app.get("/api/users/:user_id/chatrooms", validateLogged, getPersonalChatrooms as RequestHandler);
 
-  app.get("/api/chatrooms", validateLogged, getChatrooms as RequestHandler);
   app.post("/api/chatrooms", validateLogged, postChatrooms as RequestHandler);
 
   app.get("/api/chatrooms/:chatroom_id", validateLogged, getChatroomDetail as RequestHandler);
@@ -38,8 +47,15 @@ export function registerRoutes(app: Express) {
 
   //projects api
   app.get("/api/projects", getProjects);
-  app.get("/api/projects/:id", getProjectsDetail);
   app.post("/api/projects", addProjects);
+
+  app.get("/api/projects/:project_id", getProjectsDetail);
+
+  app.get("/api/projects/:project_id/users/:user_id", getProjectMembership);
+  app.put("/api/projects/:project_id/users/:user_id", addProjectMember);
+  app.delete("/api/projects/:project_id/users/:user_id", deleteProjectMember);
+
+  app.get("/api/projects/:project_id/chatrooms", getProjectChatrooms);
   app.get("/api/projects-category", getProjectCategory);
 }
 
@@ -60,7 +76,7 @@ type _api = {
   PostUser: typeof postUser;
   GetUser: typeof getUser;
 
-  GetChatrooms: typeof getChatrooms;
+  GetChatrooms: typeof getPersonalChatrooms;
   PostChatrooms: typeof postChatrooms;
 
   GetChatroomDetail: typeof getChatroomDetail;
@@ -71,8 +87,15 @@ type _api = {
 
   //projects for front end
   getProjects: typeof getProjects;
-  getProjectsDetail: typeof getProjectsDetail;
   addProjects: typeof addProjects;
+
+  getProjectsDetail: typeof getProjectsDetail;
+
+  GetProjectMember: typeof getProjectMembership;
+  AddProjectMember: typeof addProjectMember;
+  DeleteProjectMember: typeof deleteProjectMember;
+
+  GetProjectChatrooms: typeof getProjectChatrooms;
   getProjectsCategory: typeof getProjectCategory;
 };
 

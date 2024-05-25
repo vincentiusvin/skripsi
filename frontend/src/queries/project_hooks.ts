@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { API } from "../../../backend/src/routes";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
@@ -25,6 +26,44 @@ export function useProjectCollection(org_id?: string) {
               }
             : undefined,
       }),
+  });
+}
+
+export function useProjectMembership(project_id: number | undefined, user_id: number | undefined) {
+  return useQuery({
+    queryKey: ["projects", "detail", project_id, "members", user_id],
+    queryFn: () =>
+      new APIContext("GetProjectMember").fetch(`/api/projects/${project_id}/users/${user_id}`),
+    enabled: project_id !== undefined && user_id !== undefined,
+  });
+}
+
+export function useAddProjectMember(
+  project_id: number | undefined,
+  user_id: number | undefined,
+  onSuccess?: (data: API["AddProjectMember"]["ResBody"]) => void,
+) {
+  return useMutation({
+    mutationFn: () => {
+      if (project_id === undefined) {
+        throw new Error("Projek invalid!");
+      }
+      if (user_id === undefined) {
+        throw new Error("User invalid!");
+      }
+      return new APIContext("AddProjectMember").fetch(
+        `/api/projects/${project_id}/users/${user_id}`,
+        {
+          method: "PUT",
+        },
+      );
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      if (onSuccess) {
+        onSuccess(data);
+      }
+    },
   });
 }
 
