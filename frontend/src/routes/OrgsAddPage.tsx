@@ -43,6 +43,7 @@ function OrgsAddPage() {
         autoHideDuration: 5000,
         variant: "success",
       });
+    },
   });
 
   // Fetch categories from the backend API
