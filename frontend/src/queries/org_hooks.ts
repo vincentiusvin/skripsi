@@ -26,7 +26,7 @@ export function useAddOrg(opts: {
   image?: string;
   onSuccess?: () => void;
 }) {
-  const { name, desc, address, phone, image, onSuccess } = opts;
+  const { name, desc, address, phone, image, onSuccess, category } = opts;
   return useMutation({
     mutationFn: () =>
       new APIContext("PostOrgs").fetch("/api/orgs", {
@@ -36,6 +36,7 @@ export function useAddOrg(opts: {
           org_description: desc,
           org_address: address,
           org_phone: phone,
+          org_category: category,
           ...(image && { org_image: image }),
         },
       }),
@@ -45,5 +46,13 @@ export function useAddOrg(opts: {
         onSuccess();
       }
     },
+  });
+}
+
+export function useOrgCategories(retry?: (failureCount: number, error: Error) => boolean) {
+  return useQuery({
+    queryKey: ["categories"],
+    queryFn: () => new APIContext("GetOrgsCategory").fetch(`/api/category`),
+    retry: retry,
   });
 }

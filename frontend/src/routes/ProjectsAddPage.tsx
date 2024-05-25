@@ -10,11 +10,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useAddProjects } from "../queries/project_hooks";
+import { useAddProjects, useProjectCategories } from "../queries/project_hooks";
 
 function projectsAddPage() {
   const [projectName, setProjectName] = useState("");
@@ -40,17 +39,7 @@ function projectsAddPage() {
     },
   });
 
-  const { data: categories } = useQuery({
-    queryKey: ["categories"],
-    queryFn: () => new APIContext("getProjectsCategory").fetch(`/api/projects-category`),
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
-  });
+  const { data: categories } = useProjectCategories();
 
   return (
     <Grid container spacing={2} mt={2}>

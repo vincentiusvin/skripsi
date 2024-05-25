@@ -47,3 +47,10 @@ export function useAddProjects(opts: {
     },
   });
 }
+
+export function useProjectCategories() {
+  return useQuery({
+    queryKey: ["categories"],
+    queryFn: () => new APIContext("getProjectsCategory").fetch(`/api/projects-category`),
+  });
+}
