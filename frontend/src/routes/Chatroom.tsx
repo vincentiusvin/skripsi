@@ -19,7 +19,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import React, { useEffect, useRef, useState } from "react";
@@ -28,6 +28,13 @@ import { API } from "../../../backend/src/routes";
 import { APIContext, APIError } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 import { socket } from "../helpers/socket";
+import {
+  useChatroomDetail,
+  useCreateRoom,
+  useEditRoom,
+  useMessage,
+  useSendMessage,
+} from "../queries/chat_hooks";
 import { useSession } from "../queries/sesssion_hooks";
 import { useUsers } from "../queries/user_hooks";
 
@@ -44,38 +51,10 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
 
   const { data: sessionData } = useSession();
   const { data: usersData } = useUsers();
-  const { data: chatroom } = useQuery({
-    queryKey: ["chatrooms", "detail", chatroom_id],
-    queryFn: () =>
-      new APIContext("GetChatroomDetail").fetch(`/api/chatrooms/${chatroom_id}`).then((x) => {
-        setEditRoomMembers(x.chatroom_users.map((x) => x.user_id));
-        setEditRoomName(x.chatroom_name);
-        return x;
-      }),
-  });
-
-  const { data: messages } = useQuery({
-    queryKey: ["messages", "detail", chatroom_id],
-    queryFn: () => new APIContext("GetMessages").fetch(`/api/chatrooms/${chatroom_id}/messages`),
-  });
-
-  const { mutate: sendMessage } = useMutation({
-    mutationFn: async () => {
-      if (!chatroom) {
-        return;
-      }
-      const res = await new APIContext("PostMessages").fetch(
-        `/api/chatrooms/${chatroom.chatroom_id}/messages`,
-        {
-          method: "POST",
-          body: {
-            message: draft,
-          },
-        },
-      );
-      setDraft("");
-      return res;
-    },
+  const { data: chatroom } = useChatroomDetail(chatroom_id);
+  const { data: messages } = useMessage(chatroom_id);
+  const { mutate: sendMessage } = useSendMessage(chatroom_id, draft, () => {
+    setDraft("");
   });
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -85,6 +64,13 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
       bottomRef.current.scrollIntoView(true);
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (chatroom) {
+      setEditRoomMembers(chatroom.chatroom_users.map((x) => x.user_id));
+      setEditRoomName(chatroom.chatroom_name);
+    }
+  }, [chatroom]);
 
   const [editRoomNameOpen, setEditRoomNameOpen] = useState(false);
   const [editRoomMembersOpen, setEditRoomMembersOpen] = useState(false);
@@ -105,29 +91,11 @@ function Chatroom(props: { chatroom_id: number; name: string }) {
     }
   });
 
-  const { mutate: editRoom } = useMutation({
-    mutationFn: async () => {
-      if (!sessionData || !chatroom) {
-        throw new Error("Anda harus login!");
-      }
-      const res = await new APIContext("PutChatroom").fetch(
-        `/api/chatrooms/${chatroom.chatroom_id}`,
-        {
-          method: "PUT",
-          body: {
-            name: editRoomName,
-            user_ids: editRoomMembers,
-          },
-        },
-      );
-      return res;
-    },
-    onSuccess: (x) => {
-      enqueueSnackbar({
-        variant: "success",
-        message: <Typography>{x.msg}</Typography>,
-      });
-    },
+  const { mutate: editRoom } = useEditRoom(chatroom_id, editRoomName, editRoomMembers, () => {
+    enqueueSnackbar({
+      variant: "success",
+      message: <Typography>Ruangan berhasil diedit!</Typography>,
+    });
   });
 
   if (!sessionData?.logged) {
@@ -367,28 +335,17 @@ function ChatroomPage() {
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [addRoomName, setAddRoomName] = useState("");
 
-  const { mutate: createRoom } = useMutation({
-    mutationFn: async () => {
-      if (!sessionData?.logged) {
-        return;
-      }
-      const res = await new APIContext("PostChatrooms").fetch("/api/chatrooms", {
-        method: "POST",
-        body: {
-          name: addRoomName,
-          user_ids: [sessionData.user_id],
-        },
-      });
-      return res;
-    },
-    onSuccess: () => {
+  const { mutate: createRoom } = useCreateRoom(
+    addRoomName,
+    sessionData?.logged ? [sessionData.user_id] : [],
+    () => {
       enqueueSnackbar({
         message: <Typography>Room created!</Typography>,
         variant: "success",
       });
       setAddRoomOpen(false);
     },
-  });
+  );
 
   useEffect(() => {
     if (!sessionData?.logged) {
