@@ -10,16 +10,11 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { APIContext } from "../helpers/fetch";
+import { useOrgCollection } from "../queries/org_hooks";
 
 function OrgsListPage() {
-  const { data } = useQuery({
-    queryKey: ["orgs", "collection"],
-    queryFn: () => new APIContext("GetOrgs").fetch("/api/orgs"),
-  });
-
+  const { data } = useOrgCollection();
   return (
     <Box mt={4}>
       <Link to={"/orgs/add"}>

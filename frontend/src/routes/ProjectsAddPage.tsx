@@ -10,12 +10,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { APIContext, APIError } from "../helpers/fetch";
-import { queryClient } from "../helpers/queryclient";
+import { useAddProjects, useProjectCategories } from "../queries/project_hooks";
 
 function projectsAddPage() {
   const [projectName, setProjectName] = useState("");
@@ -26,32 +24,12 @@ function projectsAddPage() {
 
   const [, setLocation] = useLocation();
 
-  const { data: categories } = useQuery({
-    queryKey: ["categories"],
-    queryFn: () => new APIContext("getProjectsCategory").fetch(`/api/projects-category`),
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
-  });
-
-  const { mutate: addProject } = useMutation({
-    mutationKey: ["session"],
-    mutationFn: () =>
-      new APIContext("addProjects").fetch("/api/projects", {
-        method: "POST",
-        body: {
-          project_name: projectName,
-          project_desc: projectDesc,
-          org_id: orgIdNumber,
-          category_id: Number(projectCategory),
-        },
-      }),
+  const { mutate: addProject } = useAddProjects({
+    desc: projectDesc,
+    name: projectName,
+    org_id: orgIdNumber,
+    category: Number(projectCategory),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
       enqueueSnackbar({
         message: <Typography>Added successful</Typography>,
         autoHideDuration: 5000,
@@ -60,6 +38,8 @@ function projectsAddPage() {
       setLocation("/projects");
     },
   });
+
+  const { data: categories } = useProjectCategories();
 
   return (
     <Grid container spacing={2} mt={2}>

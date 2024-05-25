@@ -12,42 +12,23 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "wouter";
-import { APIContext, APIError } from "../helpers/fetch";
+import { APIError } from "../helpers/fetch";
+import { useOrgDetail } from "../queries/org_hooks";
+import { useProjectCollection } from "../queries/project_hooks";
 
 function OrgsDetailPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
 
-  const { data } = useQuery({
-    queryKey: ["orgs", "detail"],
-    queryFn: () => new APIContext("GetOrgDetail").fetch(`/api/orgs/${id}`),
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
-        setLocation("/orgs");
-        return false;
-      }
-      return true;
-    },
+  const { data } = useOrgDetail(id!, (failureCount, error) => {
+    if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+      setLocation("/orgs");
+      return false;
+    }
+    return true;
   });
-
-  const { data: projectData } = useQuery({
-    queryKey: ["projects", "collection"],
-    queryFn: () =>
-      new APIContext("getProjects").fetch("/api/projects", {
-        query: {
-          org_id: id!,
-        },
-      }),
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status == 401) || failureCount > 3) {
-        setLocation("/orgs");
-        return false;
-      }
-      return true;
-    },
-  });
+  const { data: projectData } = useProjectCollection();
 
   if (data && projectData) {
     return (

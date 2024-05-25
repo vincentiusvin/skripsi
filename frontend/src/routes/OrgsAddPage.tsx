@@ -12,14 +12,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import ImageDropzone from "../components/Dropzone";
-import { APIContext, APIError } from "../helpers/fetch";
+import { APIError } from "../helpers/fetch";
 import { fileToBase64DataURL } from "../helpers/file";
-import { queryClient } from "../helpers/queryclient";
+import { useAddOrg, useOrgCategories } from "../queries/org_hooks";
 
 function OrgsAddPage() {
   const [orgName, setOrgName] = useState("");
@@ -31,42 +30,28 @@ function OrgsAddPage() {
 
   const [, setLocation] = useLocation();
 
-  // Fetch categories from the backend API
-  const { data: categories } = useQuery({
-    queryKey: ["categories"],
-    queryFn: () => new APIContext("GetOrgsCategory").fetch(`/api/category`),
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
-        setLocation("/");
-        return false;
-      }
-      return true;
-    },
-  });
-
-  const { mutate: addOrg } = useMutation({
-    mutationKey: ["session"],
-    mutationFn: () =>
-      new APIContext("PostOrgs").fetch("/api/orgs", {
-        method: "POST",
-        body: {
-          org_name: orgName,
-          org_description: orgDesc,
-          org_address: orgAddress,
-          org_phone: orgPhone,
-          ...(orgImage && { org_image: orgImage }),
-          org_category: Number(orgCategory),
-        },
-      }),
+  const { mutate: addOrg } = useAddOrg({
+    name: orgName,
+    desc: orgDesc,
+    address: orgAddress,
+    phone: orgPhone,
+    category: Number(orgCategory),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orgs"] });
       enqueueSnackbar({
         message: <Typography>Added successful!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });
-      setLocation("/");
     },
+  });
+
+  // Fetch categories from the backend API
+  const { data: categories } = useOrgCategories((failureCount, error) => {
+    if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
+      setLocation("/");
+      return false;
+    }
+    return true;
   });
 
   return (

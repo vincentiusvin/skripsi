@@ -9,16 +9,11 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { APIContext } from "../helpers/fetch";
+import { useProjectCollection } from "../queries/project_hooks";
 
 function ProjectListPage() {
-  const { data } = useQuery({
-    queryKey: ["projects", "collection"],
-    queryFn: () => new APIContext("getProjects").fetch("/api/projects"),
-  });
-
+  const { data } = useProjectCollection();
   return (
     <Box mt={4}>
       <Link to={"/projects/add"}>
