@@ -26,7 +26,7 @@ export function useRegister(username: string, password: string, onSuccess?: () =
 
 export function useUsers() {
   return useQuery({
-    queryKey: ["users"],
+    queryKey: ["users", "collection"],
     queryFn: () => new APIContext("GetUser").fetch("/api/users"),
   });
 }
