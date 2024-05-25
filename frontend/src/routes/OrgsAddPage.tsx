@@ -2,7 +2,9 @@ import { AddAPhoto, ArrowBack, Save } from "@mui/icons-material";
 import {
   Avatar,
   Button,
+  FormControl,
   Grid,
+  InputLabel,
   MenuItem,
   Paper,
   Select,
@@ -10,12 +12,12 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import ImageDropzone from "../components/Dropzone";
-import { APIContext } from "../helpers/fetch";
+import { APIContext, APIError } from "../helpers/fetch";
 import { fileToBase64DataURL } from "../helpers/file";
 import { queryClient } from "../helpers/queryclient";
 
@@ -25,8 +27,22 @@ function OrgsAddPage() {
   const [orgAddress, setOrgAddress] = useState("");
   const [orgPhone, setOrgPhone] = useState("");
   const [orgImage, setOrgImage] = useState<string | null>(null);
+  const [orgCategory, setOrgCategory] = useState<number | "">("");
 
   const [, setLocation] = useLocation();
+
+  // Fetch categories from the backend API
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => new APIContext("GetOrgsCategory").fetch(`/api/category`),
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
+        setLocation("/");
+        return false;
+      }
+      return true;
+    },
+  });
 
   const { mutate: addOrg } = useMutation({
     mutationKey: ["session"],
@@ -39,6 +55,7 @@ function OrgsAddPage() {
           org_address: orgAddress,
           org_phone: orgPhone,
           ...(orgImage && { org_image: orgImage }),
+          org_category: Number(orgCategory),
         },
       }),
     onSuccess: () => {
@@ -51,10 +68,6 @@ function OrgsAddPage() {
       setLocation("/");
     },
   });
-
-  // const handleChange = (event: SelectChangeEvent) => {
-  //   setAge(event.target.value as string);
-  // };
 
   return (
     <Grid container spacing={2} mt={2}>
@@ -139,16 +152,23 @@ function OrgsAddPage() {
             onChange={(e) => setOrgPhone(e.target.value)}
             label="Phone"
           ></TextField>
-          <Select
-            // value={age}
-            label="Test"
-
-            // onChange={handleChange}
-          >
-            <MenuItem value={10}>Ten</MenuItem>
-            <MenuItem value={20}>Twenty</MenuItem>
-            <MenuItem value={30}>Thirty</MenuItem>
-          </Select>
+          <FormControl>
+            <InputLabel id="demo-simple-select-label">Category</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={orgCategory}
+              onChange={(e) => setOrgCategory(Number(e.target.value))}
+              label="Category"
+            >
+              {categories &&
+                categories.map((category) => (
+                  <MenuItem key={category.category_id} value={category.category_id}>
+                    {category.category_name}
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
         </Stack>
       </Grid>
     </Grid>

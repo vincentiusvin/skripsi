@@ -1,19 +1,42 @@
 import { ArrowBack, Save } from "@mui/icons-material";
-import { Button, Grid, Stack, TextField, Typography } from "@mui/material";
-import { useMutation } from "@tanstack/react-query";
+import {
+  Button,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { APIContext } from "../helpers/fetch";
+import { APIContext, APIError } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
 function projectsAddPage() {
   const [projectName, setProjectName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
   const [orgId, setOrgId] = useState("");
+  const [projectCategory, setProjectCategory] = useState<number | "">("");
   const orgIdNumber = Number(orgId);
 
   const [, setLocation] = useLocation();
+
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => new APIContext("getProjectsCategory").fetch(`/api/projects-category`),
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
+        setLocation("/projects");
+        return false;
+      }
+      return true;
+    },
+  });
 
   const { mutate: addProject } = useMutation({
     mutationKey: ["session"],
@@ -24,6 +47,7 @@ function projectsAddPage() {
           project_name: projectName,
           project_desc: projectDesc,
           org_id: orgIdNumber,
+          category_id: Number(projectCategory),
         },
       }),
     onSuccess: () => {
@@ -73,6 +97,23 @@ function projectsAddPage() {
             onChange={(e) => setOrgId(e.target.value)}
             label="organisation id"
           ></TextField>
+          <FormControl>
+            <InputLabel id="demo-simple-select-label">Category</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={projectCategory}
+              label="Category"
+              onChange={(e) => setProjectCategory(Number(e.target.value))}
+            >
+              {categories &&
+                categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.name}
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
         </Stack>
       </Grid>
     </Grid>

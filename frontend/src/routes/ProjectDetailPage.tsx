@@ -1,5 +1,5 @@
 import { ArrowBack, Edit } from "@mui/icons-material";
-import { Button, Grid, Typography } from "@mui/material";
+import { Button, Chip, Grid, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "wouter";
 import { APIContext, APIError } from "../helpers/fetch";
@@ -45,6 +45,16 @@ function ProjectDetailPage() {
         </Grid>
         <Grid item xs={12}>
           <Typography>{data.org_id}</Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography>Categories</Typography>
+          <Grid container spacing={1}>
+            {data.project_categories.map((category, index) => (
+              <Grid item key={index}>
+                <Chip label={category} />
+              </Grid>
+            ))}
+          </Grid>
         </Grid>
       </Grid>
     );

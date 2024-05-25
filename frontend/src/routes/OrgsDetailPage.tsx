@@ -1,5 +1,5 @@
 import { ArrowBack, Edit } from "@mui/icons-material";
-import { Avatar, Button, Grid, List, ListItem, Typography } from "@mui/material";
+import { Avatar, Button, Chip, Grid, List, ListItem, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "wouter";
 import { APIContext, APIError } from "../helpers/fetch";
@@ -65,6 +65,16 @@ function OrgsDetailPage() {
               <ListItem key={i}>{x.name}</ListItem>
             ))}
           </List>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography>Categories</Typography>
+          <Grid container spacing={1}>
+            {data.org_categories.map((category, index) => (
+              <Grid item key={index}>
+                <Chip label={category} />
+              </Grid>
+            ))}
+          </Grid>
         </Grid>
       </Grid>
     );
