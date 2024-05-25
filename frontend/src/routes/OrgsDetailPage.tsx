@@ -1,4 +1,4 @@
-import { ArrowBack, Edit } from "@mui/icons-material";
+import { Add, ArrowBack, Edit } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -33,7 +33,12 @@ function OrgsDetailPage() {
 
   const { data: projectData } = useQuery({
     queryKey: ["projects", "collection"],
-    queryFn: () => new APIContext("getProjects").fetch("/api/projects"),
+    queryFn: () =>
+      new APIContext("getProjects").fetch("/api/projects", {
+        query: {
+          org_id: id!,
+        },
+      }),
     retry: (failureCount, error) => {
       if ((error instanceof APIError && error.status == 401) || failureCount > 3) {
         setLocation("/orgs");
@@ -53,8 +58,15 @@ function OrgsDetailPage() {
             </Button>
           </Link>
         </Grid>
-        <Grid item xs={10}>
-          <Typography variant="h4" fontWeight={"bold"} align="center">
+        <Grid item xs={2} paddingLeft="1vw">
+          <Link to={"/projects/add"}>
+            <Button endIcon={<Add />} variant="contained" fullWidth>
+              Add Projects
+            </Button>
+          </Link>
+        </Grid>
+        <Grid item xs={8}>
+          <Typography variant="h4" fontWeight={"bold"} align="center" marginRight="15vw">
             {data.org_name}
           </Typography>
         </Grid>
@@ -63,11 +75,12 @@ function OrgsDetailPage() {
             Edit
           </Button>
         </Grid>
+
         <Paper
           sx={{
             p: 2,
             margin: "auto",
-            maxWidth: "1000vw",
+            maxWidth: "90vw",
             flexGrow: 1,
             alignItems: "center",
             backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
