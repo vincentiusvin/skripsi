@@ -281,10 +281,9 @@ export function ChatroomHeader(props: {
   );
 }
 
-function Chatroom(props: { chatroom_id: number }) {
-  const { chatroom_id } = props;
+function Chatroom(props: { chatroom_id: number; user_id: number }) {
+  const { chatroom_id, user_id } = props;
 
-  const { data: sessionData } = useSessionGet();
   const { data: chatroom } = useChatroomsDetailGet({ chatroom_id });
 
   const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
@@ -319,9 +318,6 @@ function Chatroom(props: { chatroom_id: number }) {
     },
   });
 
-  if (!sessionData?.logged) {
-    return null;
-  }
   if (!chatroom) {
     return <Skeleton />;
   }
@@ -333,9 +329,7 @@ function Chatroom(props: { chatroom_id: number }) {
         chatroom_users={chatroom.chatroom_users.map((x) => x.user_id)}
         onLeave={() => {
           editRoom({
-            user_ids: chatroom.chatroom_users
-              .map((x) => x.user_id)
-              .filter((x) => x !== sessionData.user_id),
+            user_ids: chatroom.chatroom_users.map((x) => x.user_id).filter((x) => x !== user_id),
           });
         }}
         onEditMembers={(members) => {
@@ -452,7 +446,9 @@ function ChatroomAuthorized(props: { user_id: number }) {
       <Grid item xs={10} lg={11}>
         {chatrooms?.map(
           (x, i) =>
-            activeRoom === x.chatroom_id && <Chatroom key={i} chatroom_id={x.chatroom_id} />,
+            activeRoom === x.chatroom_id && (
+              <Chatroom key={i} user_id={user_id} chatroom_id={x.chatroom_id} />
+            ),
         )}
       </Grid>
     </Grid>
