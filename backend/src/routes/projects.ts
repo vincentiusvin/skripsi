@@ -146,12 +146,15 @@ export const deleteProjectsDetailMembersDetail: RH<{
     throw new ClientError("Pengguna tidak terlibat dalam projek!");
   }
 
-  await db.deleteFrom("projects_users").where((eb) =>
-    eb.and({
-      "projects_users.project_id": project_id,
-      "projects_users.user_id": user_id,
-    }),
-  );
+  await db
+    .deleteFrom("projects_users")
+    .where((eb) =>
+      eb.and({
+        "projects_users.project_id": project_id,
+        "projects_users.user_id": user_id,
+      }),
+    )
+    .execute();
 
   res.status(200).json({ msg: "Pengguna berhasil dihapus dari projek!" });
 };

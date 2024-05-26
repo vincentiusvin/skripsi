@@ -40,6 +40,35 @@ export function useProjectMembership(project_id: number | undefined, user_id: nu
   });
 }
 
+export function useLeaveProject(
+  project_id: number | undefined,
+  user_id: number | undefined,
+  onSuccess?: (data: API["ProjectsDetailMembersDelete"]["ResBody"]) => void,
+) {
+  return useMutation({
+    mutationFn: () => {
+      if (project_id === undefined) {
+        throw new Error("Projek invalid!");
+      }
+      if (user_id === undefined) {
+        throw new Error("User invalid!");
+      }
+      return new APIContext("ProjectsDetailMembersPut").fetch(
+        `/api/projects/${project_id}/users/${user_id}`,
+        {
+          method: "DELETE",
+        },
+      );
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      if (onSuccess) {
+        onSuccess(data);
+      }
+    },
+  });
+}
+
 export function useAddProjectMember(
   project_id: number | undefined,
   user_id: number | undefined,
