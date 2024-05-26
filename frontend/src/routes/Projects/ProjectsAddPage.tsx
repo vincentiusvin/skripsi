@@ -13,7 +13,7 @@ import {
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useAddProjects, useProjectCategories } from "../queries/project_hooks";
+import { useAddProjects, useProjectCategories } from "../../queries/project_hooks";
 
 function projectsAddPage() {
   const [projectName, setProjectName] = useState("");

@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Link } from "wouter";
-import { useProjectCollection } from "../queries/project_hooks";
+import { useProjectCollection } from "../../queries/project_hooks";
 
 function ProjectListPage() {
   const { data } = useProjectCollection();

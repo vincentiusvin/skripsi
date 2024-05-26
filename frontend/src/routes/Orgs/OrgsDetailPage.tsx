@@ -13,9 +13,9 @@ import {
   Typography,
 } from "@mui/material";
 import { Link, useLocation, useParams } from "wouter";
-import { APIError } from "../helpers/fetch";
-import { useOrgDetail } from "../queries/org_hooks";
-import { useProjectCollection } from "../queries/project_hooks";
+import { APIError } from "../../helpers/fetch";
+import { useOrgDetail } from "../../queries/org_hooks";
+import { useProjectCollection } from "../../queries/project_hooks";
 
 function OrgsDetailPage() {
   const { id } = useParams();

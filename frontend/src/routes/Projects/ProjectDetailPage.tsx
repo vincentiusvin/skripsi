@@ -20,7 +20,7 @@ import {
 import { enqueueSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
-import { APIError } from "../helpers/fetch";
+import { APIError } from "../../helpers/fetch";
 import {
   useChatSocket,
   useChatroomByProjectId,
@@ -28,16 +28,16 @@ import {
   useCreateProjectRoom,
   useMessage,
   useSendMessage,
-} from "../queries/chat_hooks";
+} from "../../queries/chat_hooks";
 import {
   useAddProjectMember,
   useLeaveProject,
   useProjectDetail,
   useProjectMembership,
-} from "../queries/project_hooks";
-import { useSession } from "../queries/sesssion_hooks";
-import { useUsers } from "../queries/user_hooks";
-import { ChatroomContent } from "./Chatroom";
+} from "../../queries/project_hooks";
+import { useSession } from "../../queries/sesssion_hooks";
+import { useUsers } from "../../queries/user_hooks";
+import { ChatroomContent } from "../Chatroom";
 
 function Chatroom(props: { chatroom_id: number }) {
   const { chatroom_id } = props;

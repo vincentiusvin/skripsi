@@ -15,10 +15,10 @@ import {
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import ImageDropzone from "../components/Dropzone";
-import { APIError } from "../helpers/fetch";
-import { fileToBase64DataURL } from "../helpers/file";
-import { useAddOrg, useOrgCategories } from "../queries/org_hooks";
+import ImageDropzone from "../../components/Dropzone";
+import { APIError } from "../../helpers/fetch";
+import { fileToBase64DataURL } from "../../helpers/file";
+import { useAddOrg, useOrgCategories } from "../../queries/org_hooks";
 
 function OrgsAddPage() {
   const [orgName, setOrgName] = useState("");

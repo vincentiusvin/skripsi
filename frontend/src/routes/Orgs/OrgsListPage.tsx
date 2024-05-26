@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Link } from "wouter";
-import { useOrgCollection } from "../queries/org_hooks";
+import { useOrgCollection } from "../../queries/org_hooks";
 
 function OrgsListPage() {
   const { data } = useOrgCollection();

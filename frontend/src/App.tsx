@@ -10,12 +10,12 @@ import { queryClient } from "./helpers/queryclient";
 import AuthPage from "./routes/AuthPage";
 import ChatroomPage from "./routes/Chatroom";
 import HomePage from "./routes/HomePage";
-import OrgsAddPage from "./routes/OrgsAddPage";
-import OrgsDetailPage from "./routes/OrgsDetailPage";
-import OrgsListPage from "./routes/OrgsListPage";
-import ProjectDetailPage from "./routes/ProjectDetailPage";
-import ProjectsAddPage from "./routes/ProjectsAddPage";
-import ProjectListPage from "./routes/ProjectsListPage";
+import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
+import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage";
+import OrgsListPage from "./routes/Orgs/OrgsListPage";
+import ProjectDetailPage from "./routes/Projects/ProjectDetailPage";
+import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
+import ProjectListPage from "./routes/Projects/ProjectsListPage";
 
 const theme = createTheme({
   palette: {
