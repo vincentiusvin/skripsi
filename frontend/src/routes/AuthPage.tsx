@@ -11,16 +11,31 @@ function AuthPage() {
 
   const [, setLocation] = useLocation();
 
-  const { mutate: login } = useSessionPut(username, password, () => {
-    enqueueSnackbar({
-      message: <Typography>Login success!</Typography>,
-      autoHideDuration: 5000,
-      variant: "success",
-    });
-    setLocation("/");
+  const { mutate: putSession } = useSessionPut({
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Login success!</Typography>,
+        autoHideDuration: 5000,
+        variant: "success",
+      });
+      setLocation("/");
+    },
   });
+  const { mutate: postUsers } = useUsersPost();
 
-  const { mutate: register } = useUsersPost(username, password);
+  function login() {
+    putSession({
+      user_name: username,
+      user_password: password,
+    });
+  }
+
+  function register() {
+    postUsers({
+      user_name: username,
+      user_password: password,
+    });
+  }
 
   return (
     <Grid container height={"100%"} alignItems={"center"}>

@@ -2,10 +2,11 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
-export function useOrgDetailGet(
-  id: string,
-  retry?: (failureCount: number, error: Error) => boolean,
-) {
+export function useOrgDetailGet(opts: {
+  id: string;
+  retry?: (failureCount: number, error: Error) => boolean;
+}) {
+  const { id, retry } = opts;
   return useQuery({
     queryKey: ["orgs", "detail", id],
     queryFn: () => new APIContext("OrgsDetailGet").fetch(`/api/orgs/${id}`),
@@ -20,29 +21,12 @@ export function useOrgsGet() {
   });
 }
 
-export function useOrgsPost(opts: {
-  name: string;
-  desc: string;
-  address: string;
-  phone: string;
-  category: number;
-  image?: string;
-  onSuccess?: () => void;
-}) {
-  const { name, desc, address, phone, image, onSuccess, category } = opts;
+export function useOrgsPost(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
   return useMutation({
-    mutationFn: () =>
-      new APIContext("OrgsPost").fetch("/api/orgs", {
-        method: "POST",
-        body: {
-          org_name: name,
-          org_description: desc,
-          org_address: address,
-          org_phone: phone,
-          org_category: category,
-          ...(image && { org_image: image }),
-        },
-      }),
+    mutationFn: new APIContext("OrgsPost").bodyFetch("/api/orgs", {
+      method: "POST",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orgs"] });
       if (onSuccess) {
@@ -52,7 +36,10 @@ export function useOrgsPost(opts: {
   });
 }
 
-export function useOrgsCategoriesGet(retry?: (failureCount: number, error: Error) => boolean) {
+export function useOrgsCategoriesGet(opts: {
+  retry?: (failureCount: number, error: Error) => boolean;
+}) {
+  const { retry } = opts;
   return useQuery({
     queryKey: ["categories"],
     queryFn: () => new APIContext("OrgsCategoriesGet").fetch(`/api/org-categories`),

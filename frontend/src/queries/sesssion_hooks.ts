@@ -21,16 +21,12 @@ export function useSessionDelete() {
   });
 }
 
-export function useSessionPut(username: string, password: string, onSuccess: () => void) {
+export function useSessionPut(opts: { onSuccess: () => void }) {
+  const { onSuccess } = opts;
   return useMutation({
-    mutationFn: () =>
-      new APIContext("SessionPut").fetch("/api/session", {
-        body: {
-          user_name: username,
-          user_password: password,
-        },
-        method: "PUT",
-      }),
+    mutationFn: new APIContext("SessionPut").bodyFetch("/api/session", {
+      method: "PUT",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session"] });
       onSuccess();

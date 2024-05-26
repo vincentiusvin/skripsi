@@ -21,14 +21,20 @@ function OrgsDetailPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
 
-  const { data } = useOrgDetailGet(id!, (failureCount, error) => {
-    if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
-      setLocation("/orgs");
-      return false;
-    }
-    return true;
+  const { data } = useOrgDetailGet({
+    id: id!,
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+        setLocation("/orgs");
+        return false;
+      }
+      return true;
+    },
   });
-  const { data: projectData } = useProjectsGet(id);
+
+  const { data: projectData } = useProjectsGet({
+    org_id: id,
+  });
 
   if (data && projectData) {
     return (

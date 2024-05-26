@@ -286,9 +286,9 @@ function Chatroom(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
 
   const { data: sessionData } = useSessionGet();
-  const { data: chatroom } = useChatroomsDetailGet(chatroom_id);
+  const { data: chatroom } = useChatroomsDetailGet({ chatroom_id });
 
-  const { data: messages } = useChatroomsDetailMessagesGet(chatroom_id);
+  const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
   const { data: users } = useUsersGet();
   const reshaped_messages = [];
 
@@ -308,13 +308,16 @@ function Chatroom(props: { chatroom_id: number }) {
     }
   }
 
-  const { mutate: sendMessage } = useChatroomsDetailMessagesPost(chatroom_id);
+  const { mutate: sendMessage } = useChatroomsDetailMessagesPost({ chatroom_id });
 
-  const { mutate: editRoom } = useChatroomsDetailPut(chatroom_id, () => {
-    enqueueSnackbar({
-      variant: "success",
-      message: <Typography>Ruangan berhasil diedit!</Typography>,
-    });
+  const { mutate: editRoom } = useChatroomsDetailPut({
+    chatroom_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>Ruangan berhasil diedit!</Typography>,
+      });
+    },
   });
 
   if (!sessionData?.logged) {
@@ -365,16 +368,16 @@ function ChatroomPage() {
 
   const { data: sessionData } = useSessionGet();
 
-  const { data: chatrooms } = useUsersDetailChatroomsGet(
-    sessionData?.logged ? sessionData.user_id : undefined,
-    (failureCount, error) => {
+  const { data: chatrooms } = useUsersDetailChatroomsGet({
+    user_id: sessionData?.logged ? sessionData.user_id : undefined,
+    retry: (failureCount, error) => {
       if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
         setLocation("/");
         return false;
       }
       return true;
     },
-  );
+  });
 
   useEffect(() => {
     if (!chatrooms) {
@@ -393,17 +396,16 @@ function ChatroomPage() {
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [addRoomName, setAddRoomName] = useState("");
 
-  const { mutate: createRoom } = useUsersDetailChatroomsPost(
-    addRoomName,
-    sessionData?.logged ? sessionData.user_id : undefined,
-    () => {
+  const { mutate: createRoom } = useUsersDetailChatroomsPost({
+    user_id: sessionData?.logged ? sessionData.user_id : undefined,
+    onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Room created!</Typography>,
         variant: "success",
       });
       setAddRoomOpen(false);
     },
-  );
+  });
 
   useChatSocket({
     userId: sessionData?.logged ? sessionData.user_id : undefined,
@@ -432,7 +434,15 @@ function ChatroomPage() {
           <TextField fullWidth onChange={(e) => setAddRoomName(e.target.value)} label="Room name" />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => createRoom()}>Create room</Button>
+          <Button
+            onClick={() =>
+              createRoom({
+                name: addRoomName,
+              })
+            }
+          >
+            Create room
+          </Button>
         </DialogActions>
       </Dialog>
       <Grid item xs={2} lg={1}>
