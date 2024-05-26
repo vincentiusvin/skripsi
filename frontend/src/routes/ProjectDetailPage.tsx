@@ -1,8 +1,179 @@
-import { ArrowBack, Edit } from "@mui/icons-material";
-import { Button, Chip, Grid, Typography } from "@mui/material";
+import { ArrowBack, Check } from "@mui/icons-material";
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Skeleton,
+  Snackbar,
+  Stack,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { enqueueSnackbar } from "notistack";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../helpers/fetch";
-import { useProjectDetail } from "../queries/project_hooks";
+import {
+  useChatSocket,
+  useChatroomByProjectId,
+  useChatroomDetail,
+  useCreateProjectRoom,
+  useMessage,
+  useSendMessage,
+} from "../queries/chat_hooks";
+import {
+  useAddProjectMember,
+  useProjectDetail,
+  useProjectMembership,
+} from "../queries/project_hooks";
+import { useSession } from "../queries/sesssion_hooks";
+import { useUsers } from "../queries/user_hooks";
+import { ChatroomContent } from "./Chatroom";
+
+function Chatroom(props: { chatroom_id: number }) {
+  const { chatroom_id } = props;
+  const { data: sessionData } = useSession();
+  const { data: chatroom } = useChatroomDetail(chatroom_id);
+  const { data: messages } = useMessage(chatroom_id);
+  const { data: users } = useUsers();
+  const reshaped_messages = [];
+
+  if (users && messages) {
+    const user_lookup: Record<string, (typeof users)[0]> = {};
+    for (const user of users) {
+      user_lookup[user.user_id] = user;
+    }
+
+    for (const message of messages) {
+      const uid = message.user_id;
+      const user = user_lookup[uid];
+      reshaped_messages.push({
+        user_name: user.user_name,
+        ...message,
+      });
+    }
+  }
+
+  const { mutate: sendMessage } = useSendMessage(chatroom_id);
+
+  if (!sessionData?.logged) {
+    return null;
+  }
+  if (!chatroom) {
+    return <Skeleton />;
+  }
+
+  return (
+    <Stack height={"100%"} display={"flex"}>
+      <ChatroomContent
+        onSend={(msg) => {
+          sendMessage(msg);
+        }}
+        messages={reshaped_messages}
+      />
+    </Stack>
+  );
+}
+
+function Involved(props: { project_id: number }) {
+  const { project_id } = props;
+  const [connected, setConnected] = useState(false);
+  const [activeRoom, setActiveRoom] = useState<number | false>(false);
+  const { data: sessionData } = useSession();
+  const { data: chatrooms } = useChatroomByProjectId(project_id);
+
+  useEffect(() => {
+    if (!chatrooms) {
+      setActiveRoom(false);
+      return;
+    }
+    if (activeRoom === false) {
+      return;
+    }
+    const found = chatrooms.map((x) => x.chatroom_id).includes(activeRoom);
+    if (!found) {
+      setActiveRoom(false);
+    }
+  }, [chatrooms]);
+
+  const [addRoomOpen, setAddRoomOpen] = useState(false);
+  const [addRoomName, setAddRoomName] = useState("");
+
+  const { mutate: createRoom } = useCreateProjectRoom(addRoomName, project_id, () => {
+    enqueueSnackbar({
+      message: <Typography>Room created!</Typography>,
+      variant: "success",
+    });
+    setAddRoomOpen(false);
+  });
+
+  useChatSocket({
+    userId: sessionData?.logged ? sessionData.user_id : undefined,
+    onConnect: () => {
+      setConnected(true);
+    },
+    onDisconnect: () => {
+      setConnected(false);
+    },
+  });
+
+  if (!sessionData?.logged) {
+    return null;
+  }
+
+  return (
+    <Grid container height={"100%"}>
+      <Snackbar open={!connected}>
+        <Alert severity="error">
+          <Typography>You are not connected!</Typography>
+        </Alert>
+      </Snackbar>
+      <Dialog open={addRoomOpen} onClose={() => setAddRoomOpen(false)}>
+        <DialogTitle>Add new room</DialogTitle>
+        <DialogContent>
+          <TextField fullWidth onChange={(e) => setAddRoomName(e.target.value)} label="Room name" />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => createRoom()}>Create room</Button>
+        </DialogActions>
+      </Dialog>
+      <Grid item xs={2} lg={1}>
+        <Button
+          onClick={() => {
+            setAddRoomOpen(true);
+          }}
+        >
+          Add room
+        </Button>
+        <Tabs
+          orientation="vertical"
+          value={activeRoom}
+          onChange={(_e, newRoomId) => {
+            setActiveRoom(newRoomId);
+          }}
+        >
+          {chatrooms?.map((x, i) => (
+            <Tab key={i} label={x.chatroom_name} value={x.chatroom_id} />
+          ))}
+        </Tabs>
+      </Grid>
+      <Grid item xs={10} lg={11}>
+        {chatrooms?.map(
+          (x, i) =>
+            activeRoom === x.chatroom_id && <Chatroom key={i} chatroom_id={x.chatroom_id} />,
+        )}
+      </Grid>
+    </Grid>
+  );
+}
 
 function ProjectDetailPage() {
   const { id } = useParams();
@@ -12,7 +183,10 @@ function ProjectDetailPage() {
     setLocation("/projects");
   }
 
-  const { data } = useProjectDetail(id!, (failureCount, error) => {
+  const { data: user_data } = useSession();
+  const user_id = user_data?.logged ? user_data.user_id : undefined;
+
+  const { data: project_data } = useProjectDetail(id!, (failureCount, error) => {
     if (error instanceof APIError || failureCount > 3) {
       setLocation("/projects");
       return false;
@@ -20,7 +194,20 @@ function ProjectDetailPage() {
     return true;
   });
 
-  if (data) {
+  const { data: membership } = useProjectMembership(project_data?.project_id, user_id);
+
+  const { mutate: addMember } = useAddProjectMember(project_data?.project_id, user_id, (x) => {
+    enqueueSnackbar({
+      variant: "success",
+      message: <Typography>{x.msg}</Typography>,
+    });
+  });
+
+  if (!project_data || !membership) {
+    return <Skeleton />;
+  }
+
+  if (membership.status === "Not Involved") {
     return (
       <Grid container mt={2}>
         <Grid item xs={1}>
@@ -32,24 +219,36 @@ function ProjectDetailPage() {
         </Grid>
         <Grid item xs={10}>
           <Typography variant="h4" fontWeight={"bold"} align="center">
-            {data.project_name}
+            {project_data.project_name}
           </Typography>
         </Grid>
         <Grid item xs={1}>
-          <Button endIcon={<Edit />} variant="contained" fullWidth>
-            Edit
+          <Button endIcon={<Check />} variant="contained" fullWidth onClick={() => addMember()}>
+            Apply
           </Button>
         </Grid>
         <Grid item xs={12}>
-          <Typography>{data.project_desc}</Typography>
+          <Typography>{project_data.project_desc}</Typography>
         </Grid>
         <Grid item xs={12}>
-          <Typography>{data.org_id}</Typography>
+          <Typography>{project_data.org_id}</Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography variant="h6" fontWeight={"bold"}>
+            Collaborators
+          </Typography>
+          <Stack>
+            {project_data.project_devs.map((x) => (
+              <Box>
+                <Typography>{x.name}</Typography>
+              </Box>
+            ))}
+          </Stack>
         </Grid>
         <Grid item xs={12}>
           <Typography>Categories</Typography>
           <Grid container spacing={1}>
-            {data.project_categories.map((category, index) => (
+            {project_data.project_categories.map((category, index) => (
               <Grid item key={index}>
                 <Chip label={category} />
               </Grid>
@@ -59,7 +258,7 @@ function ProjectDetailPage() {
       </Grid>
     );
   } else {
-    return <></>;
+    return <Involved project_id={project_data.project_id} />;
   }
 }
 

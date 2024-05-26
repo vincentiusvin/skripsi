@@ -21,32 +21,26 @@ export function useMessage(chatroom_id: number) {
   });
 }
 
-export function useSendMessage(chatroom_id: number, message: string, onSettled?: () => void) {
+export function useSendMessage(chatroom_id: number) {
   return useMutation({
-    mutationFn: async () =>
+    mutationFn: async (message: string) =>
       await new APIContext("PostMessages").fetch(`/api/chatrooms/${chatroom_id}/messages`, {
         method: "POST",
         body: {
           message: message,
         },
       }),
-    onSettled: onSettled,
   });
 }
 
-export function useEditRoom(
-  chatroom_id: number,
-  name: string,
-  user_ids: number[],
-  onSuccess?: () => void,
-) {
+export function useEditRoom(chatroom_id: number, onSuccess?: () => void) {
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (opts: { name?: string; user_ids?: number[] }) => {
       const res = await new APIContext("PutChatroom").fetch(`/api/chatrooms/${chatroom_id}`, {
         method: "PUT",
         body: {
-          name: name,
-          user_ids: user_ids,
+          name: opts.name,
+          user_ids: opts.user_ids,
         },
       });
       return res;
@@ -55,7 +49,7 @@ export function useEditRoom(
   });
 }
 
-export function useCreateRoom(name: string, user_ids: number[], onSuccess?: () => void) {
+export function useCreatePersonalRoom(name: string, user_ids: number[], onSuccess?: () => void) {
   return useMutation({
     mutationFn: async () => {
       if (user_ids.length === 0) {
@@ -73,15 +67,38 @@ export function useCreateRoom(name: string, user_ids: number[], onSuccess?: () =
   });
 }
 
-export function useChatroom(
+export function useCreateProjectRoom(name: string, project_id: number, onSuccess?: () => void) {
+  return useMutation({
+    mutationFn: async () => {
+      return new APIContext("PostChatrooms").fetch("/api/chatrooms", {
+        method: "POST",
+        body: {
+          name: name,
+          project_id: project_id,
+        },
+      });
+    },
+    onSuccess: onSuccess,
+  });
+}
+
+export function useChatroomByUserId(
   userId: number | undefined,
   retry?: (failureCount: number, error: Error) => boolean,
 ) {
   return useQuery({
-    queryKey: ["chatrooms", "collection", userId],
-    queryFn: () => new APIContext("GetChatrooms").fetch("/api/chatrooms"),
+    queryKey: ["chatrooms", "collection", "user", userId],
+    queryFn: () => new APIContext("GetChatrooms").fetch(`/api/users/${userId}/chatrooms`),
     retry: retry,
     enabled: userId !== undefined,
+  });
+}
+
+export function useChatroomByProjectId(projectId: number | undefined) {
+  return useQuery({
+    queryKey: ["chatrooms", "collection", "project", projectId],
+    queryFn: () => new APIContext("GetChatrooms").fetch(`/api/projects/${projectId}/chatrooms`),
+    enabled: projectId !== undefined,
   });
 }
 
