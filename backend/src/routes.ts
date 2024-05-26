@@ -24,39 +24,59 @@ import { deleteSession, getSession, putSession } from "./routes/session";
 import { getUser, postUser } from "./routes/user";
 
 export function registerRoutes(app: Express) {
-  app.get("/api/session", getSession);
-  app.put("/api/session", putSession);
-  app.delete("/api/session", deleteSession);
+  // session -> RUD
+  app.get("/api/session", getSession); // R
+  app.put("/api/session", putSession); // U
+  app.delete("/api/session", deleteSession); // D
 
-  app.get("/api/orgs", getOrgs);
-  app.post("/api/orgs", validateLogged, postOrgs as RequestHandler);
-  app.get("/api/orgs/:id", getOrgDetail);
-  app.get("/api/category", getOrgsCategory);
+  // users -> CR
+  app.post("/api/users", postUser); // C
+  app.get("/api/users", getUser); // R
+  // users/user -> RUD
+  // R
+  // U
+  // D
+  // users/user/chatrooms -> CR
+  // C
+  app.get("/api/users/:user_id/chatrooms", validateLogged, getPersonalChatrooms as RequestHandler); // R
 
-  app.post("/api/users", postUser);
-  app.get("/api/users", getUser);
-  app.get("/api/users/:user_id/chatrooms", validateLogged, getPersonalChatrooms as RequestHandler);
+  // orgs -> CR
+  app.post("/api/orgs", validateLogged, postOrgs as RequestHandler); // C
+  app.get("/api/orgs", getOrgs); // R
+  // orgs/org -> RUD
+  app.get("/api/orgs/:id", getOrgDetail); // R
+  // U
+  // D
+  // org-categories -> R
+  app.get("/api/category", getOrgsCategory); // R
 
-  app.post("/api/chatrooms", validateLogged, postChatrooms as RequestHandler);
-
-  app.get("/api/chatrooms/:chatroom_id", validateLogged, getChatroomDetail as RequestHandler);
-  app.put("/api/chatrooms/:chatroom_id", validateLogged, putChatroom as RequestHandler);
-
-  app.get("/api/chatrooms/:chatroom_id/messages", validateLogged, getMessages as RequestHandler);
-  app.post("/api/chatrooms/:chatroom_id/messages", validateLogged, postMessages as RequestHandler);
-
-  //projects api
-  app.get("/api/projects", getProjects);
-  app.post("/api/projects", addProjects);
-
-  app.get("/api/projects/:project_id", getProjectsDetail);
-
-  app.get("/api/projects/:project_id/users/:user_id", getProjectMembership);
-  app.put("/api/projects/:project_id/users/:user_id", addProjectMember);
-  app.delete("/api/projects/:project_id/users/:user_id", deleteProjectMember);
-
-  app.get("/api/projects/:project_id/chatrooms", getProjectChatrooms);
+  // projects -> CR
+  app.post("/api/projects", addProjects); // C
+  app.get("/api/projects", getProjects); // R
+  // projects/project -> RUD
+  app.get("/api/projects/:project_id", getProjectsDetail); // R
+  // U
+  // D
+  // projects/project/users -> shallow
+  // projects/project/users/user -> RUD
+  app.get("/api/projects/:project_id/users/:user_id", getProjectMembership); // R
+  app.put("/api/projects/:project_id/users/:user_id", addProjectMember); // U
+  app.delete("/api/projects/:project_id/users/:user_id", deleteProjectMember); // D
+  // projects/project/chatrooms -> CR
+  // C
+  app.get("/api/projects/:project_id/chatrooms", getProjectChatrooms); //  R
+  // projects/project-categories
   app.get("/api/projects-category", getProjectCategory);
+
+  // chatrooms -> shallow
+  app.post("/api/chatrooms", validateLogged, postChatrooms as RequestHandler); // TODO: remove
+  // chatrooms/chatroom -> RUD
+  app.get("/api/chatrooms/:chatroom_id", validateLogged, getChatroomDetail as RequestHandler); // R
+  app.put("/api/chatrooms/:chatroom_id", validateLogged, putChatroom as RequestHandler); // U
+  // D
+  // chatrooms/chatroom/messages -> CR
+  app.post("/api/chatrooms/:chatroom_id/messages", validateLogged, postMessages as RequestHandler); // C
+  app.get("/api/chatrooms/:chatroom_id/messages", validateLogged, getMessages as RequestHandler); // R
 }
 
 /**
