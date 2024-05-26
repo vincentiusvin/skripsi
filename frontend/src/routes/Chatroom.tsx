@@ -281,8 +281,8 @@ export function ChatroomHeader(props: {
   );
 }
 
-function Chatroom(props: { chatroom_id: number; user_id: number }) {
-  const { chatroom_id, user_id } = props;
+function Chatroom(props: { chatroom_id: number; user_id: number; onLeave: () => void }) {
+  const { chatroom_id, user_id, onLeave } = props;
 
   const { data: chatroom } = useChatroomsDetailGet({ chatroom_id });
 
@@ -331,6 +331,7 @@ function Chatroom(props: { chatroom_id: number; user_id: number }) {
           editRoom({
             user_ids: chatroom.chatroom_users.map((x) => x.user_id).filter((x) => x !== user_id),
           });
+          onLeave();
         }}
         onEditMembers={(members) => {
           editRoom({
@@ -437,7 +438,13 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
       </Grid>
       <Grid item xs={10} lg={11}>
         {selectedChatroom && (
-          <Chatroom user_id={user_id} chatroom_id={selectedChatroom.chatroom_id} />
+          <Chatroom
+            user_id={user_id}
+            chatroom_id={selectedChatroom.chatroom_id}
+            onLeave={() => {
+              setActiveRoom(false);
+            }}
+          />
         )}
       </Grid>
     </Grid>
