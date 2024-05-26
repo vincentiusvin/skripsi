@@ -57,7 +57,7 @@ export function registerRoutes(app: Express) {
   // U
   // D
   // org-categories -> R
-  app.get("/api/category", getOrgsCategories); // R
+  app.get("/api/org-categories", getOrgsCategories); // R
 
   // projects -> CR
   app.post("/api/projects", postProjects); // C
@@ -79,7 +79,7 @@ export function registerRoutes(app: Express) {
   ); // C
   app.get("/api/projects/:project_id/chatrooms", getProjectsDetailChatrooms); //  R
   // projects/project-categories
-  app.get("/api/projects-category", getProjectsCategories);
+  app.get("/api/project-categories", getProjectsCategories);
 
   // chatrooms -> shallow
   // chatrooms/chatroom -> RUD

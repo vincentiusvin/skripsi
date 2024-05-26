@@ -52,7 +52,7 @@ export function useAddOrg(opts: {
 export function useOrgCategories(retry?: (failureCount: number, error: Error) => boolean) {
   return useQuery({
     queryKey: ["categories"],
-    queryFn: () => new APIContext("OrgsCategoriesGet").fetch(`/api/category`),
+    queryFn: () => new APIContext("OrgsCategoriesGet").fetch(`/api/org-categories`),
     retry: retry,
   });
 }

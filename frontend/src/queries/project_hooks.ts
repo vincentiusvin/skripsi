@@ -100,6 +100,6 @@ export function useAddProjects(opts: {
 export function useProjectCategories() {
   return useQuery({
     queryKey: ["categories"],
-    queryFn: () => new APIContext("ProjectsCategoriesGet").fetch(`/api/projects-category`),
+    queryFn: () => new APIContext("ProjectsCategoriesGet").fetch(`/api/project-categories`),
   });
 }
