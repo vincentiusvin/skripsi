@@ -28,7 +28,7 @@ function OrgsDetailPage() {
     }
     return true;
   });
-  const { data: projectData } = useProjectCollection();
+  const { data: projectData } = useProjectCollection(id);
 
   if (data && projectData) {
     return (

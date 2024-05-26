@@ -13,10 +13,18 @@ export function useProjectDetail(
   });
 }
 
-export function useProjectCollection() {
+export function useProjectCollection(org_id?: string) {
   return useQuery({
-    queryKey: ["projects", "collection"],
-    queryFn: () => new APIContext("getProjects").fetch("/api/projects"),
+    queryKey: ["projects", "collection", org_id],
+    queryFn: () =>
+      new APIContext("getProjects").fetch("/api/projects", {
+        query:
+          org_id !== undefined
+            ? {
+                org_id: org_id,
+              }
+            : undefined,
+      }),
   });
 }
 
