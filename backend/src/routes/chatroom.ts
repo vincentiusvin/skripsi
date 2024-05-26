@@ -35,7 +35,7 @@ export async function getChatroomMembers(chatroom_id: number) {
   }
 }
 
-export const getMessages: RH<{
+export const getChatroomsDetailMessages: RH<{
   Params: {
     chatroom_id: string;
   };
@@ -67,7 +67,7 @@ export const getMessages: RH<{
   res.status(200).json(result);
 };
 
-export const postMessages: RH<{
+export const postChatroomsDetailMessages: RH<{
   Params: {
     chatroom_id: string;
   };
@@ -116,7 +116,7 @@ export const postMessages: RH<{
   res.status(200).json(ret);
 };
 
-export const getChatroomDetail: RH<{
+export const getChatroomsDetail: RH<{
   Params: {
     chatroom_id: string;
   };
@@ -162,7 +162,7 @@ export const getChatroomDetail: RH<{
   res.status(200).json(result);
 };
 
-export const getProjectChatrooms: RH<{
+export const getProjectsDetailChatrooms: RH<{
   ResBody: {
     chatroom_id: number;
     chatroom_name: string;
@@ -190,7 +190,7 @@ export const getProjectChatrooms: RH<{
   res.json(result);
 };
 
-export const getPersonalChatrooms: RH<{
+export const getUsersDetailChatrooms: RH<{
   ResBody: {
     chatroom_id: number;
     chatroom_name: string;
@@ -220,71 +220,84 @@ export const getPersonalChatrooms: RH<{
   res.json(result);
 };
 
-export const postChatrooms: RH<{
+export const postUsersDetailChatrooms: RH<{
   ResBody: { msg: string };
-  ReqBody: { name: string; user_ids: number[] } | { project_id: number; name: string };
+  ReqBody: { name: string };
+  Params: { user_id: string };
 }> = async function (req, res) {
   const name = req.body.name;
+  const user_id_str = req.params.user_id;
+  const user_id = Number(user_id_str);
 
   if (name.length === 0) {
     throw new ClientError("Nama chatroom tidak boleh kosong!");
   }
 
-  if ("project_id" in req.body) {
-    const project_id = req.body.project_id;
-    await db
+  await db.transaction().execute(async (trx) => {
+    const room = await trx
       .insertInto("ms_chatrooms")
       .values({
         name: name,
-        project_id: project_id,
+      })
+      .returning(["id"])
+      .executeTakeFirst();
+
+    if (!room) {
+      throw new Error("Data not inserted!");
+    }
+
+    await trx
+      .insertInto("chatrooms_users")
+      .values({
+        chatroom_id: room.id,
+        user_id: user_id,
       })
       .execute();
+  });
 
-    const members = await getProjectMembers(project_id);
-    const socks = await io.fetchSockets();
-
-    const filtered = socks.filter(
-      (x) =>
-        members.org_members.includes(x.data.userId) || members.project_devs.includes(x.data.userId),
-    );
-    filtered.forEach((x) => x.emit("roomUpdate"));
-  } else {
-    const user_ids = req.body.user_ids;
-    await db.transaction().execute(async (trx) => {
-      const room = await trx
-        .insertInto("ms_chatrooms")
-        .values({
-          name: name,
-        })
-        .returning(["id"])
-        .executeTakeFirst();
-
-      if (!room) {
-        throw new Error("Data not inserted!");
-      }
-
-      await trx
-        .insertInto("chatrooms_users")
-        .values(
-          user_ids.map((user_id) => ({
-            chatroom_id: room.id,
-            user_id: user_id,
-          })),
-        )
-        .execute();
-    });
-
-    const socks = await io.fetchSockets();
-    const filtered = socks.filter((x) => user_ids.includes(x.data.userId));
-    filtered.forEach((x) => x.emit("roomUpdate"));
-  }
+  const socks = await io.fetchSockets();
+  const filtered = socks.filter((x) => user_id === x.data.userId);
+  filtered.forEach((x) => x.emit("roomUpdate"));
 
   res.status(201).json({
     msg: "Room created!",
   });
 };
 
-export const putChatroom: RH<{
+export const postProjectsDetailChatrooms: RH<{
+  ResBody: { msg: string };
+  ReqBody: { name: string };
+  Params: { project_id: string };
+}> = async function (req, res) {
+  const name = req.body.name;
+  const project_id = Number(req.params.project_id);
+
+  if (name.length === 0) {
+    throw new ClientError("Nama chatroom tidak boleh kosong!");
+  }
+  await db
+    .insertInto("ms_chatrooms")
+    .values({
+      name: name,
+      project_id: project_id,
+    })
+    .execute();
+
+  const members = await getProjectMembers(project_id);
+  const socks = await io.fetchSockets();
+
+  const filtered = socks.filter(
+    (x) =>
+      members.org_members.includes(x.data.userId) || members.project_devs.includes(x.data.userId),
+  );
+  filtered.forEach((x) => x.emit("roomUpdate"));
+
+  res.status(201).json({
+    msg: "Room created!",
+  });
+};
+
+export const putChatroomsDetail: RH<{
   ResBody: { msg: string };
   Params: { chatroom_id: string };
   ReqBody: { name?: string; user_ids?: number[] };

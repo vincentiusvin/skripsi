@@ -10,56 +10,66 @@ import { socket } from "../helpers/socket";
 export function useChatroomDetail(chatroom_id: number) {
   return useQuery({
     queryKey: ["chatrooms", "detail", chatroom_id],
-    queryFn: () => new APIContext("GetChatroomDetail").fetch(`/api/chatrooms/${chatroom_id}`),
+    queryFn: () => new APIContext("ChatroomsDetailGet").fetch(`/api/chatrooms/${chatroom_id}`),
   });
 }
 
 export function useMessage(chatroom_id: number) {
   return useQuery({
     queryKey: ["messages", "detail", chatroom_id],
-    queryFn: () => new APIContext("GetMessages").fetch(`/api/chatrooms/${chatroom_id}/messages`),
+    queryFn: () =>
+      new APIContext("ChatroomsDetailMessagesGet").fetch(`/api/chatrooms/${chatroom_id}/messages`),
   });
 }
 
 export function useSendMessage(chatroom_id: number) {
   return useMutation({
     mutationFn: async (message: string) =>
-      await new APIContext("PostMessages").fetch(`/api/chatrooms/${chatroom_id}/messages`, {
-        method: "POST",
-        body: {
-          message: message,
+      await new APIContext("ChatroomsDetailMessagesPost").fetch(
+        `/api/chatrooms/${chatroom_id}/messages`,
+        {
+          method: "POST",
+          body: {
+            message: message,
+          },
         },
-      }),
+      ),
   });
 }
 
 export function useEditRoom(chatroom_id: number, onSuccess?: () => void) {
   return useMutation({
     mutationFn: async (opts: { name?: string; user_ids?: number[] }) => {
-      const res = await new APIContext("PutChatroom").fetch(`/api/chatrooms/${chatroom_id}`, {
-        method: "PUT",
-        body: {
-          name: opts.name,
-          user_ids: opts.user_ids,
+      const res = await new APIContext("ChatroomsDetailPut").fetch(
+        `/api/chatrooms/${chatroom_id}`,
+        {
+          method: "PUT",
+          body: {
+            name: opts.name,
+            user_ids: opts.user_ids,
+          },
         },
-      });
+      );
       return res;
     },
     onSuccess: onSuccess,
   });
 }
 
-export function useCreatePersonalRoom(name: string, user_ids: number[], onSuccess?: () => void) {
+export function useCreatePersonalRoom(
+  name: string,
+  user_id: number | undefined,
+  onSuccess?: () => void,
+) {
   return useMutation({
     mutationFn: async () => {
-      if (user_ids.length === 0) {
-        throw new Error("Anda harus login untuk membuat ruangan!");
+      if (user_id === undefined) {
+        throw new Error("User id invalid!");
       }
-      return new APIContext("PostChatrooms").fetch("/api/chatrooms", {
+      return new APIContext("UserDetailChatroomsPost").fetch(`/api/users/${user_id}/chatrooms`, {
         method: "POST",
         body: {
           name: name,
-          user_ids: user_ids,
         },
       });
     },
@@ -70,13 +80,15 @@ export function useCreatePersonalRoom(name: string, user_ids: number[], onSucces
 export function useCreateProjectRoom(name: string, project_id: number, onSuccess?: () => void) {
   return useMutation({
     mutationFn: async () => {
-      return new APIContext("PostChatrooms").fetch("/api/chatrooms", {
-        method: "POST",
-        body: {
-          name: name,
-          project_id: project_id,
+      return new APIContext("ProjectsDetailChatroomsPost").fetch(
+        `/api/projects/${project_id}/chatrooms`,
+        {
+          method: "POST",
+          body: {
+            name: name,
+          },
         },
-      });
+      );
     },
     onSuccess: onSuccess,
   });
@@ -88,7 +100,7 @@ export function useChatroomByUserId(
 ) {
   return useQuery({
     queryKey: ["chatrooms", "collection", "user", userId],
-    queryFn: () => new APIContext("GetChatrooms").fetch(`/api/users/${userId}/chatrooms`),
+    queryFn: () => new APIContext("UserDetailChatroomsGet").fetch(`/api/users/${userId}/chatrooms`),
     retry: retry,
     enabled: userId !== undefined,
   });
@@ -97,7 +109,8 @@ export function useChatroomByUserId(
 export function useChatroomByProjectId(projectId: number | undefined) {
   return useQuery({
     queryKey: ["chatrooms", "collection", "project", projectId],
-    queryFn: () => new APIContext("GetChatrooms").fetch(`/api/projects/${projectId}/chatrooms`),
+    queryFn: () =>
+      new APIContext("ProjectsDetailChatroomsGet").fetch(`/api/projects/${projectId}/chatrooms`),
     enabled: projectId !== undefined,
   });
 }
@@ -142,7 +155,7 @@ export function useChatSocket(opts: {
 
       queryClient.setQueryData(
         ["messages", "detail", chatroom_id],
-        (old: API["GetMessages"]["ResBody"]) => (old ? [...old, msgObj] : [msgObj]),
+        (old: API["ChatroomsDetailMessagesGet"]["ResBody"]) => (old ? [...old, msgObj] : [msgObj]),
       );
 
       if (onMsg) {

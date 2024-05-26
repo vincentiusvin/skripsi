@@ -5,14 +5,14 @@ import { queryClient } from "../helpers/queryclient";
 export function useSession() {
   return useQuery({
     queryKey: ["session"],
-    queryFn: () => new APIContext("GetSession").fetch("/api/session"),
+    queryFn: () => new APIContext("SessionGet").fetch("/api/session"),
   });
 }
 
 export function useLogout() {
   return useMutation({
     mutationFn: () =>
-      new APIContext("DeleteSession").fetch("/api/session", {
+      new APIContext("SessionDelete").fetch("/api/session", {
         method: "DELETE",
       }),
     onSuccess: () => {
@@ -24,7 +24,7 @@ export function useLogout() {
 export function useLogin(username: string, password: string, onSuccess: () => void) {
   return useMutation({
     mutationFn: () =>
-      new APIContext("PutSession").fetch("/api/session", {
+      new APIContext("SessionPut").fetch("/api/session", {
         body: {
           user_name: username,
           user_password: password,

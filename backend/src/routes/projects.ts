@@ -43,7 +43,7 @@ export async function getProjectMembers(project_id: number) {
   };
 }
 
-export const getProjectMembership: RH<{
+export const getProjectsDetailMembersDetail: RH<{
   ResBody: {
     status: "Member" | "Dev" | "Not Involved";
   };
@@ -67,7 +67,7 @@ export const getProjectMembership: RH<{
   }
 };
 
-export const addProjectMember: RH<{
+export const putProjectsDetailMembersDetail: RH<{
   ResBody: {
     msg: string;
   };
@@ -112,7 +112,7 @@ export const addProjectMember: RH<{
   res.json({ msg: "Pengguna berhasil ditambahkan!" });
 };
 
-export const deleteProjectMember: RH<{
+export const deleteProjectsDetailMembersDetail: RH<{
   ResBody: {
     msg: string;
   };
@@ -243,7 +243,7 @@ export const getProjectsDetail: RH<{
   res.status(200).json(modifiedProject);
 };
 
-export const addProjects: RH<{
+export const postProjects: RH<{
   ReqBody: {
     project_name: string;
     org_id: number;
@@ -292,7 +292,7 @@ export const addProjects: RH<{
   });
 };
 
-export const getProjectCategory: RH<{
+export const getProjectsCategories: RH<{
   ResBody: {
     id: number;
     name: string;

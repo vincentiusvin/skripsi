@@ -9,7 +9,7 @@ export function useProjectDetail(
 ) {
   return useQuery({
     queryKey: ["projects", "detail", id],
-    queryFn: () => new APIContext("getProjectsDetail").fetch(`/api/projects/${id}`),
+    queryFn: () => new APIContext("ProjectsDetailGet").fetch(`/api/projects/${id}`),
     retry: retry,
   });
 }
@@ -18,7 +18,7 @@ export function useProjectCollection(org_id?: string) {
   return useQuery({
     queryKey: ["projects", "collection", org_id],
     queryFn: () =>
-      new APIContext("getProjects").fetch("/api/projects", {
+      new APIContext("ProjectsGet").fetch("/api/projects", {
         query:
           org_id !== undefined
             ? {
@@ -33,7 +33,9 @@ export function useProjectMembership(project_id: number | undefined, user_id: nu
   return useQuery({
     queryKey: ["projects", "detail", project_id, "members", user_id],
     queryFn: () =>
-      new APIContext("GetProjectMember").fetch(`/api/projects/${project_id}/users/${user_id}`),
+      new APIContext("ProjectsDetailMembersGet").fetch(
+        `/api/projects/${project_id}/users/${user_id}`,
+      ),
     enabled: project_id !== undefined && user_id !== undefined,
   });
 }
@@ -41,7 +43,7 @@ export function useProjectMembership(project_id: number | undefined, user_id: nu
 export function useAddProjectMember(
   project_id: number | undefined,
   user_id: number | undefined,
-  onSuccess?: (data: API["AddProjectMember"]["ResBody"]) => void,
+  onSuccess?: (data: API["ProjectsDetailMembersPut"]["ResBody"]) => void,
 ) {
   return useMutation({
     mutationFn: () => {
@@ -51,7 +53,7 @@ export function useAddProjectMember(
       if (user_id === undefined) {
         throw new Error("User invalid!");
       }
-      return new APIContext("AddProjectMember").fetch(
+      return new APIContext("ProjectsDetailMembersPut").fetch(
         `/api/projects/${project_id}/users/${user_id}`,
         {
           method: "PUT",
@@ -77,7 +79,7 @@ export function useAddProjects(opts: {
   const { name, desc, org_id, category, onSuccess } = opts;
   return useMutation({
     mutationFn: () =>
-      new APIContext("addProjects").fetch("/api/projects", {
+      new APIContext("ProjectsPost").fetch("/api/projects", {
         method: "POST",
         body: {
           category_id: category,
@@ -98,6 +100,6 @@ export function useAddProjects(opts: {
 export function useProjectCategories() {
   return useQuery({
     queryKey: ["categories"],
-    queryFn: () => new APIContext("getProjectsCategory").fetch(`/api/projects-category`),
+    queryFn: () => new APIContext("ProjectsCategoriesGet").fetch(`/api/project-categories`),
   });
 }
