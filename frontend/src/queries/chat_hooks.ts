@@ -56,17 +56,20 @@ export function useEditRoom(chatroom_id: number, onSuccess?: () => void) {
   });
 }
 
-export function useCreatePersonalRoom(name: string, user_ids: number[], onSuccess?: () => void) {
+export function useCreatePersonalRoom(
+  name: string,
+  user_id: number | undefined,
+  onSuccess?: () => void,
+) {
   return useMutation({
     mutationFn: async () => {
-      if (user_ids.length === 0) {
-        throw new Error("Anda harus login untuk membuat ruangan!");
+      if (user_id === undefined) {
+        throw new Error("User id invalid!");
       }
-      return new APIContext("ChatroomsPost").fetch("/api/chatrooms", {
+      return new APIContext("UserDetailChatroomPost").fetch(`/api/users/${user_id}/chatrooms`, {
         method: "POST",
         body: {
           name: name,
-          user_ids: user_ids,
         },
       });
     },
@@ -77,13 +80,15 @@ export function useCreatePersonalRoom(name: string, user_ids: number[], onSucces
 export function useCreateProjectRoom(name: string, project_id: number, onSuccess?: () => void) {
   return useMutation({
     mutationFn: async () => {
-      return new APIContext("ChatroomsPost").fetch("/api/chatrooms", {
-        method: "POST",
-        body: {
-          name: name,
-          project_id: project_id,
+      return new APIContext("ProjectsDetailChatroomsPost").fetch(
+        `/api/projects/${project_id}/chatrooms`,
+        {
+          method: "POST",
+          body: {
+            name: name,
+          },
         },
-      });
+      );
     },
     onSuccess: onSuccess,
   });
@@ -95,7 +100,7 @@ export function useChatroomByUserId(
 ) {
   return useQuery({
     queryKey: ["chatrooms", "collection", "user", userId],
-    queryFn: () => new APIContext("UserChatroomGet").fetch(`/api/users/${userId}/chatrooms`),
+    queryFn: () => new APIContext("UserDetailChatroomGet").fetch(`/api/users/${userId}/chatrooms`),
     retry: retry,
     enabled: userId !== undefined,
   });

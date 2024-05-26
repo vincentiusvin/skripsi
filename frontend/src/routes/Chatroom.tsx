@@ -395,7 +395,7 @@ function ChatroomPage() {
 
   const { mutate: createRoom } = useCreatePersonalRoom(
     addRoomName,
-    sessionData?.logged ? [sessionData.user_id] : [],
+    sessionData?.logged ? sessionData.user_id : undefined,
     () => {
       enqueueSnackbar({
         message: <Typography>Room created!</Typography>,

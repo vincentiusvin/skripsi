@@ -6,8 +6,9 @@ import {
   getMessages,
   getPersonalChatrooms,
   getProjectChatrooms,
-  postChatrooms,
   postMessages,
+  postPersonalChatrooms,
+  postProjectChatroom,
   putChatroom,
 } from "./routes/chatroom";
 import { getOrgDetail, getOrgs, getOrgsCategory, postOrgs } from "./routes/orgs";
@@ -37,7 +38,11 @@ export function registerRoutes(app: Express) {
   // U
   // D
   // users/user/chatrooms -> CR
-  // C
+  app.post(
+    "/api/users/:user_id/chatrooms",
+    validateLogged,
+    postPersonalChatrooms as RequestHandler,
+  ); // C
   app.get("/api/users/:user_id/chatrooms", validateLogged, getPersonalChatrooms as RequestHandler); // R
 
   // orgs -> CR
@@ -63,13 +68,16 @@ export function registerRoutes(app: Express) {
   app.put("/api/projects/:project_id/users/:user_id", addProjectMember); // U
   app.delete("/api/projects/:project_id/users/:user_id", deleteProjectMember); // D
   // projects/project/chatrooms -> CR
-  // C
+  app.post(
+    "/api/projects/:project_id/chatrooms",
+    validateLogged,
+    postProjectChatroom as RequestHandler,
+  ); // C
   app.get("/api/projects/:project_id/chatrooms", getProjectChatrooms); //  R
   // projects/project-categories
   app.get("/api/projects-category", getProjectCategory);
 
   // chatrooms -> shallow
-  app.post("/api/chatrooms", validateLogged, postChatrooms as RequestHandler); // TODO: remove
   // chatrooms/chatroom -> RUD
   app.get("/api/chatrooms/:chatroom_id", validateLogged, getChatroomDetail as RequestHandler); // R
   app.put("/api/chatrooms/:chatroom_id", validateLogged, putChatroom as RequestHandler); // U
@@ -90,7 +98,8 @@ type _api = {
 
   UserPost: typeof postUser;
   UserGet: typeof getUser;
-  UserChatroomGet: typeof getPersonalChatrooms;
+  UserDetailChatroomPost: typeof postPersonalChatrooms;
+  UserDetailChatroomGet: typeof getPersonalChatrooms;
 
   OrgsPost: typeof postOrgs;
   OrgsGet: typeof getOrgs;
@@ -103,10 +112,10 @@ type _api = {
   ProjectsDetailMembersGet: typeof getProjectMembership;
   ProjectsDetailMembersPut: typeof addProjectMember;
   ProjectsDetailMembersDelete: typeof deleteProjectMember;
+  ProjectsDetailChatroomsPost: typeof postProjectChatroom;
   ProjectsDetailChatroomsGet: typeof getProjectChatrooms;
   ProjectsCategoriesGet: typeof getProjectCategory;
 
-  ChatroomsPost: typeof postChatrooms;
   ChatroomsDetailGet: typeof getChatroomDetail;
   ChatroomsDetailPut: typeof putChatroom;
   ChatroomsDetailMessagesGet: typeof getMessages;
