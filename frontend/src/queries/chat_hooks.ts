@@ -66,7 +66,7 @@ export function useCreatePersonalRoom(
       if (user_id === undefined) {
         throw new Error("User id invalid!");
       }
-      return new APIContext("UserDetailChatroomPost").fetch(`/api/users/${user_id}/chatrooms`, {
+      return new APIContext("UserDetailChatroomsPost").fetch(`/api/users/${user_id}/chatrooms`, {
         method: "POST",
         body: {
           name: name,
@@ -100,7 +100,7 @@ export function useChatroomByUserId(
 ) {
   return useQuery({
     queryKey: ["chatrooms", "collection", "user", userId],
-    queryFn: () => new APIContext("UserDetailChatroomGet").fetch(`/api/users/${userId}/chatrooms`),
+    queryFn: () => new APIContext("UserDetailChatroomsGet").fetch(`/api/users/${userId}/chatrooms`),
     retry: retry,
     enabled: userId !== undefined,
   });

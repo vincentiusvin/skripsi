@@ -35,7 +35,7 @@ export async function getChatroomMembers(chatroom_id: number) {
   }
 }
 
-export const getMessages: RH<{
+export const getChatroomsDetailMessages: RH<{
   Params: {
     chatroom_id: string;
   };
@@ -67,7 +67,7 @@ export const getMessages: RH<{
   res.status(200).json(result);
 };
 
-export const postMessages: RH<{
+export const postChatroomsDetailMessages: RH<{
   Params: {
     chatroom_id: string;
   };
@@ -116,7 +116,7 @@ export const postMessages: RH<{
   res.status(200).json(ret);
 };
 
-export const getChatroomDetail: RH<{
+export const getChatroomsDetail: RH<{
   Params: {
     chatroom_id: string;
   };
@@ -162,7 +162,7 @@ export const getChatroomDetail: RH<{
   res.status(200).json(result);
 };
 
-export const getProjectChatrooms: RH<{
+export const getProjectsDetailChatrooms: RH<{
   ResBody: {
     chatroom_id: number;
     chatroom_name: string;
@@ -190,7 +190,7 @@ export const getProjectChatrooms: RH<{
   res.json(result);
 };
 
-export const getPersonalChatrooms: RH<{
+export const getUsersDetailChatrooms: RH<{
   ResBody: {
     chatroom_id: number;
     chatroom_name: string;
@@ -220,7 +220,7 @@ export const getPersonalChatrooms: RH<{
   res.json(result);
 };
 
-export const postPersonalChatrooms: RH<{
+export const postUsersDetailChatrooms: RH<{
   ResBody: { msg: string };
   ReqBody: { name: string };
   Params: { user_id: string };
@@ -264,7 +264,7 @@ export const postPersonalChatrooms: RH<{
   });
 };
 
-export const postProjectChatroom: RH<{
+export const postProjectsDetailChatrooms: RH<{
   ResBody: { msg: string };
   ReqBody: { name: string };
   Params: { project_id: string };
@@ -297,7 +297,7 @@ export const postProjectChatroom: RH<{
   });
 };
 
-export const putChatroom: RH<{
+export const putChatroomsDetail: RH<{
   ResBody: { msg: string };
   Params: { chatroom_id: string };
   ReqBody: { name?: string; user_ids?: number[] };

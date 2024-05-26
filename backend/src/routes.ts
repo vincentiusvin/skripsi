@@ -2,24 +2,24 @@ import type { Express, RequestHandler } from "express";
 import { ExtractRH } from "./helpers/types";
 import { validateLogged } from "./helpers/validate";
 import {
-  getChatroomDetail,
-  getMessages,
-  getPersonalChatrooms,
-  getProjectChatrooms,
-  postMessages,
-  postPersonalChatrooms,
-  postProjectChatroom,
-  putChatroom,
+  getChatroomsDetail,
+  getChatroomsDetailMessages,
+  getProjectsDetailChatrooms,
+  getUsersDetailChatrooms,
+  postChatroomsDetailMessages,
+  postProjectsDetailChatrooms,
+  postUsersDetailChatrooms,
+  putChatroomsDetail,
 } from "./routes/chatroom";
-import { getOrgDetail, getOrgs, getOrgsCategory, postOrgs } from "./routes/orgs";
+import { getOrgs, getOrgsCategories, getOrgsDetail, postOrgs } from "./routes/orgs";
 import {
-  addProjectMember,
-  addProjects,
-  deleteProjectMember,
-  getProjectCategory,
-  getProjectMembership,
+  deleteProjectsDetailMembersDetail,
   getProjects,
+  getProjectsCategories,
   getProjectsDetail,
+  getProjectsDetailMembersDetail,
+  postProjects,
+  putProjectsDetailMembersDetail,
 } from "./routes/projects";
 import { deleteSession, getSession, putSession } from "./routes/session";
 import { getUser, postUser } from "./routes/user";
@@ -41,22 +41,26 @@ export function registerRoutes(app: Express) {
   app.post(
     "/api/users/:user_id/chatrooms",
     validateLogged,
-    postPersonalChatrooms as RequestHandler,
+    postUsersDetailChatrooms as RequestHandler,
   ); // C
-  app.get("/api/users/:user_id/chatrooms", validateLogged, getPersonalChatrooms as RequestHandler); // R
+  app.get(
+    "/api/users/:user_id/chatrooms",
+    validateLogged,
+    getUsersDetailChatrooms as RequestHandler,
+  ); // R
 
   // orgs -> CR
   app.post("/api/orgs", validateLogged, postOrgs as RequestHandler); // C
   app.get("/api/orgs", getOrgs); // R
   // orgs/org -> RUD
-  app.get("/api/orgs/:id", getOrgDetail); // R
+  app.get("/api/orgs/:id", getOrgsDetail); // R
   // U
   // D
   // org-categories -> R
-  app.get("/api/category", getOrgsCategory); // R
+  app.get("/api/category", getOrgsCategories); // R
 
   // projects -> CR
-  app.post("/api/projects", addProjects); // C
+  app.post("/api/projects", postProjects); // C
   app.get("/api/projects", getProjects); // R
   // projects/project -> RUD
   app.get("/api/projects/:project_id", getProjectsDetail); // R
@@ -64,27 +68,35 @@ export function registerRoutes(app: Express) {
   // D
   // projects/project/users -> shallow
   // projects/project/users/user -> RUD
-  app.get("/api/projects/:project_id/users/:user_id", getProjectMembership); // R
-  app.put("/api/projects/:project_id/users/:user_id", addProjectMember); // U
-  app.delete("/api/projects/:project_id/users/:user_id", deleteProjectMember); // D
+  app.get("/api/projects/:project_id/users/:user_id", getProjectsDetailMembersDetail); // R
+  app.put("/api/projects/:project_id/users/:user_id", putProjectsDetailMembersDetail); // U
+  app.delete("/api/projects/:project_id/users/:user_id", deleteProjectsDetailMembersDetail); // D
   // projects/project/chatrooms -> CR
   app.post(
     "/api/projects/:project_id/chatrooms",
     validateLogged,
-    postProjectChatroom as RequestHandler,
+    postProjectsDetailChatrooms as RequestHandler,
   ); // C
-  app.get("/api/projects/:project_id/chatrooms", getProjectChatrooms); //  R
+  app.get("/api/projects/:project_id/chatrooms", getProjectsDetailChatrooms); //  R
   // projects/project-categories
-  app.get("/api/projects-category", getProjectCategory);
+  app.get("/api/projects-category", getProjectsCategories);
 
   // chatrooms -> shallow
   // chatrooms/chatroom -> RUD
-  app.get("/api/chatrooms/:chatroom_id", validateLogged, getChatroomDetail as RequestHandler); // R
-  app.put("/api/chatrooms/:chatroom_id", validateLogged, putChatroom as RequestHandler); // U
+  app.get("/api/chatrooms/:chatroom_id", validateLogged, getChatroomsDetail as RequestHandler); // R
+  app.put("/api/chatrooms/:chatroom_id", validateLogged, putChatroomsDetail as RequestHandler); // U
   // D
   // chatrooms/chatroom/messages -> CR
-  app.post("/api/chatrooms/:chatroom_id/messages", validateLogged, postMessages as RequestHandler); // C
-  app.get("/api/chatrooms/:chatroom_id/messages", validateLogged, getMessages as RequestHandler); // R
+  app.post(
+    "/api/chatrooms/:chatroom_id/messages",
+    validateLogged,
+    postChatroomsDetailMessages as RequestHandler,
+  ); // C
+  app.get(
+    "/api/chatrooms/:chatroom_id/messages",
+    validateLogged,
+    getChatroomsDetailMessages as RequestHandler,
+  ); // R
 }
 
 /**
@@ -98,28 +110,28 @@ type _api = {
 
   UserPost: typeof postUser;
   UserGet: typeof getUser;
-  UserDetailChatroomPost: typeof postPersonalChatrooms;
-  UserDetailChatroomGet: typeof getPersonalChatrooms;
+  UserDetailChatroomsPost: typeof postUsersDetailChatrooms;
+  UserDetailChatroomsGet: typeof getUsersDetailChatrooms;
 
   OrgsPost: typeof postOrgs;
   OrgsGet: typeof getOrgs;
-  OrgsDetailGet: typeof getOrgDetail;
-  OrgsCategoriesGet: typeof getOrgsCategory;
+  OrgsDetailGet: typeof getOrgsDetail;
+  OrgsCategoriesGet: typeof getOrgsCategories;
 
-  ProjectsPost: typeof addProjects;
+  ProjectsPost: typeof postProjects;
   ProjectsGet: typeof getProjects;
   ProjectsDetailGet: typeof getProjectsDetail;
-  ProjectsDetailMembersGet: typeof getProjectMembership;
-  ProjectsDetailMembersPut: typeof addProjectMember;
-  ProjectsDetailMembersDelete: typeof deleteProjectMember;
-  ProjectsDetailChatroomsPost: typeof postProjectChatroom;
-  ProjectsDetailChatroomsGet: typeof getProjectChatrooms;
-  ProjectsCategoriesGet: typeof getProjectCategory;
+  ProjectsDetailMembersGet: typeof getProjectsDetailMembersDetail;
+  ProjectsDetailMembersPut: typeof putProjectsDetailMembersDetail;
+  ProjectsDetailMembersDelete: typeof deleteProjectsDetailMembersDetail;
+  ProjectsDetailChatroomsPost: typeof postProjectsDetailChatrooms;
+  ProjectsDetailChatroomsGet: typeof getProjectsDetailChatrooms;
+  ProjectsCategoriesGet: typeof getProjectsCategories;
 
-  ChatroomsDetailGet: typeof getChatroomDetail;
-  ChatroomsDetailPut: typeof putChatroom;
-  ChatroomsDetailMessagesGet: typeof getMessages;
-  ChatroomsDetailMessagesPost: typeof postMessages;
+  ChatroomsDetailGet: typeof getChatroomsDetail;
+  ChatroomsDetailPut: typeof putChatroomsDetail;
+  ChatroomsDetailMessagesGet: typeof getChatroomsDetailMessages;
+  ChatroomsDetailMessagesPost: typeof postChatroomsDetailMessages;
 };
 
 /**

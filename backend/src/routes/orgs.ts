@@ -24,7 +24,7 @@ export const getOrgs: RH<{
   res.status(200).json(orgs);
 };
 
-export const getOrgDetail: RH<{
+export const getOrgsDetail: RH<{
   ReqParams: { id: number };
   ResBody: {
     org_id: number;
@@ -74,7 +74,9 @@ export const getOrgDetail: RH<{
   }
 
   // Extract category names from the org object
-  const orgCategories = org.org_categories.map((category: { category_name: string }) => category.category_name);
+  const orgCategories = org.org_categories.map(
+    (category: { category_name: string }) => category.category_name,
+  );
 
   // Return modified org object with org_categories
   const modifiedOrg = {
@@ -84,8 +86,6 @@ export const getOrgDetail: RH<{
 
   res.status(200).json(modifiedOrg);
 };
-
-
 
 export const postOrgs: RH<{
   ResBody: { msg: string };
@@ -170,7 +170,7 @@ export const postOrgs: RH<{
   }
 };
 
-export const getOrgsCategory: RH<{
+export const getOrgsCategories: RH<{
   ResBody: {
     category_id: number;
     category_name: string;
