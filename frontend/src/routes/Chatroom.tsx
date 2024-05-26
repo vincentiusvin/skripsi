@@ -372,19 +372,11 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
     },
   });
 
-  useEffect(() => {
-    if (!chatrooms) {
-      setActiveRoom(false);
-      return;
-    }
-    if (activeRoom === false) {
-      return;
-    }
-    const found = chatrooms.map((x) => x.chatroom_id).includes(activeRoom);
-    if (!found) {
-      setActiveRoom(false);
-    }
-  }, [chatrooms]);
+  const selectedChatroom = chatrooms?.find((x) => x.chatroom_id === activeRoom);
+
+  if (activeRoom !== false && chatrooms && selectedChatroom === undefined) {
+    setActiveRoom(false);
+  }
 
   useChatSocket({
     userId: user_id,
@@ -444,11 +436,8 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
         </Tabs>
       </Grid>
       <Grid item xs={10} lg={11}>
-        {chatrooms?.map(
-          (x, i) =>
-            activeRoom === x.chatroom_id && (
-              <Chatroom key={i} user_id={user_id} chatroom_id={x.chatroom_id} />
-            ),
+        {selectedChatroom && (
+          <Chatroom user_id={user_id} chatroom_id={selectedChatroom.chatroom_id} />
         )}
       </Grid>
     </Grid>
