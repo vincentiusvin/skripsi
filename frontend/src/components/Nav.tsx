@@ -18,17 +18,17 @@ function Nav() {
       justifyContent={"space-between"}
     >
       <Stack direction={"row"} spacing={5}>
-        <Link to={"/"}>
+        <Link to={"/"} asChild>
           <Button>Home</Button>
         </Link>
-        <Link to={"/orgs"}>
+        <Link to={"/orgs"} asChild>
           <Button>Orgs</Button>
         </Link>
-        <Link to={"/chatroom"}>
-          <Button>Chat</Button>
-        </Link>
-        <Link to={"/projects"}>
+        <Link to={"/projects"} asChild>
           <Button>Projects</Button>
+        </Link>
+        <Link to={"/chatroom"} asChild>
+          <Button disabled={!data?.logged}>Chat</Button>
         </Link>
       </Stack>
       <Stack direction={"row"} spacing={2} alignItems={"center"} justifyContent={"space-between"}>

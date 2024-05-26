@@ -37,26 +37,25 @@ function App() {
             <CloseIcon />
           </IconButton>
         )}
-      >
-        <QueryClientProvider client={queryClient}>
-          <CssBaseline />
-          <Nav />
-          <Divider />
-          <Box mx={4} flexGrow={1}>
-            <Switch>
-              <Route path={"/"} component={HomePage} />
-              <Route path={"/auth"} component={AuthPage} />
-              <Route path={"/orgs"} component={OrgsListPage} />
-              <Route path={"/orgs/add"} component={OrgsAddPage} />
-              <Route path={"/orgs/:id"} component={OrgsDetailPage} />
-              <Route path={"/chatroom"} component={ChatroomPage} />
-              <Route path={"/projects"} component={ProjectListPage} />
-              <Route path={"/projects/add"} component={ProjectsAddPage} />
-              <Route path={"/projects/:id"} component={ProjectDetailPage} />
-            </Switch>
-          </Box>
-        </QueryClientProvider>
-      </SnackbarProvider>
+      />
+      <QueryClientProvider client={queryClient}>
+        <CssBaseline />
+        <Nav />
+        <Divider />
+        <Box mx={4} flexGrow={1}>
+          <Switch>
+            <Route path={"/"} component={HomePage} />
+            <Route path={"/auth"} component={AuthPage} />
+            <Route path={"/orgs"} component={OrgsListPage} />
+            <Route path={"/orgs/add"} component={OrgsAddPage} />
+            <Route path={"/orgs/:id"} component={OrgsDetailPage} />
+            <Route path={"/chatroom"} component={ChatroomPage} />
+            <Route path={"/projects"} component={ProjectListPage} />
+            <Route path={"/projects/add"} component={ProjectsAddPage} />
+            <Route path={"/projects/:id"} component={ProjectDetailPage} />
+          </Switch>
+        </Box>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

@@ -22,8 +22,7 @@ import {
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation } from "wouter";
-import { APIError } from "../helpers/fetch";
+import { Redirect } from "wouter";
 import {
   useChatSocket,
   useChatroomsDetailGet,
@@ -360,22 +359,22 @@ function Chatroom(props: { chatroom_id: number }) {
   );
 }
 
-function ChatroomPage() {
+function ChatroomAuthorized(props: { user_id: number }) {
+  const { user_id } = props;
   const [connected, setConnected] = useState(false);
   const [activeRoom, setActiveRoom] = useState<number | false>(false);
 
-  const [, setLocation] = useLocation();
-
-  const { data: sessionData } = useSessionGet();
-
   const { data: chatrooms } = useUsersDetailChatroomsGet({
-    user_id: sessionData?.logged ? sessionData.user_id : undefined,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
-        setLocation("/");
-        return false;
-      }
-      return true;
+    user_id: user_id,
+  });
+  const { mutate: createRoom } = useUsersDetailChatroomsPost({
+    user_id: user_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Room created!</Typography>,
+        variant: "success",
+      });
+      setAddRoomOpen(false);
     },
   });
 
@@ -393,22 +392,8 @@ function ChatroomPage() {
     }
   }, [chatrooms]);
 
-  const [addRoomOpen, setAddRoomOpen] = useState(false);
-  const [addRoomName, setAddRoomName] = useState("");
-
-  const { mutate: createRoom } = useUsersDetailChatroomsPost({
-    user_id: sessionData?.logged ? sessionData.user_id : undefined,
-    onSuccess: () => {
-      enqueueSnackbar({
-        message: <Typography>Room created!</Typography>,
-        variant: "success",
-      });
-      setAddRoomOpen(false);
-    },
-  });
-
   useChatSocket({
-    userId: sessionData?.logged ? sessionData.user_id : undefined,
+    userId: user_id,
     onConnect: () => {
       setConnected(true);
     },
@@ -417,9 +402,8 @@ function ChatroomPage() {
     },
   });
 
-  if (!sessionData?.logged) {
-    return null;
-  }
+  const [addRoomOpen, setAddRoomOpen] = useState(false);
+  const [addRoomName, setAddRoomName] = useState("");
 
   return (
     <Grid container height={"100%"}>
@@ -473,6 +457,20 @@ function ChatroomPage() {
       </Grid>
     </Grid>
   );
+}
+
+function ChatroomPage() {
+  const { data: sessionData } = useSessionGet();
+
+  if (!sessionData) {
+    return <Skeleton />;
+  }
+
+  if (sessionData.logged === false) {
+    return <Redirect to={"/"} />;
+  } else {
+    return <ChatroomAuthorized user_id={sessionData.user_id} />;
+  }
 }
 
 export default ChatroomPage;
