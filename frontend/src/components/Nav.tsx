@@ -1,11 +1,11 @@
 import { Login, Logout } from "@mui/icons-material";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { Link } from "wouter";
-import { useLogout, useSession } from "../queries/sesssion_hooks";
+import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks";
 
 function Nav() {
-  const { data } = useSession();
-  const { mutate: logout } = useLogout();
+  const { data } = useSessionGet();
+  const { mutate: logout } = useSessionDelete();
 
   return (
     <Stack

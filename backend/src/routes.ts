@@ -108,10 +108,10 @@ type _api = {
   SessionPut: typeof putSession;
   SessionDelete: typeof deleteSession;
 
-  UserPost: typeof postUser;
-  UserGet: typeof getUser;
-  UserDetailChatroomsPost: typeof postUsersDetailChatrooms;
-  UserDetailChatroomsGet: typeof getUsersDetailChatrooms;
+  UsersPost: typeof postUser;
+  UsersGet: typeof getUser;
+  UsersDetailChatroomsPost: typeof postUsersDetailChatrooms;
+  UsersDetailChatroomsGet: typeof getUsersDetailChatrooms;
 
   OrgsPost: typeof postOrgs;
   OrgsGet: typeof getOrgs;

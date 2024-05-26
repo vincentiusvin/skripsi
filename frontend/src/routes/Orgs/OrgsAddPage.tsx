@@ -18,7 +18,7 @@ import { Link, useLocation } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
-import { useAddOrg, useOrgCategories } from "../../queries/org_hooks";
+import { useOrgsCategoriesGet, useOrgsPost } from "../../queries/org_hooks";
 
 function OrgsAddPage() {
   const [orgName, setOrgName] = useState("");
@@ -30,7 +30,7 @@ function OrgsAddPage() {
 
   const [, setLocation] = useLocation();
 
-  const { mutate: addOrg } = useAddOrg({
+  const { mutate: addOrg } = useOrgsPost({
     name: orgName,
     desc: orgDesc,
     address: orgAddress,
@@ -46,7 +46,7 @@ function OrgsAddPage() {
   });
 
   // Fetch categories from the backend API
-  const { data: categories } = useOrgCategories((failureCount, error) => {
+  const { data: categories } = useOrgsCategoriesGet((failureCount, error) => {
     if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
       setLocation("/");
       return false;

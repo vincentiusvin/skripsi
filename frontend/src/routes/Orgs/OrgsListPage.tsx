@@ -11,10 +11,10 @@ import {
   Typography,
 } from "@mui/material";
 import { Link } from "wouter";
-import { useOrgCollection } from "../../queries/org_hooks";
+import { useOrgsGet } from "../../queries/org_hooks";
 
 function OrgsListPage() {
-  const { data } = useOrgCollection();
+  const { data } = useOrgsGet();
   return (
     <Box mt={4}>
       <Link to={"/orgs/add"}>

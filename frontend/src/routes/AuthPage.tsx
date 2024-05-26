@@ -2,8 +2,8 @@ import { Button, Grid, TextField, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useLogin } from "../queries/sesssion_hooks";
-import { useRegister } from "../queries/user_hooks";
+import { useSessionPut } from "../queries/sesssion_hooks";
+import { useUsersPost } from "../queries/user_hooks";
 
 function AuthPage() {
   const [username, setUsername] = useState("");
@@ -11,7 +11,7 @@ function AuthPage() {
 
   const [, setLocation] = useLocation();
 
-  const { mutate: login } = useLogin(username, password, () => {
+  const { mutate: login } = useSessionPut(username, password, () => {
     enqueueSnackbar({
       message: <Typography>Login success!</Typography>,
       autoHideDuration: 5000,
@@ -20,7 +20,7 @@ function AuthPage() {
     setLocation("/");
   });
 
-  const { mutate: register } = useRegister(username, password);
+  const { mutate: register } = useUsersPost(username, password);
 
   return (
     <Grid container height={"100%"} alignItems={"center"}>

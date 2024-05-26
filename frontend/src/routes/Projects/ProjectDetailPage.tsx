@@ -23,28 +23,28 @@ import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../../helpers/fetch";
 import {
   useChatSocket,
-  useChatroomByProjectId,
-  useChatroomDetail,
-  useCreateProjectRoom,
-  useMessage,
-  useSendMessage,
+  useChatroomsDetailGet,
+  useChatroomsDetailMessagesGet,
+  useChatroomsDetailMessagesPost,
+  useProjectsDetailChatroomsGet,
+  useProjectsDetailChatroomsPost,
 } from "../../queries/chat_hooks";
 import {
-  useAddProjectMember,
-  useLeaveProject,
-  useProjectDetail,
-  useProjectMembership,
+  useProjectsDetailGet,
+  useProjectsDetailMembersDelete,
+  useProjectsDetailMembersGet,
+  useProjectsDetailMembersPut,
 } from "../../queries/project_hooks";
-import { useSession } from "../../queries/sesssion_hooks";
-import { useUsers } from "../../queries/user_hooks";
+import { useSessionGet } from "../../queries/sesssion_hooks";
+import { useUsersGet } from "../../queries/user_hooks";
 import { ChatroomContent } from "../Chatroom";
 
 function Chatroom(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
-  const { data: sessionData } = useSession();
-  const { data: chatroom } = useChatroomDetail(chatroom_id);
-  const { data: messages } = useMessage(chatroom_id);
-  const { data: users } = useUsers();
+  const { data: sessionData } = useSessionGet();
+  const { data: chatroom } = useChatroomsDetailGet(chatroom_id);
+  const { data: messages } = useChatroomsDetailMessagesGet(chatroom_id);
+  const { data: users } = useUsersGet();
   const reshaped_messages = [];
 
   if (users && messages) {
@@ -63,7 +63,7 @@ function Chatroom(props: { chatroom_id: number }) {
     }
   }
 
-  const { mutate: sendMessage } = useSendMessage(chatroom_id);
+  const { mutate: sendMessage } = useChatroomsDetailMessagesPost(chatroom_id);
 
   if (!sessionData?.logged) {
     return null;
@@ -88,9 +88,9 @@ function Involved(props: { project_id: number }) {
   const { project_id } = props;
   const [connected, setConnected] = useState(false);
   const [activeRoom, setActiveRoom] = useState<number | "index" | false>(false);
-  const { data: sessionData } = useSession();
-  const { data: chatrooms } = useChatroomByProjectId(project_id);
-  const { data: project_data } = useProjectDetail(project_id.toString());
+  const { data: sessionData } = useSessionGet();
+  const { data: chatrooms } = useProjectsDetailChatroomsGet(project_id);
+  const { data: project_data } = useProjectsDetailGet(project_id.toString());
   const user_id = sessionData?.logged ? sessionData.user_id : undefined;
 
   useEffect(() => {
@@ -110,7 +110,7 @@ function Involved(props: { project_id: number }) {
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [addRoomName, setAddRoomName] = useState("");
 
-  const { mutate: createRoom } = useCreateProjectRoom(addRoomName, project_id, () => {
+  const { mutate: createRoom } = useProjectsDetailChatroomsPost(addRoomName, project_id, () => {
     enqueueSnackbar({
       message: <Typography>Room created!</Typography>,
       variant: "success",
@@ -118,12 +118,16 @@ function Involved(props: { project_id: number }) {
     setAddRoomOpen(false);
   });
 
-  const { mutate: leaveProject } = useLeaveProject(project_data?.project_id, user_id, (x) => {
-    enqueueSnackbar({
-      variant: "success",
-      message: <Typography>{x.msg}</Typography>,
-    });
-  });
+  const { mutate: leaveProject } = useProjectsDetailMembersDelete(
+    project_data?.project_id,
+    user_id,
+    (x) => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>{x.msg}</Typography>,
+      });
+    },
+  );
 
   useChatSocket({
     userId: sessionData?.logged ? sessionData.user_id : undefined,
@@ -246,10 +250,10 @@ function ProjectDetailPage() {
     setLocation("/projects");
   }
 
-  const { data: user_data } = useSession();
+  const { data: user_data } = useSessionGet();
   const user_id = user_data?.logged ? user_data.user_id : undefined;
 
-  const { data: project_data } = useProjectDetail(id!, (failureCount, error) => {
+  const { data: project_data } = useProjectsDetailGet(id!, (failureCount, error) => {
     if (error instanceof APIError || failureCount > 3) {
       setLocation("/projects");
       return false;
@@ -257,14 +261,18 @@ function ProjectDetailPage() {
     return true;
   });
 
-  const { data: membership } = useProjectMembership(project_data?.project_id, user_id);
+  const { data: membership } = useProjectsDetailMembersGet(project_data?.project_id, user_id);
 
-  const { mutate: addMember } = useAddProjectMember(project_data?.project_id, user_id, (x) => {
-    enqueueSnackbar({
-      variant: "success",
-      message: <Typography>{x.msg}</Typography>,
-    });
-  });
+  const { mutate: addMember } = useProjectsDetailMembersPut(
+    project_data?.project_id,
+    user_id,
+    (x) => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>{x.msg}</Typography>,
+      });
+    },
+  );
 
   if (!project_data || !membership) {
     return <Skeleton />;

@@ -14,21 +14,21 @@ import {
 } from "@mui/material";
 import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../../helpers/fetch";
-import { useOrgDetail } from "../../queries/org_hooks";
-import { useProjectCollection } from "../../queries/project_hooks";
+import { useOrgDetailGet } from "../../queries/org_hooks";
+import { useProjectsGet } from "../../queries/project_hooks";
 
 function OrgsDetailPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
 
-  const { data } = useOrgDetail(id!, (failureCount, error) => {
+  const { data } = useOrgDetailGet(id!, (failureCount, error) => {
     if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
       setLocation("/orgs");
       return false;
     }
     return true;
   });
-  const { data: projectData } = useProjectCollection(id);
+  const { data: projectData } = useProjectsGet(id);
 
   if (data && projectData) {
     return (

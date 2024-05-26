@@ -26,15 +26,15 @@ import { useLocation } from "wouter";
 import { APIError } from "../helpers/fetch";
 import {
   useChatSocket,
-  useChatroomByUserId,
-  useChatroomDetail,
-  useCreatePersonalRoom,
-  useEditRoom,
-  useMessage,
-  useSendMessage,
+  useChatroomsDetailGet,
+  useChatroomsDetailMessagesGet,
+  useChatroomsDetailMessagesPost,
+  useChatroomsDetailPut,
+  useUsersDetailChatroomsGet,
+  useUsersDetailChatroomsPost,
 } from "../queries/chat_hooks";
-import { useSession } from "../queries/sesssion_hooks";
-import { useUsers } from "../queries/user_hooks";
+import { useSessionGet } from "../queries/sesssion_hooks";
+import { useUsersGet } from "../queries/user_hooks";
 
 export function ChatroomContent(props: {
   messages: {
@@ -120,7 +120,7 @@ export function ChatroomHeader(props: {
 }) {
   const { chatroom_name, chatroom_users, onEditName, onEditMembers, onLeave } = props;
 
-  const { data: users } = useUsers();
+  const { data: users } = useUsersGet();
 
   const [editRoomNameOpen, setEditRoomNameOpen] = useState(false);
   const [editRoomMembersOpen, setEditRoomMembersOpen] = useState(false);
@@ -285,11 +285,11 @@ export function ChatroomHeader(props: {
 function Chatroom(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
 
-  const { data: sessionData } = useSession();
-  const { data: chatroom } = useChatroomDetail(chatroom_id);
+  const { data: sessionData } = useSessionGet();
+  const { data: chatroom } = useChatroomsDetailGet(chatroom_id);
 
-  const { data: messages } = useMessage(chatroom_id);
-  const { data: users } = useUsers();
+  const { data: messages } = useChatroomsDetailMessagesGet(chatroom_id);
+  const { data: users } = useUsersGet();
   const reshaped_messages = [];
 
   if (users && messages) {
@@ -308,9 +308,9 @@ function Chatroom(props: { chatroom_id: number }) {
     }
   }
 
-  const { mutate: sendMessage } = useSendMessage(chatroom_id);
+  const { mutate: sendMessage } = useChatroomsDetailMessagesPost(chatroom_id);
 
-  const { mutate: editRoom } = useEditRoom(chatroom_id, () => {
+  const { mutate: editRoom } = useChatroomsDetailPut(chatroom_id, () => {
     enqueueSnackbar({
       variant: "success",
       message: <Typography>Ruangan berhasil diedit!</Typography>,
@@ -363,9 +363,9 @@ function ChatroomPage() {
 
   const [, setLocation] = useLocation();
 
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = useSessionGet();
 
-  const { data: chatrooms } = useChatroomByUserId(
+  const { data: chatrooms } = useUsersDetailChatroomsGet(
     sessionData?.logged ? sessionData.user_id : undefined,
     (failureCount, error) => {
       if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
@@ -393,7 +393,7 @@ function ChatroomPage() {
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [addRoomName, setAddRoomName] = useState("");
 
-  const { mutate: createRoom } = useCreatePersonalRoom(
+  const { mutate: createRoom } = useUsersDetailChatroomsPost(
     addRoomName,
     sessionData?.logged ? sessionData.user_id : undefined,
     () => {

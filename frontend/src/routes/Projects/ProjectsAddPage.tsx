@@ -13,7 +13,7 @@ import {
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useAddProjects, useProjectCategories } from "../../queries/project_hooks";
+import { useProjectsCategoriesGet, useProjectsPost } from "../../queries/project_hooks";
 
 function projectsAddPage() {
   const [projectName, setProjectName] = useState("");
@@ -24,7 +24,7 @@ function projectsAddPage() {
 
   const [, setLocation] = useLocation();
 
-  const { mutate: addProject } = useAddProjects({
+  const { mutate: addProject } = useProjectsPost({
     desc: projectDesc,
     name: projectName,
     org_id: orgIdNumber,
@@ -39,7 +39,7 @@ function projectsAddPage() {
     },
   });
 
-  const { data: categories } = useProjectCategories();
+  const { data: categories } = useProjectsCategoriesGet();
 
   return (
     <Grid container spacing={2} mt={2}>

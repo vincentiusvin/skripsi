@@ -2,14 +2,14 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
-export function useSession() {
+export function useSessionGet() {
   return useQuery({
     queryKey: ["session"],
     queryFn: () => new APIContext("SessionGet").fetch("/api/session"),
   });
 }
 
-export function useLogout() {
+export function useSessionDelete() {
   return useMutation({
     mutationFn: () =>
       new APIContext("SessionDelete").fetch("/api/session", {
@@ -21,7 +21,7 @@ export function useLogout() {
   });
 }
 
-export function useLogin(username: string, password: string, onSuccess: () => void) {
+export function useSessionPut(username: string, password: string, onSuccess: () => void) {
   return useMutation({
     mutationFn: () =>
       new APIContext("SessionPut").fetch("/api/session", {

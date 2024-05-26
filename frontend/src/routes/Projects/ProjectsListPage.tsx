@@ -10,10 +10,10 @@ import {
   Typography,
 } from "@mui/material";
 import { Link } from "wouter";
-import { useProjectCollection } from "../../queries/project_hooks";
+import { useProjectsGet } from "../../queries/project_hooks";
 
 function ProjectListPage() {
-  const { data } = useProjectCollection();
+  const { data } = useProjectsGet();
   return (
     <Box mt={4}>
       <Link to={"/projects/add"}>

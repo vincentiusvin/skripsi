@@ -2,7 +2,10 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
-export function useOrgDetail(id: string, retry?: (failureCount: number, error: Error) => boolean) {
+export function useOrgDetailGet(
+  id: string,
+  retry?: (failureCount: number, error: Error) => boolean,
+) {
   return useQuery({
     queryKey: ["orgs", "detail", id],
     queryFn: () => new APIContext("OrgsDetailGet").fetch(`/api/orgs/${id}`),
@@ -10,14 +13,14 @@ export function useOrgDetail(id: string, retry?: (failureCount: number, error: E
   });
 }
 
-export function useOrgCollection() {
+export function useOrgsGet() {
   return useQuery({
     queryKey: ["orgs", "collection"],
     queryFn: () => new APIContext("OrgsGet").fetch("/api/orgs"),
   });
 }
 
-export function useAddOrg(opts: {
+export function useOrgsPost(opts: {
   name: string;
   desc: string;
   address: string;
@@ -49,7 +52,7 @@ export function useAddOrg(opts: {
   });
 }
 
-export function useOrgCategories(retry?: (failureCount: number, error: Error) => boolean) {
+export function useOrgsCategoriesGet(retry?: (failureCount: number, error: Error) => boolean) {
   return useQuery({
     queryKey: ["categories"],
     queryFn: () => new APIContext("OrgsCategoriesGet").fetch(`/api/org-categories`),
