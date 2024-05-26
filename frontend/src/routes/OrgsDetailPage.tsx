@@ -70,18 +70,18 @@ function OrgsDetailPage() {
         >
           <Grid container>
             <Container>
-              <Typography variant="h4" fontWeight="bold">
+              <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
                 About Us
               </Typography>
-              <Typography>{data.org_description}</Typography>
-              <Typography variant="h4" fontWeight="bold">
+              <Typography textAlign={"center"}>{data.org_description}</Typography>
+              <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
                 Our Address
               </Typography>
-              <Typography>{data.org_address}</Typography>
-              <Typography variant="h4" fontWeight="bold">
+              <Typography textAlign={"center"}>{data.org_address}</Typography>
+              <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
                 Contact Us
               </Typography>
-              <Typography>{data.org_phone}</Typography>
+              <Typography textAlign={"center"}>{data.org_phone}</Typography>
             </Container>
           </Grid>
         </Paper>
