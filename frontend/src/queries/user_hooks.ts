@@ -5,7 +5,7 @@ import { queryClient } from "../helpers/queryclient";
 export function useRegister(username: string, password: string, onSuccess?: () => void) {
   return useMutation({
     mutationFn: () =>
-      new APIContext("PostUser").fetch("/api/users", {
+      new APIContext("UserPost").fetch("/api/users", {
         body: {
           user_name: username,
           user_password: password,
@@ -27,6 +27,6 @@ export function useRegister(username: string, password: string, onSuccess?: () =
 export function useUsers() {
   return useQuery({
     queryKey: ["users", "collection"],
-    queryFn: () => new APIContext("GetUser").fetch("/api/users"),
+    queryFn: () => new APIContext("UserGet").fetch("/api/users"),
   });
 }

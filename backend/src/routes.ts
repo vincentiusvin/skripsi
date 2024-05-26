@@ -84,39 +84,33 @@ export function registerRoutes(app: Express) {
  * Untuk string keynya bebas, usahakan dibuat deskriptif.
  */
 type _api = {
-  GetSession: typeof getSession;
-  PutSession: typeof putSession;
-  DeleteSession: typeof deleteSession;
+  SessionGet: typeof getSession;
+  SessionPut: typeof putSession;
+  SessionDelete: typeof deleteSession;
 
-  GetOrgs: typeof getOrgs;
-  PostOrgs: typeof postOrgs;
-  GetOrgDetail: typeof getOrgDetail;
-  GetOrgsCategory: typeof getOrgsCategory;
+  UserPost: typeof postUser;
+  UserGet: typeof getUser;
+  UserChatroomGet: typeof getPersonalChatrooms;
 
-  PostUser: typeof postUser;
-  GetUser: typeof getUser;
+  OrgsPost: typeof postOrgs;
+  OrgsGet: typeof getOrgs;
+  OrgsDetailGet: typeof getOrgDetail;
+  OrgsCategoriesGet: typeof getOrgsCategory;
 
-  GetChatrooms: typeof getPersonalChatrooms;
-  PostChatrooms: typeof postChatrooms;
+  ProjectsPost: typeof addProjects;
+  ProjectsGet: typeof getProjects;
+  ProjectsDetailGet: typeof getProjectsDetail;
+  ProjectsDetailMembersGet: typeof getProjectMembership;
+  ProjectsDetailMembersPut: typeof addProjectMember;
+  ProjectsDetailMembersDelete: typeof deleteProjectMember;
+  ProjectsDetailChatroomsGet: typeof getProjectChatrooms;
+  ProjectsCategoriesGet: typeof getProjectCategory;
 
-  GetChatroomDetail: typeof getChatroomDetail;
-  PutChatroom: typeof putChatroom;
-
-  GetMessages: typeof getMessages;
-  PostMessages: typeof postMessages;
-
-  //projects for front end
-  getProjects: typeof getProjects;
-  addProjects: typeof addProjects;
-
-  getProjectsDetail: typeof getProjectsDetail;
-
-  GetProjectMember: typeof getProjectMembership;
-  AddProjectMember: typeof addProjectMember;
-  DeleteProjectMember: typeof deleteProjectMember;
-
-  GetProjectChatrooms: typeof getProjectChatrooms;
-  getProjectsCategory: typeof getProjectCategory;
+  ChatroomsPost: typeof postChatrooms;
+  ChatroomsDetailGet: typeof getChatroomDetail;
+  ChatroomsDetailPut: typeof putChatroom;
+  ChatroomsDetailMessagesGet: typeof getMessages;
+  ChatroomsDetailMessagesPost: typeof postMessages;
 };
 
 /**

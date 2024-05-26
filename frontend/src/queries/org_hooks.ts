@@ -5,7 +5,7 @@ import { queryClient } from "../helpers/queryclient";
 export function useOrgDetail(id: string, retry?: (failureCount: number, error: Error) => boolean) {
   return useQuery({
     queryKey: ["orgs", "detail", id],
-    queryFn: () => new APIContext("GetOrgDetail").fetch(`/api/orgs/${id}`),
+    queryFn: () => new APIContext("OrgsDetailGet").fetch(`/api/orgs/${id}`),
     retry: retry,
   });
 }
@@ -13,7 +13,7 @@ export function useOrgDetail(id: string, retry?: (failureCount: number, error: E
 export function useOrgCollection() {
   return useQuery({
     queryKey: ["orgs", "collection"],
-    queryFn: () => new APIContext("GetOrgs").fetch("/api/orgs"),
+    queryFn: () => new APIContext("OrgsGet").fetch("/api/orgs"),
   });
 }
 
@@ -29,7 +29,7 @@ export function useAddOrg(opts: {
   const { name, desc, address, phone, image, onSuccess, category } = opts;
   return useMutation({
     mutationFn: () =>
-      new APIContext("PostOrgs").fetch("/api/orgs", {
+      new APIContext("OrgsPost").fetch("/api/orgs", {
         method: "POST",
         body: {
           org_name: name,
@@ -52,7 +52,7 @@ export function useAddOrg(opts: {
 export function useOrgCategories(retry?: (failureCount: number, error: Error) => boolean) {
   return useQuery({
     queryKey: ["categories"],
-    queryFn: () => new APIContext("GetOrgsCategory").fetch(`/api/category`),
+    queryFn: () => new APIContext("OrgsCategoriesGet").fetch(`/api/category`),
     retry: retry,
   });
 }
