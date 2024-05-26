@@ -48,12 +48,15 @@ export function useProjectsDetailMembersGet(opts: {
 
 export function useProjectsDetailMembersDelete(opts: {
   project_id: number;
-  user_id: number;
+  user_id?: number;
   onSuccess?: (data: API["ProjectsDetailMembersDelete"]["ResBody"]) => void;
 }) {
   const { project_id, user_id, onSuccess } = opts;
   return useMutation({
     mutationFn: () => {
+      if (user_id === undefined) {
+        throw new Error("Data user tidak ditemukan");
+      }
       return new APIContext("ProjectsDetailMembersPut").fetch(
         `/api/projects/${project_id}/users/${user_id}`,
         {

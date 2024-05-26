@@ -99,7 +99,6 @@ export function useUsersDetailChatroomsGet(opts: {
     queryFn: () =>
       new APIContext("UsersDetailChatroomsGet").fetch(`/api/users/${user_id}/chatrooms`),
     retry: retry,
-    enabled: user_id !== undefined,
   });
 }
 
