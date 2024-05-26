@@ -68,22 +68,19 @@ function OrgsDetailPage() {
             backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
           }}
         >
-          <Grid container xs={12} md={100}>
-            <Container
-              sx={{
-                // textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                // marginLeft: "12vw",
-                width: "1000vw",
-              }}
-            >
-              <h3>About Us</h3>
+          <Grid container>
+            <Container>
+              <Typography variant="h4" fontWeight="bold">
+                About Us
+              </Typography>
               <Typography>{data.org_description}</Typography>
-              <h3>Our Address</h3>
+              <Typography variant="h4" fontWeight="bold">
+                Our Address
+              </Typography>
               <Typography>{data.org_address}</Typography>
-              <h3>Contact Us</h3>
+              <Typography variant="h4" fontWeight="bold">
+                Contact Us
+              </Typography>
               <Typography>{data.org_phone}</Typography>
             </Container>
           </Grid>
