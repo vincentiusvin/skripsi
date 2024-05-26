@@ -353,7 +353,7 @@ function Chatroom(props: { chatroom_id: number; user_id: number }) {
   );
 }
 
-function ChatroomAuthorized(props: { user_id: number }) {
+function ChatroomPageAuthorized(props: { user_id: number }) {
   const { user_id } = props;
   const [connected, setConnected] = useState(false);
   const [activeRoom, setActiveRoom] = useState<number | false>(false);
@@ -465,7 +465,7 @@ function ChatroomPage() {
   if (sessionData.logged === false) {
     return <Redirect to={"/"} />;
   } else {
-    return <ChatroomAuthorized user_id={sessionData.user_id} />;
+    return <ChatroomPageAuthorized user_id={sessionData.user_id} />;
   }
 }
 
