@@ -183,3 +183,86 @@ export const getOrgsCategories: RH<{
 
   res.status(200).json(categories);
 };
+
+export const updateOrgs: RH<{
+  ResBody: {
+    msg: string;
+  };
+  ReqBody: {
+    org_name: string;
+    org_description: string;
+    org_address: string;
+    org_phone: string;
+    org_image?: string;
+    org_category: number;
+  };
+}> = async function (req, res) {
+  const { org_name, org_description, org_address, org_phone, org_image, org_category } = req.body;
+  const userID = req.session.user_id!;
+  if (org_name.length === 0) {
+    throw new ClientError("Nama tidak boleh kosong!");
+  }
+
+  if (org_description.length === 0) {
+    throw new ClientError("Deskripsi tidak boleh kosong!");
+  }
+
+  if (org_address.length === 0) {
+    throw new ClientError("Alamat tidak boleh kosong!");
+  }
+
+  if (org_phone.length === 0) {
+    throw new ClientError("Nomor telepon tidak boleh kosong!");
+  }
+
+  if (!org_category) throw new ClientError("Kategori tidak boleh kosong!");
+  const sameName = await db
+    .selectFrom("ms_orgs")
+    .select(["name"])
+    .where("name", "=", org_name)
+    .execute();
+
+  if (sameName.length !== 0) {
+    throw new ClientError("Sudah ada organisasi dengan nama yang sama!");
+  }
+
+  try {
+    await db.transaction().execute(async () => {
+      const org = await db
+        .updateTable("ms_orgs")
+        .set({
+          name: org_name,
+          description: org_description,
+          address: org_address,
+          phone: org_phone,
+          ...(org_image && { image: org_image }),
+        })
+        .returning("id")
+        .executeTakeFirst();
+
+      if (!org) {
+        throw new Error("Data not inserted!");
+      }
+
+      await db
+        .updateTable("categories_orgs")
+        .set({
+          org_id: org.id,
+          category_id: org_category,
+        })
+        .execute();
+
+      await db
+        .updateTable("orgs_users")
+        .set({
+          user_id: userID,
+          org_id: org.id,
+          permission: "Owner",
+        })
+        .execute();
+    });
+    res.status(201).json({ msg: "Organisasi berhasil di update!" });
+  } catch (error) {
+    throw new Error("Request gagal!");
+  }
+};
