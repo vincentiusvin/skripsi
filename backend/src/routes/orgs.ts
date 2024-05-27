@@ -189,6 +189,7 @@ export const updateOrgs: RH<{
     msg: string;
   };
   ReqBody: {
+    org_id: number;
     org_name: string;
     org_description: string;
     org_address: string;
@@ -197,7 +198,8 @@ export const updateOrgs: RH<{
     org_category: number;
   };
 }> = async function (req, res) {
-  const { org_name, org_description, org_address, org_phone, org_image, org_category } = req.body;
+  const { org_name, org_description, org_address, org_phone, org_image, org_category, org_id } =
+    req.body;
   const userID = req.session.user_id!;
   if (org_name.length === 0) {
     throw new ClientError("Nama tidak boleh kosong!");
@@ -237,7 +239,7 @@ export const updateOrgs: RH<{
           phone: org_phone,
           ...(org_image && { image: org_image }),
         })
-        .returning("id")
+        .where("id", "=", org_id)
         .executeTakeFirst();
 
       if (!org) {
@@ -247,7 +249,6 @@ export const updateOrgs: RH<{
       await db
         .updateTable("categories_orgs")
         .set({
-          org_id: org.id,
           category_id: org_category,
         })
         .execute();
@@ -256,7 +257,6 @@ export const updateOrgs: RH<{
         .updateTable("orgs_users")
         .set({
           user_id: userID,
-          org_id: org.id,
           permission: "Owner",
         })
         .execute();
