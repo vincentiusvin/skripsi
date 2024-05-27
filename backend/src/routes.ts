@@ -11,7 +11,14 @@ import {
   postUsersDetailChatrooms,
   putChatroomsDetail,
 } from "./routes/chatroom";
-import { getOrgs, getOrgsCategories, getOrgsDetail, postOrgs, updateOrgs } from "./routes/orgs";
+import {
+  deleteOrgs,
+  getOrgs,
+  getOrgsCategories,
+  getOrgsDetail,
+  postOrgs,
+  updateOrgs,
+} from "./routes/orgs";
 import {
   deleteProjectsDetailMembersDetail,
   getProjects,
@@ -55,8 +62,8 @@ export function registerRoutes(app: Express) {
   // orgs/org -> RUD
   app.get("/api/orgs/:id", getOrgsDetail); // R
   // Update Orgs
-  app.put("/api/orgs", updateOrgs);
-  // D
+  app.put("/api/orgs", updateOrgs); //U
+  app.delete("/api/orgs", deleteOrgs); // D
   // org-categories -> R
   app.get("/api/org-categories", getOrgsCategories); // R
 

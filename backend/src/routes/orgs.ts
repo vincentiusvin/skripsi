@@ -217,7 +217,9 @@ export const updateOrgs: RH<{
     throw new ClientError("Nomor telepon tidak boleh kosong!");
   }
 
-  if (!org_category) throw new ClientError("Kategori tidak boleh kosong!");
+  if (!org_category) {
+    throw new ClientError("Kategori tidak boleh kosong!");
+  }
   const sameName = await db
     .selectFrom("ms_orgs")
     .select(["name"])
@@ -264,5 +266,37 @@ export const updateOrgs: RH<{
     res.status(201).json({ msg: "Organisasi berhasil di update!" });
   } catch (error) {
     throw new Error("Request gagal!");
+  }
+};
+
+export const deleteOrgs: RH<{
+  ResBody: {
+    msg: string;
+  };
+  ReqBody: {
+    org_id: number;
+  };
+}> = async function (req, res) {
+  const { org_id } = req.body;
+
+  const orgExists = await db
+    .selectFrom("ms_orgs")
+    .select(["id"])
+    .where("id", "=", org_id)
+    .executeTakeFirst();
+  if (!orgExists) {
+    throw new ClientError("ID Organisasi tidak ditemukan");
+  }
+
+  try {
+    await db.transaction().execute(async () => {
+      await db.deleteFrom("ms_projects").where("org_id", "=", org_id).execute();
+      await db.deleteFrom("categories_orgs").where("org_id", "=", org_id).execute();
+      await db.deleteFrom("orgs_users").where("org_id", "=", org_id).execute();
+      await db.deleteFrom("ms_orgs").where("id", "=", org_id).execute();
+    });
+    res.status(200).json({ msg: "Organisasi berhasil di hapuskan" });
+  } catch (error) {
+    throw new Error("Gagal Delete");
   }
 };
