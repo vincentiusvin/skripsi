@@ -12,6 +12,7 @@ import ChatroomPage from "./routes/Chatroom";
 import HomePage from "./routes/HomePage";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
 import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage";
+import OrgsEditPage from "./routes/Orgs/OrgsEditPage";
 import OrgsListPage from "./routes/Orgs/OrgsListPage";
 import ProjectDetailPage from "./routes/Projects/ProjectDetailPage";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
@@ -49,6 +50,7 @@ function App() {
               <Route path={"/orgs"} component={OrgsListPage} />
               <Route path={"/orgs/add"} component={OrgsAddPage} />
               <Route path={"/orgs/:id"} component={OrgsDetailPage} />
+              <Route path={"/orgs/edit"} component={OrgsEditPage} />
               <Route path={"/chatroom"} component={ChatroomPage} />
               <Route path={"/projects"} component={ProjectListPage} />
               <Route path={"/projects/add"} component={ProjectsAddPage} />

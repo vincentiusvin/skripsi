@@ -59,3 +59,37 @@ export function useOrgsCategoriesGet(retry?: (failureCount: number, error: Error
     retry: retry,
   });
 }
+
+export function useOrgsEdit(opts: {
+  id: number;
+  name: string;
+  desc: string;
+  address: string;
+  phone: string;
+  category: number;
+  image?: string;
+  onSuccess?: () => void;
+}) {
+  const { id, name, desc, address, phone, image, onSuccess, category } = opts;
+  return useMutation({
+    mutationFn: () =>
+      new APIContext("OrgsUpdate").fetch("/api/orgs", {
+        method: "PUT",
+        body: {
+          org_id: id,
+          org_name: name,
+          org_description: desc,
+          org_address: address,
+          org_phone: phone,
+          org_category: category,
+          ...(image && { org_image: image }),
+        },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orgs"] });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}

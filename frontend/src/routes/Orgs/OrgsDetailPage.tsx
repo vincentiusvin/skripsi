@@ -1,4 +1,4 @@
-import { Add, ArrowBack, Edit } from "@mui/icons-material";
+import { Add, ArrowBack, Delete, Edit } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -47,15 +47,24 @@ function OrgsDetailPage() {
             </Button>
           </Link>
         </Grid>
-        <Grid item xs={8}>
+        <Grid item xs={7} paddingLeft="8vw">
           <Typography variant="h4" fontWeight={"bold"} align="center" marginRight="15vw">
             {data.org_name}
           </Typography>
         </Grid>
         <Grid item xs={1}>
-          <Button endIcon={<Edit />} variant="contained" fullWidth>
-            Edit
-          </Button>
+          <Link to={"/orgs/edit"}>
+            <Button endIcon={<Edit />} variant="contained" fullWidth>
+              Edit
+            </Button>
+          </Link>
+        </Grid>
+        <Grid item xs={1} paddingLeft="1vw">
+          <Link to={"/orgs/delete"}>
+            <Button endIcon={<Delete />} variant="contained" fullWidth>
+              Delete
+            </Button>
+          </Link>
         </Grid>
 
         <Paper
