@@ -188,8 +188,10 @@ export const updateOrgs: RH<{
   ResBody: {
     msg: string;
   };
+  ReqParam: {
+    id: number;
+  };
   ReqBody: {
-    org_id: number;
     org_name: string;
     org_description: string;
     org_address: string;
@@ -198,8 +200,9 @@ export const updateOrgs: RH<{
     org_category: number;
   };
 }> = async function (req, res) {
-  const { org_name, org_description, org_address, org_phone, org_image, org_category, org_id } =
-    req.body;
+  const { org_name, org_description, org_address, org_phone, org_image, org_category } = req.body;
+  const id = req.params.id;
+  console.log("org_id: ", id);
   const userID = req.session.user_id!;
   if (org_name.length === 0) {
     throw new ClientError("Nama tidak boleh kosong!");
@@ -241,7 +244,7 @@ export const updateOrgs: RH<{
           phone: org_phone,
           ...(org_image && { image: org_image }),
         })
-        .where("id", "=", org_id)
+        .where("id", "=", id)
         .executeTakeFirst();
 
       if (!org) {
@@ -273,16 +276,16 @@ export const deleteOrgs: RH<{
   ResBody: {
     msg: string;
   };
-  ReqBody: {
-    org_id: number;
+  ReqParam: {
+    id: number;
   };
 }> = async function (req, res) {
-  const { org_id } = req.body;
+  const id = req.params.id;
 
   const orgExists = await db
     .selectFrom("ms_orgs")
     .select(["id"])
-    .where("id", "=", org_id)
+    .where("id", "=", id)
     .executeTakeFirst();
   if (!orgExists) {
     throw new ClientError("ID Organisasi tidak ditemukan");
@@ -290,10 +293,10 @@ export const deleteOrgs: RH<{
 
   try {
     await db.transaction().execute(async () => {
-      await db.deleteFrom("ms_projects").where("org_id", "=", org_id).execute();
-      await db.deleteFrom("categories_orgs").where("org_id", "=", org_id).execute();
-      await db.deleteFrom("orgs_users").where("org_id", "=", org_id).execute();
-      await db.deleteFrom("ms_orgs").where("id", "=", org_id).execute();
+      await db.deleteFrom("ms_projects").where("org_id", "=", id).execute();
+      await db.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
+      await db.deleteFrom("orgs_users").where("org_id", "=", id).execute();
+      await db.deleteFrom("ms_orgs").where("id", "=", id).execute();
     });
     res.status(200).json({ msg: "Organisasi berhasil di hapuskan" });
   } catch (error) {

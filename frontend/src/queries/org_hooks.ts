@@ -73,10 +73,9 @@ export function useOrgsEdit(opts: {
   const { id, name, desc, address, phone, image, onSuccess, category } = opts;
   return useMutation({
     mutationFn: () =>
-      new APIContext("OrgsUpdate").fetch("/api/orgs", {
+      new APIContext("OrgsUpdate").fetch(`/api/orgs/${id}`, {
         method: "PUT",
         body: {
-          org_id: id,
           org_name: name,
           org_description: desc,
           org_address: address,
@@ -84,6 +83,22 @@ export function useOrgsEdit(opts: {
           org_category: category,
           ...(image && { org_image: image }),
         },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orgs"] });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useOrgsDelete(opts: { id: number; onSuccess?: () => void }) {
+  const { id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: () =>
+      new APIContext("OrgsDelete").fetch(`/api/orgs/${id}`, {
+        method: "DELETE",
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orgs"] });

@@ -12,9 +12,10 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../../helpers/fetch";
-import { useOrgDetailGet } from "../../queries/org_hooks";
+import { useOrgDetailGet, useOrgsDelete } from "../../queries/org_hooks";
 import { useProjectsGet } from "../../queries/project_hooks";
 
 function OrgsDetailPage() {
@@ -29,6 +30,17 @@ function OrgsDetailPage() {
     return true;
   });
   const { data: projectData } = useProjectsGet(id);
+
+  const { mutate: deleteOrg } = useOrgsDelete({
+    id: Number(id),
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Edit successful!</Typography>,
+        autoHideDuration: 5000,
+        variant: "success",
+      });
+    },
+  });
 
   if (data && projectData) {
     return (
@@ -53,15 +65,15 @@ function OrgsDetailPage() {
           </Typography>
         </Grid>
         <Grid item xs={1}>
-          <Link to={"/orgs/edit"}>
+          <Link to={`/orgs/edit/${id}`}>
             <Button endIcon={<Edit />} variant="contained" fullWidth>
               Edit
             </Button>
           </Link>
         </Grid>
         <Grid item xs={1} paddingLeft="1vw">
-          <Link to={"/orgs/delete"}>
-            <Button endIcon={<Delete />} variant="contained" fullWidth>
+          <Link to={"/orgs"}>
+            <Button endIcon={<Delete />} variant="contained" fullWidth onClick={() => deleteOrg()}>
               Delete
             </Button>
           </Link>

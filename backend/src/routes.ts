@@ -62,8 +62,8 @@ export function registerRoutes(app: Express) {
   // orgs/org -> RUD
   app.get("/api/orgs/:id", getOrgsDetail); // R
   // Update Orgs
-  app.put("/api/orgs", updateOrgs); //U
-  app.delete("/api/orgs", deleteOrgs); // D
+  app.put("/api/orgs/:id", updateOrgs); //U
+  app.delete("/api/orgs/:id", deleteOrgs); // D
   // org-categories -> R
   app.get("/api/org-categories", getOrgsCategories); // R
 
@@ -126,6 +126,7 @@ type _api = {
   OrgsDetailGet: typeof getOrgsDetail;
   OrgsCategoriesGet: typeof getOrgsCategories;
   OrgsUpdate: typeof updateOrgs;
+  OrgsDelete: typeof deleteOrgs;
 
   ProjectsPost: typeof postProjects;
   ProjectsGet: typeof getProjects;

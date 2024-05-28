@@ -50,7 +50,7 @@ function App() {
               <Route path={"/orgs"} component={OrgsListPage} />
               <Route path={"/orgs/add"} component={OrgsAddPage} />
               <Route path={"/orgs/:id"} component={OrgsDetailPage} />
-              <Route path={"/orgs/edit"} component={OrgsEditPage} />
+              <Route path={"/orgs/edit/:id"} component={OrgsEditPage} />
               <Route path={"/chatroom"} component={ChatroomPage} />
               <Route path={"/projects"} component={ProjectListPage} />
               <Route path={"/projects/add"} component={ProjectsAddPage} />

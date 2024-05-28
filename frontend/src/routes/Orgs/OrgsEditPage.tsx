@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
@@ -31,8 +31,11 @@ function OrgsEditPage() {
 
   const [, setLocation] = useLocation();
 
+  const { id } = useParams();
+  console.log("id: ", id);
+
   const { mutate: editOrg } = useOrgsEdit({
-    id: Number(orgId),
+    id: Number(id),
     name: orgName,
     desc: orgDesc,
     address: orgAddress,
@@ -40,7 +43,7 @@ function OrgsEditPage() {
     category: Number(orgCategory),
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Added successful!</Typography>,
+        message: <Typography>Edit successful!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });
@@ -67,7 +70,7 @@ function OrgsEditPage() {
       </Grid>
       <Grid item xs={8}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
-          Tambah Organisasi
+          Edit Organisasi
         </Typography>
       </Grid>
       <Grid item xs={2}>
