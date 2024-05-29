@@ -5,7 +5,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .createTable("orgs_users")
     .addColumn("org_id", "integer", (build) => build.references("ms_orgs.id").notNull())
     .addColumn("user_id", "integer", (build) => build.references("ms_users.id").notNull())
-    .addColumn("permission", "text", (col) => col.notNull())
+    .addColumn("role", "text", (col) => col.notNull())
     .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
     .addPrimaryKeyConstraint("orgs_users_pk", ["org_id", "user_id"])
     .execute();
