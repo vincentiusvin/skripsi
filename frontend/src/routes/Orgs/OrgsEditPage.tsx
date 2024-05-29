@@ -18,7 +18,7 @@ import { Link, useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
-import { useOrgsCategoriesGet, useOrgsEdit } from "../../queries/org_hooks";
+import { useOrgsCategoriesGet, useOrgsUpdate } from "../../queries/org_hooks";
 
 function OrgsEditPage() {
   const [orgId, setOrgId] = useState<number | "">("");
