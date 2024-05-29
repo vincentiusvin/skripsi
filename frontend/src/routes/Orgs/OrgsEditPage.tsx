@@ -34,7 +34,7 @@ function OrgsEditPage() {
   const { id } = useParams();
   console.log("id: ", id);
 
-  const { mutate: editOrg } = useOrgsEdit({
+  const { mutate: editOrg } = useOrgsUpdate({
     id: Number(id),
     name: orgName,
     desc: orgDesc,
