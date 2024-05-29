@@ -60,7 +60,7 @@ export function useOrgsCategoriesGet(retry?: (failureCount: number, error: Error
   });
 }
 
-export function useOrgsEdit(opts: {
+export function useOrgsUpdate(opts: {
   id: number;
   name: string;
   desc: string;
