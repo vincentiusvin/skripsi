@@ -160,7 +160,7 @@ export const postOrgs: RH<{
         .values({
           user_id: userID,
           org_id: org.id,
-          permission: "Owner",
+          role: "Owner",
         })
         .execute();
     });
