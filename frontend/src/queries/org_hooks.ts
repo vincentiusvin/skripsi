@@ -59,3 +59,52 @@ export function useOrgsCategoriesGet(retry?: (failureCount: number, error: Error
     retry: retry,
   });
 }
+
+export function useOrgsUpdate(opts: {
+  id: number;
+  name: string;
+  desc: string;
+  address: string;
+  phone: string;
+  category: number;
+  image?: string;
+  onSuccess?: () => void;
+}) {
+  const { id, name, desc, address, phone, image, onSuccess, category } = opts;
+  return useMutation({
+    mutationFn: () =>
+      new APIContext("OrgsUpdate").fetch(`/api/orgs/${id}`, {
+        method: "PUT",
+        body: {
+          org_name: name,
+          org_description: desc,
+          org_address: address,
+          org_phone: phone,
+          org_category: category,
+          ...(image && { org_image: image }),
+        },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orgs"] });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useOrgsDelete(opts: { id: number; onSuccess?: () => void }) {
+  const { id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: () =>
+      new APIContext("OrgsDelete").fetch(`/api/orgs/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orgs"] });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}

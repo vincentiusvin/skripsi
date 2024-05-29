@@ -14,13 +14,14 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
-import { useOrgsCategoriesGet, useOrgsPost } from "../../queries/org_hooks";
+import { useOrgsCategoriesGet, useOrgsUpdate } from "../../queries/org_hooks";
 
-function OrgsAddPage() {
+function OrgsEditPage() {
+  const [orgId, setOrgId] = useState<number | "">("");
   const [orgName, setOrgName] = useState("");
   const [orgDesc, setOrgDesc] = useState("");
   const [orgAddress, setOrgAddress] = useState("");
@@ -30,7 +31,11 @@ function OrgsAddPage() {
 
   const [, setLocation] = useLocation();
 
-  const { mutate: addOrg } = useOrgsPost({
+  const { id } = useParams();
+  console.log("id: ", id);
+
+  const { mutate: editOrg } = useOrgsUpdate({
+    id: Number(id),
     name: orgName,
     desc: orgDesc,
     address: orgAddress,
@@ -38,7 +43,7 @@ function OrgsAddPage() {
     category: Number(orgCategory),
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Added successful!</Typography>,
+        message: <Typography>Edit successful!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });
@@ -66,11 +71,11 @@ function OrgsAddPage() {
       </Grid>
       <Grid item xs={8}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
-          Tambah Organisasi
+          Edit Organisasi
         </Typography>
       </Grid>
       <Grid item xs={2}>
-        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addOrg()}>
+        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => editOrg()}>
           Simpan
         </Button>
       </Grid>
@@ -161,4 +166,4 @@ function OrgsAddPage() {
   );
 }
 
-export default OrgsAddPage;
+export default OrgsEditPage;
