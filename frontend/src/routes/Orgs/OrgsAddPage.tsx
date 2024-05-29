@@ -42,6 +42,7 @@ function OrgsAddPage() {
         autoHideDuration: 5000,
         variant: "success",
       });
+      setLocation("/orgs");
     },
   });
 

@@ -47,6 +47,7 @@ function OrgsEditPage() {
         autoHideDuration: 5000,
         variant: "success",
       });
+      setLocation("/orgs");
     },
   });
 
