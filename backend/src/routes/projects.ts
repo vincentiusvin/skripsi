@@ -5,13 +5,12 @@ import { DB } from "../db/db_types";
 import { AuthError, ClientError, NotFoundError } from "../helpers/error";
 import { RH } from "../helpers/types";
 
-const ProjectRoles = {
-  PENDING: "Pending",
-  DEV: "Dev",
-  ADMIN: "Admin",
-} as const;
+const project_roles = ["Pending", "Dev", "Admin"] as const;
+export type ProjectRoles = (typeof project_roles)[number];
 
-type Roles = (typeof ProjectRoles)[keyof typeof ProjectRoles];
+function parseRole(role: string) {
+  return project_roles.find((x) => x === role);
+}
 
 export function withMembers(eb: ExpressionBuilder<DB, "ms_projects">) {
   return jsonArrayFrom(
@@ -23,7 +22,10 @@ export function withMembers(eb: ExpressionBuilder<DB, "ms_projects">) {
   );
 }
 
-async function getProjectRole(user_id: number, project_id: number): Promise<Roles | undefined> {
+async function getProjectRole(
+  user_id: number,
+  project_id: number,
+): Promise<ProjectRoles | undefined> {
   const res = await db
     .selectFrom("projects_users")
     .select("role")
@@ -39,13 +41,11 @@ async function getProjectRole(user_id: number, project_id: number): Promise<Role
     return undefined;
   }
 
-  for (const role of Object.values(ProjectRoles)) {
-    if (res.role === role) {
-      return role;
-    }
+  const ret = parseRole(res.role);
+  if (!ret) {
+    throw new Error("Role user tidak diketahui!");
   }
-
-  throw new Error("Role user tidak diketahui!");
+  return ret;
 }
 
 export const getProjectsDetailMembersDetail: RH<{
@@ -74,7 +74,7 @@ export const putProjectsDetailMembersDetail: RH<{
     msg: string;
   };
   ReqBody: {
-    role: Roles;
+    role: ProjectRoles;
   };
   Params: {
     project_id: string;
@@ -92,9 +92,9 @@ export const putProjectsDetailMembersDetail: RH<{
   let allowed = false;
   // Admin boleh ngelakuin apapun.
   // Dev cuma boleh apply kalau belum terlibat. Kalau mau leave pakai delete, bukan method ini.
-  if (sender_role === ProjectRoles.ADMIN) {
+  if (sender_role === "Admin") {
     allowed = true;
-  } else if (sender_id === user_id && sender_role === undefined && ProjectRoles.PENDING) {
+  } else if (sender_id === user_id && sender_role === undefined && role === "Pending") {
     allowed = true;
   }
 
@@ -130,7 +130,7 @@ export const deleteProjectsDetailMembersDetail: RH<{
   const sender_role = await getProjectRole(sender_id, project_id);
 
   let allowed = false;
-  if (sender_role === ProjectRoles.ADMIN) {
+  if (sender_role === "Admin") {
     allowed = true;
   } else if (sender_id === user_id) {
     allowed = true;
@@ -185,7 +185,7 @@ export const getProjectsDetail: RH<{
     project_members: {
       id: number;
       name: string;
-      role: string; // todo
+      role: ProjectRoles;
     }[];
     project_categories: string[];
   };
@@ -229,6 +229,13 @@ export const getProjectsDetail: RH<{
   // Return modified project object with project_categories
   const modifiedProject = {
     ...project,
+    project_members: project.project_members.map((x) => {
+      const role = parseRole(x.role);
+      if (!role) {
+        throw new Error("Role user tidak diketahui!");
+      }
+      return { ...x, role };
+    }),
     project_categories: projectCategories,
   };
 
