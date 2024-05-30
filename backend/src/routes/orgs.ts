@@ -183,3 +183,123 @@ export const getOrgsCategories: RH<{
 
   res.status(200).json(categories);
 };
+
+export const updateOrgs: RH<{
+  ResBody: {
+    msg: string;
+  };
+  ReqParam: {
+    id: number;
+  };
+  ReqBody: {
+    org_name: string;
+    org_description: string;
+    org_address: string;
+    org_phone: string;
+    org_image?: string;
+    org_category: number;
+  };
+}> = async function (req, res) {
+  const { org_name, org_description, org_address, org_phone, org_image, org_category } = req.body;
+  const id = req.params.id;
+  console.log("org_id: ", id);
+  const userID = req.session.user_id!;
+  if (org_name.length === 0) {
+    throw new ClientError("Nama tidak boleh kosong!");
+  }
+
+  if (org_description.length === 0) {
+    throw new ClientError("Deskripsi tidak boleh kosong!");
+  }
+
+  if (org_address.length === 0) {
+    throw new ClientError("Alamat tidak boleh kosong!");
+  }
+
+  if (org_phone.length === 0) {
+    throw new ClientError("Nomor telepon tidak boleh kosong!");
+  }
+
+  if (!org_category) {
+    throw new ClientError("Kategori tidak boleh kosong!");
+  }
+  const sameName = await db
+    .selectFrom("ms_orgs")
+    .select(["name"])
+    .where("name", "=", org_name)
+    .execute();
+
+  if (sameName.length !== 0) {
+    throw new ClientError("Sudah ada organisasi dengan nama yang sama!");
+  }
+
+  try {
+    await db.transaction().execute(async () => {
+      const org = await db
+        .updateTable("ms_orgs")
+        .set({
+          name: org_name,
+          description: org_description,
+          address: org_address,
+          phone: org_phone,
+          ...(org_image && { image: org_image }),
+        })
+        .where("id", "=", id)
+        .executeTakeFirst();
+
+      if (!org) {
+        throw new Error("Data not inserted!");
+      }
+
+      await db
+        .updateTable("categories_orgs")
+        .set({
+          category_id: org_category,
+        })
+        .execute();
+
+      await db
+        .updateTable("orgs_users")
+        .set({
+          user_id: userID,
+          permission: "Owner",
+        })
+        .execute();
+    });
+    res.status(201).json({ msg: "Organisasi berhasil di update!" });
+  } catch (error) {
+    throw new Error("Request gagal!");
+  }
+};
+
+export const deleteOrgs: RH<{
+  ResBody: {
+    msg: string;
+  };
+  ReqParam: {
+    id: number;
+  };
+}> = async function (req, res) {
+  const id = req.params.id;
+
+  const orgExists = await db
+    .selectFrom("ms_orgs")
+    .select(["id"])
+    .where("id", "=", id)
+    .executeTakeFirst();
+  if (!orgExists) {
+    throw new ClientError("ID Organisasi tidak ditemukan");
+  }
+
+  try {
+    await db.transaction().execute(async () => {
+      await db.deleteFrom("ms_projects").where("org_id", "=", id).execute();
+      await db.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
+      await db.deleteFrom("orgs_users").where("org_id", "=", id).execute();
+      await db.deleteFrom("ms_orgs").where("id", "=", id).execute();
+    });
+    res.status(200).json({ msg: "Organisasi berhasil di hapuskan" });
+  } catch (error) {
+    throw new Error("Gagal Delete");
+  }
+};

@@ -7,14 +7,16 @@ import { socket } from "../helpers/socket";
 
 // Mutation di sini nggak perlu manggil invalidateQuery karena kita pakai socket untuk nge-invalidate querynya.
 
-export function useChatroomsDetailGet(chatroom_id: number) {
+export function useChatroomsDetailGet(opts: { chatroom_id: number }) {
+  const { chatroom_id } = opts;
   return useQuery({
     queryKey: ["chatrooms", "detail", chatroom_id],
     queryFn: () => new APIContext("ChatroomsDetailGet").fetch(`/api/chatrooms/${chatroom_id}`),
   });
 }
 
-export function useChatroomsDetailMessagesGet(chatroom_id: number) {
+export function useChatroomsDetailMessagesGet(opts: { chatroom_id: number }) {
+  const { chatroom_id } = opts;
   return useQuery({
     queryKey: ["messages", "detail", chatroom_id],
     queryFn: () =>
@@ -22,7 +24,8 @@ export function useChatroomsDetailMessagesGet(chatroom_id: number) {
   });
 }
 
-export function useChatroomsDetailMessagesPost(chatroom_id: number) {
+export function useChatroomsDetailMessagesPost(opts: { chatroom_id: number }) {
+  const { chatroom_id } = opts;
   return useMutation({
     mutationFn: async (message: string) =>
       await new APIContext("ChatroomsDetailMessagesPost").fetch(
@@ -37,7 +40,8 @@ export function useChatroomsDetailMessagesPost(chatroom_id: number) {
   });
 }
 
-export function useChatroomsDetailPut(chatroom_id: number, onSuccess?: () => void) {
+export function useChatroomsDetailPut(opts: { chatroom_id: number; onSuccess?: () => void }) {
+  const { chatroom_id, onSuccess } = opts;
   return useMutation({
     mutationFn: async (opts: { name?: string; user_ids?: number[] }) => {
       const res = await new APIContext("ChatroomsDetailPut").fetch(
@@ -56,67 +60,54 @@ export function useChatroomsDetailPut(chatroom_id: number, onSuccess?: () => voi
   });
 }
 
-export function useUsersDetailChatroomsPost(
-  name: string,
-  user_id: number | undefined,
-  onSuccess?: () => void,
-) {
+export function useUsersDetailChatroomsPost(opts: { user_id?: number; onSuccess?: () => void }) {
+  const { user_id, onSuccess } = opts;
   return useMutation({
-    mutationFn: async () => {
-      if (user_id === undefined) {
-        throw new Error("User id invalid!");
-      }
-      return new APIContext("UsersDetailChatroomsPost").fetch(`/api/users/${user_id}/chatrooms`, {
+    mutationFn: new APIContext("UsersDetailChatroomsPost").bodyFetch(
+      `/api/users/${user_id}/chatrooms`,
+      {
         method: "POST",
-        body: {
-          name: name,
-        },
-      });
-    },
+      },
+    ),
     onSuccess: onSuccess,
   });
 }
 
-export function useProjectsDetailChatroomsPost(
-  name: string,
-  project_id: number,
-  onSuccess?: () => void,
-) {
+export function useProjectsDetailChatroomsPost(opts: {
+  project_id: number;
+  onSuccess?: () => void;
+}) {
+  const { project_id, onSuccess } = opts;
   return useMutation({
-    mutationFn: async () => {
-      return new APIContext("ProjectsDetailChatroomsPost").fetch(
-        `/api/projects/${project_id}/chatrooms`,
-        {
-          method: "POST",
-          body: {
-            name: name,
-          },
-        },
-      );
-    },
+    mutationFn: new APIContext("ProjectsDetailChatroomsPost").bodyFetch(
+      `/api/projects/${project_id}/chatrooms`,
+      {
+        method: "POST",
+      },
+    ),
     onSuccess: onSuccess,
   });
 }
 
-export function useUsersDetailChatroomsGet(
-  userId: number | undefined,
-  retry?: (failureCount: number, error: Error) => boolean,
-) {
+export function useUsersDetailChatroomsGet(opts: {
+  user_id: number | undefined;
+  retry?: (failureCount: number, error: Error) => boolean;
+}) {
+  const { user_id, retry } = opts;
   return useQuery({
-    queryKey: ["chatrooms", "collection", "user", userId],
+    queryKey: ["chatrooms", "collection", "user", user_id],
     queryFn: () =>
-      new APIContext("UsersDetailChatroomsGet").fetch(`/api/users/${userId}/chatrooms`),
+      new APIContext("UsersDetailChatroomsGet").fetch(`/api/users/${user_id}/chatrooms`),
     retry: retry,
-    enabled: userId !== undefined,
   });
 }
 
-export function useProjectsDetailChatroomsGet(projectId: number | undefined) {
+export function useProjectsDetailChatroomsGet(opts: { project_id: number }) {
+  const { project_id } = opts;
   return useQuery({
-    queryKey: ["chatrooms", "collection", "project", projectId],
+    queryKey: ["chatrooms", "collection", "project", project_id],
     queryFn: () =>
-      new APIContext("ProjectsDetailChatroomsGet").fetch(`/api/projects/${projectId}/chatrooms`),
-    enabled: projectId !== undefined,
+      new APIContext("ProjectsDetailChatroomsGet").fetch(`/api/projects/${project_id}/chatrooms`),
   });
 }
 

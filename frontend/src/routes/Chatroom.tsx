@@ -22,8 +22,7 @@ import {
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation } from "wouter";
-import { APIError } from "../helpers/fetch";
+import { Redirect } from "wouter";
 import {
   useChatSocket,
   useChatroomsDetailGet,
@@ -282,13 +281,12 @@ export function ChatroomHeader(props: {
   );
 }
 
-function Chatroom(props: { chatroom_id: number }) {
-  const { chatroom_id } = props;
+function Chatroom(props: { chatroom_id: number; user_id: number; onLeave: () => void }) {
+  const { chatroom_id, user_id, onLeave } = props;
 
-  const { data: sessionData } = useSessionGet();
-  const { data: chatroom } = useChatroomsDetailGet(chatroom_id);
+  const { data: chatroom } = useChatroomsDetailGet({ chatroom_id });
 
-  const { data: messages } = useChatroomsDetailMessagesGet(chatroom_id);
+  const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
   const { data: users } = useUsersGet();
   const reshaped_messages = [];
 
@@ -308,18 +306,18 @@ function Chatroom(props: { chatroom_id: number }) {
     }
   }
 
-  const { mutate: sendMessage } = useChatroomsDetailMessagesPost(chatroom_id);
+  const { mutate: sendMessage } = useChatroomsDetailMessagesPost({ chatroom_id });
 
-  const { mutate: editRoom } = useChatroomsDetailPut(chatroom_id, () => {
-    enqueueSnackbar({
-      variant: "success",
-      message: <Typography>Ruangan berhasil diedit!</Typography>,
-    });
+  const { mutate: editRoom } = useChatroomsDetailPut({
+    chatroom_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>Ruangan berhasil diedit!</Typography>,
+      });
+    },
   });
 
-  if (!sessionData?.logged) {
-    return null;
-  }
   if (!chatroom) {
     return <Skeleton />;
   }
@@ -331,10 +329,9 @@ function Chatroom(props: { chatroom_id: number }) {
         chatroom_users={chatroom.chatroom_users.map((x) => x.user_id)}
         onLeave={() => {
           editRoom({
-            user_ids: chatroom.chatroom_users
-              .map((x) => x.user_id)
-              .filter((x) => x !== sessionData.user_id),
+            user_ids: chatroom.chatroom_users.map((x) => x.user_id).filter((x) => x !== user_id),
           });
+          onLeave();
         }}
         onEditMembers={(members) => {
           editRoom({
@@ -357,56 +354,33 @@ function Chatroom(props: { chatroom_id: number }) {
   );
 }
 
-function ChatroomPage() {
+function ChatroomPageAuthorized(props: { user_id: number }) {
+  const { user_id } = props;
   const [connected, setConnected] = useState(false);
   const [activeRoom, setActiveRoom] = useState<number | false>(false);
 
-  const [, setLocation] = useLocation();
-
-  const { data: sessionData } = useSessionGet();
-
-  const { data: chatrooms } = useUsersDetailChatroomsGet(
-    sessionData?.logged ? sessionData.user_id : undefined,
-    (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
-        setLocation("/");
-        return false;
-      }
-      return true;
-    },
-  );
-
-  useEffect(() => {
-    if (!chatrooms) {
-      setActiveRoom(false);
-      return;
-    }
-    if (activeRoom === false) {
-      return;
-    }
-    const found = chatrooms.map((x) => x.chatroom_id).includes(activeRoom);
-    if (!found) {
-      setActiveRoom(false);
-    }
-  }, [chatrooms]);
-
-  const [addRoomOpen, setAddRoomOpen] = useState(false);
-  const [addRoomName, setAddRoomName] = useState("");
-
-  const { mutate: createRoom } = useUsersDetailChatroomsPost(
-    addRoomName,
-    sessionData?.logged ? sessionData.user_id : undefined,
-    () => {
+  const { data: chatrooms } = useUsersDetailChatroomsGet({
+    user_id: user_id,
+  });
+  const { mutate: createRoom } = useUsersDetailChatroomsPost({
+    user_id: user_id,
+    onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Room created!</Typography>,
         variant: "success",
       });
       setAddRoomOpen(false);
     },
-  );
+  });
+
+  const selectedChatroom = chatrooms?.find((x) => x.chatroom_id === activeRoom);
+
+  if (activeRoom !== false && chatrooms && selectedChatroom === undefined) {
+    setActiveRoom(false);
+  }
 
   useChatSocket({
-    userId: sessionData?.logged ? sessionData.user_id : undefined,
+    userId: user_id,
     onConnect: () => {
       setConnected(true);
     },
@@ -415,9 +389,8 @@ function ChatroomPage() {
     },
   });
 
-  if (!sessionData?.logged) {
-    return null;
-  }
+  const [addRoomOpen, setAddRoomOpen] = useState(false);
+  const [addRoomName, setAddRoomName] = useState("");
 
   return (
     <Grid container height={"100%"}>
@@ -432,7 +405,15 @@ function ChatroomPage() {
           <TextField fullWidth onChange={(e) => setAddRoomName(e.target.value)} label="Room name" />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => createRoom()}>Create room</Button>
+          <Button
+            onClick={() =>
+              createRoom({
+                name: addRoomName,
+              })
+            }
+          >
+            Create room
+          </Button>
         </DialogActions>
       </Dialog>
       <Grid item xs={2} lg={1}>
@@ -456,13 +437,32 @@ function ChatroomPage() {
         </Tabs>
       </Grid>
       <Grid item xs={10} lg={11}>
-        {chatrooms?.map(
-          (x, i) =>
-            activeRoom === x.chatroom_id && <Chatroom key={i} chatroom_id={x.chatroom_id} />,
+        {selectedChatroom && (
+          <Chatroom
+            user_id={user_id}
+            chatroom_id={selectedChatroom.chatroom_id}
+            onLeave={() => {
+              setActiveRoom(false);
+            }}
+          />
         )}
       </Grid>
     </Grid>
   );
+}
+
+function ChatroomPage() {
+  const { data: sessionData } = useSessionGet();
+
+  if (!sessionData) {
+    return <Skeleton />;
+  }
+
+  if (sessionData.logged === false) {
+    return <Redirect to={"/"} />;
+  } else {
+    return <ChatroomPageAuthorized user_id={sessionData.user_id} />;
+  }
 }
 
 export default ChatroomPage;

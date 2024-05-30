@@ -1,4 +1,4 @@
-import { Add, ArrowBack, Edit } from "@mui/icons-material";
+import { Add, ArrowBack, Delete, Edit } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -12,23 +12,41 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../../helpers/fetch";
-import { useOrgDetailGet } from "../../queries/org_hooks";
+import { useOrgDetailGet, useOrgsDelete } from "../../queries/org_hooks";
 import { useProjectsGet } from "../../queries/project_hooks";
 
 function OrgsDetailPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
 
-  const { data } = useOrgDetailGet(id!, (failureCount, error) => {
-    if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
-      setLocation("/orgs");
-      return false;
-    }
-    return true;
+  const { data } = useOrgDetailGet({
+    id: id!,
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+        setLocation("/orgs");
+        return false;
+      }
+      return true;
+    },
   });
-  const { data: projectData } = useProjectsGet(id);
+
+  const { data: projectData } = useProjectsGet({
+    org_id: id,
+  });
+
+  const { mutate: deleteOrg } = useOrgsDelete({
+    id: Number(id),
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Edit successful!</Typography>,
+        autoHideDuration: 5000,
+        variant: "success",
+      });
+    },
+  });
 
   if (data && projectData) {
     return (
@@ -47,15 +65,24 @@ function OrgsDetailPage() {
             </Button>
           </Link>
         </Grid>
-        <Grid item xs={8}>
+        <Grid item xs={7} paddingLeft="8vw">
           <Typography variant="h4" fontWeight={"bold"} align="center" marginRight="15vw">
             {data.org_name}
           </Typography>
         </Grid>
         <Grid item xs={1}>
-          <Button endIcon={<Edit />} variant="contained" fullWidth>
-            Edit
-          </Button>
+          <Link to={`/orgs/edit/${id}`}>
+            <Button endIcon={<Edit />} variant="contained" fullWidth>
+              Edit
+            </Button>
+          </Link>
+        </Grid>
+        <Grid item xs={1} paddingLeft="1vw">
+          <Link to={"/orgs"}>
+            <Button endIcon={<Delete />} variant="contained" fullWidth onClick={() => deleteOrg()}>
+              Delete
+            </Button>
+          </Link>
         </Grid>
 
         <Paper

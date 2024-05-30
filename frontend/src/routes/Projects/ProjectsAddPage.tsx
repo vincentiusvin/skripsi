@@ -24,11 +24,7 @@ function projectsAddPage() {
 
   const [, setLocation] = useLocation();
 
-  const { mutate: addProject } = useProjectsPost({
-    desc: projectDesc,
-    name: projectName,
-    org_id: orgIdNumber,
-    category: Number(projectCategory),
+  const { mutate: postProject } = useProjectsPost({
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Added successful</Typography>,
@@ -38,6 +34,15 @@ function projectsAddPage() {
       setLocation("/projects");
     },
   });
+
+  function addProject() {
+    postProject({
+      project_desc: projectDesc,
+      project_name: projectName,
+      org_id: orgIdNumber,
+      category_id: Number(projectCategory),
+    });
+  }
 
   const { data: categories } = useProjectsCategoriesGet();
 

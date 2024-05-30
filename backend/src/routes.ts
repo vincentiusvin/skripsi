@@ -11,7 +11,14 @@ import {
   postUsersDetailChatrooms,
   putChatroomsDetail,
 } from "./routes/chatroom";
-import { getOrgs, getOrgsCategories, getOrgsDetail, postOrgs } from "./routes/orgs";
+import {
+  deleteOrgs,
+  getOrgs,
+  getOrgsCategories,
+  getOrgsDetail,
+  postOrgs,
+  updateOrgs,
+} from "./routes/orgs";
 import {
   deleteProjectsDetailMembersDetail,
   getProjects,
@@ -54,8 +61,9 @@ export function registerRoutes(app: Express) {
   app.get("/api/orgs", getOrgs); // R
   // orgs/org -> RUD
   app.get("/api/orgs/:id", getOrgsDetail); // R
-  // U
-  // D
+  // Update Orgs
+  app.put("/api/orgs/:id", updateOrgs); //U
+  app.delete("/api/orgs/:id", deleteOrgs); // D
   // org-categories -> R
   app.get("/api/org-categories", getOrgsCategories); // R
 
@@ -117,6 +125,8 @@ type _api = {
   OrgsGet: typeof getOrgs;
   OrgsDetailGet: typeof getOrgsDetail;
   OrgsCategoriesGet: typeof getOrgsCategories;
+  OrgsUpdate: typeof updateOrgs;
+  OrgsDelete: typeof deleteOrgs;
 
   ProjectsPost: typeof postProjects;
   ProjectsGet: typeof getProjects;

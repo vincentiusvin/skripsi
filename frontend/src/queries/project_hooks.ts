@@ -3,20 +3,22 @@ import { API } from "../../../backend/src/routes";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
-export function useProjectsDetailGet(
-  id: string,
-  retry?: (failurecount: number, error: any) => boolean,
-) {
+export function useProjectsDetailGet(opts: {
+  project_id: string;
+  retry?: (failurecount: number, error: any) => boolean;
+}) {
+  const { project_id, retry } = opts;
   return useQuery({
-    queryKey: ["projects", "detail", id],
-    queryFn: () => new APIContext("ProjectsDetailGet").fetch(`/api/projects/${id}`),
+    queryKey: ["projects", "detail", project_id],
+    queryFn: () => new APIContext("ProjectsDetailGet").fetch(`/api/projects/${project_id}`),
     retry: retry,
   });
 }
 
-export function useProjectsGet(org_id?: string) {
+export function useProjectsGet(opts?: { org_id?: string }) {
+  const { org_id } = opts || {};
   return useQuery({
-    queryKey: ["projects", "collection", org_id],
+    queryKey: ["projects", "collection", opts],
     queryFn: () =>
       new APIContext("ProjectsGet").fetch("/api/projects", {
         query:
@@ -29,10 +31,11 @@ export function useProjectsGet(org_id?: string) {
   });
 }
 
-export function useProjectsDetailMembersGet(
-  project_id: number | undefined,
-  user_id: number | undefined,
-) {
+export function useProjectsDetailMembersGet(opts: {
+  project_id: number | undefined;
+  user_id: number | undefined;
+}) {
+  const { project_id, user_id } = opts;
   return useQuery({
     queryKey: ["projects", "detail", project_id, "members", user_id],
     queryFn: () =>
@@ -43,18 +46,16 @@ export function useProjectsDetailMembersGet(
   });
 }
 
-export function useProjectsDetailMembersDelete(
-  project_id: number | undefined,
-  user_id: number | undefined,
-  onSuccess?: (data: API["ProjectsDetailMembersDelete"]["ResBody"]) => void,
-) {
+export function useProjectsDetailMembersDelete(opts: {
+  project_id: number;
+  user_id?: number;
+  onSuccess?: (data: API["ProjectsDetailMembersDelete"]["ResBody"]) => void;
+}) {
+  const { project_id, user_id, onSuccess } = opts;
   return useMutation({
     mutationFn: () => {
-      if (project_id === undefined) {
-        throw new Error("Projek invalid!");
-      }
       if (user_id === undefined) {
-        throw new Error("User invalid!");
+        throw new Error("Data user tidak ditemukan");
       }
       return new APIContext("ProjectsDetailMembersPut").fetch(
         `/api/projects/${project_id}/users/${user_id}`,
@@ -72,19 +73,14 @@ export function useProjectsDetailMembersDelete(
   });
 }
 
-export function useProjectsDetailMembersPut(
-  project_id: number | undefined,
-  user_id: number | undefined,
-  onSuccess?: (data: API["ProjectsDetailMembersPut"]["ResBody"]) => void,
-) {
+export function useProjectsDetailMembersPut(opts: {
+  project_id: number | undefined;
+  user_id: number | undefined;
+  onSuccess?: (data: API["ProjectsDetailMembersPut"]["ResBody"]) => void;
+}) {
+  const { project_id, user_id, onSuccess } = opts;
   return useMutation({
     mutationFn: () => {
-      if (project_id === undefined) {
-        throw new Error("Projek invalid!");
-      }
-      if (user_id === undefined) {
-        throw new Error("User invalid!");
-      }
       return new APIContext("ProjectsDetailMembersPut").fetch(
         `/api/projects/${project_id}/users/${user_id}`,
         {
@@ -101,25 +97,12 @@ export function useProjectsDetailMembersPut(
   });
 }
 
-export function useProjectsPost(opts: {
-  name: string;
-  desc: string;
-  org_id: number;
-  category: number;
-  onSuccess?: () => void;
-}) {
-  const { name, desc, org_id, category, onSuccess } = opts;
+export function useProjectsPost(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
   return useMutation({
-    mutationFn: () =>
-      new APIContext("ProjectsPost").fetch("/api/projects", {
-        method: "POST",
-        body: {
-          category_id: category,
-          project_name: name,
-          project_desc: desc,
-          org_id: org_id,
-        },
-      }),
+    mutationFn: new APIContext("ProjectsPost").bodyFetch("/api/projects", {
+      method: "POST",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       if (onSuccess) {

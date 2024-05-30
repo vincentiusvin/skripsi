@@ -2,10 +2,11 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
-export function useOrgDetailGet(
-  id: string,
-  retry?: (failureCount: number, error: Error) => boolean,
-) {
+export function useOrgDetailGet(opts: {
+  id: string;
+  retry?: (failureCount: number, error: Error) => boolean;
+}) {
+  const { id, retry } = opts;
   return useQuery({
     queryKey: ["orgs", "detail", id],
     queryFn: () => new APIContext("OrgsDetailGet").fetch(`/api/orgs/${id}`),
@@ -20,7 +21,34 @@ export function useOrgsGet() {
   });
 }
 
-export function useOrgsPost(opts: {
+export function useOrgsPost(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
+  return useMutation({
+    mutationFn: new APIContext("OrgsPost").bodyFetch("/api/orgs", {
+      method: "POST",
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orgs"] });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useOrgsCategoriesGet(opts: {
+  retry?: (failureCount: number, error: Error) => boolean;
+}) {
+  const { retry } = opts;
+  return useQuery({
+    queryKey: ["categories"],
+    queryFn: () => new APIContext("OrgsCategoriesGet").fetch(`/api/org-categories`),
+    retry: retry,
+  });
+}
+
+export function useOrgsUpdate(opts: {
+  id: number;
   name: string;
   desc: string;
   address: string;
@@ -29,11 +57,11 @@ export function useOrgsPost(opts: {
   image?: string;
   onSuccess?: () => void;
 }) {
-  const { name, desc, address, phone, image, onSuccess, category } = opts;
+  const { id, name, desc, address, phone, image, onSuccess, category } = opts;
   return useMutation({
     mutationFn: () =>
-      new APIContext("OrgsPost").fetch("/api/orgs", {
-        method: "POST",
+      new APIContext("OrgsUpdate").fetch(`/api/orgs/${id}`, {
+        method: "PUT",
         body: {
           org_name: name,
           org_description: desc,
@@ -52,10 +80,18 @@ export function useOrgsPost(opts: {
   });
 }
 
-export function useOrgsCategoriesGet(retry?: (failureCount: number, error: Error) => boolean) {
-  return useQuery({
-    queryKey: ["categories"],
-    queryFn: () => new APIContext("OrgsCategoriesGet").fetch(`/api/org-categories`),
-    retry: retry,
+export function useOrgsDelete(opts: { id: number; onSuccess?: () => void }) {
+  const { id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: () =>
+      new APIContext("OrgsDelete").fetch(`/api/orgs/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orgs"] });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
   });
 }
