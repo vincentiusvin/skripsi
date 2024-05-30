@@ -199,7 +199,7 @@ function Involved(props: { project_id: number }) {
               org_id={project_data.org_id}
               project_categories={project_data.project_categories}
               project_desc={project_data.project_desc}
-              project_devs={project_data.project_devs}
+              project_members={project_data.project_members}
             />
           </>
         )}
@@ -215,10 +215,10 @@ function Involved(props: { project_id: number }) {
 function ProjectIndex(props: {
   project_desc: string;
   org_id: number;
-  project_devs: { name: string }[];
+  project_members: { name: string }[];
   project_categories: string[];
 }) {
-  const { project_desc, org_id, project_devs, project_categories } = props;
+  const { project_desc, org_id, project_members: project_devs, project_categories } = props;
   return (
     <>
       <Grid item xs={12}>
@@ -275,10 +275,17 @@ function ProjectDetailPage() {
     },
   });
 
-  const { data: membership } = useProjectsDetailMembersGet({
+  const { data: membership, error: membershipError } = useProjectsDetailMembersGet({
     project_id: project_data?.project_id,
     user_id: user_id,
   });
+
+  let role: NonNullable<typeof membership>["role"] | "Not Involved" | undefined;
+  if (membership) {
+    role = membership.role;
+  } else if (membershipError instanceof APIError && membershipError.status === 401) {
+    role = "Not Involved";
+  }
 
   const { mutate: addMember } = useProjectsDetailMembersPut({
     project_id: project_data?.project_id,
@@ -291,11 +298,11 @@ function ProjectDetailPage() {
     },
   });
 
-  if (!project_data || !membership) {
+  if (!project_data || !role) {
     return <Skeleton />;
   }
 
-  if (membership.status === "Not Involved") {
+  if (role === "Not Involved" || role === "Pending") {
     return (
       <Grid container mt={2}>
         <Grid item xs={1}>
@@ -311,15 +318,25 @@ function ProjectDetailPage() {
           </Typography>
         </Grid>
         <Grid item xs={1}>
-          <Button endIcon={<Check />} variant="contained" fullWidth onClick={() => addMember()}>
-            Apply
+          <Button
+            endIcon={<Check />}
+            variant="contained"
+            disabled={role === "Pending"}
+            fullWidth
+            onClick={() =>
+              addMember({
+                role: "Pending",
+              })
+            }
+          >
+            {role === "Pending" ? "Applied" : "Apply"}
           </Button>
         </Grid>
         <ProjectIndex
           org_id={project_data.org_id}
           project_categories={project_data.project_categories}
           project_desc={project_data.project_desc}
-          project_devs={project_data.project_devs}
+          project_members={project_data.project_members.filter((x) => x.role !== "Pending")}
         />
       </Grid>
     );

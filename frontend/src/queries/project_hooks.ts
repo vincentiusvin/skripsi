@@ -43,6 +43,7 @@ export function useProjectsDetailMembersGet(opts: {
         `/api/projects/${project_id}/users/${user_id}`,
       ),
     enabled: project_id !== undefined && user_id !== undefined,
+    retry: false,
   });
 }
 
@@ -80,14 +81,12 @@ export function useProjectsDetailMembersPut(opts: {
 }) {
   const { project_id, user_id, onSuccess } = opts;
   return useMutation({
-    mutationFn: () => {
-      return new APIContext("ProjectsDetailMembersPut").fetch(
-        `/api/projects/${project_id}/users/${user_id}`,
-        {
-          method: "PUT",
-        },
-      );
-    },
+    mutationFn: new APIContext("ProjectsDetailMembersPut").bodyFetch(
+      `/api/projects/${project_id}/users/${user_id}`,
+      {
+        method: "PUT",
+      },
+    ),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       if (onSuccess) {
