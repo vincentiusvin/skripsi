@@ -2,7 +2,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
-export function useUsersPost(onSuccess?: () => void) {
+export function useUsersPost(opts?: { onSuccess?: () => void }) {
+  const { onSuccess } = opts ?? {};
   return useMutation({
     mutationFn: new APIContext("UsersPost").bodyFetch("/api/users", {
       method: "POST",
