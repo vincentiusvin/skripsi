@@ -3,7 +3,7 @@ import { io } from "..";
 import { db } from "../db/db";
 import { AuthError, ClientError, NotFoundError } from "../helpers/error";
 import { RH } from "../helpers/types";
-import { withMembers } from "./projects.js";
+import { parseRole, withMembers } from "./projects.js";
 
 // Manipulasi data semuanya dilakuin lewat http.
 // Socket cuma dipakai buat broadcast perubahan ke user.
@@ -39,7 +39,12 @@ export async function getChatroomMembers(chatroom_id: number) {
     if (!result) {
       throw new Error(`Chat ${chatroom_id} merujuk kepada projek invalid!`);
     }
-    return result.project_members.map((x) => x.id);
+    return result.project_members
+      .filter((x) => {
+        const role = parseRole(x.role);
+        return role === "Dev" || role === "Admin";
+      })
+      .map((x) => x.id);
   }
 }
 

@@ -8,7 +8,7 @@ import { RH } from "../helpers/types";
 const project_roles = ["Pending", "Dev", "Admin"] as const;
 export type ProjectRoles = (typeof project_roles)[number];
 
-function parseRole(role: string) {
+export function parseRole(role: string) {
   return project_roles.find((x) => x === role);
 }
 
