@@ -30,12 +30,7 @@ function OrgsAddPage() {
 
   const [, setLocation] = useLocation();
 
-  const { mutate: addOrg } = useOrgsPost({
-    name: orgName,
-    desc: orgDesc,
-    address: orgAddress,
-    phone: orgPhone,
-    category: Number(orgCategory),
+  const { mutate: orgsPost } = useOrgsPost({
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Added successful!</Typography>,
@@ -46,13 +41,26 @@ function OrgsAddPage() {
     },
   });
 
+  function addOrg() {
+    orgsPost({
+      org_name: orgName,
+      org_address: orgAddress,
+      org_category: Number(orgCategory),
+      org_phone: orgPhone,
+      org_description: orgDesc,
+      org_image: orgImage !== null ? orgImage : undefined,
+    });
+  }
+
   // Fetch categories from the backend API
-  const { data: categories } = useOrgsCategoriesGet((failureCount, error) => {
-    if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
-      setLocation("/");
-      return false;
-    }
-    return true;
+  const { data: categories } = useOrgsCategoriesGet({
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
+        setLocation("/");
+        return false;
+      }
+      return true;
+    },
   });
 
   return (

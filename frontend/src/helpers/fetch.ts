@@ -41,7 +41,7 @@ export class APIContext<T extends keyof API> {
    */
   async fetch(
     url: string,
-    options?: Omit<RequestInit, "body" | "query"> & {
+    options?: Omit<RequestInit, "body"> & {
       body?: API[T]["ReqBody"];
       query?: API[T]["ReqQuery"];
     },
@@ -85,11 +85,25 @@ export class APIContext<T extends keyof API> {
     return content;
   }
 
-  arrayFetch(arr: Parameters<this["fetch"]>) {
-    return this.fetch(arr[0], arr[1]);
-  }
-
   curriedFetch(url: string) {
     return (opts: Parameters<typeof this.fetch>[1]) => this.fetch(url, opts);
+  }
+
+  bodyFetch(
+    url: string,
+    opts: Omit<RequestInit, "body"> & {
+      query?: API[T]["ReqQuery"];
+    },
+  ) {
+    return (body: API[T]["ReqBody"]) => this.fetch(url, { ...opts, body });
+  }
+
+  queryFetch(
+    url: string,
+    opts: RequestInit & {
+      body?: API[T]["ReqBody"];
+    },
+  ) {
+    return (query: API[T]["ReqQuery"]) => this.fetch(url, { ...opts, query });
   }
 }

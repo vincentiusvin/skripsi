@@ -42,8 +42,8 @@ import { ChatroomContent } from "../Chatroom";
 function Chatroom(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
   const { data: sessionData } = useSessionGet();
-  const { data: chatroom } = useChatroomsDetailGet(chatroom_id);
-  const { data: messages } = useChatroomsDetailMessagesGet(chatroom_id);
+  const { data: chatroom } = useChatroomsDetailGet({ chatroom_id });
+  const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
   const { data: users } = useUsersGet();
   const reshaped_messages = [];
 
@@ -63,7 +63,7 @@ function Chatroom(props: { chatroom_id: number }) {
     }
   }
 
-  const { mutate: sendMessage } = useChatroomsDetailMessagesPost(chatroom_id);
+  const { mutate: sendMessage } = useChatroomsDetailMessagesPost({ chatroom_id });
 
   if (!sessionData?.logged) {
     return null;
@@ -89,8 +89,8 @@ function Involved(props: { project_id: number }) {
   const [connected, setConnected] = useState(false);
   const [activeRoom, setActiveRoom] = useState<number | "index" | false>(false);
   const { data: sessionData } = useSessionGet();
-  const { data: chatrooms } = useProjectsDetailChatroomsGet(project_id);
-  const { data: project_data } = useProjectsDetailGet(project_id.toString());
+  const { data: chatrooms } = useProjectsDetailChatroomsGet({ project_id });
+  const { data: project_data } = useProjectsDetailGet({ project_id: project_id.toString() });
   const user_id = sessionData?.logged ? sessionData.user_id : undefined;
 
   useEffect(() => {
@@ -110,24 +110,27 @@ function Involved(props: { project_id: number }) {
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [addRoomName, setAddRoomName] = useState("");
 
-  const { mutate: createRoom } = useProjectsDetailChatroomsPost(addRoomName, project_id, () => {
-    enqueueSnackbar({
-      message: <Typography>Room created!</Typography>,
-      variant: "success",
-    });
-    setAddRoomOpen(false);
+  const { mutate: createRoom } = useProjectsDetailChatroomsPost({
+    project_id: project_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Room created!</Typography>,
+        variant: "success",
+      });
+      setAddRoomOpen(false);
+    },
   });
 
-  const { mutate: leaveProject } = useProjectsDetailMembersDelete(
-    project_data?.project_id,
-    user_id,
-    (x) => {
+  const { mutate: leaveProject } = useProjectsDetailMembersDelete({
+    project_id: project_id,
+    user_id: user_id,
+    onSuccess: (x) => {
       enqueueSnackbar({
         variant: "success",
         message: <Typography>{x.msg}</Typography>,
       });
     },
-  );
+  });
 
   useChatSocket({
     userId: sessionData?.logged ? sessionData.user_id : undefined,
@@ -156,7 +159,15 @@ function Involved(props: { project_id: number }) {
           <TextField fullWidth onChange={(e) => setAddRoomName(e.target.value)} label="Room name" />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => createRoom()}>Create room</Button>
+          <Button
+            onClick={() =>
+              createRoom({
+                name: addRoomName,
+              })
+            }
+          >
+            Create room
+          </Button>
         </DialogActions>
       </Dialog>
       <Grid item xs={2} lg={1}>
@@ -253,26 +264,32 @@ function ProjectDetailPage() {
   const { data: user_data } = useSessionGet();
   const user_id = user_data?.logged ? user_data.user_id : undefined;
 
-  const { data: project_data } = useProjectsDetailGet(id!, (failureCount, error) => {
-    if (error instanceof APIError || failureCount > 3) {
-      setLocation("/projects");
-      return false;
-    }
-    return true;
+  const { data: project_data } = useProjectsDetailGet({
+    project_id: id!,
+    retry: (failureCount, error) => {
+      if (error instanceof APIError || failureCount > 3) {
+        setLocation("/projects");
+        return false;
+      }
+      return true;
+    },
   });
 
-  const { data: membership } = useProjectsDetailMembersGet(project_data?.project_id, user_id);
+  const { data: membership } = useProjectsDetailMembersGet({
+    project_id: project_data?.project_id,
+    user_id: user_id,
+  });
 
-  const { mutate: addMember } = useProjectsDetailMembersPut(
-    project_data?.project_id,
-    user_id,
-    (x) => {
+  const { mutate: addMember } = useProjectsDetailMembersPut({
+    project_id: project_data?.project_id,
+    user_id: user_id,
+    onSuccess: (x) => {
       enqueueSnackbar({
         variant: "success",
         message: <Typography>{x.msg}</Typography>,
       });
     },
-  );
+  });
 
   if (!project_data || !membership) {
     return <Skeleton />;
