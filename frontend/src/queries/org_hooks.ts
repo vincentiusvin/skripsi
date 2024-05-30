@@ -3,14 +3,16 @@ import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
 export function useOrgDetailGet(opts: {
-  id: string;
+  id: number;
   retry?: (failureCount: number, error: Error) => boolean;
+  enabled?: boolean;
 }) {
-  const { id, retry } = opts;
+  const { id, retry, enabled } = opts;
   return useQuery({
     queryKey: ["orgs", "detail", id],
     queryFn: () => new APIContext("OrgsDetailGet").fetch(`/api/orgs/${id}`),
     retry: retry,
+    enabled: enabled,
   });
 }
 

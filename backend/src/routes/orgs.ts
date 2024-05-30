@@ -262,7 +262,7 @@ export const updateOrgs: RH<{
         .updateTable("orgs_users")
         .set({
           user_id: userID,
-          permission: "Owner",
+          role: "Owner",
         })
         .execute();
     });

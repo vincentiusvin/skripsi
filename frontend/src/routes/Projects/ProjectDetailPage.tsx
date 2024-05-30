@@ -29,6 +29,7 @@ import {
   useProjectsDetailChatroomsGet,
   useProjectsDetailChatroomsPost,
 } from "../../queries/chat_hooks";
+import { useOrgDetailGet } from "../../queries/org_hooks.ts";
 import {
   useProjectsDetailGet,
   useProjectsDetailMembersDelete,
@@ -281,10 +282,10 @@ function ProjectDetailPage() {
   });
 
   let role: NonNullable<typeof membership>["role"] | "Not Involved" | undefined;
-  if (membership) {
-    role = membership.role;
-  } else if (membershipError instanceof APIError && membershipError.status === 401) {
+  if (membershipError instanceof APIError && membershipError.status === 404) {
     role = "Not Involved";
+  } else if (membership) {
+    role = membership.role;
   }
 
   const { mutate: addMember } = useProjectsDetailMembersPut({
@@ -297,6 +298,14 @@ function ProjectDetailPage() {
       });
     },
   });
+
+  const { data: org } = useOrgDetailGet({
+    id: project_data?.org_id!,
+    enabled: !!project_data,
+  });
+
+  const is_member = org ? !!org.org_users.find((x) => x.id === user_id) : undefined;
+  const apply_as = is_member ? "Admin" : "Pending";
 
   if (!project_data || !role) {
     return <Skeleton />;
@@ -321,15 +330,15 @@ function ProjectDetailPage() {
           <Button
             endIcon={<Check />}
             variant="contained"
-            disabled={role === "Pending"}
+            disabled={role === apply_as}
             fullWidth
             onClick={() =>
               addMember({
-                role: "Pending",
+                role: apply_as,
               })
             }
           >
-            {role === "Pending" ? "Applied" : "Apply"}
+            {role === apply_as ? "Applied" : "Apply"}
           </Button>
         </Grid>
         <ProjectIndex

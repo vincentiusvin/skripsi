@@ -88,11 +88,34 @@ export const putProjectsDetailMembersDetail: RH<{
   const role = req.body.role;
 
   const sender_role = await getProjectRole(sender_id, project_id);
+  const project = await db
+    .selectFrom("ms_projects")
+    .where("id", "=", project_id)
+    .select("ms_projects.org_id")
+    .executeTakeFirst();
+  if (!project) {
+    throw new NotFoundError("Tidak ditemukan");
+  }
+
+  const member = await db
+    .selectFrom("orgs_users")
+    .select("user_id")
+    .where((eb) =>
+      eb.and({
+        "orgs_users.user_id": user_id,
+        "orgs_users.org_id": project.org_id,
+      }),
+    )
+    .executeTakeFirst();
+
+  const is_org_member = member ? member.user_id === user_id : false;
 
   let allowed = false;
   // Admin boleh ngelakuin apapun.
   // Dev cuma boleh apply kalau belum terlibat. Kalau mau leave pakai delete, bukan method ini.
-  if (sender_role === "Admin") {
+  if (is_org_member) {
+    allowed = true;
+  } else if (sender_role === "Admin") {
     allowed = true;
   } else if (sender_id === user_id && sender_role === undefined && role === "Pending") {
     allowed = true;
@@ -109,6 +132,11 @@ export const putProjectsDetailMembersDetail: RH<{
       user_id: user_id,
       role: role,
     })
+    .onConflict((oc) =>
+      oc.columns(["user_id", "project_id"]).doUpdateSet({
+        role: role,
+      }),
+    )
     .execute();
   res.json({ msg: "Pengguna berhasil ditambahkan!" });
 };
