@@ -3,7 +3,7 @@ import { io } from "..";
 import { db } from "../db/db";
 import { AuthError, ClientError, NotFoundError } from "../helpers/error";
 import { RH } from "../helpers/types";
-import { getProjectMembers } from "./projects";
+import { withMembers } from "./projects.js";
 
 // Manipulasi data semuanya dilakuin lewat http.
 // Socket cuma dipakai buat broadcast perubahan ke user.
@@ -30,8 +30,16 @@ export async function getChatroomMembers(chatroom_id: number) {
 
     return result.map((x) => x.user_id);
   } else {
-    const result = await getProjectMembers(chatroom.project_id);
-    return [...result.org_members, ...result.project_devs];
+    const result = await db
+      .selectFrom("ms_projects")
+      .select((eb) => withMembers(eb).as("project_members"))
+      .where("ms_projects.id", "=", chatroom.project_id)
+      .executeTakeFirst();
+
+    if (!result) {
+      throw new Error(`Chat ${chatroom_id} merujuk kepada projek invalid!`);
+    }
+    return result.project_members.map((x) => x.id);
   }
 }
 
@@ -275,21 +283,23 @@ export const postProjectsDetailChatrooms: RH<{
   if (name.length === 0) {
     throw new ClientError("Nama chatroom tidak boleh kosong!");
   }
-  await db
+  const chatroom_id = await db
     .insertInto("ms_chatrooms")
     .values({
       name: name,
       project_id: project_id,
     })
-    .execute();
+    .returning("id")
+    .executeTakeFirst();
 
-  const members = await getProjectMembers(project_id);
+  if (!chatroom_id) {
+    throw new Error("Data chatroom gagal masuk!");
+  }
+
+  const members = await getChatroomMembers(chatroom_id.id);
   const socks = await io.fetchSockets();
 
-  const filtered = socks.filter(
-    (x) =>
-      members.org_members.includes(x.data.userId) || members.project_devs.includes(x.data.userId),
-  );
+  const filtered = socks.filter((x) => members.includes(x.data.userId));
   filtered.forEach((x) => x.emit("roomUpdate"));
 
   res.status(201).json({
