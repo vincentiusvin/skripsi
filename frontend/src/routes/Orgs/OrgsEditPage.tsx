@@ -14,13 +14,14 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
-import { useOrgsCategoriesGet, useOrgsPost } from "../../queries/org_hooks";
+import { useOrgsCategoriesGet, useOrgsUpdate } from "../../queries/org_hooks";
 
-function OrgsAddPage() {
+function OrgsEditPage() {
+  const [orgId, setOrgId] = useState<number | "">("");
   const [orgName, setOrgName] = useState("");
   const [orgDesc, setOrgDesc] = useState("");
   const [orgAddress, setOrgAddress] = useState("");
@@ -30,10 +31,19 @@ function OrgsAddPage() {
 
   const [, setLocation] = useLocation();
 
-  const { mutate: orgsPost } = useOrgsPost({
+  const { id } = useParams();
+  console.log("id: ", id);
+
+  const { mutate: editOrg } = useOrgsUpdate({
+    id: Number(id),
+    name: orgName,
+    desc: orgDesc,
+    address: orgAddress,
+    phone: orgPhone,
+    category: Number(orgCategory),
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Added successful!</Typography>,
+        message: <Typography>Edit successful!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });
@@ -41,26 +51,13 @@ function OrgsAddPage() {
     },
   });
 
-  function addOrg() {
-    orgsPost({
-      org_name: orgName,
-      org_address: orgAddress,
-      org_category: Number(orgCategory),
-      org_phone: orgPhone,
-      org_description: orgDesc,
-      org_image: orgImage !== null ? orgImage : undefined,
-    });
-  }
-
   // Fetch categories from the backend API
-  const { data: categories } = useOrgsCategoriesGet({
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
-        setLocation("/");
-        return false;
-      }
-      return true;
-    },
+  const { data: categories } = useOrgsCategoriesGet((failureCount, error) => {
+    if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
+      setLocation("/");
+      return false;
+    }
+    return true;
   });
 
   return (
@@ -74,11 +71,11 @@ function OrgsAddPage() {
       </Grid>
       <Grid item xs={8}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
-          Tambah Organisasi
+          Edit Organisasi
         </Typography>
       </Grid>
       <Grid item xs={2}>
-        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addOrg()}>
+        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => editOrg()}>
           Simpan
         </Button>
       </Grid>
@@ -169,4 +166,4 @@ function OrgsAddPage() {
   );
 }
 
-export default OrgsAddPage;
+export default OrgsEditPage;

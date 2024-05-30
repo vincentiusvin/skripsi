@@ -12,6 +12,7 @@ import ChatroomPage from "./routes/Chatroom";
 import HomePage from "./routes/HomePage";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
 import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage";
+import OrgsEditPage from "./routes/Orgs/OrgsEditPage";
 import OrgsListPage from "./routes/Orgs/OrgsListPage";
 import ProjectDetailPage from "./routes/Projects/ProjectDetailPage";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
@@ -37,25 +38,27 @@ function App() {
             <CloseIcon />
           </IconButton>
         )}
-      />
-      <QueryClientProvider client={queryClient}>
-        <CssBaseline />
-        <Nav />
-        <Divider />
-        <Box mx={4} flexGrow={1}>
-          <Switch>
-            <Route path={"/"} component={HomePage} />
-            <Route path={"/auth"} component={AuthPage} />
-            <Route path={"/orgs"} component={OrgsListPage} />
-            <Route path={"/orgs/add"} component={OrgsAddPage} />
-            <Route path={"/orgs/:id"} component={OrgsDetailPage} />
-            <Route path={"/chatroom"} component={ChatroomPage} />
-            <Route path={"/projects"} component={ProjectListPage} />
-            <Route path={"/projects/add"} component={ProjectsAddPage} />
-            <Route path={"/projects/:id"} component={ProjectDetailPage} />
-          </Switch>
-        </Box>
-      </QueryClientProvider>
+      >
+        <QueryClientProvider client={queryClient}>
+          <CssBaseline />
+          <Nav />
+          <Divider />
+          <Box mx={4} flexGrow={1}>
+            <Switch>
+              <Route path={"/"} component={HomePage} />
+              <Route path={"/auth"} component={AuthPage} />
+              <Route path={"/orgs"} component={OrgsListPage} />
+              <Route path={"/orgs/add"} component={OrgsAddPage} />
+              <Route path={"/orgs/:id"} component={OrgsDetailPage} />
+              <Route path={"/orgs/edit/:id"} component={OrgsEditPage} />
+              <Route path={"/chatroom"} component={ChatroomPage} />
+              <Route path={"/projects"} component={ProjectListPage} />
+              <Route path={"/projects/add"} component={ProjectsAddPage} />
+              <Route path={"/projects/:id"} component={ProjectDetailPage} />
+            </Switch>
+          </Box>
+        </QueryClientProvider>
+      </SnackbarProvider>
     </ThemeProvider>
   );
 }
