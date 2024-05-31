@@ -1,5 +1,5 @@
 import { jsonArrayFrom } from "kysely/helpers/postgres";
-import { io } from "..";
+import { Application } from "../app.js";
 import { db } from "../db/db";
 import { AuthError, ClientError, NotFoundError } from "../helpers/error";
 import { RH } from "../helpers/types";
@@ -109,7 +109,8 @@ export const postChatroomsDetailMessages: RH<{
     throw new Error("Pesan tidak terkirim!");
   }
 
-  const socks = await io.fetchSockets();
+  const socket_server = Application.getApplication().socket_server;
+  const socks = await socket_server.fetchSockets();
   const filtered = socks.filter((x) => members.includes(x.data.userId));
   filtered.forEach((x) => x.emit("msg", chatroom_id, JSON.stringify(ret)));
 
@@ -255,7 +256,8 @@ export const postUsersDetailChatrooms: RH<{
       .execute();
   });
 
-  const socks = await io.fetchSockets();
+  const socket_server = Application.getApplication().socket_server;
+  const socks = await socket_server.fetchSockets();
   const filtered = socks.filter((x) => user_id === x.data.userId);
   filtered.forEach((x) => x.emit("roomUpdate"));
 
@@ -284,7 +286,8 @@ export const postProjectsDetailChatrooms: RH<{
     .execute();
 
   const members = await getProjectMembers(project_id);
-  const socks = await io.fetchSockets();
+  const socket_server = Application.getApplication().socket_server;
+  const socks = await socket_server.fetchSockets();
 
   const filtered = socks.filter(
     (x) =>
@@ -352,7 +355,8 @@ export const putChatroomsDetail: RH<{
 
   const users_to_notify = [...old_users.map((x) => x.user_id), ...new_users.map((x) => x.user_id)];
 
-  const socks = await io.fetchSockets();
+  const socket_server = Application.getApplication().socket_server;
+  const socks = await socket_server.fetchSockets();
   const filtered = socks.filter((x) => users_to_notify.includes(x.data.userId));
   filtered.forEach((x) => x.emit("roomUpdate"));
 

@@ -1,11 +1,12 @@
 import { expect } from "chai";
 import { describe } from "mocha";
 import supertest from "supertest";
-import { app } from "../src/index.js";
+import { Application } from "../src/app.js";
 
 describe("test suite", () => {
+  const app = Application.getApplication();
   it("should 404", async () => {
-    const res = await supertest(app).post("/api/users").send({
+    const res = await supertest(app.express_server).post("/api/users").send({
       user_name: "testing",
       user_password: "testing",
     });
