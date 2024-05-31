@@ -1,15 +1,17 @@
 import { expect } from "chai";
 import { describe } from "mocha";
-import supertest from "supertest";
-import { Application } from "../src/app.js";
+import { APIContext } from "./helpers.js";
 
 describe("test suite", () => {
-  const app = Application.getApplication();
   it("should 404", async () => {
-    const res = await supertest(app.express_server).post("/api/users").send({
-      user_name: "testing",
-      user_password: "testing",
+    const res = await new APIContext("UsersPost").fetch("/api/users", {
+      method: "POST",
+      body: {
+        user_name: "testing",
+        user_password: "testing",
+      },
     });
-    expect(res.status).eq(201);
+    const result = await res.json();
+    expect(result.msg).eq("hi");
   });
 });

@@ -72,9 +72,9 @@ export class Application {
     this.express_server.use(errorHandler);
   }
 
-  listen() {
-    this.http_server.listen(5000, () => {
-      console.log("Server listening on port 5000");
+  listen(port: number) {
+    this.http_server.listen(port, () => {
+      console.log(`Server listening on port ${port}`);
     });
   }
 }
