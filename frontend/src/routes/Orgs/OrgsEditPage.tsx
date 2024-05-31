@@ -52,12 +52,14 @@ function OrgsEditPage() {
   });
 
   // Fetch categories from the backend API
-  const { data: categories } = useOrgsCategoriesGet((failureCount, error) => {
-    if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
-      setLocation("/");
-      return false;
-    }
-    return true;
+  const { data: categories } = useOrgsCategoriesGet({
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
+        setLocation("/");
+        return false;
+      }
+      return true;
+    },
   });
 
   return (
