@@ -1,8 +1,10 @@
 import express, { Request, json } from "express";
 import session from "express-session";
+import { Kysely } from "kysely";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
-import { dbPool } from "./db/db";
+import { db, dbPool } from "./db/db";
+import { DB } from "./db/db_types.js";
 import { AuthError, errorHandler } from "./helpers/error";
 import { logger } from "./helpers/logger";
 import { registerRoutes } from "./routes";
@@ -19,6 +21,7 @@ export class Application {
   express_server: express.Express;
   http_server: import("http").Server;
   socket_server: import("socket.io").Server;
+  db: Kysely<DB>;
 
   private static app: Application;
   static getApplication() {
@@ -36,6 +39,7 @@ export class Application {
     this.socket_server = new Server(this.http_server, {
       path: "/api/chat",
     });
+    this.db = db;
 
     this.express_server.use(logger);
 
@@ -76,5 +80,12 @@ export class Application {
     this.http_server.listen(port, () => {
       console.log(`Server listening on port ${port}`);
     });
+  }
+
+  async close() {
+    this.http_server.closeAllConnections();
+    this.http_server.close();
+    await this.db.destroy();
+    console.log("Server closed!");
   }
 }
