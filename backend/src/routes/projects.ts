@@ -113,9 +113,9 @@ export const putProjectsDetailMembersDetail: RH<{
   let allowed = false;
   // Admin boleh ngelakuin apapun.
   // Dev cuma boleh apply kalau belum terlibat. Kalau mau leave pakai delete, bukan method ini.
-  if (is_org_member) {
+  if (sender_role === "Admin") {
     allowed = true;
-  } else if (sender_role === "Admin") {
+  } else if (sender_id === user_id && is_org_member) {
     allowed = true;
   } else if (sender_id === user_id && sender_role === undefined && role === "Pending") {
     allowed = true;

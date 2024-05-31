@@ -85,7 +85,6 @@ export class Application {
   async close() {
     this.http_server.closeAllConnections();
     this.http_server.close();
-    await this.db.destroy();
     console.log("Server closed!");
   }
 }

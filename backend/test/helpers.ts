@@ -1,15 +1,7 @@
+import { hashSync } from "bcryptjs";
 import { stringify } from "qs";
+import { Application } from "../src/app.js";
 import { API } from "../src/routes.js";
-
-export class APIError extends Error {
-  info: { msg: string };
-  status: number;
-  constructor(msg: string, info: { msg: string }, status: number) {
-    super(msg);
-    this.info = info;
-    this.status = status;
-  }
-}
 
 /**
  * Class yang dipakai buat inject typing ke
@@ -75,4 +67,59 @@ export class APIContext<T extends keyof API> {
 
     return res;
   }
+}
+
+export async function baseCase(app: Application) {
+  const org_id = await app.db
+    .insertInto("ms_orgs")
+    .values({
+      name: "testing org",
+      address: "jakarta",
+      description: "very kind org",
+      phone: "01234",
+    })
+    .returning(["id", "name"])
+    .executeTakeFirstOrThrow();
+
+  const orig_password = "secret password";
+  const user_ids = await app.db
+    .insertInto("ms_users")
+    .values([
+      {
+        name: "org user",
+        password: hashSync(orig_password, 10),
+      },
+      {
+        name: "external user",
+        password: hashSync(orig_password, 10),
+      },
+    ])
+    .returning(["id", "name"])
+    .execute();
+
+  await app.db
+    .insertInto("orgs_users")
+    .values({
+      org_id: org_id.id,
+      user_id: user_ids[0].id,
+      role: "Admin",
+    })
+    .execute();
+
+  const project_id = await app.db
+    .insertInto("ms_projects")
+    .values({
+      description: "very awesome project",
+      name: "testing project",
+      org_id: org_id.id,
+    })
+    .returning(["id", "name"])
+    .executeTakeFirstOrThrow();
+
+  return {
+    org: org_id,
+    project: project_id,
+    member: { ...user_ids[0], password: orig_password },
+    nonmember: { ...user_ids[1], password: orig_password },
+  };
 }
