@@ -11,7 +11,7 @@ import _session = require("express-session");
 
 const pgSession = connectPgSimple(_session);
 
-const app = express();
+export const app = express();
 const server = createServer(app);
 export const io = new Server(server, {
   path: "/api/chat",
@@ -57,6 +57,6 @@ registerRoutes(app);
 
 app.use(errorHandler);
 
-server.listen(5000, () => {
-  console.log("Server listening on port 5000");
-});
+// server.listen(5000, () => {
+//   console.log("Server listening on port 5000");
+// });
