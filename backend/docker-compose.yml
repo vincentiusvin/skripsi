@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: "test_skripsi"
+      POSTGRES_USER: "test_skripsi"
+      POSTGRES_PASSWORD: "test_skripsi"
+    ports:
+      - "5434:5432"
