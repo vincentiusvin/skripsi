@@ -23,7 +23,7 @@ function OrgsDetailPage() {
   const [, setLocation] = useLocation();
 
   const { data } = useOrgDetailGet({
-    id: id!,
+    id: Number(id),
     retry: (failureCount, error) => {
       if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
         setLocation("/orgs");
