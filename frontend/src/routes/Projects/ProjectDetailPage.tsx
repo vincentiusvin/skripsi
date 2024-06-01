@@ -1,6 +1,7 @@
-import { ArrowBack, Check } from "@mui/icons-material";
+import { ArrowBack, Check, Logout } from "@mui/icons-material";
 import {
   Alert,
+  Avatar,
   Box,
   Button,
   Chip,
@@ -18,10 +19,10 @@ import {
   Typography,
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { API } from "../../../../backend/src/routes.ts";
-import { APIError } from "../../helpers/fetch";
+import { APIError } from "../../helpers/fetch.ts";
 import {
   useChatSocket,
   useChatroomsDetailGet,
@@ -36,7 +37,7 @@ import {
   useProjectsDetailMembersGet,
   useProjectsDetailMembersPut,
 } from "../../queries/project_hooks";
-import { useSessionGet } from "../../queries/sesssion_hooks";
+import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks";
 import { ChatroomContent } from "../Chatroom";
 
@@ -83,26 +84,13 @@ function Chatroom(props: { chatroom_id: number }) {
 
 type MemberRoles = API["ProjectsDetailMembersGet"]["ResBody"]["role"] | "Not Involved";
 
-function InvolvedView(props: { project_id: number; user_id: number }) {
-  const { project_id, user_id } = props;
+function InvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
+  const { project_id, user_id, role } = props;
   const [connected, setConnected] = useState(false);
-  const [activeRoom, setActiveRoom] = useState<number | "index" | false>(false);
+  const [activeTab, setActiveTab] = useState<"disc" | "info" | "manage">("disc");
+  const [activeRoom, setActiveRoom] = useState<number | false>(false);
   const { data: chatrooms } = useProjectsDetailChatroomsGet({ project_id });
   const { data: project } = useProjectsDetailGet({ project_id });
-
-  useEffect(() => {
-    if (!chatrooms) {
-      setActiveRoom(false);
-      return;
-    }
-    if (activeRoom === false || activeRoom === "index") {
-      return;
-    }
-    const found = chatrooms.map((x) => x.chatroom_id).includes(activeRoom);
-    if (!found) {
-      setActiveRoom(false);
-    }
-  }, [chatrooms]);
 
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [addRoomName, setAddRoomName] = useState("");
@@ -139,90 +127,146 @@ function InvolvedView(props: { project_id: number; user_id: number }) {
     },
   });
 
+  if (!project) {
+    return <Skeleton />;
+  }
+
+  const selectedChatroom = chatrooms?.find((x) => x.chatroom_id === activeRoom);
+
   return (
-    <Grid container height={"100%"}>
-      <Snackbar open={!connected}>
-        <Alert severity="error">
-          <Typography>You are not connected!</Typography>
-        </Alert>
-      </Snackbar>
-      <Dialog open={addRoomOpen} onClose={() => setAddRoomOpen(false)}>
-        <DialogTitle>Add new room</DialogTitle>
-        <DialogContent>
-          <TextField fullWidth onChange={(e) => setAddRoomName(e.target.value)} label="Room name" />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() =>
-              createRoom({
-                name: addRoomName,
-              })
-            }
+    <Stack height={"100%"}>
+      <Grid container>
+        <Grid item xs={1}>
+          <Typography variant="h3" fontWeight={"bold"}>
+            {project.project_name}
+          </Typography>
+        </Grid>
+        <Grid item xs={10}>
+          <Tabs
+            centered
+            sx={{
+              flexGrow: 1,
+            }}
+            value={activeTab}
+            onChange={(_e, newRoomId) => {
+              setActiveTab(newRoomId);
+            }}
           >
-            Create room
+            <Tab label={"Discussion"} value="disc" />
+            <Tab label={"Info"} value="info" />
+            {role === "Admin" && <Tab label={"Manage"} value="manage" />}
+          </Tabs>
+        </Grid>
+        <Grid item xs={1}>
+          <Button endIcon={<Logout />} onClick={() => leaveProject()} variant="contained">
+            Leave
           </Button>
-        </DialogActions>
-      </Dialog>
-      <Grid item xs={2} lg={1}>
-        <Tabs
-          value={activeRoom}
-          onChange={(_e, newRoomId) => {
-            setActiveRoom(newRoomId);
-          }}
-        >
-          <Tab label={"Index"} value="index" />
-          {chatrooms?.map((x, i) => (
-            <Tab key={i} label={x.chatroom_name} value={x.chatroom_id} />
-          ))}
-        </Tabs>
-        <Button
-          onClick={() => {
-            setAddRoomOpen(true);
-          }}
-        >
-          Add room
-        </Button>
+        </Grid>
       </Grid>
-      <Grid item xs={10} lg={11}>
-        {activeRoom === "index" && project && (
-          <>
-            <Button onClick={() => leaveProject()}>Leave</Button>
-            <Grid item xs={12}>
-              <Typography>{project.project_desc}</Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography>{project.org_id}</Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="h6" fontWeight={"bold"}>
-                Collaborators
-              </Typography>
-              <Stack>
-                {project.project_members.map((x, i) => (
-                  <Box key={i}>
-                    <Typography>{x.name}</Typography>
-                  </Box>
+      {activeTab === "disc" && (
+        <>
+          <Snackbar open={!connected}>
+            <Alert severity="error">
+              <Typography>You are not connected!</Typography>
+            </Alert>
+          </Snackbar>
+          <Dialog open={addRoomOpen} onClose={() => setAddRoomOpen(false)}>
+            <DialogTitle>Add new room</DialogTitle>
+            <DialogContent>
+              <TextField
+                fullWidth
+                onChange={(e) => setAddRoomName(e.target.value)}
+                label="Room name"
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() =>
+                  createRoom({
+                    name: addRoomName,
+                  })
+                }
+              >
+                Create room
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Grid container height={"100%"}>
+            <Grid item xs={2} lg={1}>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={() => {
+                  setAddRoomOpen(true);
+                }}
+              >
+                Add room
+              </Button>
+              <Tabs
+                orientation="vertical"
+                value={activeRoom}
+                onChange={(_e, newRoomId) => {
+                  setActiveRoom(newRoomId);
+                }}
+              >
+                {chatrooms?.map((x, i) => (
+                  <Tab key={i} label={x.chatroom_name} value={x.chatroom_id} />
                 ))}
-              </Stack>
+              </Tabs>
             </Grid>
-            <Grid item xs={12}>
-              <Typography>Categories</Typography>
-              <Grid container spacing={1}>
-                {project.project_categories.map((category, index) => (
-                  <Grid item key={index}>
-                    <Chip label={category} />
-                  </Grid>
-                ))}
-              </Grid>
+            <Grid item xs={10} lg={11}>
+              {selectedChatroom && <Chatroom chatroom_id={selectedChatroom.chatroom_id} />}
             </Grid>
-          </>
-        )}
-        {chatrooms?.map(
-          (x, i) =>
-            activeRoom === x.chatroom_id && <Chatroom key={i} chatroom_id={x.chatroom_id} />,
-        )}
-      </Grid>
-    </Grid>
+          </Grid>
+        </>
+      )}
+      {activeTab === "info" && (
+        <Stack gap={2}>
+          <Box textAlign={"center"}>
+            <Typography variant="h5" fontWeight="bold">
+              Project Description
+            </Typography>
+            <Typography>{project.project_desc}</Typography>
+          </Box>
+          <Box textAlign={"center"}>
+            <Typography variant="h5" fontWeight="bold">
+              Organization
+            </Typography>
+            <Typography>{project.org_id}</Typography>
+          </Box>
+          <Box textAlign={"center"}>
+            <Typography variant="h5" fontWeight={"bold"} mb={1}>
+              Categories
+            </Typography>
+            <Stack direction={"row"} justifyContent={"center"} spacing={2}>
+              {project.project_categories.map((category, index) => (
+                <Chip key={index} label={category} />
+              ))}
+            </Stack>
+          </Box>
+          <Box>
+            <Typography variant="h5" fontWeight={"bold"} textAlign={"center"} mb={1}>
+              Collaborators
+            </Typography>
+            <Grid container width={"85%"} margin={"auto"}>
+              {project.project_members.map((x, i) => (
+                <Grid item xs={3} key={i} justifyContent={"center"}>
+                  <Stack direction={"row"} spacing={2} justifyContent={"center"}>
+                    <Avatar />
+                    <Box>
+                      <Typography>{x.name}</Typography>
+                      <Typography variant="body2" color={"GrayText"}>
+                        {x.role}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        </Stack>
+      )}
+    </Stack>
   );
 }
 
@@ -340,7 +384,7 @@ function ProjectDetailPage() {
   if (role === "Not Involved" || role === "Pending") {
     return <UninvolvedView project_id={project_id} user_id={user_id} role={role} />;
   } else {
-    return <InvolvedView project_id={project_id} user_id={user_id} />;
+    return <InvolvedView project_id={project_id} user_id={user_id} role={role} />;
   }
 }
 
