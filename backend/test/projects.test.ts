@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { describe } from "mocha";
 import { Application } from "../src/app.js";
-import { APIContext, baseCase, login } from "./helpers.js";
+import { APIContext, baseCase, getLoginCookie } from "./helpers.js";
 import { clearDB, setupApp } from "./setup-test.js";
 
 describe("/api/projects", () => {
@@ -28,33 +28,105 @@ describe("/api/projects", () => {
     expect(result.length).to.be.gte(1);
   });
 
-  it("should accept member checking", async () => {
-    const ids = await baseCase(app);
-    const res = await new APIContext("ProjectsDetailMembersGet").fetch(
-      `/api/projects/${ids.project.id}/users/${ids.member.id}`,
-      {
-        method: "GET",
-      },
-    );
-    expect(res.status).eq(404);
-  });
-
-  it("should accept registering new members", async () => {
-    const data = await login(app, "member");
+  it("should promote org member as admin", async () => {
+    const caseData = await baseCase(app);
+    const cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
 
     const res = await new APIContext("ProjectsDetailMembersPut").fetch(
-      `/api/projects/${data.project.id}/users/${data.member.id}`,
+      `/api/projects/${caseData.project.id}/users/${caseData.member.id}`,
       {
         headers: {
-          cookie: data.cookie,
+          cookie: cookie,
         },
         credentials: "include",
         method: "PUT",
         body: {
-          role: "Admin",
+          role: "Pending",
         },
       },
     );
     expect(res.status).eq(200);
+    const result = await res.json();
+    expect(result.role).eq("Admin");
+  });
+
+  it("should allow non org member to apply", async () => {
+    const caseData = await baseCase(app);
+    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+
+    const res = await new APIContext("ProjectsDetailMembersPut").fetch(
+      `/api/projects/${caseData.project.id}/users/${caseData.nonmember.id}`,
+      {
+        headers: {
+          cookie: cookie,
+        },
+        credentials: "include",
+        method: "PUT",
+        body: {
+          role: "Pending",
+        },
+      },
+    );
+    expect(res.status).eq(200);
+    const result = await res.json();
+    expect(result.role).eq("Pending");
+  });
+
+  it("should allow admin to approve members", async () => {
+    const caseData = await baseCase(app);
+
+    const nonmember_cookie = await getLoginCookie(
+      caseData.nonmember.name,
+      caseData.nonmember.password,
+    );
+
+    const apply_nonmember = await new APIContext("ProjectsDetailMembersPut").fetch(
+      `/api/projects/${caseData.project.id}/users/${caseData.nonmember.id}`,
+      {
+        headers: {
+          cookie: nonmember_cookie,
+        },
+        credentials: "include",
+        method: "PUT",
+        body: {
+          role: "Pending",
+        },
+      },
+    );
+    await apply_nonmember.json();
+
+    const member_cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
+
+    const promote_member = await new APIContext("ProjectsDetailMembersPut").fetch(
+      `/api/projects/${caseData.project.id}/users/${caseData.member.id}`,
+      {
+        headers: {
+          cookie: member_cookie,
+        },
+        credentials: "include",
+        method: "PUT",
+        body: {
+          role: "Pending",
+        },
+      },
+    );
+    await promote_member.json();
+
+    const accept_nonmember = await new APIContext("ProjectsDetailMembersPut").fetch(
+      `/api/projects/${caseData.project.id}/users/${caseData.nonmember.id}`,
+      {
+        headers: {
+          cookie: member_cookie,
+        },
+        credentials: "include",
+        method: "PUT",
+        body: {
+          role: "Dev",
+        },
+      },
+    );
+    expect(accept_nonmember.status).eq(200);
+    const result = await accept_nonmember.json();
+    expect(result.role).eq("Dev");
   });
 });

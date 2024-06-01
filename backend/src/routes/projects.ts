@@ -69,9 +69,13 @@ export const getProjectsDetailMembersDetail: RH<{
   }
 };
 
+// Kalau sender admin, kita turutin apapun maunya.
+// Selain itu cuma boleh ngurusin dirinya sendiri (user_id dia doang) DAN cuma boleh role "Pending".
+// Kalau orang organisasi, langsung kita naikin ke "Admin".
+// Kalau bukan, kita jadiin "Pending"
 export const putProjectsDetailMembersDetail: RH<{
   ResBody: {
-    msg: string;
+    role: ProjectRoles;
   };
   ReqBody: {
     role: ProjectRoles;
@@ -85,7 +89,7 @@ export const putProjectsDetailMembersDetail: RH<{
   const project_id = Number(project_id_str);
   const user_id = Number(user_id_str);
   const sender_id = req.session.user_id!;
-  const role = req.body.role;
+  let role = req.body.role;
 
   const sender_role = await getProjectRole(sender_id, project_id);
   const project = await db
@@ -97,28 +101,29 @@ export const putProjectsDetailMembersDetail: RH<{
     throw new NotFoundError("Tidak ditemukan");
   }
 
-  const member = await db
-    .selectFrom("orgs_users")
-    .select("user_id")
-    .where((eb) =>
-      eb.and({
-        "orgs_users.user_id": user_id,
-        "orgs_users.org_id": project.org_id,
-      }),
-    )
-    .executeTakeFirst();
-
-  const is_org_member = member ? member.user_id === user_id : false;
-
   let allowed = false;
-  // Admin boleh ngelakuin apapun.
-  // Dev cuma boleh apply kalau belum terlibat. Kalau mau leave pakai delete, bukan method ini.
   if (sender_role === "Admin") {
     allowed = true;
-  } else if (sender_id === user_id && is_org_member) {
-    allowed = true;
-  } else if (sender_id === user_id && sender_role === undefined && role === "Pending") {
-    allowed = true;
+  } else if (sender_id === user_id && role === "Pending") {
+    const member = await db
+      .selectFrom("orgs_users")
+      .select("user_id")
+      .where((eb) =>
+        eb.and({
+          "orgs_users.user_id": user_id,
+          "orgs_users.org_id": project.org_id,
+        }),
+      )
+      .executeTakeFirst();
+
+    const is_org_member = member ? member.user_id === user_id : false;
+
+    if (is_org_member) {
+      allowed = true;
+      role = "Admin"; // Langsung promote
+    } else {
+      allowed = true;
+    }
   }
 
   if (!allowed) {
@@ -138,7 +143,7 @@ export const putProjectsDetailMembersDetail: RH<{
       }),
     )
     .execute();
-  res.json({ msg: "Pengguna berhasil ditambahkan!" });
+  res.json({ role: role });
 };
 
 export const deleteProjectsDetailMembersDetail: RH<{

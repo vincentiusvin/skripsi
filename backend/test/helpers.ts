@@ -124,16 +124,12 @@ export async function baseCase(app: Application) {
   };
 }
 
-export async function login(app: Application, as: "member" | "nonmember") {
-  const res = await baseCase(app);
-
-  const selected = as === "member" ? res.member : res.nonmember;
-
+export async function getLoginCookie(username: string, password: string) {
   const login = await new APIContext("SessionPut").fetch(`/api/session`, {
     method: "PUT",
     body: {
-      user_name: selected.name,
-      user_password: selected.password,
+      user_name: username,
+      user_password: password,
     },
   });
 
@@ -145,8 +141,5 @@ export async function login(app: Application, as: "member" | "nonmember") {
   const cookie_pre = login.headers.getSetCookie();
   const cookie = cookie_pre.map((x) => x.split(";")[0]).join("; ");
 
-  return {
-    ...res,
-    cookie,
-  };
+  return cookie;
 }
