@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { describe } from "mocha";
 import { Application } from "../src/app.js";
-import { APIContext, baseCase } from "./helpers.js";
+import { APIContext, baseCase, login } from "./helpers.js";
 import { clearDB, setupApp } from "./setup-test.js";
 
 describe("/api/projects", () => {
@@ -40,24 +40,13 @@ describe("/api/projects", () => {
   });
 
   it("should accept registering new members", async () => {
-    const ids = await baseCase(app);
-
-    const login = await new APIContext("SessionPut").fetch(`/api/session`, {
-      method: "PUT",
-      body: {
-        user_name: ids.member.name,
-        user_password: ids.member.password,
-      },
-    });
-    expect(login.status).eq(200);
-
-    const cookies = login.headers.getSetCookie();
+    const data = await login(app, "member");
 
     const res = await new APIContext("ProjectsDetailMembersPut").fetch(
-      `/api/projects/${ids.project.id}/users/${ids.member.id}`,
+      `/api/projects/${data.project.id}/users/${data.member.id}`,
       {
         headers: {
-          cookie: cookies.toString(),
+          cookie: data.cookie,
         },
         credentials: "include",
         method: "PUT",

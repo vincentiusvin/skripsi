@@ -123,3 +123,30 @@ export async function baseCase(app: Application) {
     nonmember: { ...user_ids[1], password: orig_password },
   };
 }
+
+export async function login(app: Application, as: "member" | "nonmember") {
+  const res = await baseCase(app);
+
+  const selected = as === "member" ? res.member : res.nonmember;
+
+  const login = await new APIContext("SessionPut").fetch(`/api/session`, {
+    method: "PUT",
+    body: {
+      user_name: selected.name,
+      user_password: selected.password,
+    },
+  });
+
+  // PENTING: Header sampai duluan sebelum body, jadi sebenarnya requestnya belum selesai.
+  // Bisa jadi race condition kalau session belum di persist ke DB tapi kita udah ngirim session ID baru.
+  // Makanya kita tunggu sampai requestnya beneran selesai baru lanjut.
+  await login.json();
+
+  const cookie_pre = login.headers.getSetCookie();
+  const cookie = cookie_pre.map((x) => x.split(";")[0]).join("; ");
+
+  return {
+    ...res,
+    cookie,
+  };
+}
