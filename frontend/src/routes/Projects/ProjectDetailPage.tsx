@@ -343,7 +343,7 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
   }
 
   return (
-    <Grid container mt={2}>
+    <Grid container mt={2} rowSpacing={2}>
       <Grid item xs={1}>
         <Link to={"/projects"}>
           <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
@@ -372,32 +372,52 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
         </Button>
       </Grid>
       <Grid item xs={12}>
-        <Typography>{project.project_desc}</Typography>
-      </Grid>
-      <Grid item xs={12}>
-        <Typography>{project.org_id}</Typography>
-      </Grid>
-      <Grid item xs={12}>
-        <Typography variant="h6" fontWeight={"bold"}>
-          Collaborators
-        </Typography>
-        <Stack>
-          {project.project_members.map((x, i) => (
-            <Box key={i}>
-              <Typography>{x.name}</Typography>
-            </Box>
-          ))}
-        </Stack>
-      </Grid>
-      <Grid item xs={12}>
-        <Typography>Categories</Typography>
-        <Grid container spacing={1}>
-          {project.project_categories.map((category, index) => (
-            <Grid item key={index}>
-              <Chip label={category} />
+        <Stack gap={2}>
+          <Box textAlign={"center"}>
+            <Typography variant="h5" fontWeight="bold">
+              Project Description
+            </Typography>
+            <Typography>{project.project_desc}</Typography>
+          </Box>
+          <Box textAlign={"center"}>
+            <Typography variant="h5" fontWeight="bold">
+              Organization
+            </Typography>
+            <Typography>{project.org_id}</Typography>
+          </Box>
+          <Box textAlign={"center"}>
+            <Typography variant="h5" fontWeight={"bold"} mb={1}>
+              Categories
+            </Typography>
+            <Stack direction={"row"} justifyContent={"center"} spacing={2}>
+              {project.project_categories.map((category, index) => (
+                <Chip key={index} label={category} />
+              ))}
+            </Stack>
+          </Box>
+          <Box>
+            <Typography variant="h5" fontWeight={"bold"} textAlign={"center"} mb={1}>
+              Collaborators
+            </Typography>
+            <Grid container width={"85%"} margin={"0 auto"}>
+              {project.project_members
+                .filter((x) => x.role !== "Pending")
+                .map((x, i) => (
+                  <Grid item xs={3} key={i} justifyContent={"center"}>
+                    <Stack direction={"row"} spacing={2} justifyContent={"center"}>
+                      <Avatar />
+                      <Box>
+                        <Typography>{x.name}</Typography>
+                        <Typography variant="body2" color={"GrayText"}>
+                          {x.role}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
+                ))}
             </Grid>
-          ))}
-        </Grid>
+          </Box>
+        </Stack>
       </Grid>
     </Grid>
   );
