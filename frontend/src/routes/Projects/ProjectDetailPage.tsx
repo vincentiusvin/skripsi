@@ -29,7 +29,6 @@ import {
   useProjectsDetailChatroomsGet,
   useProjectsDetailChatroomsPost,
 } from "../../queries/chat_hooks";
-import { useOrgDetailGet } from "../../queries/org_hooks.ts";
 import {
   useProjectsDetailGet,
   useProjectsDetailMembersDelete,
@@ -294,18 +293,10 @@ function ProjectDetailPage() {
     onSuccess: (x) => {
       enqueueSnackbar({
         variant: "success",
-        message: <Typography>{x.msg}</Typography>,
+        message: <Typography>Status anda "{x.role}"</Typography>,
       });
     },
   });
-
-  const { data: org } = useOrgDetailGet({
-    id: project_data?.org_id!,
-    enabled: !!project_data,
-  });
-
-  const is_member = org ? !!org.org_users.find((x) => x.id === user_id) : undefined;
-  const apply_as = is_member ? "Admin" : "Pending";
 
   if (!project_data || !role) {
     return <Skeleton />;
@@ -330,15 +321,15 @@ function ProjectDetailPage() {
           <Button
             endIcon={<Check />}
             variant="contained"
-            disabled={role === apply_as}
+            disabled={role !== "Not Involved"}
             fullWidth
             onClick={() =>
               addMember({
-                role: apply_as,
+                role: "Pending",
               })
             }
           >
-            {role === apply_as ? "Applied" : "Apply"}
+            {role !== "Not Involved" ? "Applied" : "Apply"}
           </Button>
         </Grid>
         <ProjectIndex

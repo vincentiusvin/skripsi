@@ -44,6 +44,9 @@ export function useProjectsDetailMembersGet(opts: {
       ),
     enabled: project_id !== undefined && user_id !== undefined,
     retry: false,
+    meta: {
+      skip_error: true,
+    },
   });
 }
 
@@ -58,7 +61,7 @@ export function useProjectsDetailMembersDelete(opts: {
       if (user_id === undefined) {
         throw new Error("Data user tidak ditemukan");
       }
-      return new APIContext("ProjectsDetailMembersPut").fetch(
+      return new APIContext("ProjectsDetailMembersDelete").fetch(
         `/api/projects/${project_id}/users/${user_id}`,
         {
           method: "DELETE",
