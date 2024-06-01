@@ -21,7 +21,6 @@ import { fileToBase64DataURL } from "../../helpers/file";
 import { useOrgsCategoriesGet, useOrgsUpdate } from "../../queries/org_hooks";
 
 function OrgsEditPage() {
-  const [orgId, setOrgId] = useState<number | "">("");
   const [orgName, setOrgName] = useState("");
   const [orgDesc, setOrgDesc] = useState("");
   const [orgAddress, setOrgAddress] = useState("");

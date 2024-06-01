@@ -4,7 +4,7 @@ import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
 export function useProjectsDetailGet(opts: {
-  project_id: string;
+  project_id: number;
   retry?: (failurecount: number, error: any) => boolean;
 }) {
   const { project_id, retry } = opts;
@@ -43,6 +43,10 @@ export function useProjectsDetailMembersGet(opts: {
         `/api/projects/${project_id}/users/${user_id}`,
       ),
     enabled: project_id !== undefined && user_id !== undefined,
+    retry: false,
+    meta: {
+      skip_error: true,
+    },
   });
 }
 
@@ -57,7 +61,7 @@ export function useProjectsDetailMembersDelete(opts: {
       if (user_id === undefined) {
         throw new Error("Data user tidak ditemukan");
       }
-      return new APIContext("ProjectsDetailMembersPut").fetch(
+      return new APIContext("ProjectsDetailMembersDelete").fetch(
         `/api/projects/${project_id}/users/${user_id}`,
         {
           method: "DELETE",
@@ -80,14 +84,40 @@ export function useProjectsDetailMembersPut(opts: {
 }) {
   const { project_id, user_id, onSuccess } = opts;
   return useMutation({
-    mutationFn: () => {
-      return new APIContext("ProjectsDetailMembersPut").fetch(
-        `/api/projects/${project_id}/users/${user_id}`,
+    mutationFn: new APIContext("ProjectsDetailMembersPut").bodyFetch(
+      `/api/projects/${project_id}/users/${user_id}`,
+      {
+        method: "PUT",
+      },
+    ),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      if (onSuccess) {
+        onSuccess(data);
+      }
+    },
+  });
+}
+
+export function useProjectsDetailMembersPutVariableID(opts: {
+  project_id: number | undefined;
+  onSuccess?: (data: API["ProjectsDetailMembersPut"]["ResBody"]) => void;
+}) {
+  const { project_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: (opts: {
+      user_id: number;
+      role: API["ProjectsDetailMembersPut"]["ResBody"]["role"];
+    }) =>
+      new APIContext("ProjectsDetailMembersPut").fetch(
+        `/api/projects/${project_id}/users/${opts.user_id}`,
         {
           method: "PUT",
+          body: {
+            role: opts.role,
+          },
         },
-      );
-    },
+      ),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       if (onSuccess) {

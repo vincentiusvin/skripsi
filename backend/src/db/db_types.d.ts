@@ -91,13 +91,14 @@ export interface MsUsers {
 export interface OrgsUsers {
   created_at: Generated<Timestamp>;
   org_id: number;
-  permission: string;
+  role: string;
   user_id: number;
 }
 
 export interface ProjectsUsers {
   created_at: Generated<Timestamp>;
   project_id: number;
+  role: string;
   user_id: number;
 }
 

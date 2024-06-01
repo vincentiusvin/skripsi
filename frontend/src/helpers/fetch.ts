@@ -2,11 +2,9 @@ import { stringify } from "qs";
 import type { API } from "../../../backend/src/routes";
 
 export class APIError extends Error {
-  info: { msg: string };
   status: number;
-  constructor(msg: string, info: { msg: string }, status: number) {
+  constructor(msg: string, status: number) {
     super(msg);
-    this.info = info;
     this.status = status;
   }
 }
@@ -72,14 +70,10 @@ export class APIContext<T extends keyof API> {
       body: stringBody,
     });
 
-    const content = await res.json().catch(() => ({ msg: "Unknown error" }));
+    const content: { msg: string } = await res.json().catch(() => ({ msg: "Unknown error" }));
 
     if (!res.ok) {
-      throw new APIError(
-        "An error occurred while fetching the data.",
-        content,
-        res.status,
-      ) as APIError;
+      throw new APIError(content.msg, res.status) as APIError;
     }
 
     return content;

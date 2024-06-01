@@ -160,7 +160,7 @@ export const postOrgs: RH<{
         .values({
           user_id: userID,
           org_id: org.id,
-          permission: "Owner",
+          role: "Owner",
         })
         .execute();
     });
@@ -262,7 +262,7 @@ export const updateOrgs: RH<{
         .updateTable("orgs_users")
         .set({
           user_id: userID,
-          permission: "Owner",
+          role: "Owner",
         })
         .execute();
     });
