@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  Paper,
   Skeleton,
   Snackbar,
   Stack,
@@ -36,6 +37,7 @@ import {
   useProjectsDetailMembersDelete,
   useProjectsDetailMembersGet,
   useProjectsDetailMembersPut,
+  useProjectsDetailMembersPutVariableID,
 } from "../../queries/project_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks";
@@ -124,6 +126,16 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
     },
     onDisconnect: () => {
       setConnected(false);
+    },
+  });
+
+  const { mutate: putMember } = useProjectsDetailMembersPutVariableID({
+    project_id: project_id,
+    onSuccess: (x) => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>User berhasil ditambahkan sebagai {x.role}!</Typography>,
+      });
     },
   });
 
@@ -248,23 +260,61 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             <Typography variant="h5" fontWeight={"bold"} textAlign={"center"} mb={1}>
               Collaborators
             </Typography>
-            <Grid container width={"85%"} margin={"auto"}>
-              {project.project_members.map((x, i) => (
-                <Grid item xs={3} key={i} justifyContent={"center"}>
+            <Grid container width={"85%"} margin={"0 auto"}>
+              {project.project_members
+                .filter((x) => x.role !== "Pending")
+                .map((x, i) => (
+                  <Grid item xs={3} key={i} justifyContent={"center"}>
+                    <Stack direction={"row"} spacing={2} justifyContent={"center"}>
+                      <Avatar />
+                      <Box>
+                        <Typography>{x.name}</Typography>
+                        <Typography variant="body2" color={"GrayText"}>
+                          {x.role}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
+                ))}
+            </Grid>
+          </Box>
+        </Stack>
+      )}
+      {activeTab === "manage" && (
+        <Grid container width={"85%"} margin={"0 auto"} mt={2} spacing={2} columnSpacing={4}>
+          {project.project_members
+            .filter((x) => x.role === "Pending")
+            .map((x, i) => (
+              <Grid item xs={3} key={i} justifyContent={"center"}>
+                <Paper
+                  sx={{
+                    padding: 2,
+                    borderRadius: 2,
+                  }}
+                >
                   <Stack direction={"row"} spacing={2} justifyContent={"center"}>
                     <Avatar />
-                    <Box>
+                    <Box flexGrow={1}>
                       <Typography>{x.name}</Typography>
                       <Typography variant="body2" color={"GrayText"}>
                         {x.role}
                       </Typography>
                     </Box>
+                    <Button
+                      onClick={() => {
+                        putMember({
+                          role: "Dev",
+                          user_id: x.id,
+                        });
+                      }}
+                    >
+                      Approve
+                    </Button>
                   </Stack>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        </Stack>
+                </Paper>
+              </Grid>
+            ))}
+        </Grid>
       )}
     </Stack>
   );
