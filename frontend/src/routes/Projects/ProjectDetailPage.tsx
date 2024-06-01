@@ -20,6 +20,7 @@ import {
 import { enqueueSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
+import { API } from "../../../../backend/src/routes.ts";
 import { APIError } from "../../helpers/fetch";
 import {
   useChatSocket,
@@ -41,7 +42,6 @@ import { ChatroomContent } from "../Chatroom";
 
 function Chatroom(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
-  const { data: sessionData } = useSessionGet();
   const { data: chatroom } = useChatroomsDetailGet({ chatroom_id });
   const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
   const { data: users } = useUsersGet();
@@ -65,9 +65,6 @@ function Chatroom(props: { chatroom_id: number }) {
 
   const { mutate: sendMessage } = useChatroomsDetailMessagesPost({ chatroom_id });
 
-  if (!sessionData?.logged) {
-    return null;
-  }
   if (!chatroom) {
     return <Skeleton />;
   }
@@ -84,14 +81,14 @@ function Chatroom(props: { chatroom_id: number }) {
   );
 }
 
-function Involved(props: { project_id: number }) {
-  const { project_id } = props;
+type MemberRoles = API["ProjectsDetailMembersGet"]["ResBody"]["role"] | "Not Involved";
+
+function InvolvedView(props: { project_id: number; user_id: number }) {
+  const { project_id, user_id } = props;
   const [connected, setConnected] = useState(false);
   const [activeRoom, setActiveRoom] = useState<number | "index" | false>(false);
-  const { data: sessionData } = useSessionGet();
   const { data: chatrooms } = useProjectsDetailChatroomsGet({ project_id });
-  const { data: project_data } = useProjectsDetailGet({ project_id: project_id.toString() });
-  const user_id = sessionData?.logged ? sessionData.user_id : undefined;
+  const { data: project } = useProjectsDetailGet({ project_id });
 
   useEffect(() => {
     if (!chatrooms) {
@@ -133,7 +130,7 @@ function Involved(props: { project_id: number }) {
   });
 
   useChatSocket({
-    userId: sessionData?.logged ? sessionData.user_id : undefined,
+    userId: user_id,
     onConnect: () => {
       setConnected(true);
     },
@@ -141,10 +138,6 @@ function Involved(props: { project_id: number }) {
       setConnected(false);
     },
   });
-
-  if (!sessionData?.logged) {
-    return null;
-  }
 
   return (
     <Grid container height={"100%"}>
@@ -172,7 +165,6 @@ function Involved(props: { project_id: number }) {
       </Dialog>
       <Grid item xs={2} lg={1}>
         <Tabs
-          orientation="vertical"
           value={activeRoom}
           onChange={(_e, newRoomId) => {
             setActiveRoom(newRoomId);
@@ -192,15 +184,37 @@ function Involved(props: { project_id: number }) {
         </Button>
       </Grid>
       <Grid item xs={10} lg={11}>
-        {activeRoom === "index" && project_data && (
+        {activeRoom === "index" && project && (
           <>
             <Button onClick={() => leaveProject()}>Leave</Button>
-            <ProjectIndex
-              org_id={project_data.org_id}
-              project_categories={project_data.project_categories}
-              project_desc={project_data.project_desc}
-              project_members={project_data.project_members}
-            />
+            <Grid item xs={12}>
+              <Typography>{project.project_desc}</Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography>{project.org_id}</Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="h6" fontWeight={"bold"}>
+                Collaborators
+              </Typography>
+              <Stack>
+                {project.project_members.map((x, i) => (
+                  <Box key={i}>
+                    <Typography>{x.name}</Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography>Categories</Typography>
+              <Grid container spacing={1}>
+                {project.project_categories.map((category, index) => (
+                  <Grid item key={index}>
+                    <Chip label={category} />
+                  </Grid>
+                ))}
+              </Grid>
+            </Grid>
           </>
         )}
         {chatrooms?.map(
@@ -212,28 +226,70 @@ function Involved(props: { project_id: number }) {
   );
 }
 
-function ProjectIndex(props: {
-  project_desc: string;
-  org_id: number;
-  project_members: { name: string }[];
-  project_categories: string[];
-}) {
-  const { project_desc, org_id, project_members: project_devs, project_categories } = props;
+function UninvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
+  const { project_id, user_id, role } = props;
+
+  const { data: project } = useProjectsDetailGet({
+    project_id: project_id,
+  });
+
+  const { mutate: addMember } = useProjectsDetailMembersPut({
+    project_id: project_id,
+    user_id: user_id,
+    onSuccess: (x) => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>Status anda "{x.role}"</Typography>,
+      });
+    },
+  });
+
+  if (!project) {
+    return <Skeleton />;
+  }
+
   return (
-    <>
-      <Grid item xs={12}>
-        <Typography>{project_desc}</Typography>
+    <Grid container mt={2}>
+      <Grid item xs={1}>
+        <Link to={"/projects"}>
+          <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
+            Go Back
+          </Button>
+        </Link>
+      </Grid>
+      <Grid item xs={10}>
+        <Typography variant="h4" fontWeight={"bold"} align="center">
+          {project.project_name}
+        </Typography>
+      </Grid>
+      <Grid item xs={1}>
+        <Button
+          endIcon={<Check />}
+          variant="contained"
+          disabled={role !== "Not Involved"}
+          fullWidth
+          onClick={() =>
+            addMember({
+              role: "Pending",
+            })
+          }
+        >
+          {role !== "Not Involved" ? "Applied" : "Apply"}
+        </Button>
       </Grid>
       <Grid item xs={12}>
-        <Typography>{org_id}</Typography>
+        <Typography>{project.project_desc}</Typography>
+      </Grid>
+      <Grid item xs={12}>
+        <Typography>{project.org_id}</Typography>
       </Grid>
       <Grid item xs={12}>
         <Typography variant="h6" fontWeight={"bold"}>
           Collaborators
         </Typography>
         <Stack>
-          {project_devs.map((x) => (
-            <Box>
+          {project.project_members.map((x, i) => (
+            <Box key={i}>
               <Typography>{x.name}</Typography>
             </Box>
           ))}
@@ -242,14 +298,14 @@ function ProjectIndex(props: {
       <Grid item xs={12}>
         <Typography>Categories</Typography>
         <Grid container spacing={1}>
-          {project_categories.map((category, index) => (
+          {project.project_categories.map((category, index) => (
             <Grid item key={index}>
               <Chip label={category} />
             </Grid>
           ))}
         </Grid>
       </Grid>
-    </>
+    </Grid>
   );
 }
 
@@ -260,23 +316,13 @@ function ProjectDetailPage() {
   if (id === undefined) {
     setLocation("/projects");
   }
+  const project_id = Number(id);
 
   const { data: user_data } = useSessionGet();
   const user_id = user_data?.logged ? user_data.user_id : undefined;
 
-  const { data: project_data } = useProjectsDetailGet({
-    project_id: id!,
-    retry: (failureCount, error) => {
-      if (error instanceof APIError || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
-  });
-
   const { data: membership, error: membershipError } = useProjectsDetailMembersGet({
-    project_id: project_data?.project_id,
+    project_id: project_id,
     user_id: user_id,
   });
 
@@ -287,61 +333,14 @@ function ProjectDetailPage() {
     role = membership.role;
   }
 
-  const { mutate: addMember } = useProjectsDetailMembersPut({
-    project_id: project_data?.project_id,
-    user_id: user_id,
-    onSuccess: (x) => {
-      enqueueSnackbar({
-        variant: "success",
-        message: <Typography>Status anda "{x.role}"</Typography>,
-      });
-    },
-  });
-
-  if (!project_data || !role) {
+  if (!role || !user_id) {
     return <Skeleton />;
   }
 
   if (role === "Not Involved" || role === "Pending") {
-    return (
-      <Grid container mt={2}>
-        <Grid item xs={1}>
-          <Link to={"/projects"}>
-            <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
-              Go Back
-            </Button>
-          </Link>
-        </Grid>
-        <Grid item xs={10}>
-          <Typography variant="h4" fontWeight={"bold"} align="center">
-            {project_data.project_name}
-          </Typography>
-        </Grid>
-        <Grid item xs={1}>
-          <Button
-            endIcon={<Check />}
-            variant="contained"
-            disabled={role !== "Not Involved"}
-            fullWidth
-            onClick={() =>
-              addMember({
-                role: "Pending",
-              })
-            }
-          >
-            {role !== "Not Involved" ? "Applied" : "Apply"}
-          </Button>
-        </Grid>
-        <ProjectIndex
-          org_id={project_data.org_id}
-          project_categories={project_data.project_categories}
-          project_desc={project_data.project_desc}
-          project_members={project_data.project_members.filter((x) => x.role !== "Pending")}
-        />
-      </Grid>
-    );
+    return <UninvolvedView project_id={project_id} user_id={user_id} role={role} />;
   } else {
-    return <Involved project_id={project_data.project_id} />;
+    return <InvolvedView project_id={project_id} user_id={user_id} />;
   }
 }
 

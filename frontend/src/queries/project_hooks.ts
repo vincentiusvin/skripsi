@@ -4,7 +4,7 @@ import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
 export function useProjectsDetailGet(opts: {
-  project_id: string;
+  project_id: number;
   retry?: (failurecount: number, error: any) => boolean;
 }) {
   const { project_id, retry } = opts;
