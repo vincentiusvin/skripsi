@@ -70,7 +70,7 @@ export class ProjectController extends Controller {
     };
   }
 
-  getProjectsDetailMembersDetail: RH<{
+  private getProjectsDetailMembersDetail: RH<{
     ResBody: {
       role: "Admin" | "Dev" | "Pending";
     };
@@ -95,7 +95,7 @@ export class ProjectController extends Controller {
   // Selain itu cuma boleh ngurusin dirinya sendiri (user_id dia doang) DAN cuma boleh role "Pending".
   // Kalau orang organisasi, langsung kita naikin ke "Admin".
   // Kalau bukan, kita jadiin "Pending"
-  putProjectsDetailMembersDetail: RH<{
+  private putProjectsDetailMembersDetail: RH<{
     ResBody: {
       role: ProjectRoles;
     };
@@ -168,7 +168,7 @@ export class ProjectController extends Controller {
     res.json({ role: role });
   };
 
-  deleteProjectsDetailMembersDetail: RH<{
+  private deleteProjectsDetailMembersDetail: RH<{
     ResBody: {
       msg: string;
     };
@@ -208,7 +208,7 @@ export class ProjectController extends Controller {
     res.status(200).json({ msg: "Pengguna berhasil dihapus dari projek!" });
   };
 
-  getProjects: RH<{
+  private getProjects: RH<{
     ResBody: {
       project_id: number;
       project_name: string;
@@ -230,7 +230,7 @@ export class ProjectController extends Controller {
     res.status(200).json(result);
   };
 
-  getProjectsDetail: RH<{
+  private getProjectsDetail: RH<{
     ReqParams: { id: number };
     ResBody: {
       project_id: number;
@@ -297,7 +297,7 @@ export class ProjectController extends Controller {
     res.status(200).json(modifiedProject);
   };
 
-  postProjects: RH<{
+  private postProjects: RH<{
     ReqBody: {
       project_name: string;
       org_id: number;
@@ -346,7 +346,7 @@ export class ProjectController extends Controller {
     });
   };
 
-  getProjectsCategories: RH<{
+  private getProjectsCategories: RH<{
     ResBody: {
       id: number;
       name: string;
@@ -360,7 +360,10 @@ export class ProjectController extends Controller {
     res.status(200).json(category);
   };
 
-  async getProjectRole(user_id: number, project_id: number): Promise<ProjectRoles | undefined> {
+  private async getProjectRole(
+    user_id: number,
+    project_id: number,
+  ): Promise<ProjectRoles | undefined> {
     const res = await this.db
       .selectFrom("projects_users")
       .select("role")

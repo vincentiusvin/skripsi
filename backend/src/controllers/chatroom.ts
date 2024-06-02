@@ -74,7 +74,7 @@ export class ChatController extends Controller {
     };
   }
 
-  getChatroomMembers = async (chatroom_id: number) => {
+  private getChatroomMembers = async (chatroom_id: number) => {
     const chatroom = await this.db
       .selectFrom("ms_chatrooms")
       .select("ms_chatrooms.project_id")
@@ -112,7 +112,7 @@ export class ChatController extends Controller {
     }
   };
 
-  getChatroomsDetailMessages: RH<{
+  private getChatroomsDetailMessages: RH<{
     Params: {
       chatroom_id: string;
     };
@@ -144,7 +144,7 @@ export class ChatController extends Controller {
     res.status(200).json(result);
   };
 
-  postChatroomsDetailMessages: RH<{
+  private postChatroomsDetailMessages: RH<{
     Params: {
       chatroom_id: string;
     };
@@ -194,7 +194,7 @@ export class ChatController extends Controller {
     res.status(200).json(ret);
   };
 
-  getChatroomsDetail: RH<{
+  private getChatroomsDetail: RH<{
     Params: {
       chatroom_id: string;
     };
@@ -240,7 +240,7 @@ export class ChatController extends Controller {
     res.status(200).json(result);
   };
 
-  getProjectsDetailChatrooms: RH<{
+  private getProjectsDetailChatrooms: RH<{
     ResBody: {
       chatroom_id: number;
       chatroom_name: string;
@@ -268,7 +268,7 @@ export class ChatController extends Controller {
     res.json(result);
   };
 
-  getUsersDetailChatrooms: RH<{
+  private getUsersDetailChatrooms: RH<{
     ResBody: {
       chatroom_id: number;
       chatroom_name: string;
@@ -301,7 +301,7 @@ export class ChatController extends Controller {
     res.json(result);
   };
 
-  postUsersDetailChatrooms: RH<{
+  private postUsersDetailChatrooms: RH<{
     ResBody: { msg: string };
     ReqBody: { name: string };
     Params: { user_id: string };
@@ -346,7 +346,7 @@ export class ChatController extends Controller {
     });
   };
 
-  postProjectsDetailChatrooms: RH<{
+  private postProjectsDetailChatrooms: RH<{
     ResBody: { msg: string };
     ReqBody: { name: string };
     Params: { project_id: string };
@@ -382,7 +382,7 @@ export class ChatController extends Controller {
     });
   };
 
-  putChatroomsDetail: RH<{
+  private putChatroomsDetail: RH<{
     ResBody: { msg: string };
     Params: { chatroom_id: string };
     ReqBody: { name?: string; user_ids?: number[] };

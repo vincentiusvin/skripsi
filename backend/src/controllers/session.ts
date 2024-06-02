@@ -34,7 +34,7 @@ export class SessionController extends Controller {
   }
 
   // Get logged in user
-  getSession: RH<{
+  private getSession: RH<{
     ResBody: { user_name: string; logged: true; user_id: number } | { logged: false };
   }> = async (req, res) => {
     const userId = req.session.user_id;
@@ -60,7 +60,7 @@ export class SessionController extends Controller {
   };
 
   // Login
-  putSession: RH<{
+  private putSession: RH<{
     ResBody: { user_name: string };
     ReqBody: { user_name: string; user_password: string };
   }> = async (req, res) => {
@@ -89,7 +89,7 @@ export class SessionController extends Controller {
   };
 
   // Logout
-  deleteSession: RH<{ ResBody: { msg: string } }> = async (req, res) => {
+  private deleteSession: RH<{ ResBody: { msg: string } }> = async (req, res) => {
     req.session.destroy(() => {
       res.status(200).json({
         msg: "Success",
