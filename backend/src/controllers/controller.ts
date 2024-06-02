@@ -3,6 +3,12 @@ import { ZodType } from "zod";
 import { Application } from "../app.js";
 import { RH, RHTop } from "../helpers/types.js";
 
+/**
+ * Class penampung buat informasi route yang bakal diregister.
+ *
+ * Selain nampung juga ngelakuin type-checking.
+ * Dia bakal mastiin fungsi `handler` nyambung sama `schema`.
+ */
 export class Route<T extends RHTop = RHTop> {
   handler: T;
   method: "get" | "put" | "post" | "patch" | "delete";
@@ -70,7 +76,19 @@ export abstract class Controller {
 
   /**
    * Factory method untuk register route.
-   * Format API di-infer pakai return type fungsi ini.
+   * Kalau mau pasang route baru, bisa tambain objek {@link Route} ke return type fungsi ini. Formatnya:
+   * ```ts
+   *   return {
+   *     NamaKey: new Route({
+   *       handler: this.fn,
+   *       method: "get",
+   *       path: "/api/fn",
+   *     }),
+   *   };
+   * ```
+   * Key sebenarnya gak ngaruh ke logika program, cuma buat type inference aja.
+   *
+   * Penamaan keynya ikutin format ResourceMethod.
    */
   abstract init(): Record<string, Route>;
 
@@ -79,10 +97,9 @@ export abstract class Controller {
   }
 
   register() {
-    const routes = Object.entries(this.init());
+    const routes = Object.values(this.init());
 
-    for (const [key, route] of routes) {
-      console.log("Registered " + key);
+    for (const route of routes) {
       route.register(this.app);
     }
   }
