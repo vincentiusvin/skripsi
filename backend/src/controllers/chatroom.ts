@@ -17,9 +17,11 @@ import { parseRole, withMembers } from "./projects.js";
 
 export class ChatController extends Controller {
   private db: Kysely<DB>;
+  private socket_server: import("socket.io").Server;
   constructor(app: Application) {
     super(app);
     this.db = app.db;
+    this.socket_server = app.socket_server;
   }
 
   init() {
@@ -186,8 +188,7 @@ export class ChatController extends Controller {
       throw new Error("Pesan tidak terkirim!");
     }
 
-    const socket_server = Application.getApplication().socket_server;
-    const socks = await socket_server.fetchSockets();
+    const socks = await this.socket_server.fetchSockets();
     const filtered = socks.filter((x) => members.includes(x.data.userId));
     filtered.forEach((x) => x.emit("msg", chatroom_id, JSON.stringify(ret)));
 
@@ -336,8 +337,7 @@ export class ChatController extends Controller {
         .execute();
     });
 
-    const socket_server = Application.getApplication().socket_server;
-    const socks = await socket_server.fetchSockets();
+    const socks = await this.socket_server.fetchSockets();
     const filtered = socks.filter((x) => user_id === x.data.userId);
     filtered.forEach((x) => x.emit("roomUpdate"));
 
@@ -371,8 +371,7 @@ export class ChatController extends Controller {
     }
 
     const members = await this.getChatroomMembers(chatroom_id.id);
-    const socket_server = Application.getApplication().socket_server;
-    const socks = await socket_server.fetchSockets();
+    const socks = await this.socket_server.fetchSockets();
 
     const filtered = socks.filter((x) => members.includes(x.data.userId));
     filtered.forEach((x) => x.emit("roomUpdate"));
@@ -440,8 +439,7 @@ export class ChatController extends Controller {
       ...new_users.map((x) => x.user_id),
     ];
 
-    const socket_server = Application.getApplication().socket_server;
-    const socks = await socket_server.fetchSockets();
+    const socks = await this.socket_server.fetchSockets();
     const filtered = socks.filter((x) => users_to_notify.includes(x.data.userId));
     filtered.forEach((x) => x.emit("roomUpdate"));
 
