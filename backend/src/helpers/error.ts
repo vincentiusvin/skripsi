@@ -1,4 +1,5 @@
 import { ErrorRequestHandler } from "express";
+import { ZodError } from "zod";
 
 export class ClientError extends Error {}
 export class AuthError extends Error {}
@@ -8,6 +9,8 @@ export const errorHandler: ErrorRequestHandler = function (error, req, res, next
   console.error(error);
   if (error instanceof ClientError) {
     res.status(400).json({ msg: error.message });
+  } else if (error instanceof ZodError) {
+    res.status(401).json({ msg: error.issues[0].message });
   } else if (error instanceof AuthError) {
     res.status(401).json({ msg: error.message });
   } else if (error instanceof NotFoundError) {

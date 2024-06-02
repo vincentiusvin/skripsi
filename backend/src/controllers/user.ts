@@ -34,8 +34,8 @@ export class UserController extends Controller {
   }
 
   private postUserReqBody = z.object({
-    user_name: z.string(),
-    user_password: z.string(),
+    user_name: z.string().min(1, "Username tidak boleh kosong!"),
+    user_password: z.string().min(1, "Password tidak boleh kosong!"),
   });
 
   private postUser: RH<{
@@ -43,14 +43,6 @@ export class UserController extends Controller {
     ReqBody: { user_name: string; user_password: string };
   }> = async (req, res) => {
     const { user_name, user_password } = req.body;
-
-    if (user_name.length === 0) {
-      throw new ClientError("Username tidak boleh kosong!");
-    }
-
-    if (user_password.length === 0) {
-      throw new ClientError("Password tidak boleh kosong!");
-    }
 
     const similar = await this.db
       .selectFrom("ms_users")
