@@ -64,8 +64,11 @@ export class Route<T extends RHTop = RHTop> {
 export abstract class Controller {
   private app: Application;
 
-  // abstract factory method
-  abstract init(): Record<string, Route>;
+  /**
+   * Factory method untuk register route.
+   * Format API di-infer pakai return type fungsi ini.
+   */
+  protected abstract init(): Record<string, Route>;
 
   constructor(app: Application) {
     this.app = app;

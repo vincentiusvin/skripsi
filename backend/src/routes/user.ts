@@ -8,15 +8,15 @@ import { RH } from "../helpers/types";
 import { Controller, Route } from "./controller.js";
 
 export class UserController extends Controller {
-  db: Kysely<DB>;
+  private db: Kysely<DB>;
   constructor(app: Application) {
     super(app);
     this.db = app.db;
   }
 
-  init() {
+  protected init() {
     return {
-      PostUser: new Route({
+      UsersPost: new Route({
         handler: this.postUser,
         method: "post",
         path: "/users",
@@ -25,7 +25,7 @@ export class UserController extends Controller {
         },
       }),
 
-      GetUsers: new Route({
+      UsersGet: new Route({
         handler: this.getUser,
         method: "get",
         path: "/users",
@@ -33,12 +33,12 @@ export class UserController extends Controller {
     };
   }
 
-  postUserReqBody = z.object({
+  private postUserReqBody = z.object({
     user_name: z.string(),
     user_password: z.string(),
   });
 
-  postUser: RH<{
+  private postUser: RH<{
     ResBody: { msg: string };
     ReqBody: { user_name: string; user_password: string };
   }> = async (req, res) => {
@@ -75,7 +75,7 @@ export class UserController extends Controller {
     res.status(201).json({ msg: "User berhasil dibuat!" });
   };
 
-  getUser: RH<{
+  private getUser: RH<{
     ResBody: { user_id: number; user_name: string }[];
   }> = async (req, res) => {
     const result = await this.db
