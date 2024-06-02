@@ -4,7 +4,7 @@ import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { Application } from "../app.js";
 import { DB } from "../db/db_types.js";
 import { ClientError, NotFoundError } from "../helpers/error";
-import { RH, RHTop } from "../helpers/types";
+import { RH } from "../helpers/types";
 import { validateLogged } from "../helpers/validate.js";
 import { Controller, Route } from "./controller.js";
 
@@ -15,7 +15,7 @@ export class OrgController extends Controller {
     this.db = app.db;
   }
 
-  protected init(): Record<string, Route<RHTop>> {
+  init() {
     return {
       OrgsPost: new Route({
         handler: this.postOrgs,

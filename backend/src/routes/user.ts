@@ -14,12 +14,12 @@ export class UserController extends Controller {
     this.db = app.db;
   }
 
-  protected init() {
+  init() {
     return {
       UsersPost: new Route({
         handler: this.postUser,
         method: "post",
-        path: "/users",
+        path: "/api/users",
         schema: {
           ReqBody: this.postUserReqBody,
         },
@@ -28,7 +28,7 @@ export class UserController extends Controller {
       UsersGet: new Route({
         handler: this.getUser,
         method: "get",
-        path: "/users",
+        path: "/api/users",
       }),
     };
   }

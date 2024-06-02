@@ -57,7 +57,11 @@ export class Route<T extends RHTop = RHTop> {
       priors.push(validator);
     }
 
-    app.express_server[this.method](this.path, ...priors, this.handler);
+    if (priors.length) {
+      app.express_server[this.method](this.path, ...priors, this.handler);
+    } else {
+      app.express_server[this.method](this.path, this.handler);
+    }
   }
 }
 
@@ -68,16 +72,17 @@ export abstract class Controller {
    * Factory method untuk register route.
    * Format API di-infer pakai return type fungsi ini.
    */
-  protected abstract init(): Record<string, Route>;
+  abstract init(): Record<string, Route>;
 
   constructor(app: Application) {
     this.app = app;
   }
 
   register() {
-    const routes = Object.values(this.init());
+    const routes = Object.entries(this.init());
 
-    for (const route of routes) {
+    for (const [key, route] of routes) {
+      console.log("Registered " + key);
       route.register(this.app);
     }
   }

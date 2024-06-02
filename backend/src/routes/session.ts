@@ -13,7 +13,7 @@ export class SessionController extends Controller {
     this.db = app.db;
   }
 
-  protected init() {
+  init() {
     return {
       SessionGet: new Route({
         handler: this.getSession,

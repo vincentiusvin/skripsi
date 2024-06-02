@@ -3,7 +3,7 @@ import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { Application } from "../app.js";
 import { DB } from "../db/db_types";
 import { AuthError, ClientError, NotFoundError } from "../helpers/error";
-import { RH, RHTop } from "../helpers/types";
+import { RH } from "../helpers/types";
 import { Controller, Route } from "./controller.js";
 
 const project_roles = ["Pending", "Dev", "Admin"] as const;
@@ -30,7 +30,7 @@ export class ProjectController extends Controller {
     this.db = app.db;
   }
 
-  protected init(): Record<string, Route<RHTop>> {
+  init() {
     return {
       ProjectsPost: new Route({
         handler: this.postProjects,
@@ -43,7 +43,7 @@ export class ProjectController extends Controller {
         path: "/api/projects",
       }),
       ProjectsDetailGet: new Route({
-        handler: this.postProjects,
+        handler: this.getProjectsDetail,
         method: "get",
         path: "/api/projects/:project_id",
       }),
@@ -54,12 +54,12 @@ export class ProjectController extends Controller {
       }),
       ProjectsDetailMembersPut: new Route({
         handler: this.putProjectsDetailMembersDetail,
-        method: "get",
+        method: "put",
         path: "/api/projects/:project_id/users/:user_id",
       }),
       ProjectsDetailMembersDelete: new Route({
         handler: this.deleteProjectsDetailMembersDetail,
-        method: "get",
+        method: "delete",
         path: "/api/projects/:project_id/users/:user_id",
       }),
       ProjectsCategoriesGet: new Route({

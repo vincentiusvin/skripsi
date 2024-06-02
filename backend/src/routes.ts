@@ -1,147 +1,31 @@
-import type { Express, RequestHandler } from "express";
-import { ExtractRH } from "./helpers/types";
-import { validateLogged } from "./helpers/validate";
-import {
-  getChatroomsDetail,
-  getChatroomsDetailMessages,
-  getProjectsDetailChatrooms,
-  getUsersDetailChatrooms,
-  postChatroomsDetailMessages,
-  postProjectsDetailChatrooms,
-  postUsersDetailChatrooms,
-  putChatroomsDetail,
-} from "./routes/chatroom";
-import {
-  deleteOrgs,
-  getOrgs,
-  getOrgsCategories,
-  getOrgsDetail,
-  postOrgs,
-  updateOrgs,
-} from "./routes/orgs";
-import {
-  deleteProjectsDetailMembersDetail,
-  getProjects,
-  getProjectsCategories,
-  getProjectsDetail,
-  getProjectsDetailMembersDetail,
-  postProjects,
-  putProjectsDetailMembersDetail,
-} from "./routes/projects";
-import { deleteSession, getSession, putSession } from "./routes/session";
-import { getUser, postUser } from "./routes/user";
+import { Application } from "./app.js";
+import { ExtractRH, UnionToIntersection } from "./helpers/types";
+import { ChatController } from "./routes/chatroom.js";
+import { Route } from "./routes/controller.js";
+import { OrgController } from "./routes/orgs.js";
+import { ProjectController } from "./routes/projects.js";
+import { SessionController } from "./routes/session.js";
+import { UserController } from "./routes/user.js";
 
-export function registerRoutes(app: Express) {
-  // session -> RUD
-  app.get("/api/session", getSession); // R
-  app.put("/api/session", putSession); // U
-  app.delete("/api/session", deleteSession); // D
+export function registerControllers(app: Application) {
+  const controllers = [
+    new ChatController(app),
+    new OrgController(app),
+    new ProjectController(app),
+    new SessionController(app),
+    new UserController(app),
+  ] as const;
 
-  // users -> CR
-  app.post("/api/users", postUser); // C
-  app.get("/api/users", getUser); // R
-  // users/user -> RUD
-  // R
-  // U
-  // D
-  // users/user/chatrooms -> CR
-  app.post(
-    "/api/users/:user_id/chatrooms",
-    validateLogged,
-    postUsersDetailChatrooms as RequestHandler,
-  ); // C
-  app.get(
-    "/api/users/:user_id/chatrooms",
-    validateLogged,
-    getUsersDetailChatrooms as RequestHandler,
-  ); // R
+  controllers.forEach((x) => x.register());
 
-  // orgs -> CR
-  app.post("/api/orgs", validateLogged, postOrgs as RequestHandler); // C
-  app.get("/api/orgs", getOrgs); // R
-  // orgs/org -> RUD
-  app.get("/api/orgs/:id", getOrgsDetail); // R
-  // Update Orgs
-  app.put("/api/orgs/:id", updateOrgs); //U
-  app.delete("/api/orgs/:id", deleteOrgs); // D
-  // org-categories -> R
-  app.get("/api/org-categories", getOrgsCategories); // R
-
-  // projects -> CR
-  app.post("/api/projects", postProjects); // C
-  app.get("/api/projects", getProjects); // R
-  // projects/project -> RUD
-  app.get("/api/projects/:project_id", getProjectsDetail); // R
-  // U
-  // D
-  // projects/project/users -> shallow
-  // projects/project/users/user -> RUD
-  app.get("/api/projects/:project_id/users/:user_id", getProjectsDetailMembersDetail); // R
-  app.put("/api/projects/:project_id/users/:user_id", putProjectsDetailMembersDetail); // U
-  app.delete("/api/projects/:project_id/users/:user_id", deleteProjectsDetailMembersDetail); // D
-  // projects/project/chatrooms -> CR
-  app.post(
-    "/api/projects/:project_id/chatrooms",
-    validateLogged,
-    postProjectsDetailChatrooms as RequestHandler,
-  ); // C
-  app.get("/api/projects/:project_id/chatrooms", getProjectsDetailChatrooms); //  R
-  // projects/project-categories
-  app.get("/api/project-categories", getProjectsCategories);
-
-  // chatrooms -> shallow
-  // chatrooms/chatroom -> RUD
-  app.get("/api/chatrooms/:chatroom_id", validateLogged, getChatroomsDetail as RequestHandler); // R
-  app.put("/api/chatrooms/:chatroom_id", validateLogged, putChatroomsDetail as RequestHandler); // U
-  // D
-  // chatrooms/chatroom/messages -> CR
-  app.post(
-    "/api/chatrooms/:chatroom_id/messages",
-    validateLogged,
-    postChatroomsDetailMessages as RequestHandler,
-  ); // C
-  app.get(
-    "/api/chatrooms/:chatroom_id/messages",
-    validateLogged,
-    getChatroomsDetailMessages as RequestHandler,
-  ); // R
+  return controllers;
 }
 
-/**
- * Pasang function-function RequestHandler yang dibuat kesini.
- * Untuk string keynya bebas, usahakan dibuat deskriptif.
- */
+type Controllers = ReturnType<typeof registerControllers>;
+type Routes = UnionToIntersection<ReturnType<Controllers[number]["init"]>>;
+
 type _api = {
-  SessionGet: typeof getSession;
-  SessionPut: typeof putSession;
-  SessionDelete: typeof deleteSession;
-
-  UsersPost: typeof postUser;
-  UsersGet: typeof getUser;
-  UsersDetailChatroomsPost: typeof postUsersDetailChatrooms;
-  UsersDetailChatroomsGet: typeof getUsersDetailChatrooms;
-
-  OrgsPost: typeof postOrgs;
-  OrgsGet: typeof getOrgs;
-  OrgsDetailGet: typeof getOrgsDetail;
-  OrgsCategoriesGet: typeof getOrgsCategories;
-  OrgsUpdate: typeof updateOrgs;
-  OrgsDelete: typeof deleteOrgs;
-
-  ProjectsPost: typeof postProjects;
-  ProjectsGet: typeof getProjects;
-  ProjectsDetailGet: typeof getProjectsDetail;
-  ProjectsDetailMembersGet: typeof getProjectsDetailMembersDetail;
-  ProjectsDetailMembersPut: typeof putProjectsDetailMembersDetail;
-  ProjectsDetailMembersDelete: typeof deleteProjectsDetailMembersDetail;
-  ProjectsDetailChatroomsPost: typeof postProjectsDetailChatrooms;
-  ProjectsDetailChatroomsGet: typeof getProjectsDetailChatrooms;
-  ProjectsCategoriesGet: typeof getProjectsCategories;
-
-  ChatroomsDetailGet: typeof getChatroomsDetail;
-  ChatroomsDetailPut: typeof putChatroomsDetail;
-  ChatroomsDetailMessagesGet: typeof getChatroomsDetailMessages;
-  ChatroomsDetailMessagesPost: typeof postChatroomsDetailMessages;
+  [K in keyof Routes]: Routes[K] extends Route<infer O> ? O : never;
 };
 
 /**

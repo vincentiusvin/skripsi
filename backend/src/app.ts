@@ -7,7 +7,7 @@ import { db, dbPool } from "./db/db";
 import { DB } from "./db/db_types.js";
 import { AuthError, errorHandler } from "./helpers/error";
 import { logger } from "./helpers/logger";
-import { registerRoutes } from "./routes";
+import { registerControllers } from "./routes";
 import connectPgSimple = require("connect-pg-simple");
 import _session = require("express-session");
 
@@ -71,7 +71,7 @@ export class Application {
       }
     });
 
-    registerRoutes(this.express_server);
+    registerControllers(this);
 
     this.express_server.use(errorHandler);
   }

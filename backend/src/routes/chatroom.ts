@@ -1,10 +1,10 @@
 import { RequestHandler } from "express";
 import { Kysely } from "kysely";
-import { jsonArrayFrom } from "kysely/helpers/postgres.js";
+import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { Application } from "../app.js";
 import { DB } from "../db/db_types.js";
 import { AuthError, ClientError, NotFoundError } from "../helpers/error.js";
-import { RH, RHTop } from "../helpers/types";
+import { RH } from "../helpers/types";
 import { validateLogged } from "../helpers/validate.js";
 import { Controller, Route } from "./controller.js";
 import { parseRole, withMembers } from "./projects.js";
@@ -22,7 +22,7 @@ export class ChatController extends Controller {
     this.db = app.db;
   }
 
-  protected init(): Record<string, Route<RHTop>> {
+  init() {
     return {
       ProjectsDetailChatroomsPost: new Route({
         handler: this.postProjectsDetailChatrooms,
@@ -37,7 +37,7 @@ export class ChatController extends Controller {
       }),
       UsersDetailChatroomsPost: new Route({
         handler: this.postUsersDetailChatrooms,
-        method: "get",
+        method: "post",
         path: "/api/users/:user_id/chatrooms",
         priors: [validateLogged as RequestHandler],
       }),

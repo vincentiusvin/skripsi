@@ -54,4 +54,8 @@ export type RHTop = RH<{
 
 export type ExtractRH<T> = T extends RH<infer O> ? FillOptionals<O> : never;
 
-// Lalu register fungsinya ke index.ts, di _api dan juga app
+export type UnionToIntersection<U> = (U extends unknown ? (x: U) => void : never) extends (
+  x: infer I,
+) => void
+  ? I
+  : never;
