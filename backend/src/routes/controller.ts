@@ -1,29 +1,81 @@
 import { RequestHandler } from "express";
+import { ZodType } from "zod";
 import { Application } from "../app.js";
-import { RHTop } from "../helpers/types.js";
+import { RH, RHTop } from "../helpers/types.js";
 
-export type RegisterOptions = {
+export class Route<T extends RHTop = RHTop> {
+  handler: T;
   method: "get" | "put" | "post" | "patch" | "delete";
   path: string;
-  handler: RHTop;
+  schema?: {
+    ReqBody?: ZodType<T extends RH<infer O> ? O["ReqBody"] : never>;
+    ReqQuery?: ZodType<T extends RH<infer O> ? O["ReqQuery"] : never>;
+    Params?: ZodType<T extends RH<infer O> ? O["Params"] : never>;
+  };
   priors?: RequestHandler[];
-};
+
+  constructor(opts: {
+    handler: T;
+    method: "get" | "put" | "post" | "patch" | "delete";
+    path: string;
+    schema?: {
+      ReqBody?: ZodType<T extends RH<infer O> ? O["ReqBody"] : never>;
+      ReqQuery?: ZodType<T extends RH<infer O> ? O["ReqQuery"] : never>;
+      Params?: ZodType<T extends RH<infer O> ? O["Params"] : never>;
+    };
+    priors?: RequestHandler[];
+  }) {
+    const { handler, method, path, schema, priors } = opts;
+    this.handler = handler;
+    this.method = method;
+    this.path = path;
+    this.schema = schema;
+    this.priors = priors;
+  }
+
+  register(app: Application) {
+    const priors: RequestHandler[] = [];
+
+    if (this.priors) {
+      priors.push(...this.priors);
+    }
+
+    if (this.schema) {
+      const { Params: paramSchema, ReqBody: bodySchema, ReqQuery: querySchema } = this.schema;
+      const validator: RequestHandler = (req, res, next) => {
+        if (paramSchema) {
+          paramSchema.parse(req.params);
+        }
+        if (bodySchema) {
+          bodySchema.parse(req.body);
+        }
+        if (querySchema) {
+          querySchema.parse(req.query);
+        }
+        next();
+      };
+      priors.push(validator);
+    }
+
+    app.express_server[this.method](this.path, ...priors, this.handler);
+  }
+}
 
 export abstract class Controller {
   private app: Application;
+
+  // abstract factory method
+  abstract init(): Record<string, Route>;
+
   constructor(app: Application) {
     this.app = app;
   }
 
-  abstract initialize(): RegisterOptions[];
+  register() {
+    const routes = Object.values(this.init());
 
-  register(opts: RegisterOptions) {
-    const { method, path, handler, priors } = opts;
-
-    if (priors) {
-      this.app.express_server[method](path, ...priors, handler);
-    } else {
-      this.app.express_server[method](path, handler);
+    for (const route of routes) {
+      route.register(this.app);
     }
   }
 }

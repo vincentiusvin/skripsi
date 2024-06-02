@@ -5,7 +5,7 @@ import { Application } from "../app.js";
 import { DB } from "../db/db_types.js";
 import { ClientError } from "../helpers/error";
 import { RH } from "../helpers/types";
-import { Controller, RegisterOptions } from "./controller.js";
+import { Controller, Route } from "./controller.js";
 
 export class UserController extends Controller {
   db: Kysely<DB>;
@@ -14,14 +14,23 @@ export class UserController extends Controller {
     this.db = app.db;
   }
 
-  initialize(): RegisterOptions[] {
-    return [
-      {
+  init() {
+    return {
+      PostUser: new Route({
         handler: this.postUser,
         method: "post",
         path: "/users",
-      },
-    ];
+        schema: {
+          ReqBody: this.postUserReqBody,
+        },
+      }),
+
+      GetUsers: new Route({
+        handler: this.getUser,
+        method: "get",
+        path: "/users",
+      }),
+    };
   }
 
   postUserReqBody = z.object({
@@ -31,7 +40,7 @@ export class UserController extends Controller {
 
   postUser: RH<{
     ResBody: { msg: string };
-    ReqBody: z.infer<UserController["postUserReqBody"]>;
+    ReqBody: { user_name: string; user_password: string };
   }> = async (req, res) => {
     const { user_name, user_password } = req.body;
 
