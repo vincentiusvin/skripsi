@@ -1,42 +1,41 @@
 # Getting Started
 
-Untuk buat Request Handler bisa ikutin template ini:
+Untuk buat Request Handler bisa taruh method dengan template ini ke dalam class `Controller`:
 
 ```ts
-export const fn: RH = async function (req, res) {
+private fn: RH = async (req, res) => {
   res.json({ msg: "Halo" });
 };
 ```
 
 RH diimport dulu. Ctrl+Space aja. Kalau gak muncul lokasinya ada di [sini](src/helpers/types.ts)
 
-Habis itu fungsinya di-register di [sini](src/routes.ts)
-Taruh di dalam `registerRoutes` dan juga di `_api`.
+Habis itu fungsinya di-register di method `init()` nya controller.
 
 ```ts
-export function registerRoutes(app: Express) {
-  ...
-  app.get("/api/route-ikutin-rest", fn);
-  ...
-}
+  init() {
+    return {
+      NamaKey: new Route({
+        handler: this.fn,
+        method: "get",
+        path: "/api/fn",
+      }),
+    };
+  }
 ```
 
-```ts
-type _api = {
-  ...
-  NamaKeyBebasTapiRapih: typeof fn;
-  ...
-};
-```
+Handler itu function pointer ke fungsi kita tadi, method itu method HTTP-nya, dan path itu path APInya.
+
+Kita bisa tambain prior (middleware) atau schema (pakai zod) kalau mau.
 
 # Type Safety
 
 RH itu generic, bisa kita masukin tipe data yang kita mau biar kodenya type-safe:
 
 ```ts
-export const fn: RH<{
+private fn: RH<{
   ResBody: { msg: string };
-}> = async function (req, res) {
+}> = async (req, res) => {
   res.json({ msg: "Halo" });
 };
 ```
@@ -49,7 +48,7 @@ Kalau ada error dan mau kirim error ke user, bisa langsung di throw aja. Jangan 
 Error bakal dikirim dalam bentuk `{msg: string}`, tapi ga perlu di-declare di type RH. bakal di-handle otomatis sama middleware.
 
 ```ts
-export const fn: RH = async function (req, res) {
+private fn: RH = async (req, res) => {
   throw new ClientError("User salah input");
 };
 ```

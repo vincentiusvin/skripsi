@@ -31,7 +31,7 @@ type _api = {
 /**
  * Export informasi type pada RequestHandler yang diregister diatas.
  * Cara pakainya dengan akses:
- * API[nama_key_sesuai_diatas]["ResBody" | "ReqBody" | "ReqParams"]
+ * API[NamaKey]["ResBody" | "ReqBody" | "ReqParams"]
  */
 export type API = {
   [K in keyof _api]: ExtractRH<_api[K]>;
