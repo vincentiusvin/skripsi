@@ -19,7 +19,8 @@ export function withMembers(eb: ExpressionBuilder<DB, "ms_projects">) {
       .selectFrom("projects_users")
       .innerJoin("ms_users", "ms_users.id", "projects_users.user_id")
       .select(["ms_users.id", "ms_users.name", "projects_users.role"])
-      .whereRef("projects_users.project_id", "=", "ms_projects.id"),
+      .whereRef("projects_users.project_id", "=", "ms_projects.id")
+      .orderBy(["projects_users.role asc", "ms_users.name asc"]),
   );
 }
 
