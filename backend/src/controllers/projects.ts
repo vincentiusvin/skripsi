@@ -78,6 +78,16 @@ export class ProjectController extends Controller {
         method: "delete",
         path: "/api/projects/:project_id/users/:user_id",
       }),
+      ProjectsBucketsGet: new Route({
+        handler: this.getProjectBuckets,
+        method: "get",
+        path: "/api/projects/:project_id/buckets",
+      }),
+      ProjectsBucketsPost: new Route({
+        handler: this.postProjectBuckets,
+        method: "post",
+        path: "/api/projects/:project_id/buckets",
+      }),
       ProjectsCategoriesGet: new Route({
         handler: this.getProjectsCategories,
         method: "get",
@@ -429,4 +439,50 @@ export class ProjectController extends Controller {
     }
     return ret;
   }
+
+  private getProjectBuckets: RH<{
+    Params: {
+      project_id: string;
+    };
+    ResBody: {
+      name: string;
+      id: number;
+    }[];
+  }> = async (req, res) => {
+    const { project_id } = req.params;
+
+    const buckets = await this.db
+      .selectFrom("ms_task_buckets")
+      .select(["name", "id"])
+      .where("ms_task_buckets.project_id", "=", Number(project_id))
+      .execute();
+
+    res.status(200).json(buckets);
+  };
+
+  private postProjectBuckets: RH<{
+    Params: {
+      project_id: string;
+    };
+    ReqBody: {
+      name: string;
+    };
+    ResBody: {
+      msg: string;
+    };
+  }> = async (req, res) => {
+    const { project_id } = req.params;
+    const { name } = req.body;
+
+    const insert = this.db.insertInto("ms_task_buckets").values({
+      name: name,
+      project_id: Number(project_id),
+    });
+
+    await insert.execute();
+
+    res.status(201).json({
+      msg: "Bucket created!",
+    });
+  };
 }

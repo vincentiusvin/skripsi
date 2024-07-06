@@ -129,4 +129,26 @@ describe("/api/projects", () => {
     const result = await accept_nonmember.json();
     expect(result.role).eq("Dev");
   });
+
+  it("should be able to fetch tasks", async () => {
+    const caseData = await baseCase(app);
+    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+
+    const res = await new APIContext("ProjectsDetailMembersPut").fetch(
+      `/api/projects/${caseData.project.id}/users/${caseData.nonmember.id}`,
+      {
+        headers: {
+          cookie: cookie,
+        },
+        credentials: "include",
+        method: "PUT",
+        body: {
+          role: "Pending",
+        },
+      },
+    );
+    expect(res.status).eq(200);
+    const result = await res.json();
+    expect(result.role).eq("Pending");
+  });
 });

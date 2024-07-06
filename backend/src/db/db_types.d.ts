@@ -81,6 +81,23 @@ export interface MsProjects {
   org_id: number;
 }
 
+export interface MsTaskBuckets {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  name: string;
+  project_id: number;
+}
+
+export interface MsTasks {
+  bucket_id: number;
+  created_at: Generated<Timestamp>;
+  description: string | null;
+  end_at: Timestamp | null;
+  id: Generated<number>;
+  name: string;
+  start_at: Timestamp | null;
+}
+
 export interface MsUsers {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
@@ -108,6 +125,12 @@ export interface Session {
   sid: string;
 }
 
+export interface TasksUsers {
+  created_at: Generated<Timestamp>;
+  task_id: number;
+  user_id: number;
+}
+
 export interface DB {
   categories_orgs: CategoriesOrgs;
   categories_projects: CategoriesProjects;
@@ -118,8 +141,11 @@ export interface DB {
   ms_messages: MsMessages;
   ms_orgs: MsOrgs;
   ms_projects: MsProjects;
+  ms_task_buckets: MsTaskBuckets;
+  ms_tasks: MsTasks;
   ms_users: MsUsers;
   orgs_users: OrgsUsers;
   projects_users: ProjectsUsers;
   session: Session;
+  tasks_users: TasksUsers;
 }
