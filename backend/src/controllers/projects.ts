@@ -79,12 +79,12 @@ export class ProjectController extends Controller {
         path: "/api/projects/:project_id/users/:user_id",
       }),
       ProjectsBucketsGet: new Route({
-        handler: this.getProjectBuckets,
+        handler: this.getProjectsBuckets,
         method: "get",
         path: "/api/projects/:project_id/buckets",
       }),
       ProjectsBucketsPost: new Route({
-        handler: this.postProjectBuckets,
+        handler: this.postProjectsBuckets,
         method: "post",
         path: "/api/projects/:project_id/buckets",
       }),
@@ -440,7 +440,7 @@ export class ProjectController extends Controller {
     return ret;
   }
 
-  private getProjectBuckets: RH<{
+  private getProjectsBuckets: RH<{
     Params: {
       project_id: string;
     };
@@ -460,7 +460,7 @@ export class ProjectController extends Controller {
     res.status(200).json(buckets);
   };
 
-  private postProjectBuckets: RH<{
+  private postProjectsBuckets: RH<{
     Params: {
       project_id: string;
     };

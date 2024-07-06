@@ -130,25 +130,38 @@ describe("/api/projects", () => {
     expect(result.role).eq("Dev");
   });
 
-  it("should be able to fetch tasks", async () => {
+  it("should be able to add and get buckets", async () => {
     const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
-    const res = await new APIContext("ProjectsDetailMembersPut").fetch(
-      `/api/projects/${caseData.project.id}/users/${caseData.nonmember.id}`,
+    const res = await new APIContext("ProjectsBucketsPost").fetch(
+      `/api/projects/${caseData.project.id}/buckets`,
       {
         headers: {
           cookie: cookie,
         },
         credentials: "include",
-        method: "PUT",
+        method: "post",
         body: {
-          role: "Pending",
+          name: "Hello",
         },
       },
     );
-    expect(res.status).eq(200);
-    const result = await res.json();
-    expect(result.role).eq("Pending");
+    expect(res.status).eq(201);
+    await res.json();
+
+    const res2 = await new APIContext("ProjectsBucketsGet").fetch(
+      `/api/projects/${caseData.project.id}/buckets`,
+      {
+        headers: {
+          cookie: cookie,
+        },
+        credentials: "include",
+        method: "get",
+      },
+    );
+    expect(res2.status).eq(200);
+    const result = await res2.json();
+    expect(result.length).eq(2);
   });
 });

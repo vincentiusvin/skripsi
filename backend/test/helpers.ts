@@ -70,7 +70,7 @@ export class APIContext<T extends keyof API> {
 }
 
 export async function baseCase(app: Application) {
-  const org_id = await app.db
+  const org = await app.db
     .insertInto("ms_orgs")
     .values({
       name: "testing org",
@@ -100,25 +100,45 @@ export async function baseCase(app: Application) {
   await app.db
     .insertInto("orgs_users")
     .values({
-      org_id: org_id.id,
+      org_id: org.id,
       user_id: user_ids[0].id,
       role: "Admin",
     })
     .execute();
 
-  const project_id = await app.db
+  const project = await app.db
     .insertInto("ms_projects")
     .values({
       description: "very awesome project",
       name: "testing project",
-      org_id: org_id.id,
+      org_id: org.id,
     })
     .returning(["id", "name"])
     .executeTakeFirstOrThrow();
 
+  const bucket = await app.db
+    .insertInto("ms_task_buckets")
+    .values({
+      name: "Todo",
+      project_id: project.id,
+    })
+    .returning(["ms_task_buckets.id", "ms_task_buckets.name"])
+    .executeTakeFirstOrThrow();
+
+  const task = await app.db
+    .insertInto("ms_tasks")
+    .values({
+      name: "Todo",
+      bucket_id: bucket.id,
+    })
+    .returning(["ms_tasks.id", "ms_tasks.name"])
+    .executeTakeFirstOrThrow();
+
   return {
-    org: org_id,
-    project: project_id,
+    org,
+    project,
+    bucket,
+    task,
     member: { ...user_ids[0], password: orig_password },
     nonmember: { ...user_ids[1], password: orig_password },
   };

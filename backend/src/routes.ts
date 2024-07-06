@@ -4,6 +4,7 @@ import { Route } from "./controllers/controller.js";
 import { OrgController } from "./controllers/orgs.js";
 import { ProjectController } from "./controllers/projects.js";
 import { SessionController } from "./controllers/session.js";
+import { TaskController } from "./controllers/task.js";
 import { UserController } from "./controllers/user.js";
 import { ExtractRH, UnionToIntersection } from "./helpers/types";
 
@@ -14,6 +15,7 @@ export function registerControllers(app: Application) {
     new ProjectController(app),
     new SessionController(app),
     new UserController(app),
+    new TaskController(app),
   ] as const;
 
   controllers.forEach((x) => x.register());
