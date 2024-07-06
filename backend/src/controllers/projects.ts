@@ -24,6 +24,21 @@ export function withMembers(eb: ExpressionBuilder<DB, "ms_projects">) {
   );
 }
 
+export function withOrgs(eb: ExpressionBuilder<DB, "ms_projects">) {
+  return jsonArrayFrom(
+    eb
+      .selectFrom("ms_orgs")
+      .select([
+        "ms_orgs.id",
+        "ms_orgs.description",
+        "ms_orgs.name",
+        "ms_orgs.phone",
+        "ms_orgs.address",
+      ])
+      .whereRef("ms_orgs.id", "=", "ms_projects.org_id"),
+  );
+}
+
 export class ProjectController extends Controller {
   private db: Kysely<DB>;
   constructor(app: Application) {
@@ -73,7 +88,7 @@ export class ProjectController extends Controller {
 
   private getProjectsDetailMembersDetail: RH<{
     ResBody: {
-      role: "Admin" | "Dev" | "Pending";
+      role: "Admin" | "Dev" | "Pending" | "Not Involved";
     };
     Params: {
       project_id: string;
@@ -86,7 +101,7 @@ export class ProjectController extends Controller {
 
     const result = await this.getProjectRole(user_id, project_id);
     if (!result) {
-      throw new NotFoundError("User tidak terdaftar dalam projek!");
+      res.json({ role: "Not Involved" });
     } else {
       res.json({ role: result });
     }
@@ -213,6 +228,7 @@ export class ProjectController extends Controller {
     ResBody: {
       project_id: number;
       project_name: string;
+      project_desc: string;
       org_id: number;
     }[];
     ReqQuery: {
@@ -225,7 +241,12 @@ export class ProjectController extends Controller {
 
     let projects = this.db
       .selectFrom("ms_projects")
-      .select(["id as project_id", "name as project_name", "org_id"]);
+      .select([
+        "id as project_id",
+        "name as project_name",
+        "org_id",
+        "description as project_desc",
+      ]);
 
     if (org_id != undefined) {
       projects = projects.where("org_id", "=", Number(org_id));

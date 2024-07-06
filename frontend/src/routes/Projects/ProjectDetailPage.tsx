@@ -23,7 +23,6 @@ import { enqueueSnackbar } from "notistack";
 import { Fragment, useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { API } from "../../../../backend/src/routes.ts";
-import { APIError } from "../../helpers/fetch.ts";
 import {
   useChatSocket,
   useChatroomsDetailGet,
@@ -435,17 +434,12 @@ function ProjectDetailPage() {
   const { data: user_data } = useSessionGet();
   const user_id = user_data?.logged ? user_data.user_id : undefined;
 
-  const { data: membership, error: membershipError } = useProjectsDetailMembersGet({
+  const { data: membership } = useProjectsDetailMembersGet({
     project_id: project_id,
     user_id: user_id,
   });
 
-  let role: NonNullable<typeof membership>["role"] | "Not Involved" | undefined;
-  if (membershipError instanceof APIError && membershipError.status === 404) {
-    role = "Not Involved";
-  } else if (membership) {
-    role = membership.role;
-  }
+  const role = membership?.role;
 
   if (!role || !user_id) {
     return <Skeleton />;

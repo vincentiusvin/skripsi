@@ -1,22 +1,67 @@
-import { SearchOutlined } from "@mui/icons-material";
+import { Code, SearchOutlined, Shield } from "@mui/icons-material";
 import {
-  Box,
   Card,
   CardActionArea,
   CardContent,
+  CardHeader,
   Grid,
   InputAdornment,
-  Stack,
   Tab,
   Tabs,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useDebounce } from "use-debounce";
 import { Link } from "wouter";
+import { API } from "../../../../backend/src/routes.ts";
 import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
-import { useProjectsGet } from "../../queries/project_hooks";
+import { useOrgDetailGet } from "../../queries/org_hooks.ts";
+import { useProjectsDetailMembersGet, useProjectsGet } from "../../queries/project_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
+
+function ProjectCard(props: { project: API["ProjectsGet"]["ResBody"][number] }) {
+  const { project } = props;
+  const { data: org_data } = useOrgDetailGet({
+    id: project.org_id,
+  });
+  const { data: session_data } = useSessionGet();
+  const { data: role_data } = useProjectsDetailMembersGet({
+    project_id: Number(project.project_id),
+    user_id: session_data?.logged ? session_data.user_id : undefined,
+  });
+
+  return (
+    <Link to={`/projects/${project.project_id}`}>
+      <Card variant="elevation">
+        <CardActionArea>
+          <CardHeader
+            title={
+              <Typography variant="h5" fontWeight={"bold"}>
+                {project.project_name}
+              </Typography>
+            }
+            action={
+              role_data?.role === "Admin" ? (
+                <Tooltip title="Joined as administrator">
+                  <Shield />
+                </Tooltip>
+              ) : role_data?.role === "Dev" ? (
+                <Tooltip title="Joined as developer">
+                  <Code />
+                </Tooltip>
+              ) : null
+            }
+            subheader={<Typography variant="body1">by {org_data?.org_name}</Typography>}
+          />
+          <CardContent>
+            <Typography variant="body2">{project.project_desc}</Typography>
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    </Link>
+  );
+}
 
 function ProjectListPage() {
   const { data: session } = useSessionGet();
@@ -80,22 +125,7 @@ function ProjectListPage() {
       </Grid>
       {data?.map((x, i) => (
         <Grid item xs={3} key={i}>
-          <Link to={`/projects/${x.project_id}`}>
-            <Card variant="elevation">
-              <CardActionArea>
-                <CardContent>
-                  <Stack direction={"row"} alignItems={"center"} spacing={2}>
-                    <Box>
-                      <Typography variant="h5" fontWeight={"bold"}>
-                        {x.project_name}
-                      </Typography>
-                      <Typography>{x.org_id}</Typography>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Link>
+          <ProjectCard project={x} />
         </Grid>
       ))}
     </Grid>
