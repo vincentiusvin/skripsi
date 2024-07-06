@@ -37,6 +37,25 @@ type RequestHandlerInjector<Options extends Required<RequestHandlerOptions>> = R
 export type RH<Options extends RequestHandlerOptions = Required<RequestHandlerOptions>> =
   RequestHandlerInjector<FillOptionals<Options>>;
 
+/**
+ * Top typenya RH.
+ * Locals, Params, ReqBody, dan ReqQuery diassign never karena
+ * mereka argument fungsi. Contravariant terhadap fungsi RH.
+ *
+ * ResBody itu return type fungsi. Covariant terhadap fungsi Rh.
+ */
+export type RHTop = RH<{
+  Locals: never;
+  Params: never;
+  ReqBody: never;
+  ReqQuery: never;
+  ResBody: Record<string, unknown> | Record<string, unknown>[];
+}>;
+
 export type ExtractRH<T> = T extends RH<infer O> ? FillOptionals<O> : never;
 
-// Lalu register fungsinya ke index.ts, di _api dan juga app
+export type UnionToIntersection<U> = (U extends unknown ? (x: U) => void : never) extends (
+  x: infer I,
+) => void
+  ? I
+  : never;

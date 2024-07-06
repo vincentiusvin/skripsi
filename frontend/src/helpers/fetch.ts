@@ -70,7 +70,7 @@ export class APIContext<T extends keyof API> {
       body: stringBody,
     });
 
-    const content: { msg: string } = await res.json().catch(() => ({ msg: "Unknown error" }));
+    const content = await res.json().catch(() => ({ msg: "Unknown error" }));
 
     if (!res.ok) {
       throw new APIError(content.msg, res.status) as APIError;
