@@ -215,16 +215,38 @@ export class ProjectController extends Controller {
       org_id: number;
     }[];
     ReqQuery: {
-      org_id: string;
+      org_id?: string;
+      user_id?: string;
+      keyword?: string;
     };
   }> = async (req, res) => {
-    const id = req.query.org_id;
+    const { org_id, user_id, keyword } = req.query;
+
     let projects = this.db
       .selectFrom("ms_projects")
       .select(["id as project_id", "name as project_name", "org_id"]);
-    if (id != undefined) {
-      projects = projects.where("org_id", "=", Number(id));
+
+    if (org_id != undefined) {
+      projects = projects.where("org_id", "=", Number(org_id));
     }
+
+    if (user_id != undefined) {
+      projects = projects.where((eb) =>
+        eb(
+          "ms_projects.id",
+          "in",
+          eb
+            .selectFrom("projects_users")
+            .select("projects_users.project_id")
+            .where("projects_users.user_id", "=", Number(user_id)),
+        ),
+      );
+    }
+
+    if (keyword != undefined) {
+      projects = projects.where("ms_projects.name", "ilike", `%${keyword}%`);
+    }
+
     const result = await projects.execute();
 
     res.status(200).json(result);

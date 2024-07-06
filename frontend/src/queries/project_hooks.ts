@@ -15,18 +15,18 @@ export function useProjectsDetailGet(opts: {
   });
 }
 
-export function useProjectsGet(opts?: { org_id?: string }) {
-  const { org_id } = opts || {};
+export function useProjectsGet(opts?: { org_id?: Number; user_id?: Number; keyword?: string }) {
+  const { org_id, user_id, keyword } = opts || {};
+
   return useQuery({
     queryKey: ["projects", "collection", opts],
     queryFn: () =>
       new APIContext("ProjectsGet").fetch("/api/projects", {
-        query:
-          org_id !== undefined
-            ? {
-                org_id: org_id,
-              }
-            : undefined,
+        query: {
+          ...(org_id && { org_id: org_id.toString() }),
+          ...(user_id && { user_id: user_id.toString() }),
+          ...(keyword && { keyword }),
+        },
       }),
   });
 }

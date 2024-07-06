@@ -20,7 +20,7 @@ import ProjectListPage from "./routes/Projects/ProjectsListPage";
 
 const theme = createTheme({
   palette: {
-    mode: "dark",
+    // mode: "dark",
   },
 });
 

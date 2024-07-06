@@ -34,7 +34,7 @@ function OrgsDetailPage() {
   });
 
   const { data: projectData } = useProjectsGet({
-    org_id: id,
+    org_id: Number(id),
   });
 
   const { mutate: deleteOrg } = useOrgsDelete({
