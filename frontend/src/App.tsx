@@ -1,6 +1,8 @@
 import { ThemeProvider } from "@emotion/react";
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, CssBaseline, Divider, IconButton, createTheme } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { SnackbarProvider, closeSnackbar } from "notistack";
 import { Route, Switch } from "wouter";
@@ -20,7 +22,7 @@ import ProjectListPage from "./routes/Projects/ProjectsListPage";
 
 const theme = createTheme({
   palette: {
-    // mode: "dark",
+    mode: "dark",
   },
 });
 
@@ -40,23 +42,25 @@ function App() {
         )}
       >
         <QueryClientProvider client={queryClient}>
-          <CssBaseline />
-          <Nav />
-          <Divider />
-          <Box mx={4} flexGrow={1}>
-            <Switch>
-              <Route path={"/"} component={HomePage} />
-              <Route path={"/auth"} component={AuthPage} />
-              <Route path={"/orgs"} component={OrgsListPage} />
-              <Route path={"/orgs/add"} component={OrgsAddPage} />
-              <Route path={"/orgs/:id"} component={OrgsDetailPage} />
-              <Route path={"/orgs/edit/:id"} component={OrgsEditPage} />
-              <Route path={"/chatroom"} component={ChatroomPage} />
-              <Route path={"/projects"} component={ProjectListPage} />
-              <Route path={"/projects/add"} component={ProjectsAddPage} />
-              <Route path={"/projects/:id"} component={ProjectDetailPage} />
-            </Switch>
-          </Box>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <CssBaseline />
+            <Nav />
+            <Divider />
+            <Box mx={4} flexGrow={1}>
+              <Switch>
+                <Route path={"/"} component={HomePage} />
+                <Route path={"/auth"} component={AuthPage} />
+                <Route path={"/orgs"} component={OrgsListPage} />
+                <Route path={"/orgs/add"} component={OrgsAddPage} />
+                <Route path={"/orgs/:id"} component={OrgsDetailPage} />
+                <Route path={"/orgs/edit/:id"} component={OrgsEditPage} />
+                <Route path={"/chatroom"} component={ChatroomPage} />
+                <Route path={"/projects"} component={ProjectListPage} />
+                <Route path={"/projects/add"} component={ProjectsAddPage} />
+                <Route path={"/projects/:id"} component={ProjectDetailPage} />
+              </Switch>
+            </Box>
+          </LocalizationProvider>
         </QueryClientProvider>
       </SnackbarProvider>
     </ThemeProvider>

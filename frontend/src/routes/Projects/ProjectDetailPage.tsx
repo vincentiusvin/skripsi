@@ -1,9 +1,14 @@
-import { ArrowBack, Check, Logout } from "@mui/icons-material";
+import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
+import { Add, ArrowBack, Check, Logout } from "@mui/icons-material";
 import {
   Alert,
   Avatar,
   Box,
   Button,
+  Card,
+  CardActionArea,
+  CardContent,
+  CardHeader,
   Chip,
   Dialog,
   DialogActions,
@@ -19,6 +24,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers";
+import dayjs, { Dayjs } from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { Fragment, useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -32,6 +39,8 @@ import {
   useProjectsDetailChatroomsPost,
 } from "../../queries/chat_hooks";
 import {
+  useProjectsDetailBucketsGet,
+  useProjectsDetailBucketsPost,
   useProjectsDetailGet,
   useProjectsDetailMembersDelete,
   useProjectsDetailMembersGet,
@@ -39,6 +48,11 @@ import {
   useProjectsDetailMembersPutVariableID,
 } from "../../queries/project_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
+import {
+  useBucketsDetailTasksGet,
+  useBucketsDetailTasksPost,
+  useTasksDetailPut,
+} from "../../queries/task_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks";
 import { ChatroomContent } from "../Chatroom";
 
@@ -85,10 +99,197 @@ function Chatroom(props: { chatroom_id: number }) {
 
 type MemberRoles = API["ProjectsDetailMembersGet"]["ResBody"]["role"] | "Not Involved";
 
+function Task(props: {
+  task_id: number;
+  name: string;
+  description?: string;
+  start_at?: Dayjs;
+  end_at?: Dayjs;
+}) {
+  const { task_id, name, description, start_at, end_at } = props;
+  const {
+    attributes,
+    listeners,
+    setNodeRef: draggableRef,
+    transform,
+  } = useDraggable({
+    id: `task-${task_id}`,
+  });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
+
+  return (
+    <Card variant="elevation" style={style} {...listeners} {...attributes} ref={draggableRef}>
+      <CardActionArea>
+        <CardHeader
+          title={
+            <Typography variant="h5" fontWeight={"bold"}>
+              {name}
+            </Typography>
+          }
+          subheader={<Typography variant="body1">{description}</Typography>}
+        />
+        <CardContent>
+          {start_at && (
+            <>
+              <Typography variant="caption">Mulai: {start_at.format("ddd, DD/MM/YY")}</Typography>
+              <br />
+            </>
+          )}
+          {end_at && (
+            <Typography variant="caption">Berakhir: {end_at.format("ddd, DD/MM/YY")}</Typography>
+          )}
+        </CardContent>
+      </CardActionArea>
+    </Card>
+  );
+}
+
+function Bucket(props: {
+  bucket_id: number;
+  name: string;
+  setSelectedBucketEdit: (x: number) => void;
+}) {
+  const { bucket_id, name, setSelectedBucketEdit } = props;
+  const { data: tasks } = useBucketsDetailTasksGet({ bucket_id });
+  const { setNodeRef: droppableRef } = useDroppable({
+    id: `bucket-${bucket_id}`,
+  });
+
+  return (
+    <Box ref={droppableRef}>
+      {name}
+      <Button onClick={() => setSelectedBucketEdit(bucket_id)}>
+        <Add />
+      </Button>
+      {tasks?.map((x, i) => (
+        <Task
+          key={i}
+          task_id={x.id}
+          name={x.name}
+          description={x.description ?? undefined}
+          start_at={x.start_at ? dayjs(x.start_at) : undefined}
+          end_at={x.end_at ? dayjs(x.end_at) : undefined}
+        />
+      ))}
+    </Box>
+  );
+}
+
+function Tasks(props: { project_id: number }) {
+  const { project_id } = props;
+  const { data: buckets } = useProjectsDetailBucketsGet({ project_id });
+  const { mutate: addBucket } = useProjectsDetailBucketsPost({
+    project_id: project_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Task created!</Typography>,
+        variant: "success",
+      });
+    },
+  });
+  const { mutate: addTask } = useBucketsDetailTasksPost({
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Task created!</Typography>,
+        variant: "success",
+      });
+      setSelectedBucketEdit(null);
+    },
+  });
+  const [bucketName, setBucketName] = useState("");
+
+  // undef: gak ada yang dipilih
+  // number: lagi ngedit bucket itu
+  const [selectedBucketEdit, setSelectedBucketEdit] = useState<null | number>(null);
+  const [taskName, setTaskName] = useState<null | string>(null);
+  const [taskDescription, setTaskDescription] = useState<null | string>(null);
+  const [taskStartAt, setTaskStartAt] = useState<null | Dayjs>(null);
+  const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>(null);
+
+  const { mutate: updateTask } = useTasksDetailPut({});
+
+  return (
+    <Box>
+      {selectedBucketEdit && (
+        <Dialog open={selectedBucketEdit != null} onClose={() => setSelectedBucketEdit(null)}>
+          <DialogTitle>Add new task</DialogTitle>
+          <DialogContent>
+            <TextField fullWidth onChange={(e) => setTaskName(e.target.value)} label="Task name" />
+            <TextField
+              fullWidth
+              onChange={(e) => setTaskDescription(e.target.value)}
+              label="Task description"
+            />
+            <DatePicker onAccept={(x) => setTaskStartAt(x)} label="Start At"></DatePicker>
+            <DatePicker onAccept={(x) => setTaskEndAt(x)} label="End At"></DatePicker>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                if (taskName == null) {
+                  return;
+                }
+                addTask({
+                  name: taskName,
+                  bucket_id: selectedBucketEdit,
+                  description: taskDescription ?? undefined,
+                  start_at: taskStartAt?.toDate(),
+                  end_at: taskEndAt?.toDate(),
+                });
+              }}
+            >
+              Create Task
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+      <TextField value={bucketName} onChange={(e) => setBucketName(e.target.value)}></TextField>
+      <Button onClick={() => addBucket({ name: bucketName })}>Add Bucket</Button>
+      <Stack direction={"row"} spacing={5}>
+        <DndContext
+          onDragEnd={(x) => {
+            const [, dropped_bucket_id] = x.over?.id.toString().split("-") || [];
+            const [, dragged_task_id] = x.active?.id.toString().split("-") || [];
+            if (dropped_bucket_id == undefined || dragged_task_id == undefined) {
+              return;
+            }
+
+            const bucket_id = Number(dropped_bucket_id);
+            const task_id = Number(dragged_task_id);
+
+            if (Number.isNaN(bucket_id) || Number.isNaN(task_id)) {
+              return;
+            }
+
+            updateTask({
+              task_id: task_id,
+              bucket_id: bucket_id,
+            });
+          }}
+        >
+          {buckets?.map((x, i) => (
+            <Bucket
+              bucket_id={x.id}
+              name={x.name}
+              setSelectedBucketEdit={(x) => setSelectedBucketEdit(x)}
+              key={i}
+            ></Bucket>
+          ))}
+        </DndContext>
+      </Stack>
+    </Box>
+  );
+}
+
 function InvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
   const { project_id, user_id, role } = props;
   const [connected, setConnected] = useState(false);
-  const [activeTab, setActiveTab] = useState<"disc" | "info" | "manage">("disc");
+  const [activeTab, setActiveTab] = useState<"disc" | "info" | "manage" | "tasks">("disc");
   const [activeRoom, setActiveRoom] = useState<number | false>(false);
   const { data: chatrooms } = useProjectsDetailChatroomsGet({ project_id });
   const { data: project } = useProjectsDetailGet({ project_id });
@@ -164,6 +365,7 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             }}
           >
             <Tab label={"Discussion"} value="disc" />
+            <Tab label={"Tasks"} value="tasks" />
             <Tab label={"Info"} value="info" />
             {role === "Admin" && <Tab label={"Manage"} value="manage" />}
           </Tabs>
@@ -315,6 +517,7 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             ))}
         </Grid>
       )}
+      {activeTab === "tasks" && <Tasks project_id={project_id} />}
     </Stack>
   );
 }

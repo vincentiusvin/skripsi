@@ -29,12 +29,12 @@ export class TaskController extends Controller {
         method: "put",
         path: "/api/tasks/:task_id",
       }),
-      BucketDetailTasksPost: new Route({
+      BucketsDetailTasksPost: new Route({
         handler: this.postBucketsDetailTasks,
         method: "post",
         path: "/api/buckets/:bucket_id/tasks",
       }),
-      BucketDetailTasksGet: new Route({
+      BucketsDetailTasksGet: new Route({
         handler: this.getBucketsDetailTasks,
         method: "get",
         path: "/api/buckets/:bucket_id/tasks",
@@ -47,7 +47,7 @@ export class TaskController extends Controller {
       task_id: string;
     };
     ReqBody: {
-      bucket_id?: string;
+      bucket_id?: number;
       name?: string;
       description?: string;
       start_at?: string;
@@ -92,6 +92,8 @@ export class TaskController extends Controller {
     const { bucket_id } = req.params;
     const { name, description, end_at, start_at } = req.body;
 
+    console.log(req.body);
+
     await this.db
       .insertInto("ms_tasks")
       .values({
@@ -111,6 +113,7 @@ export class TaskController extends Controller {
       bucket_id: string;
     };
     ResBody: {
+      id: number;
       name: string;
       description: string | null;
       end_at: Date | null;
