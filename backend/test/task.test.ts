@@ -40,7 +40,7 @@ describe("bucket controller", () => {
     const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
-    const res = await new APIContext("BucketDetailTasksPost").fetch(
+    const res = await new APIContext("BucketsDetailTasksPost").fetch(
       `/api/buckets/${caseData.bucket.id}/tasks`,
       {
         headers: {
@@ -57,7 +57,7 @@ describe("bucket controller", () => {
     expect(res.status).eq(201);
     await res.json();
 
-    const res2 = await new APIContext("BucketDetailTasksGet").fetch(
+    const res2 = await new APIContext("BucketsDetailTasksGet").fetch(
       `/api/buckets/${caseData.bucket.id}/tasks`,
       {
         headers: {

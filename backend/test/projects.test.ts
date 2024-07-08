@@ -134,7 +134,7 @@ describe("/api/projects", () => {
     const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
-    const res = await new APIContext("ProjectsBucketsPost").fetch(
+    const res = await new APIContext("ProjectsDetailBucketsPost").fetch(
       `/api/projects/${caseData.project.id}/buckets`,
       {
         headers: {
@@ -150,7 +150,7 @@ describe("/api/projects", () => {
     expect(res.status).eq(201);
     await res.json();
 
-    const res2 = await new APIContext("ProjectsBucketsGet").fetch(
+    const res2 = await new APIContext("ProjectsDetailBucketsGet").fetch(
       `/api/projects/${caseData.project.id}/buckets`,
       {
         headers: {
