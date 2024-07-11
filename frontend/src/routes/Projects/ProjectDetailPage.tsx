@@ -272,8 +272,6 @@ function Tasks(props: { project_id: number }) {
           </DialogActions>
         </Dialog>
       )}
-      <TextField value={bucketName} onChange={(e) => setBucketName(e.target.value)}></TextField>
-      <Button onClick={() => addBucket({ name: bucketName })}>Add Bucket</Button>
       <Stack direction={"row"} spacing={5} flexGrow={1} pb={8}>
         <DndContext
           onDragStart={() => {
@@ -312,6 +310,18 @@ function Tasks(props: { project_id: number }) {
               key={i}
             ></Bucket>
           ))}
+          <Box>
+            <Stack direction={"row"} alignItems={"top"}>
+              <TextField
+                label="Add Bucket"
+                value={bucketName}
+                onChange={(e) => setBucketName(e.target.value)}
+              ></TextField>
+              <Button onClick={() => addBucket({ name: bucketName })}>
+                <Add />
+              </Button>
+            </Stack>
+          </Box>
         </DndContext>
       </Stack>
     </Stack>
