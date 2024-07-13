@@ -1,7 +1,27 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery } from "@tanstack/react-query";
 import { API } from "../../../backend/src/routes.ts";
 import { APIContext } from "../helpers/fetch.ts";
 import { queryClient } from "../helpers/queryclient.tsx";
+import { useProjectsDetailBucketsGet } from "./project_hooks.ts";
+
+export function useFormattedTasks(opts: { project_id: number }) {
+  const { project_id } = opts;
+  const { data: buckets } = useProjectsDetailBucketsGet({ project_id });
+
+  return useQueries({
+    queries:
+      buckets?.map((bucket) => {
+        return {
+          queryKey: ["projects", "detail", "buckets", bucket.id],
+          queryFn: () =>
+            new APIContext("BucketsDetailTasksGet").fetch(`/api/buckets/${bucket.id}/tasks`),
+        };
+      }) || [],
+    combine: (res) => ({
+      data: res.map((x, i) => ({ tasks: x.data, bucket: buckets![i] })),
+    }),
+  });
+}
 
 export function useBucketsDetailTasksGet(opts: { bucket_id: number }) {
   const { bucket_id } = opts;

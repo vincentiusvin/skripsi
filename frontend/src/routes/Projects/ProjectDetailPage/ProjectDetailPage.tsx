@@ -41,7 +41,7 @@ import {
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import { useUsersGet } from "../../../queries/user_hooks.ts";
 import { ChatroomContent } from "../../Chatroom.tsx";
-import Tasks from "./Tasks.tsx";
+import Kanban from "./Tasks.tsx";
 
 function Chatroom(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
@@ -317,7 +317,7 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             ))}
         </Grid>
       )}
-      {activeTab === "tasks" && <Tasks project_id={project_id} />}
+      {activeTab === "tasks" && <Kanban project_id={project_id} />}
     </Stack>
   );
 }

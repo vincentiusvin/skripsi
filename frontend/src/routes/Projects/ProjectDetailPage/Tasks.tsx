@@ -1,4 +1,20 @@
-import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Add } from "@mui/icons-material";
 import {
   Box,
@@ -18,123 +34,80 @@ import {
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { enqueueSnackbar } from "notistack";
-import { useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { useProjectsDetailBucketsPost } from "../../../queries/project_hooks";
 import {
-  useProjectsDetailBucketsGet,
-  useProjectsDetailBucketsPost,
-} from "../../../queries/project_hooks";
-import {
-  useBucketsDetailTasksGet,
   useBucketsDetailTasksPost,
+  useFormattedTasks,
   useTasksDetailPut,
 } from "../../../queries/task_hooks.ts";
 
-function Task(props: {
-  task_id: number;
-  name: string;
-  description?: string;
-  start_at?: Dayjs;
-  end_at?: Dayjs;
-}) {
-  const { task_id, name, description, start_at, end_at } = props;
+function extractID(str: string): number | undefined {
+  const id = str.split("-")[1];
+  return id != undefined ? Number(id) : undefined;
+}
+
+function Cell(props: { id: string; children: ReactNode }) {
+  const { id, children } = props;
   const {
     attributes,
     listeners,
     setNodeRef: draggableRef,
     transform,
-    isDragging,
-  } = useDraggable({
-    id: `task-${task_id}`,
+    transition,
+  } = useSortable({
+    id,
   });
 
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
-    : undefined;
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   return (
-    <Card
-      variant="elevation"
-      style={style}
-      {...listeners}
-      {...attributes}
-      ref={draggableRef}
-      sx={{
-        zIndex: isDragging ? 3 : 2,
-      }}
-    >
-      <CardActionArea>
-        <CardHeader
-          title={
-            <Typography variant="h5" fontWeight={"bold"}>
-              {name}
-            </Typography>
-          }
-          subheader={<Typography variant="body1">{description}</Typography>}
-        />
-        <CardContent>
-          {start_at && (
-            <>
-              <Typography variant="caption">Mulai: {start_at.format("ddd, DD/MM/YY")}</Typography>
-              <br />
-            </>
-          )}
-          {end_at && (
-            <Typography variant="caption">Berakhir: {end_at.format("ddd, DD/MM/YY")}</Typography>
-          )}
-        </CardContent>
-      </CardActionArea>
-    </Card>
-  );
-}
-
-function Bucket(props: {
-  bucket_id: number;
-  name: string;
-  setSelectedBucketEdit: (x: number) => void;
-  outline?: boolean;
-}) {
-  const { bucket_id, name, setSelectedBucketEdit, outline } = props;
-  const { data: tasks } = useBucketsDetailTasksGet({ bucket_id });
-  const { setNodeRef: droppableRef, isOver } = useDroppable({
-    id: `bucket-${bucket_id}`,
-  });
-
-  return (
-    <Box
-      ref={droppableRef}
-      position={"relative"}
-      sx={{
-        transitionDuration: "100ms",
-        border: 3,
-        borderStyle: "dashed",
-        borderColor: outline ? (isOver ? "green" : "white") : "transparent",
-      }}
-    >
-      {name}
-      <Button onClick={() => setSelectedBucketEdit(bucket_id)}>
-        <Add />
-      </Button>
-      <Stack spacing={5} width={"250px"} height={1}>
-        {tasks?.map((x, i) => (
-          <Task
-            key={i}
-            task_id={x.id}
-            name={x.name}
-            description={x.description ?? undefined}
-            start_at={x.start_at ? dayjs(x.start_at) : undefined}
-            end_at={x.end_at ? dayjs(x.end_at) : undefined}
-          />
-        ))}
-      </Stack>
+    <Box style={style} {...listeners} {...attributes} ref={draggableRef}>
+      {children}
     </Box>
   );
 }
 
-function Tasks(props: { project_id: number }) {
+function Column(props: { id: string; items: string[]; children: ReactNode } & BoxProps) {
+  const { id, items, children, ...rest } = props;
+  const { setNodeRef: draggableRef } = useDroppable({
+    id,
+  });
+
+  return (
+    <SortableContext items={items} strategy={verticalListSortingStrategy}>
+      <Box ref={draggableRef} {...rest}>
+        {children}
+      </Box>
+    </SortableContext>
+  );
+}
+
+type TempTasks = {
+  bucket: {
+    id: string;
+    name: string;
+  };
+  tasks:
+    | {
+        id: string;
+        name: string;
+        description: string | null;
+        end_at: Date | null;
+        start_at: Date | null;
+        users: {
+          id: number;
+          name: string;
+        }[];
+      }[]
+    | undefined;
+}[];
+
+function Kanban(props: { project_id: number }) {
   const { project_id } = props;
-  const { data: buckets } = useProjectsDetailBucketsGet({ project_id });
   const { mutate: addBucket } = useProjectsDetailBucketsPost({
     project_id: project_id,
     onSuccess: () => {
@@ -153,8 +126,29 @@ function Tasks(props: { project_id: number }) {
       setSelectedBucketEdit(null);
     },
   });
-  const [bucketName, setBucketName] = useState("");
+  const { mutate: updateTask } = useTasksDetailPut({});
+  const { data: tasksData } = useFormattedTasks({ project_id });
 
+  const [tempTasksData, setTempTasksData] = useState<TempTasks>([]);
+
+  useEffect(() => {
+    const reshaped = tasksData.map((x) => {
+      return {
+        bucket: {
+          ...x.bucket,
+          id: `bucket-${x.bucket.id}`,
+        },
+        tasks: x.tasks?.map((x) => ({
+          ...x,
+          id: `task-${x.id}`,
+        })),
+      };
+    });
+
+    setTempTasksData(reshaped);
+  }, [tasksData]);
+
+  const [newBucketName, setNewBucketName] = useState("");
   // undef: gak ada yang dipilih
   // number: lagi ngedit bucket itu
   const [selectedBucketEdit, setSelectedBucketEdit] = useState<null | number>(null);
@@ -163,9 +157,38 @@ function Tasks(props: { project_id: number }) {
   const [taskStartAt, setTaskStartAt] = useState<null | Dayjs>(null);
   const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>(null);
 
-  const { mutate: updateTask } = useTasksDetailPut({});
+  const [activeDragID, setActiveDragID] = useState<string | null>();
 
-  const [dragging, setDragging] = useState(false);
+  function findLocation(cell_id: string) {
+    for (const [ctrIdx, container] of tempTasksData.entries()) {
+      if (container.bucket.id === cell_id) {
+        return { ctrIdx };
+      }
+      const cellIdx = container.tasks?.findIndex((x) => x.id === cell_id);
+      if (cellIdx == undefined || cellIdx === -1) {
+        continue;
+      }
+      return {
+        ctrIdx,
+        cellIdx,
+      };
+    }
+    return undefined;
+  }
+
+  const activeLoc = activeDragID ? findLocation(activeDragID) : undefined;
+  const activelyDragged =
+    activeLoc && tempTasksData
+      ? tempTasksData[activeLoc.ctrIdx].tasks?.[activeLoc.cellIdx]
+      : undefined;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+    useSensor(TouchSensor),
+  );
 
   return (
     <Stack height={"100%"}>
@@ -204,50 +227,157 @@ function Tasks(props: { project_id: number }) {
       )}
       <Stack direction={"row"} spacing={5} flexGrow={1} pb={8}>
         <DndContext
-          onDragStart={() => {
-            setDragging(true);
-          }}
-          onDragCancel={() => {
-            setDragging(false);
-          }}
-          onDragEnd={(x) => {
-            setDragging(false);
-            const [, dropped_bucket_id] = x.over?.id.toString().split("-") || [];
-            const [, dragged_task_id] = x.active?.id.toString().split("-") || [];
-            if (dropped_bucket_id == undefined || dragged_task_id == undefined) {
-              return;
-            }
+          sensors={sensors}
+          onDragStart={(x) => setActiveDragID(x.active.id.toString())}
+          onDragEnd={() => setActiveDragID(null)}
+          onDragCancel={() => setActiveDragID(null)}
+          onDragOver={({ over, active }) => {
+            // move between containers...
+            setTempTasksData((x) => {
+              if (over == null || typeof over.id === "number" || typeof active.id === "number") {
+                return x;
+              }
+              const overLoc = findLocation(over.id);
+              const activeLoc = findLocation(active.id.toString());
 
-            const bucket_id = Number(dropped_bucket_id);
-            const task_id = Number(dragged_task_id);
+              if (
+                overLoc == null ||
+                activeLoc == null ||
+                activeLoc.ctrIdx == overLoc.ctrIdx ||
+                activeLoc.cellIdx == undefined
+              ) {
+                return x;
+              }
 
-            if (Number.isNaN(bucket_id) || Number.isNaN(task_id)) {
-              return;
-            }
+              const cloned = structuredClone(x);
+              const overCtr = cloned[overLoc.ctrIdx]!;
+              const activeCtr = cloned[activeLoc.ctrIdx]!;
+              const activeCell = activeCtr.tasks?.[activeLoc.cellIdx]!;
 
-            updateTask({
-              task_id: task_id,
-              bucket_id: bucket_id,
+              const cutIdx = overLoc.cellIdx;
+              if (cutIdx != undefined) {
+                // insert to array
+                cloned[overLoc.ctrIdx].tasks = [
+                  ...(overCtr.tasks?.slice(0, cutIdx) ?? []),
+                  activeCell,
+                  ...(overCtr.tasks?.slice(cutIdx) ?? []),
+                ];
+              } else {
+                // append
+                cloned[overLoc.ctrIdx].tasks?.push(activeCell);
+              }
+
+              cloned[activeLoc.ctrIdx].tasks = activeCtr.tasks?.filter((x) => x.id !== active.id);
+              return cloned;
             });
           }}
         >
-          {buckets?.map((x, i) => (
-            <Bucket
-              outline={dragging}
-              bucket_id={x.id}
-              name={x.name}
-              setSelectedBucketEdit={(x) => setSelectedBucketEdit(x)}
-              key={i}
-            ></Bucket>
+          {tempTasksData.map(({ bucket, tasks }, i) => (
+            <Box key={i}>
+              <Typography display={"inline"} variant="h6">
+                {bucket.name}
+              </Typography>
+              <Button onClick={() => setSelectedBucketEdit(extractID(bucket.id) ?? null)}>
+                <Add />
+              </Button>
+              <Column
+                position={"relative"}
+                sx={{
+                  height: 1,
+                  transitionDuration: "250ms",
+                  border: 3,
+                  borderStyle: "dashed",
+                  borderColor: activeDragID
+                    ? activeLoc?.ctrIdx === i
+                      ? "green"
+                      : "white"
+                    : "transparent",
+                }}
+                id={bucket.id}
+                items={tasks?.map((x) => x.id) ?? []}
+                key={i}
+              >
+                <Stack spacing={5} width={"250px"} height={1}>
+                  {tasks?.map((task, i) => (
+                    <Cell key={i} id={task.id}>
+                      <Card
+                        sx={{
+                          opacity: task.id === activeDragID ? 0.5 : 1,
+                        }}
+                      >
+                        <CardActionArea>
+                          <CardHeader
+                            title={
+                              <Typography variant="h5" fontWeight={"bold"}>
+                                {task.name}
+                              </Typography>
+                            }
+                            subheader={<Typography variant="body1">{task.description}</Typography>}
+                          />
+                          <CardContent>
+                            {task.start_at && (
+                              <>
+                                <Typography variant="caption">
+                                  Mulai: {dayjs(task.start_at).format("ddd, DD/MM/YY")}
+                                </Typography>
+                                <br />
+                              </>
+                            )}
+                            {task.end_at && (
+                              <Typography variant="caption">
+                                Berakhir: {dayjs(task.end_at).format("ddd, DD/MM/YY")}
+                              </Typography>
+                            )}
+                          </CardContent>
+                        </CardActionArea>
+                      </Card>
+                    </Cell>
+                  ))}
+                </Stack>
+              </Column>
+            </Box>
           ))}
+          <DragOverlay>
+            {activelyDragged ? (
+              <Card>
+                <CardActionArea>
+                  <CardHeader
+                    title={
+                      <Typography variant="h5" fontWeight={"bold"}>
+                        {activelyDragged.name}
+                      </Typography>
+                    }
+                    subheader={
+                      <Typography variant="body1">{activelyDragged.description}</Typography>
+                    }
+                  />
+                  <CardContent>
+                    {activelyDragged.start_at && (
+                      <>
+                        <Typography variant="caption">
+                          Mulai: {dayjs(activelyDragged.start_at).format("ddd, DD/MM/YY")}
+                        </Typography>
+                        <br />
+                      </>
+                    )}
+                    {activelyDragged.end_at && (
+                      <Typography variant="caption">
+                        Berakhir: {dayjs(activelyDragged.end_at).format("ddd, DD/MM/YY")}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            ) : null}
+          </DragOverlay>
           <Box>
             <Stack direction={"row"} alignItems={"top"}>
               <TextField
                 label="Add Bucket"
-                value={bucketName}
-                onChange={(e) => setBucketName(e.target.value)}
+                value={newBucketName}
+                onChange={(e) => setNewBucketName(e.target.value)}
               ></TextField>
-              <Button onClick={() => addBucket({ name: bucketName })}>
+              <Button onClick={() => addBucket({ name: newBucketName })}>
                 <Add />
               </Button>
             </Stack>
@@ -258,4 +388,4 @@ function Tasks(props: { project_id: number }) {
   );
 }
 
-export default Tasks;
+export default Kanban;
