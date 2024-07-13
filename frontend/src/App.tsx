@@ -16,7 +16,7 @@ import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
 import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage";
 import OrgsEditPage from "./routes/Orgs/OrgsEditPage";
 import OrgsListPage from "./routes/Orgs/OrgsListPage";
-import ProjectDetailPage from "./routes/Projects/ProjectDetailPage";
+import ProjectDetailPage from "./routes/Projects/ProjectDetailPage/ProjectDetailPage";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
 
