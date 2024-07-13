@@ -48,6 +48,7 @@ export class TaskController extends Controller {
     };
     ReqBody: {
       bucket_id?: number;
+      before_id?: number;
       name?: string;
       description?: string;
       start_at?: string;

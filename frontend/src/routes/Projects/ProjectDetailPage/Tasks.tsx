@@ -4,6 +4,7 @@ import {
   KeyboardSensor,
   PointerSensor,
   TouchSensor,
+  closestCorners,
   useDroppable,
   useSensor,
   useSensors,
@@ -18,6 +19,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Add } from "@mui/icons-material";
 import {
   Box,
+  BoxProps,
   Button,
   Card,
   CardActionArea,
@@ -178,7 +180,7 @@ function Kanban(props: { project_id: number }) {
 
   const activeLoc = activeDragID ? findLocation(activeDragID) : undefined;
   const activelyDragged =
-    activeLoc && tempTasksData
+    activeLoc && tempTasksData && activeLoc.cellIdx != undefined
       ? tempTasksData[activeLoc.ctrIdx].tasks?.[activeLoc.cellIdx]
       : undefined;
 
@@ -227,34 +229,81 @@ function Kanban(props: { project_id: number }) {
       )}
       <Stack direction={"row"} spacing={5} flexGrow={1} pb={8}>
         <DndContext
+          collisionDetection={closestCorners}
           sensors={sensors}
           onDragStart={(x) => setActiveDragID(x.active.id.toString())}
-          onDragEnd={() => setActiveDragID(null)}
+          onDragEnd={({ active }) => {
+            setActiveDragID(null);
+
+            if (typeof active.id === "number") {
+              return;
+            }
+
+            const loc = findLocation(active.id);
+            if (loc?.cellIdx == undefined) {
+              return;
+            }
+
+            const bucket = tempTasksData[loc.ctrIdx].bucket;
+            const tasks = tempTasksData[loc.ctrIdx].tasks;
+            const task = tasks?.[loc.cellIdx];
+
+            if (bucket == undefined || tasks == undefined || task == undefined) {
+              return;
+            }
+
+            const bucket_id = extractID(bucket.id);
+            const task_id = extractID(task.id);
+
+            if (bucket_id == undefined || task_id == undefined) {
+              return;
+            }
+
+            const next_task = tasks[loc.cellIdx + 1];
+            let next_id: number | undefined = undefined;
+
+            if (next_task !== undefined) {
+              next_id = extractID(next_task.id);
+            }
+
+            updateTask({
+              bucket_id,
+              task_id,
+              before_id: next_id,
+            });
+          }}
           onDragCancel={() => setActiveDragID(null)}
           onDragOver={({ over, active }) => {
             // move between containers...
             setTempTasksData((x) => {
-              if (over == null || typeof over.id === "number" || typeof active.id === "number") {
+              if (
+                over == null ||
+                typeof over.id === "number" ||
+                typeof active.id === "number" ||
+                over.id === active.id // kadang bisa collide sama diri sendiri
+              ) {
                 return x;
               }
               const overLoc = findLocation(over.id);
               const activeLoc = findLocation(active.id.toString());
 
-              if (
-                overLoc == null ||
-                activeLoc == null ||
-                activeLoc.ctrIdx == overLoc.ctrIdx ||
-                activeLoc.cellIdx == undefined
-              ) {
+              if (overLoc == null || activeLoc == null || activeLoc.cellIdx == undefined) {
                 return x;
               }
 
               const cloned = structuredClone(x);
-              const overCtr = cloned[overLoc.ctrIdx]!;
-              const activeCtr = cloned[activeLoc.ctrIdx]!;
-              const activeCell = activeCtr.tasks?.[activeLoc.cellIdx]!;
+              const overCtr = cloned[overLoc.ctrIdx];
+              const activeCtr = cloned[activeLoc.ctrIdx];
+              const activeCell = activeCtr.tasks?.[activeLoc.cellIdx];
+
+              if (activeCell == undefined) {
+                return x;
+              }
+
+              cloned[activeLoc.ctrIdx].tasks = activeCtr.tasks?.filter((x) => x.id !== active.id);
 
               const cutIdx = overLoc.cellIdx;
+
               if (cutIdx != undefined) {
                 // insert to array
                 cloned[overLoc.ctrIdx].tasks = [
@@ -267,7 +316,6 @@ function Kanban(props: { project_id: number }) {
                 cloned[overLoc.ctrIdx].tasks?.push(activeCell);
               }
 
-              cloned[activeLoc.ctrIdx].tasks = activeCtr.tasks?.filter((x) => x.id !== active.id);
               return cloned;
             });
           }}
