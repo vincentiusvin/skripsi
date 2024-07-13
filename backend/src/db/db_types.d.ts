@@ -95,6 +95,7 @@ export interface MsTasks {
   end_at: Timestamp | null;
   id: Generated<number>;
   name: string;
+  order: number;
   start_at: Timestamp | null;
 }
 

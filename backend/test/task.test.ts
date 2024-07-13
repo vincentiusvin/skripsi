@@ -30,10 +30,23 @@ describe("bucket controller", () => {
       body: {
         name: "Not cool Task",
         description: "Cool",
+        bucket_id: caseData.bucket_empty.id,
       },
     });
     expect(res.status).eq(200);
-    await res.json();
+
+    const res2 = await new APIContext("BucketsDetailTasksGet").fetch(
+      `/api/buckets/${caseData.bucket_empty.id}/tasks`,
+      {
+        headers: {
+          cookie: cookie,
+        },
+        method: "get",
+      },
+    );
+    const new_result = await res2.json();
+    const task = new_result.find((x) => x.id === caseData.task.id);
+    expect(task).to.not.eq(undefined);
   });
 
   it("should be able to write and read", async () => {
@@ -41,7 +54,7 @@ describe("bucket controller", () => {
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
     const res = await new APIContext("BucketsDetailTasksPost").fetch(
-      `/api/buckets/${caseData.bucket.id}/tasks`,
+      `/api/buckets/${caseData.bucket_fill.id}/tasks`,
       {
         headers: {
           cookie: cookie,
@@ -58,7 +71,7 @@ describe("bucket controller", () => {
     await res.json();
 
     const res2 = await new APIContext("BucketsDetailTasksGet").fetch(
-      `/api/buckets/${caseData.bucket.id}/tasks`,
+      `/api/buckets/${caseData.bucket_fill.id}/tasks`,
       {
         headers: {
           cookie: cookie,

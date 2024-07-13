@@ -6,6 +6,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn("id", "serial", (build) => build.primaryKey())
     .addColumn("name", "text", (build) => build.notNull())
     .addColumn("bucket_id", "integer", (build) => build.references("ms_task_buckets.id").notNull())
+    .addColumn("order", "integer", (build) => build.notNull())
     .addColumn("description", "text")
     .addColumn("start_at", "timestamp")
     .addColumn("end_at", "timestamp")

@@ -2,6 +2,7 @@ import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { Application } from "../app.js";
 import { DB } from "../db/db_types.js";
+import { NotFoundError } from "../helpers/error.js";
 import { RH } from "../helpers/types.js";
 import { Controller, Route } from "./controller.js";
 
@@ -59,19 +60,72 @@ export class TaskController extends Controller {
     };
   }> = async (req, res) => {
     const { task_id } = req.params;
-    const { bucket_id, name, description, start_at, end_at } = req.body;
+    const { bucket_id, name, description, start_at, end_at, before_id } = req.body;
 
-    await this.db
-      .updateTable("ms_tasks")
-      .set({
-        bucket_id: bucket_id ? Number(bucket_id) : undefined,
-        name,
-        description,
-        start_at,
-        end_at,
-      })
-      .where("ms_tasks.id", "=", Number(task_id))
-      .execute();
+    let target_bucket: number;
+
+    if (bucket_id) {
+      target_bucket = bucket_id;
+    } else {
+      const old_data = await this.db
+        .selectFrom("ms_tasks")
+        .select("bucket_id")
+        .where("ms_tasks.id", "=", Number(task_id))
+        .executeTakeFirst();
+      if (old_data == undefined) {
+        throw new NotFoundError("Gagal menemukan pekerjaan tersebut!");
+      }
+      target_bucket = old_data.bucket_id;
+    }
+
+    await this.db.transaction().execute(async (trx) => {
+      let updateOrder: number;
+      if (before_id != undefined) {
+        const data_after = await trx
+          .selectFrom("ms_tasks")
+          .select("order")
+          .where("ms_tasks.id", "=", before_id)
+          .executeTakeFirst();
+        if (data_after == undefined) {
+          throw new NotFoundError("Gagal mengurutkan pekerjaan!");
+        }
+        updateOrder = data_after.order;
+
+        await trx
+          .updateTable("ms_tasks")
+          .set((eb) => ({ order: eb("ms_tasks.order", "+", 1) }))
+          .where((eb) =>
+            eb.and([eb("order", ">=", updateOrder), eb("bucket_id", "=", target_bucket)]),
+          )
+          .execute();
+      } else {
+        const data_after = await trx
+          .selectFrom("ms_tasks")
+          .select((eb) => eb.fn.max("order").as("order"))
+          .where("bucket_id", "=", target_bucket)
+          .executeTakeFirst();
+
+        if (data_after == undefined) {
+          updateOrder = 1;
+          throw new NotFoundError("Gagal mengurutkan pekerjaan!");
+        } else {
+          updateOrder = data_after.order + 1;
+        }
+      }
+
+      await trx
+        .updateTable("ms_tasks")
+        .set({
+          bucket_id,
+          description,
+          end_at,
+          name,
+          order: updateOrder,
+          start_at,
+        })
+        .where("ms_tasks.id", "=", Number(task_id))
+        .execute();
+    });
 
     res.status(200).json({ msg: "Task successfully updated!" });
   };
@@ -93,18 +147,31 @@ export class TaskController extends Controller {
     const { bucket_id } = req.params;
     const { name, description, end_at, start_at } = req.body;
 
-    console.log(req.body);
+    await this.db.transaction().execute(async (trx) => {
+      const max_order = await trx
+        .selectFrom("ms_tasks")
+        .select((eb) => eb.fn.max("order").as("max"))
+        .where("bucket_id", "=", Number(bucket_id))
+        .executeTakeFirst();
 
-    await this.db
-      .insertInto("ms_tasks")
-      .values({
-        bucket_id: Number(bucket_id),
-        name,
-        description,
-        end_at,
-        start_at,
-      })
-      .execute();
+      let order = 1;
+
+      if (max_order != undefined && max_order.max != null) {
+        order = max_order.max + 1;
+      }
+
+      await trx
+        .insertInto("ms_tasks")
+        .values({
+          bucket_id: Number(bucket_id),
+          order,
+          name,
+          description,
+          end_at,
+          start_at,
+        })
+        .execute();
+    });
 
     res.status(201).json({ msg: "Task successfully created!" });
   };
@@ -139,6 +206,7 @@ export class TaskController extends Controller {
         withUsers(eb).as("users"),
       ])
       .where("ms_tasks.bucket_id", "=", Number(bucket_id))
+      .orderBy(["order asc", "id asc"])
       .execute();
 
     res.status(200).json(result);

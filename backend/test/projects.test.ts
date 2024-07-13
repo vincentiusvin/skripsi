@@ -162,6 +162,6 @@ describe("/api/projects", () => {
     );
     expect(res2.status).eq(200);
     const result = await res2.json();
-    expect(result.length).eq(2);
+    expect(result.length).eq(3);
   });
 });

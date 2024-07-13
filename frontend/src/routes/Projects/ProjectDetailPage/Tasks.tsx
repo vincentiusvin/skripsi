@@ -321,7 +321,7 @@ function Kanban(props: { project_id: number }) {
           }}
         >
           {tempTasksData.map(({ bucket, tasks }, i) => (
-            <Box key={i}>
+            <Box key={bucket.id}>
               <Typography display={"inline"} variant="h6">
                 {bucket.name}
               </Typography>
@@ -343,11 +343,10 @@ function Kanban(props: { project_id: number }) {
                 }}
                 id={bucket.id}
                 items={tasks?.map((x) => x.id) ?? []}
-                key={i}
               >
                 <Stack spacing={5} width={"250px"} height={1}>
-                  {tasks?.map((task, i) => (
-                    <Cell key={i} id={task.id}>
+                  {tasks?.map((task) => (
+                    <Cell key={task.id} id={task.id}>
                       <Card
                         sx={{
                           opacity: task.id === activeDragID ? 0.5 : 1,

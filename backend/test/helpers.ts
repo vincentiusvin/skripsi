@@ -118,18 +118,25 @@ export async function baseCase(app: Application) {
 
   const bucket = await app.db
     .insertInto("ms_task_buckets")
-    .values({
-      name: "Todo",
-      project_id: project.id,
-    })
+    .values([
+      {
+        name: "Todo",
+        project_id: project.id,
+      },
+      {
+        name: "Todo2",
+        project_id: project.id,
+      },
+    ])
     .returning(["ms_task_buckets.id", "ms_task_buckets.name"])
-    .executeTakeFirstOrThrow();
+    .execute();
 
   const task = await app.db
     .insertInto("ms_tasks")
     .values({
       name: "Todo",
-      bucket_id: bucket.id,
+      bucket_id: bucket[0].id,
+      order: 1,
     })
     .returning(["ms_tasks.id", "ms_tasks.name"])
     .executeTakeFirstOrThrow();
@@ -137,7 +144,8 @@ export async function baseCase(app: Application) {
   return {
     org,
     project,
-    bucket,
+    bucket_fill: bucket[0],
+    bucket_empty: bucket[1],
     task,
     member: { ...user_ids[0], password: orig_password },
     nonmember: { ...user_ids[1], password: orig_password },
