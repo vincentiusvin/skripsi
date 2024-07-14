@@ -20,10 +20,9 @@ import {
   Typography,
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
-import { API } from "../../../../backend/src/routes.ts";
-import { APIError } from "../../helpers/fetch.ts";
+import { API } from "../../../../../backend/src/routes.ts";
 import {
   useChatSocket,
   useChatroomsDetailGet,
@@ -31,17 +30,18 @@ import {
   useChatroomsDetailMessagesPost,
   useProjectsDetailChatroomsGet,
   useProjectsDetailChatroomsPost,
-} from "../../queries/chat_hooks";
+} from "../../../queries/chat_hooks.ts";
 import {
   useProjectsDetailGet,
   useProjectsDetailMembersDelete,
   useProjectsDetailMembersGet,
   useProjectsDetailMembersPut,
   useProjectsDetailMembersPutVariableID,
-} from "../../queries/project_hooks";
-import { useSessionGet } from "../../queries/sesssion_hooks.ts";
-import { useUsersGet } from "../../queries/user_hooks";
-import { ChatroomContent } from "../Chatroom";
+} from "../../../queries/project_hooks.ts";
+import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
+import { useUsersGet } from "../../../queries/user_hooks.ts";
+import { ChatroomContent } from "../../Chatroom.tsx";
+import Kanban from "./Tasks.tsx";
 
 function Chatroom(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
@@ -89,7 +89,7 @@ type MemberRoles = API["ProjectsDetailMembersGet"]["ResBody"]["role"] | "Not Inv
 function InvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
   const { project_id, user_id, role } = props;
   const [connected, setConnected] = useState(false);
-  const [activeTab, setActiveTab] = useState<"disc" | "info" | "manage">("disc");
+  const [activeTab, setActiveTab] = useState<"disc" | "info" | "manage" | "tasks">("disc");
   const [activeRoom, setActiveRoom] = useState<number | false>(false);
   const { data: chatrooms } = useProjectsDetailChatroomsGet({ project_id });
   const { data: project } = useProjectsDetailGet({ project_id });
@@ -165,6 +165,7 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             }}
           >
             <Tab label={"Discussion"} value="disc" />
+            <Tab label={"Tasks"} value="tasks" />
             <Tab label={"Info"} value="info" />
             {role === "Admin" && <Tab label={"Manage"} value="manage" />}
           </Tabs>
@@ -260,21 +261,21 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             <Typography variant="h5" fontWeight={"bold"} textAlign={"center"} mb={1}>
               Collaborators
             </Typography>
-            <Grid container width={"85%"} margin={"0 auto"}>
+            <Grid container width={"75%"} margin={"0 auto"} spacing={2}>
               {project.project_members
                 .filter((x) => x.role !== "Pending")
                 .map((x, i) => (
-                  <Grid item xs={3} key={i} justifyContent={"center"}>
-                    <Stack direction={"row"} spacing={2} justifyContent={"center"}>
+                  <Fragment key={i}>
+                    <Grid item xs={2} lg={0.75}>
                       <Avatar />
-                      <Box>
-                        <Typography>{x.name}</Typography>
-                        <Typography variant="body2" color={"GrayText"}>
-                          {x.role}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </Grid>
+                    </Grid>
+                    <Grid item xs={4} lg={2.25}>
+                      <Typography>{x.name}</Typography>
+                      <Typography variant="body2" color={"GrayText"}>
+                        {x.role}
+                      </Typography>
+                    </Grid>
+                  </Fragment>
                 ))}
             </Grid>
           </Box>
@@ -316,6 +317,7 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             ))}
         </Grid>
       )}
+      {activeTab === "tasks" && <Kanban project_id={project_id} />}
     </Stack>
   );
 }
@@ -435,17 +437,12 @@ function ProjectDetailPage() {
   const { data: user_data } = useSessionGet();
   const user_id = user_data?.logged ? user_data.user_id : undefined;
 
-  const { data: membership, error: membershipError } = useProjectsDetailMembersGet({
+  const { data: membership } = useProjectsDetailMembersGet({
     project_id: project_id,
     user_id: user_id,
   });
 
-  let role: NonNullable<typeof membership>["role"] | "Not Involved" | undefined;
-  if (membershipError instanceof APIError && membershipError.status === 404) {
-    role = "Not Involved";
-  } else if (membership) {
-    role = membership.role;
-  }
+  const role = membership?.role;
 
   if (!role || !user_id) {
     return <Skeleton />;

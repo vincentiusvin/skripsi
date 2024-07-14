@@ -129,4 +129,39 @@ describe("/api/projects", () => {
     const result = await accept_nonmember.json();
     expect(result.role).eq("Dev");
   });
+
+  it("should be able to add and get buckets", async () => {
+    const caseData = await baseCase(app);
+    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+
+    const res = await new APIContext("ProjectsDetailBucketsPost").fetch(
+      `/api/projects/${caseData.project.id}/buckets`,
+      {
+        headers: {
+          cookie: cookie,
+        },
+        credentials: "include",
+        method: "post",
+        body: {
+          name: "Hello",
+        },
+      },
+    );
+    expect(res.status).eq(201);
+    await res.json();
+
+    const res2 = await new APIContext("ProjectsDetailBucketsGet").fetch(
+      `/api/projects/${caseData.project.id}/buckets`,
+      {
+        headers: {
+          cookie: cookie,
+        },
+        credentials: "include",
+        method: "get",
+      },
+    );
+    expect(res2.status).eq(200);
+    const result = await res2.json();
+    expect(result.length).eq(3);
+  });
 });

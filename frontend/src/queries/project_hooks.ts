@@ -15,18 +15,18 @@ export function useProjectsDetailGet(opts: {
   });
 }
 
-export function useProjectsGet(opts?: { org_id?: string }) {
-  const { org_id } = opts || {};
+export function useProjectsGet(opts?: { org_id?: Number; user_id?: Number; keyword?: string }) {
+  const { org_id, user_id, keyword } = opts || {};
+
   return useQuery({
     queryKey: ["projects", "collection", opts],
     queryFn: () =>
       new APIContext("ProjectsGet").fetch("/api/projects", {
-        query:
-          org_id !== undefined
-            ? {
-                org_id: org_id,
-              }
-            : undefined,
+        query: {
+          ...(org_id && { org_id: org_id.toString() }),
+          ...(user_id && { user_id: user_id.toString() }),
+          ...(keyword && { keyword }),
+        },
       }),
   });
 }
@@ -146,5 +146,32 @@ export function useProjectsCategoriesGet() {
   return useQuery({
     queryKey: ["categories"],
     queryFn: () => new APIContext("ProjectsCategoriesGet").fetch(`/api/project-categories`),
+  });
+}
+
+export function useProjectsDetailBucketsGet(opts: { project_id: number }) {
+  const { project_id } = opts;
+  return useQuery({
+    queryKey: ["projects"],
+    queryFn: () =>
+      new APIContext("ProjectsDetailBucketsGet").fetch(`/api/projects/${project_id}/buckets`),
+  });
+}
+
+export function useProjectsDetailBucketsPost(opts: { project_id: number; onSuccess: () => void }) {
+  const { project_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: new APIContext("ProjectsDetailBucketsPost").bodyFetch(
+      `/api/projects/${project_id}/buckets`,
+      {
+        method: "POST",
+      },
+    ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
   });
 }

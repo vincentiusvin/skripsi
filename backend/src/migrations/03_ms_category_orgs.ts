@@ -4,7 +4,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable("ms_category_orgs")
     .addColumn("id", "serial", (col) => col.primaryKey())
-    .addColumn("name", "text", (col) => col.notNull())
+    .addColumn("name", "text", (col) => col.notNull().unique())
     .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
     .execute();
 }
