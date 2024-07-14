@@ -135,6 +135,7 @@ function Kanban(props: { project_id: number }) {
 
   useEffect(() => {
     // PENTING!!! Biar data stale sama data fresh ga kemix.
+    // https://github.com/vincentiusvin/skripsi/pull/14#issuecomment-2227337867
     if (isFetching) {
       return;
     }
