@@ -129,11 +129,16 @@ function Kanban(props: { project_id: number }) {
     },
   });
   const { mutate: updateTask } = useTasksDetailPut({});
-  const { data: tasksData } = useFormattedTasks({ project_id });
+  const { data: tasksData, isFetching } = useFormattedTasks({ project_id });
 
   const [tempTasksData, setTempTasksData] = useState<TempTasks>([]);
 
   useEffect(() => {
+    // PENTING!!! Biar data stale sama data fresh ga kemix.
+    if (isFetching) {
+      return;
+    }
+
     const reshaped = tasksData.map((x) => {
       return {
         bucket: {

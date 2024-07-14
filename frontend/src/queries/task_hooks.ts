@@ -4,22 +4,34 @@ import { APIContext } from "../helpers/fetch.ts";
 import { queryClient } from "../helpers/queryclient.tsx";
 import { useProjectsDetailBucketsGet } from "./project_hooks.ts";
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export function useFormattedTasks(opts: { project_id: number }) {
   const { project_id } = opts;
   const { data: buckets } = useProjectsDetailBucketsGet({ project_id });
 
   return useQueries({
     queries:
-      buckets?.map((bucket) => {
+      buckets?.map((bucket, i) => {
         return {
           queryKey: ["projects", "detail", "buckets", bucket.id],
           queryFn: () =>
-            new APIContext("BucketsDetailTasksGet").fetch(`/api/buckets/${bucket.id}/tasks`),
+            new APIContext("BucketsDetailTasksGet")
+              .fetch(`/api/buckets/${bucket.id}/tasks`)
+              .then(async (x) => {
+                await sleep(i * 2000);
+                return x;
+              }),
         };
       }) || [],
-    combine: (res) => ({
-      data: res.map((x, i) => ({ tasks: x.data, bucket: buckets![i] })),
-    }),
+    combine: (res) => {
+      return {
+        data: res.map((x, i) => ({ tasks: x.data, bucket: buckets![i] })),
+        isFetching: res.some((x) => x.isFetching),
+      };
+    },
   });
 }
 
