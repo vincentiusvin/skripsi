@@ -4,7 +4,9 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "mocha -w",
+    "test": "mocha",
+    "test:watch": "mocha -w",
+    "test:cov": "c8 mocha",
     "start": "tsx watch --env-file=.env src/index.ts",
     "build": "tsc",
     "db:generate-types": "kysely-codegen --out-file ./src/db/db_types.d.ts",
@@ -23,7 +25,7 @@
     "nodemon": "^3.1.0",
     "pg": "^8.11.5",
     "socket.io": "^4.7.5",
-    "tsx": "^4.9.3",
+    "tsx": "^4.16.2",
     "typescript": "^5.4.3",
     "zod": "^3.23.8"
   },
@@ -37,6 +39,7 @@
     "@types/pg": "^8.11.6",
     "@typescript-eslint/eslint-plugin": "^7.4.0",
     "@typescript-eslint/parser": "^7.4.0",
+    "c8": "^10.1.2",
     "chai": "^5.1.1",
     "eslint": "^8.57.0",
     "mocha": "^10.4.0",
