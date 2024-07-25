@@ -156,4 +156,40 @@ describe("/api/projects", () => {
     const result = await res2.json();
     expect(result.length).eq(3);
   });
+
+  it("should be able to add add projects", async () => {
+    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+
+    const in_name = "proj_name";
+    const in_org = caseData.org.id;
+    const in_desc = "Testing data desc";
+
+    const res = await new APIContext("ProjectsPost").fetch(`/api/projects`, {
+      headers: {
+        cookie: cookie,
+      },
+      credentials: "include",
+      method: "post",
+      body: {
+        project_name: in_name,
+        org_id: in_org,
+        project_desc: in_desc,
+      },
+    });
+    expect(res.status).eq(201);
+    await res.json();
+
+    const res2 = await new APIContext("ProjectsGet").fetch(`/api/projects`, {
+      headers: {
+        cookie: cookie,
+      },
+      credentials: "include",
+      method: "get",
+    });
+    expect(res2.status).eq(200);
+    const result = await res2.json();
+    const found_proj = result.find((x) => x.project_name === in_name);
+    expect(found_proj).not.eq(undefined);
+    expect(found_proj?.project_desc).eq(in_desc);
+  });
 });

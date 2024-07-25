@@ -356,7 +356,7 @@ export class ProjectController extends Controller {
       project_name: string;
       org_id: number;
       project_desc: string;
-      category_id: number;
+      category_id?: number[];
     };
     ResBody: {
       msg: string;
@@ -371,31 +371,33 @@ export class ProjectController extends Controller {
       throw new ClientError("Deskripsi tidak boleh kosong");
     }
 
-    if (!category_id) throw new ClientError("Kategori tidak boleh kosong!");
+    await this.db.transaction().execute(async (trx) => {
+      const prj = await trx
+        .insertInto("ms_projects")
+        .values({
+          description: project_desc,
+          name: project_name,
+          org_id,
+        })
+        .returning("id")
+        .executeTakeFirst();
 
-    const prj = await this.db
-      .insertInto("ms_projects")
-      .values({
-        description: project_desc,
-        name: project_name,
-        org_id,
-      })
-      .returning("id")
-      .executeTakeFirst();
+      if (!prj) {
+        throw new Error("Failed to insert project");
+      }
 
-    if (!prj) {
-      throw new Error("Failed to insert project");
-    }
-    // Insert project_id and category_id into ms_category_project table
-    await this.db
-      .insertInto("categories_projects")
-      .values({
-        project_id: prj.id,
-        category_id: category_id,
-      })
-      .execute();
+      for (const cat_id of category_id ?? []) {
+        await trx
+          .insertInto("categories_projects")
+          .values({
+            project_id: prj.id,
+            category_id: cat_id,
+          })
+          .execute();
+      }
+    });
 
-    res.status(200).json({
+    res.status(201).json({
       msg: "insert successfull",
     });
   };

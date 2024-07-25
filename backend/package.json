@@ -5,9 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha",
-    "test:watch": "mocha -w",
+    "test:watch": "nodemon --exec mocha",
     "test:cov": "c8 mocha",
-    "start": "tsx watch --env-file=.env src/index.ts",
+    "start": "nodemon --exec tsx --env-file=.env src/index.ts",
     "build": "tsc",
     "db:generate-types": "kysely-codegen --out-file ./src/db/db_types.d.ts",
     "db:migrate": "tsx --env-file=.env src/migrate.ts",
@@ -22,7 +22,6 @@
     "express-session": "^1.18.0",
     "kysely": "^0.27.3",
     "kysely-codegen": "^0.14.2",
-    "nodemon": "^3.1.0",
     "pg": "^8.11.5",
     "socket.io": "^4.7.5",
     "tsx": "^4.16.2",
@@ -43,6 +42,7 @@
     "chai": "^5.1.1",
     "eslint": "^8.57.0",
     "mocha": "^10.4.0",
+    "nodemon": "^3.1.4",
     "typescript-eslint": "^7.4.0"
   }
 }
