@@ -5,12 +5,14 @@ import { clearDB, setupApp } from "./setup-test.js";
 
 describe("bucket controller", () => {
   let app: Application;
+  let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
     app = await setupApp();
   });
 
   beforeEach(async () => {
     await clearDB(app);
+    caseData = await baseCase(app);
   });
 
   after(async () => {
@@ -18,7 +20,6 @@ describe("bucket controller", () => {
   });
 
   it("should be able to update task", async () => {
-    const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
     const res = await new APIContext("TasksDetailPut").fetch(`/api/tasks/${caseData.task.id}`, {
@@ -50,7 +51,6 @@ describe("bucket controller", () => {
   });
 
   it("should be able to write and read", async () => {
-    const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
     const res = await new APIContext("BucketsDetailTasksPost").fetch(

@@ -6,6 +6,7 @@ import { clearDB, setupApp } from "./setup-test.js";
 
 describe("/api/users", () => {
   let app: Application;
+
   before(async () => {
     app = await setupApp();
   });

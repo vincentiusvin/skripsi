@@ -6,12 +6,14 @@ import { clearDB, setupApp } from "./setup-test.js";
 
 describe("/api/projects", () => {
   let app: Application;
+  let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
     app = await setupApp();
   });
 
   beforeEach(async () => {
     await clearDB(app);
+    caseData = await baseCase(app);
   });
 
   after(async () => {
@@ -19,7 +21,6 @@ describe("/api/projects", () => {
   });
 
   it("should accept get", async () => {
-    await baseCase(app);
     const res = await new APIContext("ProjectsGet").fetch(`/api/projects`, {
       method: "GET",
     });
@@ -29,7 +30,6 @@ describe("/api/projects", () => {
   });
 
   it("should promote org member as admin", async () => {
-    const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
 
     const res = await new APIContext("ProjectsDetailMembersPut").fetch(
@@ -51,7 +51,6 @@ describe("/api/projects", () => {
   });
 
   it("should allow non org member to apply", async () => {
-    const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
     const res = await new APIContext("ProjectsDetailMembersPut").fetch(
@@ -73,8 +72,6 @@ describe("/api/projects", () => {
   });
 
   it("should allow admin to approve members", async () => {
-    const caseData = await baseCase(app);
-
     const nonmember_cookie = await getLoginCookie(
       caseData.nonmember.name,
       caseData.nonmember.password,
@@ -131,7 +128,6 @@ describe("/api/projects", () => {
   });
 
   it("should be able to add and get buckets", async () => {
-    const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
     const res = await new APIContext("ProjectsDetailBucketsPost").fetch(

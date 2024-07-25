@@ -143,7 +143,7 @@ export class OrgController extends Controller {
       org_address: string;
       org_phone: string;
       org_image?: string;
-      org_category: number;
+      org_category?: number[];
     };
   }> = async (req, res) => {
     const { org_name, org_description, org_address, org_phone, org_image, org_category } = req.body;
@@ -165,8 +165,6 @@ export class OrgController extends Controller {
       throw new ClientError("Nomor telepon tidak boleh kosong!");
     }
 
-    if (!org_category) throw new ClientError("Kategori tidak boleh kosong!");
-
     const sameName = await this.db
       .selectFrom("ms_orgs")
       .select(["name"])
@@ -177,45 +175,43 @@ export class OrgController extends Controller {
       throw new ClientError("Sudah ada organisasi dengan nama yang sama!");
     }
 
-    try {
-      await this.db.transaction().execute(async (trx) => {
-        const org = await trx
-          .insertInto("ms_orgs")
-          .values({
-            name: org_name,
-            description: org_description,
-            address: org_address,
-            phone: org_phone,
-            ...(org_image && { image: org_image }),
-          })
-          .returning("id")
-          .executeTakeFirst();
+    await this.db.transaction().execute(async (trx) => {
+      const org = await trx
+        .insertInto("ms_orgs")
+        .values({
+          name: org_name,
+          description: org_description,
+          address: org_address,
+          phone: org_phone,
+          ...(org_image && { image: org_image }),
+        })
+        .returning("id")
+        .executeTakeFirst();
 
-        if (!org) {
-          throw new Error("Data not inserted!");
-        }
+      if (!org) {
+        throw new Error("Data not inserted!");
+      }
 
+      for (const cat_id of org_category ?? []) {
         await trx
           .insertInto("categories_orgs")
           .values({
             org_id: org.id,
-            category_id: org_category,
+            category_id: cat_id,
           })
           .execute();
+      }
 
-        await trx
-          .insertInto("orgs_users")
-          .values({
-            user_id: userID,
-            org_id: org.id,
-            role: "Owner",
-          })
-          .execute();
-      });
-      res.status(201).json({ msg: "Organisasi berhasil dibuat!" });
-    } catch (error) {
-      throw new Error("Request gagal!");
-    }
+      await trx
+        .insertInto("orgs_users")
+        .values({
+          user_id: userID,
+          org_id: org.id,
+          role: "Owner",
+        })
+        .execute();
+    });
+    res.status(201).json({ msg: "Organisasi berhasil dibuat!" });
   };
 
   getOrgsCategories: RH<{
@@ -240,84 +236,59 @@ export class OrgController extends Controller {
       id: number;
     };
     ReqBody: {
-      org_name: string;
-      org_description: string;
-      org_address: string;
-      org_phone: string;
+      org_name?: string;
+      org_description?: string;
+      org_address?: string;
+      org_phone?: string;
       org_image?: string;
-      org_category: number;
+      org_category?: number[];
     };
   }> = async (req, res) => {
     const { org_name, org_description, org_address, org_phone, org_image, org_category } = req.body;
     const id = req.params.id;
-    console.log("org_id: ", id);
-    const userID = req.session.user_id!;
-    if (org_name.length === 0) {
-      throw new ClientError("Nama tidak boleh kosong!");
+
+    if (org_name) {
+      const sameName = await this.db
+        .selectFrom("ms_orgs")
+        .select(["name"])
+        .where("name", "=", org_name)
+        .execute();
+
+      if (sameName.length !== 0) {
+        throw new ClientError("Sudah ada organisasi dengan nama yang sama!");
+      }
     }
 
-    if (org_description.length === 0) {
-      throw new ClientError("Deskripsi tidak boleh kosong!");
-    }
+    await this.db.transaction().execute(async (trx) => {
+      const org = await trx
+        .updateTable("ms_orgs")
+        .set({
+          name: org_name,
+          description: org_description,
+          address: org_address,
+          phone: org_phone,
+          ...(org_image && { image: org_image }),
+        })
+        .where("id", "=", id)
+        .executeTakeFirst();
 
-    if (org_address.length === 0) {
-      throw new ClientError("Alamat tidak boleh kosong!");
-    }
+      if (!org) {
+        throw new Error("Data not inserted!");
+      }
 
-    if (org_phone.length === 0) {
-      throw new ClientError("Nomor telepon tidak boleh kosong!");
-    }
+      await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
 
-    if (!org_category) {
-      throw new ClientError("Kategori tidak boleh kosong!");
-    }
-    const sameName = await this.db
-      .selectFrom("ms_orgs")
-      .select(["name"])
-      .where("name", "=", org_name)
-      .execute();
-
-    if (sameName.length !== 0) {
-      throw new ClientError("Sudah ada organisasi dengan nama yang sama!");
-    }
-
-    try {
-      await this.db.transaction().execute(async (trx) => {
-        const org = await trx
-          .updateTable("ms_orgs")
-          .set({
-            name: org_name,
-            description: org_description,
-            address: org_address,
-            phone: org_phone,
-            ...(org_image && { image: org_image }),
-          })
-          .where("id", "=", id)
-          .executeTakeFirst();
-
-        if (!org) {
-          throw new Error("Data not inserted!");
-        }
-
+      for (const cat_id of org_category ?? []) {
         await trx
-          .updateTable("categories_orgs")
-          .set({
-            category_id: org_category,
+          .insertInto("categories_orgs")
+          .values({
+            org_id: id,
+            category_id: cat_id,
           })
           .execute();
-
-        await trx
-          .updateTable("orgs_users")
-          .set({
-            user_id: userID,
-            role: "Owner",
-          })
-          .execute();
-      });
-      res.status(201).json({ msg: "Organisasi berhasil di update!" });
-    } catch (error) {
-      throw new Error("Request gagal!");
-    }
+      }
+    });
+    res.status(200).json({ msg: "Organisasi berhasil di update!" });
   };
 
   deleteOrgs: RH<{
@@ -339,16 +310,13 @@ export class OrgController extends Controller {
       throw new ClientError("ID Organisasi tidak ditemukan");
     }
 
-    try {
-      await this.db.transaction().execute(async (trx) => {
-        await trx.deleteFrom("ms_projects").where("org_id", "=", id).execute();
-        await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
-        await trx.deleteFrom("orgs_users").where("org_id", "=", id).execute();
-        await trx.deleteFrom("ms_orgs").where("id", "=", id).execute();
-      });
-      res.status(200).json({ msg: "Organisasi berhasil di hapuskan" });
-    } catch (error) {
-      throw new Error("Gagal Delete");
-    }
+    await this.db.transaction().execute(async (trx) => {
+      await trx.deleteFrom("ms_task_buckets").execute();
+      await trx.deleteFrom("ms_projects").where("org_id", "=", id).execute();
+      await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
+      await trx.deleteFrom("orgs_users").where("org_id", "=", id).execute();
+      await trx.deleteFrom("ms_orgs").where("id", "=", id).execute();
+    });
+    res.status(200).json({ msg: "Organisasi berhasil di hapuskan" });
   };
 }
