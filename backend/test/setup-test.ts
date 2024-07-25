@@ -1,20 +1,25 @@
 import { execSync } from "node:child_process";
 import { Application } from "../src/app.js";
 
-export async function setupApp() {
+export async function mochaGlobalSetup() {
+  const app = Application.getApplication();
+  await app.db.schema.dropSchema("public").cascade().execute();
+  await app.db.schema.createSchema("public").execute();
+
   execSync("tsx src/migrate.ts", {
     env: process.env,
   });
 
-  const app = Application.getApplication();
   if (process.env.APPLICATION_PORT) {
     app.listen(Number(process.env.APPLICATION_PORT));
   } else {
     console.log("Application port undefined!");
     process.exit(1);
   }
+}
 
-  return app;
+export async function mochaGlobalTeardown() {
+  await Application.getApplication().close();
 }
 
 export async function clearDB(app: Application) {

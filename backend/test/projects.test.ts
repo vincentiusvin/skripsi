@@ -2,22 +2,18 @@ import { expect } from "chai";
 import { describe } from "mocha";
 import { Application } from "../src/app.js";
 import { APIContext, baseCase, getLoginCookie } from "./helpers.js";
-import { clearDB, setupApp } from "./setup-test.js";
+import { clearDB } from "./setup-test.js";
 
 describe("/api/projects", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
-    app = await setupApp();
+    app = Application.getApplication();
   });
 
   beforeEach(async () => {
     await clearDB(app);
     caseData = await baseCase(app);
-  });
-
-  after(async () => {
-    await app.close();
   });
 
   it("should accept get", async () => {
