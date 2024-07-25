@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import { ZodType } from "zod";
 import { Application } from "../app.js";
-import { RH, RHTop } from "../helpers/types.js";
+import { RH, RHTop } from "./types.js";
 
 /**
  * Class penampung buat informasi route yang bakal diregister.

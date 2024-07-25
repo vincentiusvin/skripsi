@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { Application } from "../src/app.js";
+import { Application } from "../app.js";
 
 export async function mochaGlobalSetup() {
   const app = Application.getApplication();

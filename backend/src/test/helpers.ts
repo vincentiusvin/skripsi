@@ -1,7 +1,7 @@
 import { hashSync } from "bcryptjs";
 import { stringify } from "qs";
-import { Application } from "../src/app.js";
-import { API } from "../src/routes.js";
+import { Application } from "../app.js";
+import { API } from "../routes.js";
 
 /**
  * Class yang dipakai buat inject typing ke

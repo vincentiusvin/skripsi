@@ -1,7 +1,7 @@
 import { expect } from "chai";
-import { Application } from "../src/app.js";
-import { APIContext, baseCase, getLoginCookie } from "./helpers.js";
-import { clearDB } from "./setup-test.js";
+import { Application } from "../../app.js";
+import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
+import { clearDB } from "../../test/setup-test.js";
 
 describe("org controller", () => {
   let app: Application;

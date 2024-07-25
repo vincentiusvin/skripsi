@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import { describe } from "mocha";
-import { Application } from "../src/app.js";
-import { APIContext } from "./helpers.js";
-import { clearDB } from "./setup-test.js";
+import { Application } from "../../app.js";
+import { APIContext } from "../../test/helpers.js";
+import { clearDB } from "../../test/setup-test.js";
 
 describe("/api/users", () => {
   let app: Application;

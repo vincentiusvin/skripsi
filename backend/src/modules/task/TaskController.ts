@@ -1,10 +1,10 @@
 import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
-import { Application } from "../app.js";
-import { DB } from "../db/db_types.js";
-import { NotFoundError } from "../helpers/error.js";
-import { RH } from "../helpers/types.js";
-import { Controller, Route } from "./controller.js";
+import { Application } from "../../app.js";
+import { DB } from "../../db/db_types.js";
+import { Controller, Route } from "../../helpers/controller.js";
+import { NotFoundError } from "../../helpers/error.js";
+import { RH } from "../../helpers/types.js";
 
 function withUsers(eb: ExpressionBuilder<DB, "ms_tasks">) {
   return jsonArrayFrom(

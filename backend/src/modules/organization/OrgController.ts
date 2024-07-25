@@ -1,12 +1,12 @@
 import { RequestHandler } from "express";
 import { Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
-import { Application } from "../app.js";
-import { DB } from "../db/db_types.js";
-import { ClientError, NotFoundError } from "../helpers/error";
-import { RH } from "../helpers/types";
-import { validateLogged } from "../helpers/validate.js";
-import { Controller, Route } from "./controller.js";
+import { Application } from "../../app.js";
+import { DB } from "../../db/db_types.js";
+import { Controller, Route } from "../../helpers/controller.js";
+import { ClientError, NotFoundError } from "../../helpers/error.js";
+import { RH } from "../../helpers/types.js";
+import { validateLogged } from "../../helpers/validate.js";
 
 export class OrgController extends Controller {
   private db: Kysely<DB>;

@@ -1,10 +1,10 @@
 import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
-import { Application } from "../app.js";
-import { DB } from "../db/db_types";
-import { AuthError, ClientError, NotFoundError } from "../helpers/error";
-import { RH } from "../helpers/types";
-import { Controller, Route } from "./controller.js";
+import { Application } from "../../app.js";
+import { DB } from "../../db/db_types.js";
+import { Controller, Route } from "../../helpers/controller.js";
+import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
+import { RH } from "../../helpers/types.js";
 
 const project_roles = ["Pending", "Dev", "Admin"] as const;
 export type ProjectRoles = (typeof project_roles)[number];

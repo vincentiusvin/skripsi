@@ -1,13 +1,13 @@
 import { RequestHandler } from "express";
 import { Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
-import { Application } from "../app.js";
-import { DB } from "../db/db_types.js";
-import { AuthError, ClientError, NotFoundError } from "../helpers/error.js";
-import { RH } from "../helpers/types";
-import { validateLogged } from "../helpers/validate.js";
-import { Controller, Route } from "./controller.js";
-import { parseRole, withMembers } from "./projects.js";
+import { Application } from "../../app.js";
+import { DB } from "../../db/db_types.js";
+import { Controller, Route } from "../../helpers/controller.js";
+import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
+import { RH } from "../../helpers/types.js";
+import { validateLogged } from "../../helpers/validate.js";
+import { parseRole, withMembers } from "../project/ProjectController.js";
 
 // Manipulasi data semuanya dilakuin lewat http.
 // Socket cuma dipakai buat broadcast perubahan ke user.
