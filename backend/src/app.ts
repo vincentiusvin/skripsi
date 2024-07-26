@@ -6,7 +6,7 @@ import { Server } from "socket.io";
 import { db, dbPool } from "./db/db";
 import { DB } from "./db/db_types.js";
 import { AuthError, errorHandler } from "./helpers/error";
-import { logger } from "./helpers/logger";
+import { loggingMiddleware } from "./helpers/loggermiddleware";
 import { registerControllers } from "./routes";
 import connectPgSimple = require("connect-pg-simple");
 import _session = require("express-session");
@@ -41,7 +41,7 @@ export class Application {
     });
     this.db = db;
 
-    this.express_server.use(logger);
+    this.express_server.use(loggingMiddleware);
 
     const store = new pgSession({
       pool: dbPool,

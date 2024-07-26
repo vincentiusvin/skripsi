@@ -16,7 +16,7 @@ describe("org controller", () => {
     caseData = await baseCase(app);
   });
 
-  it.only("should be able to get org", async () => {
+  it("should be able to get org", async () => {
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
     const res = await new APIContext("OrgsGet").fetch(`/api/orgs/`, {
