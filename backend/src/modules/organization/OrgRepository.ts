@@ -137,20 +137,28 @@ export class OrgRepository {
     const { org_name, org_description, org_address, org_phone, org_image, org_category } = obj;
 
     await this.db.transaction().execute(async (trx) => {
-      const org = await trx
-        .updateTable("ms_orgs")
-        .set({
-          name: org_name,
-          description: org_description,
-          address: org_address,
-          phone: org_phone,
-          ...(org_image && { image: org_image }),
-        })
-        .where("id", "=", id)
-        .executeTakeFirst();
+      if (
+        org_name != undefined ||
+        org_description != undefined ||
+        org_address != undefined ||
+        org_phone != undefined ||
+        org_image != undefined
+      ) {
+        const org = await trx
+          .updateTable("ms_orgs")
+          .set({
+            name: org_name,
+            description: org_description,
+            address: org_address,
+            phone: org_phone,
+            ...(org_image && { image: org_image }),
+          })
+          .where("id", "=", id)
+          .executeTakeFirst();
 
-      if (!org) {
-        throw new Error("Data not inserted!");
+        if (!org) {
+          throw new Error("Data tidak update!");
+        }
       }
 
       await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
@@ -168,7 +176,7 @@ export class OrgRepository {
   }
   async deleteOrg(id: number) {
     await this.db.transaction().execute(async (trx) => {
-      await trx.deleteFrom("ms_task_buckets").execute();
+      await trx.deleteFrom("ms_task_buckets").where("id", "=", id).execute();
       await trx.deleteFrom("ms_projects").where("org_id", "=", id).execute();
       await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
       await trx.deleteFrom("orgs_users").where("org_id", "=", id).execute();

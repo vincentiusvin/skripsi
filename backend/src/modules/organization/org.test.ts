@@ -4,7 +4,7 @@ import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe.only("org controller", () => {
+describe("org controller", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -16,7 +16,7 @@ describe.only("org controller", () => {
     caseData = await baseCase(app);
   });
 
-  it("should be able to get org", async () => {
+  it.only("should be able to get org", async () => {
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
     const res = await new APIContext("OrgsGet").fetch(`/api/orgs/`, {

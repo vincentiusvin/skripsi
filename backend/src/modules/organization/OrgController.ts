@@ -22,11 +22,19 @@ export class OrgController extends Controller {
         path: "/api/orgs",
         schema: {
           ReqBody: z.object({
-            org_name: z.string({ message: "Nama invalid!" }),
-            org_description: z.string({ message: "Deskripsi invalid!" }),
-            org_address: z.string({ message: "Alamat invalid!" }),
-            org_phone: z.string({ message: "Nomor telefon invalid!" }),
-            org_image: z.string({ message: "Gambar invalid!" }).optional(),
+            org_name: z
+              .string({ message: "Nama invalid!" })
+              .min(1, { message: "Nama tidak boleh kosong!" }),
+            org_description: z
+              .string({ message: "Deskripsi invalid!" })
+              .min(1, { message: "Deskripsi tidak boleh kosong!" }),
+            org_address: z
+              .string({ message: "Alamat invalid!" })
+              .min(1, { message: "Alamat tidak boleh kosong!" }),
+            org_phone: z
+              .string({ message: "Nomor telefon invalid!" })
+              .min(1, { message: "Nomor telefon tidak boleh kosong!" }),
+            org_image: z.string({ message: "Gambar invalid!" }).min(1).optional(),
             org_categories: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
           }),
         },
@@ -59,13 +67,28 @@ export class OrgController extends Controller {
         handler: this.updateOrgs,
         schema: {
           Params: z.object({
-            id: z.coerce.number({ message: "ID tidak valid!" }),
+            id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID tidak valid!" }),
           }),
           ReqBody: z.object({
-            org_name: z.string({ message: "Nama invalid!" }).optional(),
-            org_description: z.string({ message: "Deskripsi invalid!" }).optional(),
-            org_address: z.string({ message: "Deskripsi invalid!" }).optional(),
-            org_phone: z.string({ message: "Deskripsi invalid!" }).optional(),
+            org_name: z
+              .string({ message: "Nama invalid!" })
+              .min(1, { message: "Nama tidak boleh kosong!" })
+              .optional(),
+            org_description: z
+              .string({ message: "Deskripsi invalid!" })
+              .min(1, { message: "Deskripsi tidak boleh kosong!" })
+              .optional(),
+            org_address: z
+              .string({ message: "Alamat invalid!" })
+              .min(1, { message: "Alamat tidak boleh kosong!" })
+              .optional(),
+            org_phone: z
+              .string({ message: "Nomor telefon invalid!" })
+              .min(1, { message: "Nomor telefon tidak boleh kosong!" })
+              .optional(),
             org_image: z.string({ message: "Deskripsi invalid!" }).optional(),
             org_categories: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
           }),
@@ -193,8 +216,8 @@ export class OrgController extends Controller {
         category_id: number;
       }[];
     };
-    Param: {
-      id: number;
+    Params: {
+      id: string;
     };
     ReqBody: {
       org_name?: string;
@@ -208,9 +231,8 @@ export class OrgController extends Controller {
     const { org_name, org_description, org_address, org_phone, org_image, org_categories } =
       req.body;
     const id = req.params.id;
-    console.log(typeof id);
 
-    await this.org_service.updateOrg(id, {
+    await this.org_service.updateOrg(Number(id), {
       org_name,
       org_address,
       org_category: org_categories,
@@ -218,7 +240,7 @@ export class OrgController extends Controller {
       org_image,
       org_phone,
     });
-    const updated = await this.org_service.getOrgByID(id);
+    const updated = await this.org_service.getOrgByID(Number(id));
 
     res.status(200).json(updated);
   };
