@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 
 type RequestHandlerOptions = {
   // Param itu data kiriman yang ada di pathnya, http://website/api/user/1.
-  Params?: Record<string, unknown>;
+  Params?: Record<string, string>;
   // ResBody itu jawaban dari server. Declare untuk request yang sukses aja.
   // Request gagal formatnya bakal pakai {msg: string} tapi ga usah dimasukkin ke sini.
   // Kalau request sukses formatnya {msg: string} silahkan ditaruh disini.
