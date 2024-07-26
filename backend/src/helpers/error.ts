@@ -19,6 +19,7 @@ export const errorHandler: ErrorRequestHandler = function (error, req, res, next
     logger.error(error.message, {
       req_query: req.query,
       req_body: req.body,
+      req_method: req.method,
       req_params: req.params,
       req_url: req.originalUrl,
       res_status: res.statusCode,

@@ -6,6 +6,6 @@ module.exports = {
   root: true,
   ignorePatterns: ["dist", ".eslintrc.cjs"],
   rules: {
-    "@typescript-eslint/no-explicit-any": 1,
+    "@typescript-eslint/no-explicit-any": "warn",
   },
 };
