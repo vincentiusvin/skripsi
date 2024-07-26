@@ -51,11 +51,11 @@ export function useOrgsCategoriesGet(opts: {
 
 export function useOrgsUpdate(opts: {
   id: number;
-  name: string;
-  desc: string;
-  address: string;
-  phone: string;
-  categories: number[];
+  name?: string;
+  desc?: string;
+  address?: string;
+  phone?: string;
+  categories?: number[];
   image?: string;
   onSuccess?: () => void;
 }) {
