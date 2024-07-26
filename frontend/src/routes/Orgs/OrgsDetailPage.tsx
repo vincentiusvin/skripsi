@@ -139,7 +139,7 @@ function OrgsDetailPage() {
           <Grid container spacing={1}>
             {data.org_categories.map((category, index) => (
               <Grid item key={index}>
-                <Chip label={category} />
+                <Chip label={category.category_name} />
               </Grid>
             ))}
           </Grid>

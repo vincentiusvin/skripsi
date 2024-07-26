@@ -285,7 +285,6 @@ export class ProjectController extends Controller {
   };
 
   private getProjectsDetail: RH<{
-    ReqParams: { id: number };
     ResBody: {
       project_id: number;
       project_name: string;
@@ -299,7 +298,7 @@ export class ProjectController extends Controller {
       project_categories: string[];
     };
     Params: {
-      project_id: number;
+      project_id: string;
     };
   }> = async (req, res) => {
     const id = req.params.project_id;
@@ -323,7 +322,7 @@ export class ProjectController extends Controller {
             .whereRef("categories_projects.project_id", "=", "ms_projects.id"),
         ).as("project_categories"),
       ])
-      .where("ms_projects.id", "=", id)
+      .where("ms_projects.id", "=", Number(id))
       .executeTakeFirst();
 
     if (!project) {

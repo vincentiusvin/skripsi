@@ -26,7 +26,7 @@ function OrgsEditPage() {
   const [orgAddress, setOrgAddress] = useState("");
   const [orgPhone, setOrgPhone] = useState("");
   const [orgImage, setOrgImage] = useState<string | null>(null);
-  const [orgCategory, setOrgCategory] = useState<number | "">("");
+  const [orgCategory, setOrgCategory] = useState<number | null>(null);
 
   const [, setLocation] = useLocation();
 
@@ -39,7 +39,7 @@ function OrgsEditPage() {
     desc: orgDesc,
     address: orgAddress,
     phone: orgPhone,
-    category: Number(orgCategory),
+    categories: orgCategory != null ? [orgCategory] : [],
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Edit successful!</Typography>,

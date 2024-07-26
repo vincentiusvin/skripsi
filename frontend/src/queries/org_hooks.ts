@@ -55,11 +55,11 @@ export function useOrgsUpdate(opts: {
   desc: string;
   address: string;
   phone: string;
-  category: number;
+  categories: number[];
   image?: string;
   onSuccess?: () => void;
 }) {
-  const { id, name, desc, address, phone, image, onSuccess, category } = opts;
+  const { id, name, desc, address, phone, image, onSuccess, categories } = opts;
   return useMutation({
     mutationFn: () =>
       new APIContext("OrgsUpdate").fetch(`/api/orgs/${id}`, {
@@ -69,7 +69,7 @@ export function useOrgsUpdate(opts: {
           org_description: desc,
           org_address: address,
           org_phone: phone,
-          org_category: category,
+          org_categories: categories,
           ...(image && { org_image: image }),
         },
       }),

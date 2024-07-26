@@ -19,7 +19,7 @@ function projectsAddPage() {
   const [projectName, setProjectName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
   const [orgId, setOrgId] = useState("");
-  const [projectCategory, setProjectCategory] = useState<number | "">("");
+  const [projectCategory, setProjectCategory] = useState<number | null>(null);
   const orgIdNumber = Number(orgId);
 
   const [, setLocation] = useLocation();
@@ -40,7 +40,7 @@ function projectsAddPage() {
       project_desc: projectDesc,
       project_name: projectName,
       org_id: orgIdNumber,
-      category_id: Number(projectCategory),
+      category_id: projectCategory != null ? [projectCategory] : [],
     });
   }
 

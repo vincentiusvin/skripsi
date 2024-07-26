@@ -96,6 +96,7 @@ export class OrgController extends Controller {
       org_image: string | null;
       org_categories: {
         category_name: string;
+        category_id: number;
       }[];
     }[];
   }> = async (req, res) => {
@@ -114,6 +115,7 @@ export class OrgController extends Controller {
       org_image: string | null;
       org_categories: {
         category_name: string;
+        category_id: number;
       }[];
     };
   }> = async (req, res) => {
