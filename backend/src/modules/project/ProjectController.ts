@@ -151,8 +151,8 @@ export class ProjectController extends Controller {
     const { org_id, user_id, keyword } = req.query;
 
     const result = await this.project_service.getProjects({
-      org_id: Number(org_id),
-      user_id: Number(user_id),
+      org_id: org_id != undefined ? Number(org_id) : undefined,
+      user_id: org_id != undefined ? Number(user_id) : undefined,
       keyword,
     });
 

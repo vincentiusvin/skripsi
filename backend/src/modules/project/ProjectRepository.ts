@@ -192,9 +192,12 @@ export class ProjectRepository {
   }
 
   async addBucket(project_id: number, name: string) {
-    return this.db.insertInto("ms_task_buckets").values({
-      name: name,
-      project_id: Number(project_id),
-    });
+    return this.db
+      .insertInto("ms_task_buckets")
+      .values({
+        name: name,
+        project_id: Number(project_id),
+      })
+      .execute();
   }
 }

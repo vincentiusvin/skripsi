@@ -1,5 +1,5 @@
 import { ExpressionBuilder } from "kysely";
-import { jsonArrayFrom } from "kysely/helpers/postgres.js";
+import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
 
 const project_roles = ["Pending", "Dev", "Admin", "Not Involved"] as const;
