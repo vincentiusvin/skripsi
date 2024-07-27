@@ -4,6 +4,7 @@ import { Box, CssBaseline, Divider, IconButton, createTheme } from "@mui/materia
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { SnackbarProvider, closeSnackbar } from "notistack";
 import { Route, Switch } from "wouter";
 import "./App.css";
@@ -42,6 +43,7 @@ function App() {
         )}
       >
         <QueryClientProvider client={queryClient}>
+          <ReactQueryDevtools />
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <CssBaseline />
             <Nav />

@@ -4,7 +4,9 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable("ms_task_buckets")
     .addColumn("id", "serial", (build) => build.primaryKey())
-    .addColumn("project_id", "integer", (build) => build.references("ms_projects.id").notNull())
+    .addColumn("project_id", "integer", (build) =>
+      build.references("ms_projects.id").notNull().onDelete("cascade").onUpdate("cascade"),
+    )
     .addColumn("name", "text", (build) => build.notNull())
     .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
     .addUniqueConstraint("uq_task_buckets", ["name", "project_id"])

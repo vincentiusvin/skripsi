@@ -2,7 +2,6 @@
   "$schema": "https://json.schemastore.org/mocharc.json",
   "node-option": ["import=tsx", "env-file=.env.test"],
   "extension": ".ts",
-  "watch-files": ["**/*.ts"],
-  "spec": ["test/**/*.test.ts"],
-  "require": ["test/setup-test.ts"]
+  "spec": ["src/**/*.test.ts"],
+  "require": ["src/test/setup-test.ts"]
 }

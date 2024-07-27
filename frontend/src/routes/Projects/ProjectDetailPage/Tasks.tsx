@@ -154,7 +154,7 @@ function Kanban(props: { project_id: number }) {
     });
 
     setTempTasksData(reshaped);
-  }, [tasksData]);
+  }, [tasksData, isFetching]);
 
   const [newBucketName, setNewBucketName] = useState("");
   // undef: gak ada yang dipilih

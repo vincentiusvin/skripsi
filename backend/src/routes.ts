@@ -1,12 +1,12 @@
 import { Application } from "./app.js";
-import { ChatController } from "./controllers/chatroom.js";
-import { Route } from "./controllers/controller.js";
-import { OrgController } from "./controllers/orgs.js";
-import { ProjectController } from "./controllers/projects.js";
-import { SessionController } from "./controllers/session.js";
-import { TaskController } from "./controllers/task.js";
-import { UserController } from "./controllers/user.js";
+import { Route } from "./helpers/controller.js";
 import { ExtractRH, UnionToIntersection } from "./helpers/types";
+import { ChatController } from "./modules/chatroom/ChatroomController.js";
+import { OrgController } from "./modules/organization/OrgController.js";
+import { ProjectController } from "./modules/project/ProjectController.js";
+import { SessionController } from "./modules/session/SessionController.js";
+import { TaskController } from "./modules/task/TaskController.js";
+import { UserController } from "./modules/user/UserController.js";
 
 export function registerControllers(app: Application) {
   const controllers = [

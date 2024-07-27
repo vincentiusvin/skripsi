@@ -26,7 +26,7 @@ function OrgsAddPage() {
   const [orgAddress, setOrgAddress] = useState("");
   const [orgPhone, setOrgPhone] = useState("");
   const [orgImage, setOrgImage] = useState<string | null>(null);
-  const [orgCategory, setOrgCategory] = useState<number | "">("");
+  const [orgCategory, setOrgCategory] = useState<number | null>(null);
 
   const [, setLocation] = useLocation();
 
@@ -45,7 +45,7 @@ function OrgsAddPage() {
     orgsPost({
       org_name: orgName,
       org_address: orgAddress,
-      org_category: Number(orgCategory),
+      org_categories: orgCategory != null ? [orgCategory] : [],
       org_phone: orgPhone,
       org_description: orgDesc,
       org_image: orgImage !== null ? orgImage : undefined,

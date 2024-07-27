@@ -1,24 +1,21 @@
 import { expect } from "chai";
-import { Application } from "../src/app.js";
-import { APIContext, baseCase, getLoginCookie } from "./helpers.js";
-import { clearDB, setupApp } from "./setup-test.js";
+import { Application } from "../../app.js";
+import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
+import { clearDB } from "../../test/setup-test.js";
 
 describe("bucket controller", () => {
   let app: Application;
+  let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
-    app = await setupApp();
+    app = Application.getApplication();
   });
 
   beforeEach(async () => {
     await clearDB(app);
-  });
-
-  after(async () => {
-    await app.close();
+    caseData = await baseCase(app);
   });
 
   it("should be able to update task", async () => {
-    const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
     const res = await new APIContext("TasksDetailPut").fetch(`/api/tasks/${caseData.task.id}`, {
@@ -50,7 +47,6 @@ describe("bucket controller", () => {
   });
 
   it("should be able to write and read", async () => {
-    const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
     const res = await new APIContext("BucketsDetailTasksPost").fetch(

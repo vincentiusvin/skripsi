@@ -31,7 +31,8 @@
     "remove": "^0.1.5",
     "socket.io-client": "^4.7.5",
     "use-debounce": "^10.0.1",
-    "wouter": "^3.1.2"
+    "wouter": "^3.1.2",
+    "@tanstack/react-query-devtools": "^5.51.11"
   },
   "devDependencies": {
     "@types/qs": "^6.9.14",

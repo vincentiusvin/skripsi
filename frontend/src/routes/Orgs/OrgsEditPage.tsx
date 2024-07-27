@@ -21,12 +21,12 @@ import { fileToBase64DataURL } from "../../helpers/file";
 import { useOrgsCategoriesGet, useOrgsUpdate } from "../../queries/org_hooks";
 
 function OrgsEditPage() {
-  const [orgName, setOrgName] = useState("");
-  const [orgDesc, setOrgDesc] = useState("");
-  const [orgAddress, setOrgAddress] = useState("");
-  const [orgPhone, setOrgPhone] = useState("");
-  const [orgImage, setOrgImage] = useState<string | null>(null);
-  const [orgCategory, setOrgCategory] = useState<number | "">("");
+  const [orgName, setOrgName] = useState<string | undefined>(undefined);
+  const [orgDesc, setOrgDesc] = useState<string | undefined>(undefined);
+  const [orgAddress, setOrgAddress] = useState<string | undefined>(undefined);
+  const [orgPhone, setOrgPhone] = useState<string | undefined>(undefined);
+  const [orgImage, setOrgImage] = useState<string | undefined>(undefined);
+  const [orgCategory, setOrgCategory] = useState<number | undefined>(undefined);
 
   const [, setLocation] = useLocation();
 
@@ -39,7 +39,7 @@ function OrgsEditPage() {
     desc: orgDesc,
     address: orgAddress,
     phone: orgPhone,
-    category: Number(orgCategory),
+    categories: orgCategory != null ? [orgCategory] : [],
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Edit successful!</Typography>,
@@ -88,7 +88,7 @@ function OrgsEditPage() {
             }}
             onChange={async (file) => {
               console.log(file);
-              const b64 = file ? await fileToBase64DataURL(file) : null;
+              const b64 = file ? await fileToBase64DataURL(file) : undefined;
               setOrgImage(b64);
             }}
           >
@@ -147,9 +147,7 @@ function OrgsEditPage() {
           <FormControl>
             <InputLabel id="demo-simple-select-label">Category</InputLabel>
             <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={orgCategory}
+              value={orgCategory || []}
               onChange={(e) => setOrgCategory(Number(e.target.value))}
               label="Category"
             >

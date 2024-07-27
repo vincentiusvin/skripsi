@@ -1,25 +1,22 @@
 import { expect } from "chai";
 import { describe } from "mocha";
-import { Application } from "../src/app.js";
-import { APIContext, baseCase, getLoginCookie } from "./helpers.js";
-import { clearDB, setupApp } from "./setup-test.js";
+import { Application } from "../../app.js";
+import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
+import { clearDB } from "../../test/setup-test.js";
 
 describe("/api/projects", () => {
   let app: Application;
+  let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
-    app = await setupApp();
+    app = Application.getApplication();
   });
 
   beforeEach(async () => {
     await clearDB(app);
-  });
-
-  after(async () => {
-    await app.close();
+    caseData = await baseCase(app);
   });
 
   it("should accept get", async () => {
-    await baseCase(app);
     const res = await new APIContext("ProjectsGet").fetch(`/api/projects`, {
       method: "GET",
     });
@@ -29,7 +26,6 @@ describe("/api/projects", () => {
   });
 
   it("should promote org member as admin", async () => {
-    const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
 
     const res = await new APIContext("ProjectsDetailMembersPut").fetch(
@@ -51,7 +47,6 @@ describe("/api/projects", () => {
   });
 
   it("should allow non org member to apply", async () => {
-    const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
     const res = await new APIContext("ProjectsDetailMembersPut").fetch(
@@ -73,8 +68,6 @@ describe("/api/projects", () => {
   });
 
   it("should allow admin to approve members", async () => {
-    const caseData = await baseCase(app);
-
     const nonmember_cookie = await getLoginCookie(
       caseData.nonmember.name,
       caseData.nonmember.password,
@@ -131,7 +124,6 @@ describe("/api/projects", () => {
   });
 
   it("should be able to add and get buckets", async () => {
-    const caseData = await baseCase(app);
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
 
     const res = await new APIContext("ProjectsDetailBucketsPost").fetch(
@@ -163,5 +155,41 @@ describe("/api/projects", () => {
     expect(res2.status).eq(200);
     const result = await res2.json();
     expect(result.length).eq(3);
+  });
+
+  it("should be able to add add projects", async () => {
+    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+
+    const in_name = "proj_name";
+    const in_org = caseData.org.id;
+    const in_desc = "Testing data desc";
+
+    const res = await new APIContext("ProjectsPost").fetch(`/api/projects`, {
+      headers: {
+        cookie: cookie,
+      },
+      credentials: "include",
+      method: "post",
+      body: {
+        project_name: in_name,
+        org_id: in_org,
+        project_desc: in_desc,
+      },
+    });
+    expect(res.status).eq(201);
+    await res.json();
+
+    const res2 = await new APIContext("ProjectsGet").fetch(`/api/projects`, {
+      headers: {
+        cookie: cookie,
+      },
+      credentials: "include",
+      method: "get",
+    });
+    expect(res2.status).eq(200);
+    const result = await res2.json();
+    const found_proj = result.find((x) => x.project_name === in_name);
+    expect(found_proj).not.eq(undefined);
+    expect(found_proj?.project_desc).eq(in_desc);
   });
 });
