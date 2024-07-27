@@ -6,11 +6,15 @@ const logger = createLogger({
   format: combine(timestamp(), json()),
   defaultMeta: { service: "skripsi" },
   level: "silly",
-  transports: [
-    new File({ filename: "combined.log" }),
+  transports: [new File({ filename: "combined.log" })],
+});
+
+if (process.env.LOG === "on") {
+  logger.add(
     new Console({
       format: combine(colorize(), simple()),
     }),
-  ],
-});
+  );
+}
+
 export default logger;
