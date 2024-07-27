@@ -93,6 +93,7 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
   const [activeRoom, setActiveRoom] = useState<number | false>(false);
   const { data: chatrooms } = useProjectsDetailChatroomsGet({ project_id });
   const { data: project } = useProjectsDetailGet({ project_id });
+  const { data: users } = useUsersGet();
 
   const [addRoomOpen, setAddRoomOpen] = useState(false);
   const [addRoomName, setAddRoomName] = useState("");
@@ -111,10 +112,10 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
   const { mutate: leaveProject } = useProjectsDetailMembersDelete({
     project_id: project_id,
     user_id: user_id,
-    onSuccess: (x) => {
+    onSuccess: () => {
       enqueueSnackbar({
         variant: "success",
-        message: <Typography>{x.msg}</Typography>,
+        message: <Typography>Berhasil meninggalkan projek!</Typography>,
       });
     },
   });
@@ -253,7 +254,7 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             </Typography>
             <Stack direction={"row"} justifyContent={"center"} spacing={2}>
               {project.project_categories.map((category, index) => (
-                <Chip key={index} label={category} />
+                <Chip key={index} label={category.category_name} />
               ))}
             </Stack>
           </Box>
@@ -264,19 +265,23 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             <Grid container width={"75%"} margin={"0 auto"} spacing={2}>
               {project.project_members
                 .filter((x) => x.role !== "Pending")
-                .map((x, i) => (
-                  <Fragment key={i}>
-                    <Grid item xs={2} lg={0.75}>
-                      <Avatar />
-                    </Grid>
-                    <Grid item xs={4} lg={2.25}>
-                      <Typography>{x.name}</Typography>
-                      <Typography variant="body2" color={"GrayText"}>
-                        {x.role}
-                      </Typography>
-                    </Grid>
-                  </Fragment>
-                ))}
+                .map((x, i) => {
+                  const user = users?.find((u) => u.user_id === x.user_id);
+
+                  return (
+                    <Fragment key={i}>
+                      <Grid item xs={2} lg={0.75}>
+                        <Avatar />
+                      </Grid>
+                      <Grid item xs={4} lg={2.25}>
+                        <Typography>{user?.user_name}</Typography>
+                        <Typography variant="body2" color={"GrayText"}>
+                          {x.role}
+                        </Typography>
+                      </Grid>
+                    </Fragment>
+                  );
+                })}
             </Grid>
           </Box>
         </Stack>
@@ -285,36 +290,40 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
         <Grid container width={"85%"} margin={"0 auto"} mt={2} spacing={2} columnSpacing={4}>
           {project.project_members
             .filter((x) => x.role === "Pending")
-            .map((x, i) => (
-              <Grid item xs={3} key={i} justifyContent={"center"}>
-                <Paper
-                  sx={{
-                    padding: 2,
-                    borderRadius: 2,
-                  }}
-                >
-                  <Stack direction={"row"} spacing={2} justifyContent={"center"}>
-                    <Avatar />
-                    <Box flexGrow={1}>
-                      <Typography>{x.name}</Typography>
-                      <Typography variant="body2" color={"GrayText"}>
-                        {x.role}
-                      </Typography>
-                    </Box>
-                    <Button
-                      onClick={() => {
-                        putMember({
-                          role: "Dev",
-                          user_id: x.id,
-                        });
-                      }}
-                    >
-                      Approve
-                    </Button>
-                  </Stack>
-                </Paper>
-              </Grid>
-            ))}
+            .map((x, i) => {
+              const user = users?.find((u) => u.user_id === x.user_id);
+
+              return (
+                <Grid item xs={3} key={i} justifyContent={"center"}>
+                  <Paper
+                    sx={{
+                      padding: 2,
+                      borderRadius: 2,
+                    }}
+                  >
+                    <Stack direction={"row"} spacing={2} justifyContent={"center"}>
+                      <Avatar />
+                      <Box flexGrow={1}>
+                        <Typography>{user?.user_name}</Typography>
+                        <Typography variant="body2" color={"GrayText"}>
+                          {x.role}
+                        </Typography>
+                      </Box>
+                      <Button
+                        onClick={() => {
+                          putMember({
+                            role: "Dev",
+                            user_id: x.user_id,
+                          });
+                        }}
+                      >
+                        Approve
+                      </Button>
+                    </Stack>
+                  </Paper>
+                </Grid>
+              );
+            })}
         </Grid>
       )}
       {activeTab === "tasks" && <Kanban project_id={project_id} />}
@@ -328,6 +337,7 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
   const { data: project } = useProjectsDetailGet({
     project_id: project_id,
   });
+  const { data: users } = useUsersGet();
 
   const { mutate: addMember } = useProjectsDetailMembersPut({
     project_id: project_id,
@@ -393,7 +403,7 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
             </Typography>
             <Stack direction={"row"} justifyContent={"center"} spacing={2}>
               {project.project_categories.map((category, index) => (
-                <Chip key={index} label={category} />
+                <Chip key={index} label={category.category_name} />
               ))}
             </Stack>
           </Box>
@@ -404,19 +414,22 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
             <Grid container width={"85%"} margin={"0 auto"}>
               {project.project_members
                 .filter((x) => x.role !== "Pending")
-                .map((x, i) => (
-                  <Grid item xs={3} key={i} justifyContent={"center"}>
-                    <Stack direction={"row"} spacing={2} justifyContent={"center"}>
-                      <Avatar />
-                      <Box>
-                        <Typography>{x.name}</Typography>
-                        <Typography variant="body2" color={"GrayText"}>
-                          {x.role}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </Grid>
-                ))}
+                .map((x, i) => {
+                  const user = users?.find((u) => u.user_id === x.user_id);
+                  return (
+                    <Grid item xs={3} key={i} justifyContent={"center"}>
+                      <Stack direction={"row"} spacing={2} justifyContent={"center"}>
+                        <Avatar />
+                        <Box>
+                          <Typography>{user?.user_name}</Typography>
+                          <Typography variant="body2" color={"GrayText"}>
+                            {x.role}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </Grid>
+                  );
+                })}
             </Grid>
           </Box>
         </Stack>

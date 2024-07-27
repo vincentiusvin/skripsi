@@ -7,7 +7,7 @@ import { Controller, Route } from "../../helpers/controller.js";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { RH } from "../../helpers/types.js";
 import { validateLogged } from "../../helpers/validate.js";
-import { parseRole, withMembers } from "../project/ProjectController.js";
+import { parseRole, withMembers } from "../project/ProjectMisc.js";
 
 // Manipulasi data semuanya dilakuin lewat http.
 // Socket cuma dipakai buat broadcast perubahan ke user.

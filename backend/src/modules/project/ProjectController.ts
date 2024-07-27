@@ -1,6 +1,4 @@
-import { Kysely } from "kysely";
 import { Application } from "../../app.js";
-import { DB } from "../../db/db_types.js";
 import { Controller, Route } from "../../helpers/controller.js";
 import { RH } from "../../helpers/types.js";
 import { OrgRepository } from "../organization/OrgRepository.js";
@@ -10,11 +8,9 @@ import { ProjectRepository } from "./ProjectRepository.js";
 import { ProjectService } from "./ProjectService.js";
 
 export class ProjectController extends Controller {
-  private db: Kysely<DB>;
   project_service: ProjectService;
   constructor(app: Application) {
     super(app);
-    this.db = app.db;
     const repo = new ProjectRepository(app.db);
     const org_serv = new OrgService(new OrgRepository(app.db));
     this.project_service = new ProjectService(repo, org_serv);
@@ -133,10 +129,18 @@ export class ProjectController extends Controller {
 
   private getProjects: RH<{
     ResBody: {
+      org_id: number;
       project_id: number;
       project_name: string;
       project_desc: string;
-      org_id: number;
+      project_members: {
+        user_id: number;
+        role: string;
+      }[];
+      project_categories: {
+        category_name: string;
+        category_id: number;
+      }[];
     }[];
     ReqQuery: {
       org_id?: string;
@@ -157,16 +161,18 @@ export class ProjectController extends Controller {
 
   private getProjectsDetail: RH<{
     ResBody: {
+      org_id: number;
       project_id: number;
       project_name: string;
-      org_id: number;
       project_desc: string;
       project_members: {
-        id: number;
-        name: string;
-        role: ProjectRoles;
+        user_id: number;
+        role: string;
       }[];
-      project_categories: string[];
+      project_categories: {
+        category_name: string;
+        category_id: number;
+      }[];
     };
     Params: {
       project_id: string;
@@ -174,7 +180,7 @@ export class ProjectController extends Controller {
   }> = async (req, res) => {
     const project_id = req.params.project_id;
 
-    const result = this.project_service.getProjectByID(Number(project_id));
+    const result = await this.project_service.getProjectByID(Number(project_id));
     res.status(200).json(result);
   };
 
