@@ -215,8 +215,8 @@ export class ProjectController extends Controller {
 
   private getProjectsCategories: RH<{
     ResBody: {
-      id: number;
-      name: string;
+      category_id: number;
+      category_name: string;
     }[];
   }> = async (req, res) => {
     const result = await this.project_service.getCategories();

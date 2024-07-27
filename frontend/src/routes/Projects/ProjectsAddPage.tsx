@@ -15,7 +15,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useProjectsCategoriesGet, useProjectsPost } from "../../queries/project_hooks";
 
-function projectsAddPage() {
+function ProjectsAddPage() {
   const [projectName, setProjectName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
   const [orgId, setOrgId] = useState("");
@@ -93,8 +93,8 @@ function projectsAddPage() {
             >
               {categories &&
                 categories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    {category.name}
+                  <MenuItem key={category.category_id} value={category.category_id}>
+                    {category.category_name}
                   </MenuItem>
                 ))}
             </Select>
@@ -105,4 +105,4 @@ function projectsAddPage() {
   );
 }
 
-export default projectsAddPage;
+export default ProjectsAddPage;

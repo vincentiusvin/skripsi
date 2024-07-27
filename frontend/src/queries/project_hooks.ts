@@ -15,7 +15,7 @@ export function useProjectsDetailGet(opts: {
   });
 }
 
-export function useProjectsGet(opts?: { org_id?: Number; user_id?: Number; keyword?: string }) {
+export function useProjectsGet(opts?: { org_id?: number; user_id?: number; keyword?: string }) {
   const { org_id, user_id, keyword } = opts || {};
 
   return useQuery({
