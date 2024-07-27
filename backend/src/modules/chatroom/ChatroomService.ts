@@ -28,8 +28,8 @@ export class ChatService {
     }
   }
 
-  async isAllowed(user_id: number) {
-    const members = await this.getMembers(user_id);
+  async isAllowed(chatroom_id: number, user_id: number) {
+    const members = await this.getMembers(chatroom_id);
     return members.some((member_id) => member_id === user_id);
   }
 

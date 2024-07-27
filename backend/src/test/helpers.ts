@@ -93,9 +93,22 @@ export async function baseCase(app: Application) {
         name: "external user",
         password: hashSync(orig_password, 10),
       },
+      {
+        name: "chat user",
+        password: hashSync(orig_password, 10),
+      },
+      {
+        name: "org and project user",
+        password: hashSync(orig_password, 10),
+      },
     ])
     .returning(["id", "name"])
     .execute();
+
+  const org_user = { ...user_ids[0], password: orig_password };
+  const plain_user = { ...user_ids[1], password: orig_password };
+  const chat_user = { ...user_ids[2], password: orig_password };
+  const dev_user = { ...user_ids[3], password: orig_password };
 
   await app.db
     .insertInto("orgs_users")
@@ -115,6 +128,15 @@ export async function baseCase(app: Application) {
     })
     .returning(["id", "name"])
     .executeTakeFirstOrThrow();
+
+  await app.db
+    .insertInto("projects_users")
+    .values({
+      project_id: project.id,
+      role: "Dev",
+      user_id: dev_user.id,
+    })
+    .execute();
 
   const bucket = await app.db
     .insertInto("ms_task_buckets")
@@ -141,14 +163,44 @@ export async function baseCase(app: Application) {
     .returning(["ms_tasks.id", "ms_tasks.name"])
     .executeTakeFirstOrThrow();
 
+  const chat = await app.db
+    .insertInto("ms_chatrooms")
+    .values({
+      name: "Chatroom Base Case",
+    })
+    .returning(["ms_chatrooms.id", "ms_chatrooms.name"])
+    .executeTakeFirstOrThrow();
+
+  await app.db
+    .insertInto("chatrooms_users")
+    .values({
+      chatroom_id: chat.id,
+      user_id: chat_user.id,
+    })
+    .execute();
+
+  const message = await app.db
+    .insertInto("ms_messages")
+    .values({
+      chatroom_id: chat.id,
+      message: "testing message",
+      user_id: user_ids[2].id,
+    })
+    .returning(["ms_messages.message", "ms_messages.user_id", "ms_messages.chatroom_id"])
+    .executeTakeFirstOrThrow();
+
   return {
     org,
     project,
     bucket_fill: bucket[0],
     bucket_empty: bucket[1],
     task,
-    member: { ...user_ids[0], password: orig_password },
-    nonmember: { ...user_ids[1], password: orig_password },
+    member: org_user,
+    nonmember: plain_user,
+    chatuser: chat_user,
+    dev_user: dev_user,
+    chat,
+    message,
   };
 }
 
