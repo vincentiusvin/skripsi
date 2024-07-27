@@ -1,6 +1,5 @@
 import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
-import { Application } from "../../app.js";
 import { DB } from "../../db/db_types.js";
 
 function chatroomWithUsers(eb: ExpressionBuilder<DB, "ms_chatrooms">) {
@@ -14,8 +13,18 @@ function chatroomWithUsers(eb: ExpressionBuilder<DB, "ms_chatrooms">) {
 
 export class ChatRepository {
   private db: Kysely<DB>;
-  constructor(app: Application) {
-    this.db = app.db;
+  constructor(db: Kysely<DB>) {
+    this.db = db;
+  }
+
+  async getMembers(chatroom_id: number) {
+    const result = await this.db
+      .selectFrom("chatrooms_users")
+      .select("chatrooms_users.user_id")
+      .where("chatroom_id", "=", chatroom_id)
+      .execute();
+
+    return result.map((x) => x.user_id);
   }
 
   async getMessages(chatroom_id: number) {
