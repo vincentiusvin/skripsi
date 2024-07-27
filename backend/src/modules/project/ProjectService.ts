@@ -1,6 +1,7 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
 import { OrgService } from "../organization/OrgService.js";
-import { ProjectRepository, ProjectRoles } from "./ProjectRepository.js";
+import { ProjectRoles } from "./ProjectMisc.js";
+import { ProjectRepository } from "./ProjectRepository.js";
 
 export class ProjectService {
   private project_repo: ProjectRepository;

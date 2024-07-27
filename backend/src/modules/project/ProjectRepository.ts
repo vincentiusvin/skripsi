@@ -1,13 +1,7 @@
 import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
-
-const project_roles = ["Pending", "Dev", "Admin"] as const;
-export type ProjectRoles = (typeof project_roles)[number];
-
-export function parseRole(role: string) {
-  return project_roles.find((x) => x === role);
-}
+import { ProjectRoles, parseRole } from "./ProjectMisc.js";
 
 function projectWithMembers(eb: ExpressionBuilder<DB, "ms_projects">) {
   return jsonArrayFrom(
@@ -28,7 +22,10 @@ function projectWithCategories(eb: ExpressionBuilder<DB, "ms_projects">) {
         "categories_projects.category_id",
         "ms_category_projects.id",
       )
-      .select(["ms_category_projects.name as category_name"])
+      .select([
+        "ms_category_projects.name as category_name",
+        "ms_category_projects.id as category_id",
+      ])
       .whereRef("categories_projects.project_id", "=", "ms_projects.id"),
   );
 }
@@ -39,7 +36,7 @@ export class ProjectRepository {
     this.db = db;
   }
 
-  async getMemberRole(project_id: number, user_id: number) {
+  async getMemberRole(project_id: number, user_id: number): Promise<ProjectRoles> {
     const res = await this.db
       .selectFrom("projects_users")
       .select("role")
@@ -52,7 +49,7 @@ export class ProjectRepository {
       .executeTakeFirst();
 
     if (!res) {
-      return undefined;
+      return "Not Involved";
     }
 
     const ret = parseRole(res.role);
@@ -151,7 +148,7 @@ export class ProjectRepository {
   }) {
     const { project_name, org_id, project_desc, category_id } = obj;
 
-    await this.db.transaction().execute(async (trx) => {
+    return await this.db.transaction().execute(async (trx) => {
       const prj = await trx
         .insertInto("ms_projects")
         .values({
@@ -175,6 +172,7 @@ export class ProjectRepository {
           })
           .execute();
       }
+      return prj.id;
     });
   }
 
