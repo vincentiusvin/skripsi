@@ -12,6 +12,15 @@ function orgWithCategories(eb: ExpressionBuilder<DB, "ms_orgs">) {
   );
 }
 
+function orgWithUsers(eb: ExpressionBuilder<DB, "ms_orgs">) {
+  return jsonArrayFrom(
+    eb
+      .selectFrom("orgs_users")
+      .select(["orgs_users.user_id"])
+      .whereRef("orgs_users.org_id", "=", "ms_orgs.id"),
+  );
+}
+
 export class OrgRepository {
   private db: Kysely<DB>;
   constructor(db: Kysely<DB>) {
@@ -29,6 +38,7 @@ export class OrgRepository {
         "ms_orgs.phone as org_phone",
         "ms_orgs.image as org_image",
         orgWithCategories(eb).as("org_categories"),
+        orgWithUsers(eb).as("org_users"),
       ])
       .execute();
   }
@@ -44,6 +54,7 @@ export class OrgRepository {
         "ms_orgs.phone as org_phone",
         "ms_orgs.image as org_image",
         orgWithCategories(eb).as("org_categories"),
+        orgWithUsers(eb).as("org_users"),
       ])
       .where("ms_orgs.id", "=", id)
       .executeTakeFirst();
@@ -60,6 +71,7 @@ export class OrgRepository {
         "ms_orgs.phone as org_phone",
         "ms_orgs.image as org_image",
         orgWithCategories(eb).as("org_categories"),
+        orgWithUsers(eb).as("org_users"),
       ])
       .where("ms_orgs.name", "=", name)
       .executeTakeFirst();
