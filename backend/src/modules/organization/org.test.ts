@@ -109,7 +109,7 @@ describe("org controller", () => {
     expect(result.org_address).eq(in_addr);
   });
 
-  it.only("should be able to delete", async () => {
+  it("should be able to delete", async () => {
     const cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
 
     const res = await new APIContext("OrgsDelete").fetch(`/api/orgs/${caseData.org.id}`, {
