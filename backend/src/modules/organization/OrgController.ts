@@ -254,7 +254,7 @@ export class OrgController extends Controller {
     };
   }> = async (req, res) => {
     const id = req.params.id;
-    this.org_service.deleteOrg(id);
+    await this.org_service.deleteOrg(id);
     res.status(200).json({ msg: "Organisasi berhasil di hapus" });
   };
 }

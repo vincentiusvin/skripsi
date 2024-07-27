@@ -5,7 +5,9 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .createTable("ms_chatrooms")
     .addColumn("id", "serial", (build) => build.primaryKey())
     .addColumn("name", "text", (build) => build.notNull())
-    .addColumn("project_id", "integer", (build) => build.references("ms_projects.id"))
+    .addColumn("project_id", "integer", (build) =>
+      build.references("ms_projects.id").onDelete("cascade").onUpdate("cascade"),
+    )
     .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
     .execute();
 }
