@@ -4,7 +4,7 @@ services:
     container_name: skripsi-db
     env_file: ".env.prod"
     volumes:
-      - ./db/postgres_data:/var/lib/postgresql
+      - ./postgres-data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 3s
