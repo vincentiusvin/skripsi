@@ -17,6 +17,7 @@ export const errorHandler: ErrorRequestHandler = function (error, req, res, next
     res.status(404).json({ msg: error.message });
   } else {
     logger.error(error.message, {
+      error,
       req_query: req.query,
       req_body: req.body,
       req_method: req.method,

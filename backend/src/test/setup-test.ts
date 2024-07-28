@@ -10,8 +10,8 @@ export async function mochaGlobalSetup() {
     env: process.env,
   });
 
-  if (process.env.APPLICATION_PORT) {
-    app.listen(Number(process.env.APPLICATION_PORT));
+  if (process.env.BACKEND_PORT) {
+    app.listen(Number(process.env.BACKEND_PORT));
   } else {
     console.log("Application port undefined!");
     process.exit(1);

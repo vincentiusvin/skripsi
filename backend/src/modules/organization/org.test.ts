@@ -18,18 +18,13 @@ describe("org controller", () => {
 
   it("should be able to get org", async () => {
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const expected_org = caseData.org.id;
 
-    const res = await new APIContext("OrgsGet").fetch(`/api/orgs/`, {
-      headers: {
-        cookie: cookie,
-      },
-      credentials: "include",
-      method: "get",
-    });
-    expect(res.status).eq(200);
-    const result = await res.json();
-    const expected_id = caseData.org.id;
-    const found_org = result.find((x) => x.org_id === expected_id);
+    const read_req = await getOrgs(cookie);
+    const result = await read_req.json();
+    const found_org = result.find((x) => x.org_id === expected_org);
+
+    expect(read_req.status).eq(200);
     expect(found_org).to.not.eq(undefined);
     expect(found_org?.org_name).to.eq(caseData.org.name);
   });
@@ -42,95 +37,133 @@ describe("org controller", () => {
     const in_phone = "123";
     const in_desc = "Hello";
 
-    const res = await new APIContext("OrgsPost").fetch(`/api/orgs/`, {
-      headers: {
-        cookie: cookie,
-      },
-      credentials: "include",
-      method: "post",
-      body: {
+    const send_req = await addOrg(
+      {
         org_address: in_addr,
         org_description: in_desc,
         org_name: in_name,
         org_phone: in_phone,
       },
-    });
-    expect(res.status).eq(201);
-    await res.json();
+      cookie,
+    );
+    await send_req.json();
 
-    const res2 = await new APIContext("OrgsGet").fetch(`/api/orgs/`, {
-      headers: {
-        cookie: cookie,
-      },
-      credentials: "include",
-      method: "get",
-    });
-    expect(res2.status).eq(200);
-
-    const result = await res2.json();
+    const read_req = await getOrgs(cookie);
+    const result = await read_req.json();
     const found_org = result.find((x) => x.org_name === in_name);
 
+    expect(read_req.status).eq(200);
     expect(found_org).to.not.eq(undefined);
     expect(found_org?.org_description).to.eq(in_desc);
   });
 
   it("should be able to update and get detail", async () => {
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const in_org = caseData.org;
 
     const in_name = "new_name";
     const in_addr = "new_place";
 
-    const res = await new APIContext("OrgsUpdate").fetch(`/api/orgs/${caseData.org.id}`, {
-      headers: {
-        cookie: cookie,
-      },
-      credentials: "include",
-      method: "put",
-      body: {
+    const send_req = await updateOrg(
+      in_org.id,
+      {
         org_name: in_name,
         org_address: in_addr,
       },
-    });
-    expect(res.status).eq(200);
-    await res.json();
+      cookie,
+    );
+    await send_req.json();
 
-    const res2 = await new APIContext("OrgsDetailGet").fetch(`/api/orgs/${caseData.org.id}`, {
-      headers: {
-        cookie: cookie,
-      },
-      credentials: "include",
-      method: "get",
-    });
+    const read_req = await getOrgDetail(in_org.id, cookie);
+    const result = await read_req.json();
 
-    expect(res2.status).eq(200);
-    const result = await res2.json();
-
+    expect(read_req.status).eq(200);
     expect(result.org_name).eq(in_name);
     expect(result.org_address).eq(in_addr);
   });
 
   it("should be able to delete", async () => {
-    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
+    const in_org = caseData.org;
 
-    const res = await new APIContext("OrgsDelete").fetch(`/api/orgs/${caseData.org.id}`, {
-      headers: {
-        cookie: cookie,
-      },
-      credentials: "include",
-      method: "delete",
-    });
-    expect(res.status).to.eq(200);
-
-    const res2 = await new APIContext("OrgsGet").fetch(`/api/orgs/`, {
-      headers: {
-        cookie: cookie,
-      },
-      credentials: "include",
-      method: "get",
-    });
-    expect(res2.status).eq(200);
-    const result = await res2.json();
+    const send_req = await deleteOrg(in_org.id, cookie);
+    const read_req = await getOrgs(cookie);
+    const result = await read_req.json();
     const found_org = result.find((x) => x.org_id === caseData.org.id);
+
+    expect(send_req.status).to.eq(200);
+    expect(read_req.status).eq(200);
     expect(found_org).to.eq(undefined);
   });
 });
+
+function getOrgs(cookie: string) {
+  return new APIContext("OrgsGet").fetch(`/api/orgs/`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "get",
+  });
+}
+
+function addOrg(
+  org: {
+    org_address: string;
+    org_description: string;
+    org_name: string;
+    org_phone: string;
+  },
+  cookie: string,
+) {
+  return new APIContext("OrgsPost").fetch(`/api/orgs/`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "post",
+    body: org,
+  });
+}
+
+function updateOrg(
+  org_id: number,
+  org_data: {
+    org_name?: string | undefined;
+    org_description?: string | undefined;
+    org_address?: string | undefined;
+    org_phone?: string | undefined;
+    org_image?: string | undefined;
+    org_categories?: number[] | undefined;
+  },
+  cookie: string,
+) {
+  return new APIContext("OrgsUpdate").fetch(`/api/orgs/${org_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "put",
+    body: org_data,
+  });
+}
+
+function getOrgDetail(org_id: number, cookie: string) {
+  return new APIContext("OrgsDetailGet").fetch(`/api/orgs/${org_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "get",
+  });
+}
+
+function deleteOrg(org_id: number, cookie: string) {
+  return new APIContext("OrgsDelete").fetch(`/api/orgs/${org_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "delete",
+  });
+}
