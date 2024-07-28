@@ -15,9 +15,7 @@ export class UserAccountController extends Controller {
     return {
       //[GET] /api/user/account/:id"
       UserAccountGet: new Route({
-        handler: () => {
-          this.getUserAccount, console.info("[GET] /api/user/account/:id");
-        },
+        handler: this.getUserAccount,
         method: "get",
         path: "/api/user/account/:id",
         schema: {
@@ -32,9 +30,7 @@ export class UserAccountController extends Controller {
 
       //[PUT] /api/user/account/:id"
       UserAccountUpdate: new Route({
-        handler: () => {
-          this.updateUserAccount, console.info("[PUT] /api/user/account/:id");
-        },
+        handler: this.updateUserAccount,
         method: "put",
         path: "/api/user/account/:id",
         schema: {
