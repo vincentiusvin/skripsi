@@ -1,4 +1,4 @@
-.env
-.env.prod
-.env.test
-postgres-data
+/.env
+/.env.prod
+/.env.test
+/postgres-data
