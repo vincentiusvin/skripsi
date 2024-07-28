@@ -4,7 +4,6 @@ import {
   KeyboardSensor,
   PointerSensor,
   TouchSensor,
-  closestCorners,
   useDroppable,
   useSensor,
   useSensors,
@@ -101,8 +100,7 @@ type TempTasks = {
         end_at: Date | null;
         start_at: Date | null;
         users: {
-          id: number;
-          name: string;
+          user_id: number;
         }[];
       }[]
     | undefined;
@@ -235,7 +233,6 @@ function Kanban(props: { project_id: number }) {
       )}
       <Stack direction={"row"} spacing={5} flexGrow={1} pb={8}>
         <DndContext
-          collisionDetection={closestCorners}
           sensors={sensors}
           onDragStart={(x) => setActiveDragID(x.active.id.toString())}
           onDragEnd={({ active }) => {
@@ -309,7 +306,6 @@ function Kanban(props: { project_id: number }) {
               cloned[activeLoc.ctrIdx].tasks = activeCtr.tasks?.filter((x) => x.id !== active.id);
 
               const cutIdx = overLoc.cellIdx;
-
               if (cutIdx != undefined) {
                 // insert to array
                 cloned[overLoc.ctrIdx].tasks = [
