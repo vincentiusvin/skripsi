@@ -7,9 +7,11 @@ import { ProjectController } from "./modules/project/ProjectController.js";
 import { SessionController } from "./modules/session/SessionController.js";
 import { TaskController } from "./modules/task/TaskController.js";
 import { UserController } from "./modules/user/UserController.js";
+import { UserAccountController } from "./modules/user/details/account/UserAccountController.js";
 
 export function registerControllers(app: Application) {
   const controllers = [
+    new UserAccountController(app),
     new ChatController(app),
     new OrgController(app),
     new ProjectController(app),
