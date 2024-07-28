@@ -1,0 +1,12 @@
+FROM skripsi-backend as backend
+
+FROM node:20.16.0-alpine3.19 as frontend_build
+WORKDIR /frontend
+COPY . .
+COPY --from=backend /backend /backend
+RUN npm ci
+RUN npm run build
+
+FROM nginx:1.27.0-alpine3.19 as frontend_serve
+COPY --from=frontend_build /frontend/dist /usr/share/nginx/html
+COPY ./default.conf.template /etc/nginx/templates/default.conf.template

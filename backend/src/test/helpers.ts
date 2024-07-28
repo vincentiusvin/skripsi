@@ -60,10 +60,13 @@ export class APIContext<T extends keyof API> {
       options.headers.append("Content-Type", "application/json");
     }
 
-    const res = await fetch(`http://localhost:${process.env.APPLICATION_PORT}` + urlWithParams, {
-      ...options,
-      body: stringBody,
-    });
+    const res = await fetch(
+      `http://${process.env.BACKEND_HOST}:${process.env.BACKEND_PORT}` + urlWithParams,
+      {
+        ...options,
+        body: stringBody,
+      },
+    );
 
     return res;
   }
