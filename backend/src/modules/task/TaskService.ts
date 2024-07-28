@@ -43,6 +43,7 @@ export class TaskService {
         throw new Error("Gagal mengurutkan pekerjaan!");
       }
       updateOrder = insert_before_this.order;
+      await this.repo.bumpOrderBiggerThan(target_bucket, updateOrder);
     } else {
       const data_after = await this.repo.getMaxOrder(target_bucket);
       if (data_after == undefined) {

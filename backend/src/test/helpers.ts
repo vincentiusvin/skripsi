@@ -158,13 +158,20 @@ export async function baseCase(app: Application) {
 
   const task = await app.db
     .insertInto("ms_tasks")
-    .values({
-      name: "Todo",
-      bucket_id: bucket[0].id,
-      order: 1,
-    })
+    .values([
+      {
+        name: "Todo",
+        bucket_id: bucket[0].id,
+        order: 1,
+      },
+      {
+        name: "Todo2",
+        bucket_id: bucket[0].id,
+        order: 2,
+      },
+    ])
     .returning(["ms_tasks.id", "ms_tasks.name"])
-    .executeTakeFirstOrThrow();
+    .execute();
 
   const chat = await app.db
     .insertInto("ms_chatrooms")
