@@ -1,5 +1,5 @@
 import { Login, Logout } from "@mui/icons-material";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Avatar, Box, Button, Stack, Typography } from "@mui/material";
 import { Link } from "wouter";
 import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks";
 
@@ -37,6 +37,17 @@ function Nav() {
             <Box>
               <Typography>Hello, {data.user_name}</Typography>
             </Box>
+            <Link to={`/user/account/${data.user_id}`}>
+              <Button>
+                <Avatar
+                  src=""
+                  sx={{
+                    width: "2vw",
+                    height: "2vw",
+                  }}
+                />
+              </Button>
+            </Link>
             <Button
               variant="outlined"
               color="primary"
