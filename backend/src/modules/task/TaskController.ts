@@ -1,15 +1,13 @@
-import { Application } from "../../app.js";
+import type { Express } from "express";
 import { Controller, Route } from "../../helpers/controller.js";
 import { RH } from "../../helpers/types.js";
-import { TaskRepository } from "./TaskRepository.js";
 import { TaskService } from "./TaskService.js";
 
 export class TaskController extends Controller {
-  service: TaskService;
-  constructor(app: Application) {
-    super(app);
-    const repo = new TaskRepository(app.db);
-    this.service = new TaskService(repo);
+  private task_service: TaskService;
+  constructor(express_server: Express, task_service: TaskService) {
+    super(express_server);
+    this.task_service = task_service;
   }
 
   init() {
@@ -61,7 +59,7 @@ export class TaskController extends Controller {
     const { bucket_id, name, description, start_at, end_at, before_id } = req.body;
 
     const task_id = Number(task_id_raw);
-    await this.service.updateTask(task_id, {
+    await this.task_service.updateTask(task_id, {
       before_id,
       bucket_id,
       description,
@@ -70,7 +68,7 @@ export class TaskController extends Controller {
       start_at,
     });
 
-    const result = await this.service.getTaskByID(task_id);
+    const result = await this.task_service.getTaskByID(task_id);
 
     if (!result) {
       throw new Error("Gagal untuk menemukan tugas setelah melakukan update!");
@@ -105,7 +103,7 @@ export class TaskController extends Controller {
     const { bucket_id } = req.params;
     const { name, description, end_at, start_at } = req.body;
 
-    const task_id = await this.service.addTask({
+    const task_id = await this.task_service.addTask({
       bucket_id: Number(bucket_id),
       name,
       description,
@@ -116,7 +114,7 @@ export class TaskController extends Controller {
     if (!task_id) {
       throw new Error("Gagal menemukan task setelah ditambahkan!");
     }
-    const result = await this.service.getTaskByID(task_id.id);
+    const result = await this.task_service.getTaskByID(task_id.id);
     if (!result) {
       throw new Error("Gagal menemukan task setelah ditambahkan!");
     }
@@ -140,7 +138,7 @@ export class TaskController extends Controller {
     }[];
   }> = async (req, res) => {
     const { bucket_id } = req.params;
-    const result = await this.service.getTaskByBucket(Number(bucket_id));
+    const result = await this.task_service.getTaskByBucket(Number(bucket_id));
     res.status(200).json(result);
   };
 }

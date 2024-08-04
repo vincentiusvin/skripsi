@@ -1,7 +1,7 @@
 import { hashSync } from "bcryptjs";
+import type { Express } from "express";
 import { Kysely } from "kysely";
 import { z } from "zod";
-import { Application } from "../../app.js";
 import { DB } from "../../db/db_types.js";
 import { Controller, Route } from "../../helpers/controller.js";
 import { ClientError } from "../../helpers/error.js";
@@ -9,9 +9,9 @@ import { RH } from "../../helpers/types.js";
 
 export class UserController extends Controller {
   private db: Kysely<DB>;
-  constructor(app: Application) {
-    super(app);
-    this.db = app.db;
+  constructor(express_server: Express, db: Kysely<DB>) {
+    super(express_server);
+    this.db = db;
   }
 
   init() {

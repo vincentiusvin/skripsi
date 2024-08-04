@@ -1,14 +1,10 @@
+import type { Express } from "express";
 import { RequestHandler } from "express";
-import { Application } from "../../app.js";
+import { Server } from "socket.io";
 import { Controller, Route } from "../../helpers/controller.js";
 import { AuthError, ClientError } from "../../helpers/error.js";
 import { RH } from "../../helpers/types.js";
 import { validateLogged } from "../../helpers/validate.js";
-import { OrgRepository } from "../organization/OrgRepository.js";
-import { OrgService } from "../organization/OrgService.js";
-import { ProjectRepository } from "../project/ProjectRepository.js";
-import { ProjectService } from "../project/ProjectService.js";
-import { ChatRepository } from "./ChatroomRepository.js";
 import { ChatService } from "./ChatroomService.js";
 
 // Manipulasi data semuanya dilakuin lewat http.
@@ -21,18 +17,10 @@ export class ChatController extends Controller {
   private socket_server: import("socket.io").Server;
   private chat_service: ChatService;
 
-  constructor(app: Application) {
-    super(app);
-    this.socket_server = app.socket_server;
-
-    const repo = new ChatRepository(app.db);
-    const project_repo = new ProjectRepository(app.db);
-    const org_repo = new OrgRepository(app.db);
-
-    const org_service = new OrgService(org_repo);
-    const project_service = new ProjectService(project_repo, org_service);
-
-    this.chat_service = new ChatService(repo, project_service);
+  constructor(express_server: Express, socket_server: Server, chat_service: ChatService) {
+    super(express_server);
+    this.socket_server = socket_server;
+    this.chat_service = chat_service;
   }
 
   init() {
