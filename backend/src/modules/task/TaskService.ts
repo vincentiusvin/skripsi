@@ -67,18 +67,15 @@ export class TaskService {
     bucket_id: number;
     name: string;
     description?: string;
-    end_at?: Date;
-    start_at?: Date;
+    end_at?: string;
+    start_at?: string;
   }) {
     const { bucket_id } = data;
     const order = await this.repo.getMaxOrder(bucket_id);
-    if (!order) {
-      throw new NotFoundError("Kelompok tugas gagal untuk ditemukan!");
-    }
 
     return await this.repo.addTask({
       ...data,
-      order,
+      order: order ?? 1,
     });
   }
 

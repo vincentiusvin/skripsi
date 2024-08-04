@@ -94,6 +94,31 @@ describe("bucket controller", () => {
     expect(found).to.not.eq(undefined);
     expect(found?.description).to.eq(in_description);
   });
+
+  it("should be able to write and read to empty buckets", async () => {
+    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const in_bucket = caseData.bucket_empty;
+    const in_name = "New Task";
+    const in_description = "Cool";
+
+    const send_req = await addTask(
+      in_bucket.id,
+      {
+        name: in_name,
+        description: in_description,
+      },
+      cookie,
+    );
+    await send_req.json();
+    const read_req = await getTasks(in_bucket.id, cookie);
+    const result = await read_req.json();
+    const found = result.find((x) => x.name === in_name);
+
+    expect(send_req.status).eq(201);
+    expect(read_req.status).eq(200);
+    expect(found).to.not.eq(undefined);
+    expect(found?.description).to.eq(in_description);
+  });
 });
 
 function getTasks(bucket_id: number, cookie: string) {
@@ -111,8 +136,8 @@ function addTask(
   data: {
     name: string;
     description?: string | undefined;
-    end_at?: Date | undefined;
-    start_at?: Date | undefined;
+    end_at?: string | undefined;
+    start_at?: string | undefined;
   },
   cookie: string,
 ) {

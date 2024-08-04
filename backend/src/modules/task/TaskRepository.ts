@@ -70,8 +70,8 @@ export class TaskRepository {
     order: number;
     name: string;
     description?: string;
-    end_at?: Date;
-    start_at?: Date;
+    end_at?: string;
+    start_at?: string;
   }) {
     const { order, bucket_id, name, description, end_at, start_at } = data;
     return await this.db

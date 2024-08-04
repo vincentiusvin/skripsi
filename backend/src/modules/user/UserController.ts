@@ -18,7 +18,10 @@ export class UserController extends Controller {
         method: "post",
         path: "/api/users",
         schema: {
-          ReqBody: this.postUserReqBody,
+          ReqBody: z.object({
+            user_name: z.string().min(1, "Username tidak boleh kosong!"),
+            user_password: z.string().min(1, "Password tidak boleh kosong!"),
+          }),
         },
       }),
 
@@ -29,11 +32,6 @@ export class UserController extends Controller {
       }),
     };
   }
-
-  private postUserReqBody = z.object({
-    user_name: z.string().min(1, "Username tidak boleh kosong!"),
-    user_password: z.string().min(1, "Password tidak boleh kosong!"),
-  });
 
   private postUser: RH<{
     ResBody: { user_id: number; user_name: string };

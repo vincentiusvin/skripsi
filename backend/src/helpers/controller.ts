@@ -13,22 +13,26 @@ export class Route<T extends RHTop = RHTop> {
   handler: T;
   method: "get" | "put" | "post" | "patch" | "delete";
   path: string;
-  schema?: {
-    ReqBody?: ZodType<T extends RH<infer O> ? O["ReqBody"] : never>;
-    ReqQuery?: ZodType<T extends RH<infer O> ? O["ReqQuery"] : never>;
-    Params?: ZodType<T extends RH<infer O> ? O["Params"] : never>;
-  };
+  schema?: T extends RH<infer O>
+    ? {
+        ReqBody?: ZodType<O["ReqBody"]>;
+        ReqQuery?: ZodType<O["ReqQuery"]>;
+        Params?: ZodType<O["Params"]>;
+      }
+    : never;
   priors?: RequestHandler[];
 
   constructor(opts: {
     handler: T;
     method: "get" | "put" | "post" | "patch" | "delete";
     path: string;
-    schema?: {
-      ReqBody?: ZodType<T extends RH<infer O> ? O["ReqBody"] : never>;
-      ReqQuery?: ZodType<T extends RH<infer O> ? O["ReqQuery"] : never>;
-      Params?: ZodType<T extends RH<infer O> ? O["Params"] : never>;
-    };
+    schema?: T extends RH<infer O>
+      ? {
+          ReqBody?: ZodType<O["ReqBody"]>;
+          ReqQuery?: ZodType<O["ReqQuery"]>;
+          Params?: ZodType<O["Params"]>;
+        }
+      : never;
     priors?: RequestHandler[];
   }) {
     const { handler, method, path, schema, priors } = opts;

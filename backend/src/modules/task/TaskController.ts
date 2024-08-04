@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { RH } from "../../helpers/types.js";
 import { TaskService } from "./TaskService.js";
@@ -16,16 +17,75 @@ export class TaskController extends Controller {
         handler: this.putTasksDetail,
         method: "put",
         path: "/api/tasks/:task_id",
+        schema: {
+          Params: z.object({
+            task_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID tugas tidak valid!" }),
+          }),
+          ReqBody: z.object({
+            bucket_id: z.number({ message: "ID kelompok tugas tidak valid!" }).optional(),
+            before_id: z.number({ message: "Lokasi tugas tidak valid!" }).optional(),
+            name: z
+              .string({ message: "Nama tidak valid!" })
+              .min(1, "Nama tidak boleh kosong!")
+              .optional(),
+            description: z
+              .string({ message: "Deskripsi tidak valid!" })
+              .min(1, "Deskripsi tidak boleh kosong!")
+              .optional(),
+            start_at: z
+              .string({ message: "Tanggal mulai tidak valid!" })
+              .date("Tanggal mulai tidak valid!")
+              .optional(),
+            end_at: z
+              .string({ message: "Tanggal selesai tidak valid!" })
+              .date("Tanggal selesai tidak valid!")
+              .optional(),
+          }),
+        },
       }),
       BucketsDetailTasksPost: new Route({
         handler: this.postBucketsDetailTasks,
         method: "post",
         path: "/api/buckets/:bucket_id/tasks",
+        schema: {
+          Params: z.object({
+            bucket_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
+          }),
+          ReqBody: z.object({
+            name: z.string({ message: "Nama tidak valid!" }).min(1, "Nama tidak boleh kosong!"),
+            description: z
+              .string({ message: "Deskripsi tidak valid!" })
+              .min(1, "Deskripsi tidak boleh kosong!")
+              .optional(),
+            start_at: z
+              .string({ message: "Tanggal mulai tidak valid!" })
+              .date("Tanggal mulai tidak valid!")
+              .optional(),
+            end_at: z
+              .string({ message: "Tanggal selesai tidak valid!" })
+              .date("Tanggal selesai tidak valid!")
+              .optional(),
+          }),
+        },
       }),
       BucketsDetailTasksGet: new Route({
         handler: this.getBucketsDetailTasks,
         method: "get",
         path: "/api/buckets/:bucket_id/tasks",
+        schema: {
+          Params: z.object({
+            bucket_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
+          }),
+        },
       }),
     };
   }
@@ -96,8 +156,8 @@ export class TaskController extends Controller {
     ReqBody: {
       name: string;
       description?: string;
-      end_at?: Date;
-      start_at?: Date;
+      end_at?: string;
+      start_at?: string;
     };
   }> = async (req, res) => {
     const { bucket_id } = req.params;
