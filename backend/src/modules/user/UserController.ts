@@ -1,17 +1,14 @@
-import { hashSync } from "bcryptjs";
 import type { Express } from "express";
-import { Kysely } from "kysely";
 import { z } from "zod";
-import { DB } from "../../db/db_types.js";
 import { Controller, Route } from "../../helpers/controller.js";
-import { ClientError } from "../../helpers/error.js";
 import { RH } from "../../helpers/types.js";
+import { UserService } from "./UserService.js";
 
 export class UserController extends Controller {
-  private db: Kysely<DB>;
-  constructor(express_server: Express, db: Kysely<DB>) {
+  private user_service: UserService;
+  constructor(express_server: Express, user_service: UserService) {
     super(express_server);
-    this.db = db;
+    this.user_service = user_service;
   }
 
   init() {
@@ -39,42 +36,28 @@ export class UserController extends Controller {
   });
 
   private postUser: RH<{
-    ResBody: { msg: string };
+    ResBody: { user_id: number; user_name: string };
     ReqBody: { user_name: string; user_password: string };
   }> = async (req, res) => {
     const { user_name, user_password } = req.body;
 
-    const similar = await this.db
-      .selectFrom("ms_users")
-      .select("id")
-      .where("ms_users.name", "=", user_name)
-      .execute();
-
-    if (similar.length !== 0) {
-      throw new ClientError("Sudah ada username dengan nama yang sama!");
+    const user_id = await this.user_service.addUser(user_name, user_password);
+    if (user_id == undefined) {
+      throw new Error("Gagal menambahkan pengguna!");
     }
 
-    const encrypt = hashSync(user_password, 10);
+    const result = await this.user_service.getUserByID(user_id.id);
+    if (result == undefined) {
+      throw new Error("Gagal menambahkan pengguna!");
+    }
 
-    await this.db
-      .insertInto("ms_users")
-      .values({
-        name: user_name,
-        password: encrypt,
-      })
-      .execute();
-
-    res.status(201).json({ msg: "User berhasil dibuat!" });
+    res.status(201).json(result);
   };
 
   private getUser: RH<{
     ResBody: { user_id: number; user_name: string }[];
   }> = async (req, res) => {
-    const result = await this.db
-      .selectFrom("ms_users")
-      .select(["ms_users.id as user_id", "ms_users.name as user_name"])
-      .execute();
-
+    const result = await this.user_service.getUsers();
     res.status(200).json(result);
   };
 }
