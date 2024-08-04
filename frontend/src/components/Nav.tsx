@@ -37,7 +37,7 @@ function Nav() {
             <Box>
               <Typography>Hello, {data.user_name}</Typography>
             </Box>
-            <Link to={`/user/account/${data.user_id}`}>
+            <Link to={`/user/${data.user_id}/account`}>
               <Button>
                 <Avatar
                   src=""
