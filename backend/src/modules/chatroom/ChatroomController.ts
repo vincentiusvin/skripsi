@@ -32,6 +32,9 @@ export class ChatController extends Controller {
         path: "/api/projects/:project_id/chatrooms",
         priors: [validateLogged as RequestHandler],
         schema: {
+          ReqBody: z.object({
+            name: z.string({ message: "Nama tidak valid!" }).min(1, "Nama tidak boleh kosong!"),
+          }),
           Params: z.object({
             project_id: z
               .string()
