@@ -67,6 +67,15 @@ export class ProjectService {
     return this.project_repo.getProjectByID(project_id);
   }
 
+  getAllMembers(project_id: number) {
+    return this.project_repo.getMembers(project_id);
+  }
+
+  async getInvolvedMembers(project_id: number) {
+    const members = await this.project_repo.getMembers(project_id);
+    return members.filter((x) => x.role !== "Pending");
+  }
+
   addProject(obj: {
     project_name: string;
     org_id: number;

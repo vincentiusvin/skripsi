@@ -1,0 +1,28 @@
+services:
+  db:
+    image: "postgres:16.3-alpine3.20"
+    container_name: skripsi-db
+    env_file: ".env.prod"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+  backend:
+    container_name: skripsi-backend
+    build: ./backend
+    env_file: ".env.prod"
+    depends_on:
+      db:
+        condition: service_healthy
+  frontend:
+    container_name: skripsi-frontend
+    build: ./frontend
+    env_file: ".env.prod"
+    ports:
+      - 7000:80
+    depends_on:
+      backend:
+        condition: service_started

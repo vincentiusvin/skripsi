@@ -4,7 +4,6 @@ import {
   KeyboardSensor,
   PointerSensor,
   TouchSensor,
-  closestCorners,
   useDroppable,
   useSensor,
   useSensors,
@@ -101,8 +100,7 @@ type TempTasks = {
         end_at: Date | null;
         start_at: Date | null;
         users: {
-          id: number;
-          name: string;
+          user_id: number;
         }[];
       }[]
     | undefined;
@@ -160,7 +158,7 @@ function Kanban(props: { project_id: number }) {
   // undef: gak ada yang dipilih
   // number: lagi ngedit bucket itu
   const [selectedBucketEdit, setSelectedBucketEdit] = useState<null | number>(null);
-  const [taskName, setTaskName] = useState<null | string>(null);
+  const [taskName, setTaskName] = useState<string>("");
   const [taskDescription, setTaskDescription] = useState<null | string>(null);
   const [taskStartAt, setTaskStartAt] = useState<null | Dayjs>(null);
   const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>(null);
@@ -216,15 +214,12 @@ function Kanban(props: { project_id: number }) {
           <DialogActions>
             <Button
               onClick={() => {
-                if (taskName == null) {
-                  return;
-                }
                 addTask({
                   name: taskName,
                   bucket_id: selectedBucketEdit,
                   description: taskDescription ?? undefined,
-                  start_at: taskStartAt?.toDate(),
-                  end_at: taskEndAt?.toDate(),
+                  start_at: taskStartAt?.toISOString(),
+                  end_at: taskEndAt?.toISOString(),
                 });
               }}
             >
@@ -235,7 +230,6 @@ function Kanban(props: { project_id: number }) {
       )}
       <Stack direction={"row"} spacing={5} flexGrow={1} pb={8}>
         <DndContext
-          collisionDetection={closestCorners}
           sensors={sensors}
           onDragStart={(x) => setActiveDragID(x.active.id.toString())}
           onDragEnd={({ active }) => {
@@ -309,7 +303,6 @@ function Kanban(props: { project_id: number }) {
               cloned[activeLoc.ctrIdx].tasks = activeCtr.tasks?.filter((x) => x.id !== active.id);
 
               const cutIdx = overLoc.cellIdx;
-
               if (cutIdx != undefined) {
                 // insert to array
                 cloned[overLoc.ctrIdx].tasks = [

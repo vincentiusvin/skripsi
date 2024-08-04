@@ -1,17 +1,16 @@
+import type { Express } from "express";
 import { RequestHandler } from "express";
 import { z } from "zod";
-import { Application } from "../../app.js";
 import { Controller, Route } from "../../helpers/controller.js";
 import { RH } from "../../helpers/types.js";
 import { validateLogged } from "../../helpers/validate.js";
-import { OrgRepository } from "./OrgRepository.js";
 import { OrgService } from "./OrgService.js";
 
 export class OrgController extends Controller {
   private org_service: OrgService;
-  constructor(app: Application) {
-    super(app);
-    this.org_service = new OrgService(new OrgRepository(app.db));
+  constructor(express_server: Express, org_service: OrgService) {
+    super(express_server);
+    this.org_service = org_service;
   }
 
   init() {
@@ -254,7 +253,7 @@ export class OrgController extends Controller {
     };
   }> = async (req, res) => {
     const id = req.params.id;
-    this.org_service.deleteOrg(id);
+    await this.org_service.deleteOrg(id);
     res.status(200).json({ msg: "Organisasi berhasil di hapus" });
   };
 }

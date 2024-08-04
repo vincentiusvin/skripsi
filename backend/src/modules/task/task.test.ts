@@ -16,68 +16,159 @@ describe("bucket controller", () => {
   });
 
   it("should be able to update task", async () => {
-    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const in_user = caseData.nonmember;
+    const in_task = caseData.task[0];
+    const in_name = "Not cool Task";
+    const in_description = "Cool";
+    const in_bucket = caseData.bucket_empty;
 
-    const res = await new APIContext("TasksDetailPut").fetch(`/api/tasks/${caseData.task.id}`, {
-      headers: {
-        cookie: cookie,
-      },
-      credentials: "include",
-      method: "put",
-      body: {
-        name: "Not cool Task",
-        description: "Cool",
-        bucket_id: caseData.bucket_empty.id,
-      },
-    });
-    expect(res.status).eq(200);
-
-    const res2 = await new APIContext("BucketsDetailTasksGet").fetch(
-      `/api/buckets/${caseData.bucket_empty.id}/tasks`,
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const send_req = await updateTask(
+      in_task.id,
       {
-        headers: {
-          cookie: cookie,
-        },
-        method: "get",
+        bucket_id: in_bucket.id,
+        name: in_name,
+        description: in_description,
       },
+      cookie,
     );
-    const new_result = await res2.json();
-    const task = new_result.find((x) => x.id === caseData.task.id);
-    expect(task).to.not.eq(undefined);
+    const read_req = await getTasks(in_bucket.id, cookie);
+    const result = await read_req.json();
+    const found = result.find((x) => x.id === in_task.id);
+
+    expect(send_req.status).to.eq(200);
+    expect(found).to.not.eq(undefined);
+    expect(found?.description).to.eq(in_description);
+    expect(found?.name).to.eq(in_name);
   });
+
+  for (const [idx1, idx2] of [
+    [0, 1],
+    [1, 0],
+  ]) {
+    it("should be able to sort task", async () => {
+      const in_user = caseData.nonmember;
+      const in_before = caseData.task[idx1];
+      const in_task = caseData.task[idx2];
+      const in_bucket = caseData.bucket_fill;
+
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const send_req = await updateTask(
+        in_task.id,
+        {
+          before_id: in_before.id,
+        },
+        cookie,
+      );
+      const read_req = await getTasks(in_bucket.id, cookie);
+      const result = await read_req.json();
+      const task_index = result.findIndex((x) => x.id === in_task.id);
+      const before_index = result.findIndex((x) => x.id === in_before.id);
+
+      expect(send_req.status).to.eq(200);
+      expect(task_index).to.be.lessThan(before_index);
+    });
+  }
 
   it("should be able to write and read", async () => {
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const in_bucket = caseData.bucket_fill;
+    const in_name = "New Task";
+    const in_description = "Cool";
 
-    const res = await new APIContext("BucketsDetailTasksPost").fetch(
-      `/api/buckets/${caseData.bucket_fill.id}/tasks`,
+    const send_req = await addTask(
+      in_bucket.id,
       {
-        headers: {
-          cookie: cookie,
-        },
-        credentials: "include",
-        method: "post",
-        body: {
-          name: "New Task",
-          description: "Cool",
-        },
+        name: in_name,
+        description: in_description,
       },
+      cookie,
     );
-    expect(res.status).eq(201);
-    await res.json();
+    await send_req.json();
+    const read_req = await getTasks(in_bucket.id, cookie);
+    const result = await read_req.json();
+    const found = result.find((x) => x.name === in_name);
 
-    const res2 = await new APIContext("BucketsDetailTasksGet").fetch(
-      `/api/buckets/${caseData.bucket_fill.id}/tasks`,
+    expect(send_req.status).eq(201);
+    expect(read_req.status).eq(200);
+    expect(found).to.not.eq(undefined);
+    expect(found?.description).to.eq(in_description);
+  });
+
+  it("should be able to write and read to empty buckets", async () => {
+    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const in_bucket = caseData.bucket_empty;
+    const in_name = "New Task";
+    const in_description = "Cool";
+
+    const send_req = await addTask(
+      in_bucket.id,
       {
-        headers: {
-          cookie: cookie,
-        },
-        credentials: "include",
-        method: "get",
+        name: in_name,
+        description: in_description,
       },
+      cookie,
     );
-    expect(res2.status).eq(200);
-    const result = await res2.json();
-    expect(result.length).eq(2);
+    await send_req.json();
+    const read_req = await getTasks(in_bucket.id, cookie);
+    const result = await read_req.json();
+    const found = result.find((x) => x.name === in_name);
+
+    expect(send_req.status).eq(201);
+    expect(read_req.status).eq(200);
+    expect(found).to.not.eq(undefined);
+    expect(found?.description).to.eq(in_description);
   });
 });
+
+function getTasks(bucket_id: number, cookie: string) {
+  return new APIContext("BucketsDetailTasksGet").fetch(`/api/buckets/${bucket_id}/tasks`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "get",
+  });
+}
+
+function addTask(
+  bucket_id: number,
+  data: {
+    name: string;
+    description?: string | undefined;
+    end_at?: string | undefined;
+    start_at?: string | undefined;
+  },
+  cookie: string,
+) {
+  return new APIContext("BucketsDetailTasksPost").fetch(`/api/buckets/${bucket_id}/tasks`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "post",
+    body: data,
+  });
+}
+
+function updateTask(
+  task_id: number,
+  data: {
+    bucket_id?: number;
+    before_id?: number;
+    name?: string;
+    description?: string;
+    start_at?: string;
+    end_at?: string;
+  },
+  cookie: string,
+) {
+  return new APIContext("TasksDetailPut").fetch(`/api/tasks/${task_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "put",
+    body: data,
+  });
+}

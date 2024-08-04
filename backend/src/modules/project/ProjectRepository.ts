@@ -36,6 +36,19 @@ export class ProjectRepository {
     this.db = db;
   }
 
+  async getMembers(project_id: number) {
+    const raw = await this.db
+      .selectFrom("projects_users")
+      .select(["projects_users.user_id", "projects_users.role"])
+      .where("project_id", "=", project_id)
+      .execute();
+
+    return raw.map((x) => ({
+      ...x,
+      role: parseRole(x.role),
+    }));
+  }
+
   async getMemberRole(project_id: number, user_id: number): Promise<ProjectRoles> {
     const res = await this.db
       .selectFrom("projects_users")
@@ -53,9 +66,6 @@ export class ProjectRepository {
     }
 
     const ret = parseRole(res.role);
-    if (!ret) {
-      throw new Error("Role user tidak diketahui!");
-    }
     return ret;
   }
 
