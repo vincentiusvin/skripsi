@@ -1,19 +1,14 @@
-import { Application } from "../../app.js";
+import type { Express } from "express";
 import { Controller, Route } from "../../helpers/controller.js";
 import { RH } from "../../helpers/types.js";
-import { OrgRepository } from "../organization/OrgRepository.js";
-import { OrgService } from "../organization/OrgService.js";
 import { ProjectRoles } from "./ProjectMisc.js";
-import { ProjectRepository } from "./ProjectRepository.js";
 import { ProjectService } from "./ProjectService.js";
 
 export class ProjectController extends Controller {
-  project_service: ProjectService;
-  constructor(app: Application) {
-    super(app);
-    const repo = new ProjectRepository(app.db);
-    const org_serv = new OrgService(new OrgRepository(app.db));
-    this.project_service = new ProjectService(repo, org_serv);
+  private project_service: ProjectService;
+  constructor(express_server: Express, project_service: ProjectService) {
+    super(express_server);
+    this.project_service = project_service;
   }
 
   init() {
