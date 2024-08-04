@@ -9,6 +9,7 @@ export class NotFoundError extends Error {}
 export const errorHandler: ErrorRequestHandler = function (error, req, res, next) {
   logger.error(error.message, {
     error,
+    error_stack: error.stack,
     req_query: req.query,
     req_body: req.body,
     req_method: req.method,

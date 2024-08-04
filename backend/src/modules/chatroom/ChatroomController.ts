@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { RequestHandler } from "express";
 import { Server } from "socket.io";
+import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { AuthError, ClientError } from "../../helpers/error.js";
 import { RH } from "../../helpers/types.js";
@@ -30,17 +31,41 @@ export class ChatController extends Controller {
         method: "post",
         path: "/api/projects/:project_id/chatrooms",
         priors: [validateLogged as RequestHandler],
+        schema: {
+          Params: z.object({
+            project_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID tidak valid!" }),
+          }),
+        },
       }),
       ProjectsDetailChatroomsGet: new Route({
         handler: this.getProjectsDetailChatrooms,
         method: "get",
         path: "/api/projects/:project_id/chatrooms",
+        schema: {
+          Params: z.object({
+            project_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID tidak valid!" }),
+          }),
+        },
       }),
       UsersDetailChatroomsPost: new Route({
         handler: this.postUsersDetailChatrooms,
         method: "post",
         path: "/api/users/:user_id/chatrooms",
         priors: [validateLogged as RequestHandler],
+        schema: {
+          Params: z.object({
+            user_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID tidak valid!" }),
+          }),
+        },
       }),
       UsersDetailChatroomsGet: new Route({
         handler: this.getUsersDetailChatrooms,

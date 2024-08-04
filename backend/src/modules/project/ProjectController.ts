@@ -1,7 +1,8 @@
 import type { Express } from "express";
+import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { RH } from "../../helpers/types.js";
-import { ProjectRoles } from "./ProjectMisc.js";
+import { ProjectRoles, parseRole } from "./ProjectMisc.js";
 import { ProjectService } from "./ProjectService.js";
 
 export class ProjectController extends Controller {
@@ -17,6 +18,16 @@ export class ProjectController extends Controller {
         handler: this.postProjects,
         method: "post",
         path: "/api/projects",
+        schema: {
+          ReqBody: z.object({
+            project_name: z.string({ message: "Nama invalid!" }).min(1, "Nama tidak boleh kosong!"),
+            org_id: z.number({ message: "Organisasi invalid!" }),
+            project_desc: z
+              .string({ message: "Deskripsi invalid!" })
+              .min(1, "Deskripsi tidak boleh kosong!"),
+            category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
+          }),
+        },
       }),
       ProjectsGet: new Route({
         handler: this.getProjects,
@@ -27,31 +38,100 @@ export class ProjectController extends Controller {
         handler: this.getProjectsDetail,
         method: "get",
         path: "/api/projects/:project_id",
+        schema: {
+          Params: z.object({
+            project_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+          }),
+        },
       }),
       ProjectsDetailMembersGet: new Route({
         handler: this.getProjectsDetailMembersDetail,
         method: "get",
         path: "/api/projects/:project_id/users/:user_id",
+        schema: {
+          Params: z.object({
+            project_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+            user_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+          }),
+        },
       }),
       ProjectsDetailMembersPut: new Route({
         handler: this.putProjectsDetailMembersDetail,
         method: "put",
         path: "/api/projects/:project_id/users/:user_id",
+        schema: {
+          ReqBody: z.object({
+            role: z
+              .string()
+              .min(1)
+              .transform((arg) => parseRole(arg)) as ZodType<ProjectRoles>,
+          }),
+          Params: z.object({
+            project_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+            user_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+          }),
+        },
       }),
       ProjectsDetailMembersDelete: new Route({
         handler: this.deleteProjectsDetailMembersDetail,
         method: "delete",
         path: "/api/projects/:project_id/users/:user_id",
+        schema: {
+          Params: z.object({
+            project_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+            user_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+          }),
+        },
       }),
       ProjectsDetailBucketsGet: new Route({
         handler: this.getProjectsDetailBuckets,
         method: "get",
         path: "/api/projects/:project_id/buckets",
+        schema: {
+          Params: z.object({
+            project_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+          }),
+        },
       }),
       ProjectsDetailBucketsPost: new Route({
         handler: this.postProjectsDetailBuckets,
         method: "post",
         path: "/api/projects/:project_id/buckets",
+        schema: {
+          ReqBody: z.object({
+            name: z.string({ message: "Nama invalid!" }).min(1, "Nama tidak boleh kosong!"),
+          }),
+          Params: z.object({
+            project_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+          }),
+        },
       }),
       ProjectsCategoriesGet: new Route({
         handler: this.getProjectsCategories,
@@ -147,7 +227,7 @@ export class ProjectController extends Controller {
 
     const result = await this.project_service.getProjects({
       org_id: org_id != undefined ? Number(org_id) : undefined,
-      user_id: org_id != undefined ? Number(user_id) : undefined,
+      user_id: user_id != undefined ? Number(user_id) : undefined,
       keyword,
     });
 
