@@ -1,15 +1,14 @@
+import type { Express } from "express";
 import { z } from "zod";
-import { Application } from "../../../../app.js";
 import { Controller, Route } from "../../../../helpers/controller";
 import { RH } from "../../../../helpers/types.js";
-import { UserAccountRepository } from "./UserAccountRepository";
 import { UserAccountService } from "./UserAccountSevice";
 
 export class UserAccountController extends Controller {
   private user_service: UserAccountService;
-  constructor(app: Application) {
-    super(app);
-    this.user_service = new UserAccountService(new UserAccountRepository(app.db));
+  constructor(express_server: Express, userService: UserAccountService) {
+    super(express_server);
+    this.user_service = userService;
   }
   init() {
     return {

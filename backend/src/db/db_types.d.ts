@@ -105,6 +105,7 @@ export interface MsUsers {
   education_level: string | null;
   email: string | null;
   id: Generated<number>;
+  image: string | null;
   name: string;
   password: string;
   school: string | null;
