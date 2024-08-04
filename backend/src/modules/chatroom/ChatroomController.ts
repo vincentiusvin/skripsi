@@ -14,7 +14,7 @@ import { ChatService } from "./ChatroomService.js";
 // Kalau chatroomnya bukan, validasi pakai daftar member chatroom
 
 export class ChatController extends Controller {
-  private socket_server: import("socket.io").Server;
+  private socket_server: Server;
   private chat_service: ChatService;
 
   constructor(express_server: Express, socket_server: Server, chat_service: ChatService) {
