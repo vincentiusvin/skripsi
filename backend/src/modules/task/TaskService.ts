@@ -67,8 +67,8 @@ export class TaskService {
     bucket_id: number;
     name: string;
     description?: string;
-    end_at?: Date;
-    start_at?: Date;
+    end_at?: string;
+    start_at?: string;
   }) {
     const { bucket_id } = data;
     const order = await this.repo.getMaxOrder(bucket_id);
