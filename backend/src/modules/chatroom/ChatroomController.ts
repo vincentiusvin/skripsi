@@ -39,7 +39,7 @@ export class ChatController extends Controller {
             project_id: z
               .string()
               .min(1)
-              .refine((arg) => !isNaN(Number(arg)), { message: "ID tidak valid!" }),
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID proyek tidak valid!" }),
           }),
         },
       }),
