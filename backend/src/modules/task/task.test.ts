@@ -17,14 +17,14 @@ describe("bucket controller", () => {
 
   it("should be able to update task", async () => {
     const in_user = caseData.nonmember;
-    const task_id = caseData.task.id;
+    const in_task = caseData.task[0];
     const in_name = "Not cool Task";
     const in_description = "Cool";
     const in_bucket = caseData.bucket_empty;
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await updateTask(
-      task_id,
+      in_task.id,
       {
         bucket_id: in_bucket.id,
         name: in_name,
@@ -34,13 +34,41 @@ describe("bucket controller", () => {
     );
     const read_req = await getTasks(in_bucket.id, cookie);
     const result = await read_req.json();
-    const found = result.find((x) => x.id === caseData.task.id);
+    const found = result.find((x) => x.id === in_task.id);
 
     expect(send_req.status).to.eq(200);
     expect(found).to.not.eq(undefined);
     expect(found?.description).to.eq(in_description);
     expect(found?.name).to.eq(in_name);
   });
+
+  for (const [idx1, idx2] of [
+    [0, 1],
+    [1, 0],
+  ]) {
+    it("should be able to sort task", async () => {
+      const in_user = caseData.nonmember;
+      const in_before = caseData.task[idx1];
+      const in_task = caseData.task[idx2];
+      const in_bucket = caseData.bucket_fill;
+
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const send_req = await updateTask(
+        in_task.id,
+        {
+          before_id: in_before.id,
+        },
+        cookie,
+      );
+      const read_req = await getTasks(in_bucket.id, cookie);
+      const result = await read_req.json();
+      const task_index = result.findIndex((x) => x.id === in_task.id);
+      const before_index = result.findIndex((x) => x.id === in_before.id);
+
+      expect(send_req.status).to.eq(200);
+      expect(task_index).to.be.lessThan(before_index);
+    });
+  }
 
   it("should be able to write and read", async () => {
     const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
