@@ -72,6 +72,7 @@ export class Route<T extends RHTop = RHTop> {
 }
 
 export abstract class Controller {
+  private express_server: Express;
   /**
    * Factory method untuk register route.
    * Kalau mau pasang route baru, bisa tambain objek {@link Route} ke return type fungsi ini. Formatnya:
@@ -91,14 +92,19 @@ export abstract class Controller {
   abstract init(): Record<string, Route>;
 
   constructor(express_server: Express) {
-    this.register(express_server);
+    this.express_server = express_server;
   }
 
-  private register(express_server: Express) {
+  /**
+   * Pasang routenya ke server express.
+   * Dipasangnya di method yang terpisah karena method-method di derived class
+   * belum dibuat pas constructor jalan.
+   * See: https://www.typescriptlang.org/docs/handbook/2/classes.html#initialization-order
+   */
+  register() {
     const routes = Object.values(this.init());
-
     for (const route of routes) {
-      route.register(express_server);
+      route.register(this.express_server);
     }
   }
 }

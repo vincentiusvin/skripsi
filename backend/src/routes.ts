@@ -36,6 +36,8 @@ export function registerControllers(app: Application) {
     new TaskController(app.express_server, task_service),
   ] as const;
 
+  controllers.forEach((x) => x.register());
+
   return controllers;
 }
 
