@@ -158,7 +158,7 @@ function Kanban(props: { project_id: number }) {
   // undef: gak ada yang dipilih
   // number: lagi ngedit bucket itu
   const [selectedBucketEdit, setSelectedBucketEdit] = useState<null | number>(null);
-  const [taskName, setTaskName] = useState<null | string>(null);
+  const [taskName, setTaskName] = useState<string>("");
   const [taskDescription, setTaskDescription] = useState<null | string>(null);
   const [taskStartAt, setTaskStartAt] = useState<null | Dayjs>(null);
   const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>(null);
@@ -214,15 +214,12 @@ function Kanban(props: { project_id: number }) {
           <DialogActions>
             <Button
               onClick={() => {
-                if (taskName == null) {
-                  return;
-                }
                 addTask({
                   name: taskName,
                   bucket_id: selectedBucketEdit,
                   description: taskDescription ?? undefined,
-                  start_at: taskStartAt?.toDate(),
-                  end_at: taskEndAt?.toDate(),
+                  start_at: taskStartAt?.toISOString(),
+                  end_at: taskEndAt?.toISOString(),
                 });
               }}
             >
