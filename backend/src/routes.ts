@@ -15,24 +15,28 @@ import { TaskController } from "./modules/task/TaskController.js";
 import { TaskRepository } from "./modules/task/TaskRepository.js";
 import { TaskService } from "./modules/task/TaskService.js";
 import { UserController } from "./modules/user/UserController.js";
+import { UserRepository } from "./modules/user/UserRepository.js";
+import { UserService } from "./modules/user/UserService.js";
 
 export function registerControllers(app: Application) {
   const org_repo = new OrgRepository(app.db);
   const chat_repo = new ChatRepository(app.db);
   const task_repo = new TaskRepository(app.db);
   const project_repo = new ProjectRepository(app.db);
+  const user_repo = new UserRepository(app.db);
 
   const org_service = new OrgService(org_repo);
   const task_service = new TaskService(task_repo);
   const project_service = new ProjectService(project_repo, org_service);
   const chat_service = new ChatService(chat_repo, project_service);
+  const user_service = new UserService(user_repo);
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),
     new OrgController(app.express_server, org_service),
     new ProjectController(app.express_server, project_service),
     new SessionController(app.express_server, app.db),
-    new UserController(app.express_server, app.db),
+    new UserController(app.express_server, user_service),
     new TaskController(app.express_server, task_service),
   ] as const;
 
