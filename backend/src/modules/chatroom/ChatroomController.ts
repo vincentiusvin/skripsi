@@ -72,30 +72,79 @@ export class ChatController extends Controller {
         method: "get",
         path: "/api/users/:user_id/chatrooms",
         priors: [validateLogged as RequestHandler],
+        schema: {
+          Params: z.object({
+            user_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+          }),
+        },
       }),
       ChatroomsDetailGet: new Route({
         handler: this.getChatroomsDetail,
         method: "get",
         path: "/api/chatrooms/:chatroom_id",
         priors: [validateLogged as RequestHandler],
+        schema: {
+          Params: z.object({
+            chatroom_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
+          }),
+        },
       }),
       ChatroomsDetailPut: new Route({
         handler: this.putChatroomsDetail,
         method: "put",
         path: "/api/chatrooms/:chatroom_id",
         priors: [validateLogged as RequestHandler],
+        schema: {
+          Params: z.object({
+            chatroom_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
+          }),
+          ReqBody: z.object({
+            name: z.string({ message: "Nama invalid!" }).min(1).optional(),
+            user_ids: z.array(z.number(), { message: "ID pengguna invalid!" }).optional(),
+          }),
+        },
       }),
       ChatroomsDetailMessagesPost: new Route({
         handler: this.postChatroomsDetailMessages,
         method: "post",
         path: "/api/chatrooms/:chatroom_id/messages",
         priors: [validateLogged as RequestHandler],
+        schema: {
+          Params: z.object({
+            chatroom_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
+          }),
+          ReqBody: z.object({
+            message: z
+              .string({ message: "Isi pesan tidak valid!" })
+              .min(1, "Pesan tidak boleh kosong!"),
+          }),
+        },
       }),
       ChatroomsDetailMessagesGet: new Route({
         handler: this.getChatroomsDetailMessages,
         method: "get",
         path: "/api/chatrooms/:chatroom_id/messages",
         priors: [validateLogged as RequestHandler],
+        schema: {
+          Params: z.object({
+            chatroom_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
+          }),
+        },
       }),
     };
   }
