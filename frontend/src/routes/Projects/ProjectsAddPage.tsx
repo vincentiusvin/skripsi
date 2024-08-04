@@ -12,15 +12,15 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useParams } from "wouter";
 import { useProjectsCategoriesGet, useProjectsPost } from "../../queries/project_hooks";
 
 function ProjectsAddPage() {
   const [projectName, setProjectName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
-  const [orgId, setOrgId] = useState("");
-  const [projectCategory, setProjectCategory] = useState<number | null>(null);
-  const orgIdNumber = Number(orgId);
+  const [projectCategory, setProjectCategory] = useState<number[]>([]);
+  const { org_id: org_id_raw } = useParams();
+  const org_id = Number(org_id_raw);
 
   const [, setLocation] = useLocation();
 
@@ -39,8 +39,8 @@ function ProjectsAddPage() {
     postProject({
       project_desc: projectDesc,
       project_name: projectName,
-      org_id: orgIdNumber,
-      category_id: projectCategory != null ? [projectCategory] : [],
+      org_id: org_id,
+      category_id: projectCategory,
     });
   }
 
@@ -77,11 +77,6 @@ function ProjectsAddPage() {
             onChange={(e) => setProjectDesc(e.target.value)}
             label="Description"
           ></TextField>
-          <TextField
-            fullWidth
-            onChange={(e) => setOrgId(e.target.value)}
-            label="organisation id"
-          ></TextField>
           <FormControl>
             <InputLabel id="demo-simple-select-label">Category</InputLabel>
             <Select
@@ -89,7 +84,8 @@ function ProjectsAddPage() {
               id="demo-simple-select"
               value={projectCategory}
               label="Category"
-              onChange={(e) => setProjectCategory(Number(e.target.value))}
+              multiple
+              onChange={(e) => setProjectCategory(e.target.value as number[])}
             >
               {categories &&
                 categories.map((category) => (
