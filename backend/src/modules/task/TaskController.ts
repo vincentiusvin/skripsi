@@ -78,6 +78,14 @@ export class TaskController extends Controller {
         handler: this.getBucketsDetailTasks,
         method: "get",
         path: "/api/buckets/:bucket_id/tasks",
+        schema: {
+          Params: z.object({
+            bucket_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
+          }),
+        },
       }),
     };
   }
