@@ -2,6 +2,23 @@ import { Login, Logout } from "@mui/icons-material";
 import { Avatar, Box, Button, Stack, Typography } from "@mui/material";
 import { Link } from "wouter";
 import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks";
+import { useUserAccountDetailGet } from "../queries/user_hooks";
+
+function UserImage(props: { user_id: number }) {
+  const { user_id } = props;
+  const { data: userDetail } = useUserAccountDetailGet({
+    user_id,
+  });
+  return (
+    <Avatar
+      src={userDetail?.user_image ?? ""}
+      sx={{
+        width: "2vw",
+        height: "2vw",
+      }}
+    />
+  );
+}
 
 function Nav() {
   const { data } = useSessionGet();
@@ -37,15 +54,9 @@ function Nav() {
             <Box>
               <Typography>Hello, {data.user_name}</Typography>
             </Box>
-            <Link to={`/user/${data.user_id}/account`}>
+            <Link to={`/users/${data.user_id}`}>
               <Button>
-                <Avatar
-                  src=""
-                  sx={{
-                    width: "2vw",
-                    height: "2vw",
-                  }}
-                />
+                <UserImage user_id={data.user_id} />
               </Button>
             </Link>
             <Button

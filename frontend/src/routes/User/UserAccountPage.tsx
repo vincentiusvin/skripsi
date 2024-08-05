@@ -1,14 +1,15 @@
-import { ArrowBack, Update } from "@mui/icons-material";
-import { Avatar, Button, Grid, Paper, TextField, Typography } from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
+import { Avatar, Box, Button, Grid, Paper, TextField, Typography } from "@mui/material";
 import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../../helpers/fetch";
+import { useSessionGet } from "../../queries/sesssion_hooks";
 import { useUserAccountDetailGet } from "../../queries/user_hooks";
 
 function UserAccountPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
 
-  const { data } = useUserAccountDetailGet({
+  const { data: userDetail } = useUserAccountDetailGet({
     user_id: Number(id),
     retry: (failureCount, error) => {
       if ((error instanceof APIError && error.status == 404) || failureCount > 3) {
@@ -19,7 +20,10 @@ function UserAccountPage() {
     },
   });
 
-  if (data) {
+  const { data: userLog } = useSessionGet();
+  const isViewingSelf =
+    userLog && userDetail && userLog.logged && userLog.user_id == userDetail.user_id;
+  if (userDetail) {
     return (
       <Grid container mt={2}>
         <Grid item xs={1}>
@@ -30,13 +34,21 @@ function UserAccountPage() {
           </Link>
         </Grid>
         <Grid item xs paddingTop="10vw">
-          <Grid item xs={1}>
-            <Avatar src="" sx={{ width: "20vw", height: "20vw" }}></Avatar>
+          <Grid item xs={2} md={1}>
+            <Avatar
+              src={userDetail.user_image ?? ""}
+              sx={{ width: "20vw", height: "20vw" }}
+            ></Avatar>
           </Grid>
+          {isViewingSelf && (
+            <Link to={`${id}/edit`}>
+              <Button>Edit Profile</Button>
+            </Link>
+          )}
           <Grid item xs>
             <Typography variant="h2" color="#6A81FC">
               <Link
-                to={`/user/${data.user_id}/account`}
+                to={`/user/${userDetail.user_id}/account`}
                 style={{ textDecoration: "none", color: "inherit" }}
               >
                 Account
@@ -44,7 +56,7 @@ function UserAccountPage() {
             </Typography>
             <Typography variant="h2">
               <Link
-                to={`/user/${data.user_id}/contribution`}
+                to={`/user/${userDetail.user_id}/contribution`}
                 style={{ textDecoration: "none", color: "inherit" }}
               >
                 Contribution
@@ -68,59 +80,72 @@ function UserAccountPage() {
             }}
           >
             <Grid item>
-              <Typography variant="button">Username:</Typography>
-              <br />
-              <TextField
-                required
-                id="filled-required"
-                variant="standard"
-                defaultValue={data.user_name}
-                sx={{ width: "25vw" }}
-              />
+              <Box display="flex" alignItems="center">
+                <Typography variant="button">
+                  <Box display="inline" lineHeight={1} fontSize="1.5vw" marginRight="1vw">
+                    Username:
+                  </Box>
+                </Typography>
+                <TextField
+                  id="standard-read-only-input"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  variant="standard"
+                  defaultValue={userDetail.user_name}
+                />
+              </Box>
             </Grid>
             <Grid item>
-              <Typography variant="button">Password:</Typography>
-              <br />
-              <TextField
-                required
-                id="filled-password-input"
-                label="Required"
-                type="password"
-                autoComplete="current-password"
-                variant="standard"
-                defaultValue={data.user_password}
-                sx={{ width: "25vw" }}
-              />
+              <Box display="flex" alignItems="center">
+                <Typography variant="button">
+                  <Box display="inline" lineHeight={1} fontSize="1.5vw" marginRight="1vw">
+                    Email:
+                  </Box>
+                </Typography>
+                <TextField
+                  id="standard-read-only-input"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  variant="standard"
+                  defaultValue={userDetail.user_email}
+                />
+              </Box>
             </Grid>
             <Grid item>
-              <Typography variant="button">Email:</Typography>
-              <br />
-              <TextField
-                required
-                id="outlined_required"
-                label="Required"
-                variant="standard"
-                defaultValue={data.user_email}
-                sx={{ width: "25vw" }}
-              />
+              <Box display="flex" alignItems="center">
+                <Typography variant="button">
+                  <Box display="inline" lineHeight={1} fontSize="1.5vw" marginRight="1vw">
+                    Education Level:
+                  </Box>
+                </Typography>
+                <TextField
+                  id="standard-read-only-input"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  variant="standard"
+                  defaultValue={userDetail.user_education_level}
+                />
+              </Box>
             </Grid>
             <Grid item>
-              <Typography variant="button">Education-level:</Typography>
-              <br />
-              <TextField
-                variant="standard"
-                defaultValue={data.user_education_level}
-                sx={{ width: "25vw" }}
-              />
-            </Grid>
-            <Grid item>
-              <Typography variant="button">School:</Typography>
-              <br />
-              <TextField
-                variant="standard"
-                defaultValue={data.user_school}
-                sx={{ width: "25vw" }}
-              />
+              <Box display="flex" alignItems="center">
+                <Typography variant="button">
+                  <Box display="inline" lineHeight={1} fontSize="1.5vw" marginRight="1vw">
+                    School:
+                  </Box>
+                </Typography>
+                <TextField
+                  id="standard-read-only-input"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  variant="standard"
+                  defaultValue={userDetail.user_school}
+                />
+              </Box>
             </Grid>
           </Paper>
 
@@ -137,25 +162,12 @@ function UserAccountPage() {
             <Grid item>
               <Typography variant="button">About Me</Typography>
               <br />
-              <TextField
-                variant="standard"
-                defaultValue={data.user_education_level}
-                sx={{ width: "25vw" }}
-              />
+              <Typography>{userDetail.user_about_me}</Typography>
             </Grid>
           </Paper>
-
-          <Grid item xs={8} paddingTop="2vw">
-            <Link to={""}>
-              <Button endIcon={<Update />} variant="contained" fullWidth>
-                Update
-              </Button>
-            </Link>
-          </Grid>
         </Grid>
       </Grid>
     );
   }
 }
-
 export default UserAccountPage;

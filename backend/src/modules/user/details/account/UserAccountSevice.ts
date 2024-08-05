@@ -12,7 +12,7 @@ export class UserAccountService {
   }
 
   async getUserAccountByEmail(email: string) {
-    return await this.user_repo.getUserAccountByEmail;
+    return await this.user_repo.getUserAccountByEmail(email);
   }
 
   async updateAccountDetail(
@@ -20,15 +20,18 @@ export class UserAccountService {
     obj: {
       user_name?: string;
       user_password?: string;
+      user_confirm_password?: string;
       user_email?: string;
       user_education_level?: string;
       user_school?: string;
       user_about_me?: string;
+      user_image?: string;
     },
   ) {
     const { user_email } = obj;
     if (user_email) {
       const same_email = await this.getUserAccountByEmail(user_email);
+      console.log("result:" + same_email);
       if (same_email != undefined) {
         throw new ClientError("Sudah ada user dengan email yang sama !");
       }

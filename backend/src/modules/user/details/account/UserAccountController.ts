@@ -54,6 +54,7 @@ export class UserAccountController extends Controller {
       user_education_level: string | null;
       user_school: string | null;
       user_about_me: string | null;
+      user_image: string | null;
     };
   }> = async (req, res) => {
     const id = Number(req.params.id);
@@ -70,6 +71,7 @@ export class UserAccountController extends Controller {
       user_education_level: string | null;
       user_school: string | null;
       user_about_me: string | null;
+      user_image: string | null;
     };
     Params: {
       id: string;
@@ -81,6 +83,7 @@ export class UserAccountController extends Controller {
       user_education_level?: string;
       user_school?: string;
       user_about_me?: string;
+      user_image?: string;
     };
   }> = async (req, res) => {
     const {
@@ -90,6 +93,7 @@ export class UserAccountController extends Controller {
       user_education_level,
       user_school,
       user_about_me,
+      user_image,
     } = req.body;
     const id = req.params.id;
     await this.user_service.updateAccountDetail(Number(id), {
@@ -99,6 +103,7 @@ export class UserAccountController extends Controller {
       user_education_level,
       user_school,
       user_about_me,
+      user_image,
     });
     const updated = await this.user_service.getUserAccountDetail(Number(id));
     res.status(200).json(updated);

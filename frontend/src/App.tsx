@@ -21,7 +21,7 @@ import ProjectDetailPage from "./routes/Projects/ProjectDetailPage/ProjectDetail
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
 import UserAccountPage from "./routes/User/UserAccountPage";
-import UserContributionPage from "./routes/User/UserContributionPage";
+import UserAccountPageEdit from "./routes/User/UserAccountPageEdit";
 
 const theme = createTheme({
   palette: {
@@ -62,8 +62,8 @@ function App() {
                 <Route path={"/projects"} component={ProjectListPage} />
                 <Route path={"/projects/add"} component={ProjectsAddPage} />
                 <Route path={"/projects/:id"} component={ProjectDetailPage} />
-                <Route path={"/user/:id/account"} component={UserAccountPage} />
-                <Route path={"/user/:id/contribution"} component={UserContributionPage} />
+                <Route path={"/users/:id"} component={UserAccountPage} />
+                <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
               </Switch>
             </Box>
           </LocalizationProvider>

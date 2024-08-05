@@ -18,6 +18,7 @@ export class UserAccountRepository {
         "ms_users.education_level as user_education_level",
         "ms_users.school as user_school",
         "ms_users.about_me as user_about_me",
+        "ms_users.image as user_image",
       ])
       .where("ms_users.id", "=", id)
       .executeTakeFirst();
@@ -43,39 +44,47 @@ export class UserAccountRepository {
     obj: {
       user_name?: string;
       user_password?: string;
+      user_confirm_password?: string;
       user_email?: string;
       user_education_level?: string;
       user_school?: string;
       user_about_me?: string;
+      user_image?: string;
     },
   ) {
     const {
       user_name,
       user_password,
+      user_confirm_password,
       user_email,
       user_education_level,
       user_school,
       user_about_me,
+      user_image,
     } = obj;
 
     await this.db.transaction().execute(async (trx) => {
       if (
         user_name != undefined ||
         user_password != undefined ||
+        user_confirm_password != undefined ||
         user_email != undefined ||
         user_education_level != undefined ||
         user_school != undefined ||
-        user_about_me != undefined
+        user_about_me != undefined ||
+        user_image != undefined
       ) {
         const user = await trx
           .updateTable("ms_users")
           .set({
             name: user_name,
             password: user_password,
+            confirm_password: user_confirm_password,
             email: user_email,
             education_level: user_education_level,
             school: user_school,
             about_me: user_about_me,
+            ...(user_image && { image: user_image }),
           })
           .where("id", "=", id)
           .executeTakeFirst();
