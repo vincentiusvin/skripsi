@@ -120,6 +120,9 @@ export class OrgController extends Controller {
         category_name: string;
         category_id: number;
       }[];
+      org_users: {
+        user_id: number;
+      }[];
     }[];
   }> = async (req, res) => {
     const result = await this.org_service.getOrgs();
@@ -138,6 +141,9 @@ export class OrgController extends Controller {
       org_categories: {
         category_name: string;
         category_id: number;
+      }[];
+      org_users: {
+        user_id: number;
       }[];
     };
   }> = async (req, res) => {
@@ -158,6 +164,9 @@ export class OrgController extends Controller {
       org_categories: {
         category_name: string;
         category_id: number;
+      }[];
+      org_users: {
+        user_id: number;
       }[];
     };
     ReqBody: {
@@ -213,6 +222,9 @@ export class OrgController extends Controller {
       org_categories: {
         category_name: string;
         category_id: number;
+      }[];
+      org_users: {
+        user_id: number;
       }[];
     };
     Params: {
