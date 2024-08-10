@@ -90,7 +90,7 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
     onSuccess: (x) => {
       enqueueSnackbar({
         variant: "success",
-        message: <Typography>Status anda "{x.role}"</Typography>,
+        message: <Typography>Status anda {x.role}</Typography>,
       });
     },
   });

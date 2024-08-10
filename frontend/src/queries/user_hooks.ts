@@ -29,7 +29,7 @@ export function useUsersGet() {
 
 export function useUserAccountDetailGet(opts: {
   user_id: number;
-  retry?: (failurecount: number, error: any) => boolean;
+  retry?: (failurecount: number, error: unknown) => boolean;
   enabled?: boolean;
 }) {
   const { user_id, retry, enabled } = opts;

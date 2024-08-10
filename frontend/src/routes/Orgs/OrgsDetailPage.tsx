@@ -138,7 +138,7 @@ function OrgsDetailPage() {
               </Typography>
               <Stack direction={"row"} justifyContent={"center"}>
                 {data.org_users.map((x) => (
-                  <UserCard user_id={x.user_id} />
+                  <UserCard user_id={x.user_id} key={x.user_id} />
                 ))}
               </Stack>
             </Container>

@@ -5,7 +5,7 @@ import { queryClient } from "../helpers/queryclient";
 
 export function useProjectsDetailGet(opts: {
   project_id: number;
-  retry?: (failurecount: number, error: any) => boolean;
+  retry?: (failurecount: number, error: unknown) => boolean;
 }) {
   const { project_id, retry } = opts;
   return useQuery({
