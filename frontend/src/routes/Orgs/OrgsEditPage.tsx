@@ -8,6 +8,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  Skeleton,
   Stack,
   TextField,
   Typography,
@@ -18,7 +19,7 @@ import { Link, useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
-import { useOrgsCategoriesGet, useOrgsUpdate } from "../../queries/org_hooks";
+import { useOrgDetailGet, useOrgsCategoriesGet, useOrgsUpdate } from "../../queries/org_hooks";
 
 function OrgsEditPage() {
   const [orgName, setOrgName] = useState<string | undefined>(undefined);
@@ -26,12 +27,13 @@ function OrgsEditPage() {
   const [orgAddress, setOrgAddress] = useState<string | undefined>(undefined);
   const [orgPhone, setOrgPhone] = useState<string | undefined>(undefined);
   const [orgImage, setOrgImage] = useState<string | undefined>(undefined);
-  const [orgCategory, setOrgCategory] = useState<number | undefined>(undefined);
-
+  const [orgCategory, setOrgCategory] = useState<number[] | undefined>(undefined);
+  const { id } = useParams();
   const [, setLocation] = useLocation();
 
-  const { id } = useParams();
-  console.log("id: ", id);
+  const { data: org_data } = useOrgDetailGet({
+    id: Number(id),
+  });
 
   const { mutate: editOrg } = useOrgsUpdate({
     id: Number(id),
@@ -39,7 +41,8 @@ function OrgsEditPage() {
     desc: orgDesc,
     address: orgAddress,
     phone: orgPhone,
-    categories: orgCategory != null ? [orgCategory] : [],
+    categories: orgCategory,
+    image: orgImage,
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Edit successful!</Typography>,
@@ -60,6 +63,10 @@ function OrgsEditPage() {
       return true;
     },
   });
+
+  if (org_data == undefined) {
+    return <Skeleton />;
+  }
 
   return (
     <Grid container spacing={2} mt={2}>
@@ -87,14 +94,13 @@ function OrgsEditPage() {
               cursor: "pointer",
             }}
             onChange={async (file) => {
-              console.log(file);
               const b64 = file ? await fileToBase64DataURL(file) : undefined;
               setOrgImage(b64);
             }}
           >
-            {orgImage ? (
+            {orgImage || org_data.org_image ? (
               <Avatar
-                src={orgImage}
+                src={orgImage || (org_data.org_image ?? undefined)}
                 variant="rounded"
                 sx={{
                   width: "100%",
@@ -128,28 +134,34 @@ function OrgsEditPage() {
             fullWidth
             onChange={(e) => setOrgName(e.target.value)}
             label="Name"
+            defaultValue={org_data?.org_name}
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgDesc(e.target.value)}
             label="Description"
+            defaultValue={org_data?.org_description}
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgAddress(e.target.value)}
             label="Address"
+            defaultValue={org_data?.org_address}
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgPhone(e.target.value)}
             label="Phone"
+            defaultValue={org_data?.org_phone}
           ></TextField>
           <FormControl>
             <InputLabel id="demo-simple-select-label">Category</InputLabel>
             <Select
-              value={orgCategory || []}
-              onChange={(e) => setOrgCategory(Number(e.target.value))}
+              onChange={(e) => setOrgCategory(e.target.value as number[])}
               label="Category"
+              multiple
+              value={orgCategory}
+              defaultValue={org_data.org_categories.map((x) => x.category_id)}
             >
               {categories &&
                 categories.map((category) => (

@@ -59,7 +59,7 @@ function OrgsDetailPage() {
           </Link>
         </Grid>
         <Grid item xs={2} paddingLeft="1vw">
-          <Link to={"/projects/add"}>
+          <Link to={`/orgs/${id}/projects/add`}>
             <Button endIcon={<Add />} variant="contained" fullWidth>
               Add Projects
             </Button>
@@ -71,7 +71,7 @@ function OrgsDetailPage() {
           </Typography>
         </Grid>
         <Grid item xs={1}>
-          <Link to={`/orgs/edit/${id}`}>
+          <Link to={`/orgs/${id}/edit`}>
             <Button endIcon={<Edit />} variant="contained" fullWidth>
               Edit
             </Button>

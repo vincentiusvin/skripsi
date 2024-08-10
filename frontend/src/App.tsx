@@ -55,10 +55,10 @@ function App() {
                 <Route path={"/orgs"} component={OrgsListPage} />
                 <Route path={"/orgs/add"} component={OrgsAddPage} />
                 <Route path={"/orgs/:id"} component={OrgsDetailPage} />
-                <Route path={"/orgs/edit/:id"} component={OrgsEditPage} />
+                <Route path={"/orgs/:org_id/projects/add"} component={ProjectsAddPage} />
+                <Route path={"/orgs/:id/edit"} component={OrgsEditPage} />
                 <Route path={"/chatroom"} component={ChatroomPage} />
                 <Route path={"/projects"} component={ProjectListPage} />
-                <Route path={"/projects/add"} component={ProjectsAddPage} />
                 <Route path={"/projects/:id"} component={ProjectDetailPage} />
               </Switch>
             </Box>
