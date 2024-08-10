@@ -59,7 +59,8 @@ export class ProjectService {
     if (sender_role === "Admin") {
       if (target_role === "Dev" && target_user_role === "Pending") {
         return this.project_repo.assignMember(project_id, user_id, "Dev");
-      } else if (target_role === "Invited" && target_user_role === "Not Involved") {
+      }
+      if (target_role === "Invited" && target_user_role === "Not Involved") {
         return this.project_repo.assignMember(project_id, user_id, "Invited");
       }
     }
