@@ -99,34 +99,6 @@ export function useProjectsDetailMembersPut(opts: {
   });
 }
 
-export function useProjectsDetailMembersPutVariableID(opts: {
-  project_id: number | undefined;
-  onSuccess?: (data: API["ProjectsDetailMembersPut"]["ResBody"]) => void;
-}) {
-  const { project_id, onSuccess } = opts;
-  return useMutation({
-    mutationFn: (opts: {
-      user_id: number;
-      role: API["ProjectsDetailMembersPut"]["ResBody"]["role"];
-    }) =>
-      new APIContext("ProjectsDetailMembersPut").fetch(
-        `/api/projects/${project_id}/users/${opts.user_id}`,
-        {
-          method: "PUT",
-          body: {
-            role: opts.role,
-          },
-        },
-      ),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-      if (onSuccess) {
-        onSuccess(data);
-      }
-    },
-  });
-}
-
 export function useProjectsPost(opts: { onSuccess?: () => void }) {
   const { onSuccess } = opts;
   return useMutation({
