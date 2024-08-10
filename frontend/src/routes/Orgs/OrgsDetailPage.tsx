@@ -1,5 +1,6 @@
 import { Add, ArrowBack, Delete, Edit } from "@mui/icons-material";
 import {
+  Avatar,
   Box,
   Button,
   Card,
@@ -9,6 +10,7 @@ import {
   Container,
   Grid,
   Paper,
+  Skeleton,
   Stack,
   Typography,
 } from "@mui/material";
@@ -17,6 +19,28 @@ import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../../helpers/fetch";
 import { useOrgDetailGet, useOrgsDelete } from "../../queries/org_hooks";
 import { useProjectsGet } from "../../queries/project_hooks";
+import { useUserAccountDetailGet } from "../../queries/user_hooks.ts";
+
+function UserCard(props: { user_id: number }) {
+  const { user_id } = props;
+  const { data } = useUserAccountDetailGet({
+    user_id,
+  });
+  if (!data) {
+    return (
+      <Stack direction={"row"} alignItems={"center"} gap={2}>
+        <Avatar src={undefined}></Avatar>
+        <Skeleton width={"100%"}></Skeleton>
+      </Stack>
+    );
+  }
+  return (
+    <Stack direction={"row"} alignItems={"center"} gap={2}>
+      <Avatar src={data.user_image ?? undefined}></Avatar>
+      <Typography textAlign={"center"}>{data.user_name}</Typography>
+    </Stack>
+  );
+}
 
 function OrgsDetailPage() {
   const { id } = useParams();
@@ -109,6 +133,14 @@ function OrgsDetailPage() {
                 Contact Us
               </Typography>
               <Typography textAlign={"center"}>{data.org_phone}</Typography>
+              <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
+                Our Members
+              </Typography>
+              <Stack direction={"row"} justifyContent={"center"}>
+                {data.org_users.map((x) => (
+                  <UserCard user_id={x.user_id} />
+                ))}
+              </Stack>
             </Container>
           </Grid>
         </Paper>
