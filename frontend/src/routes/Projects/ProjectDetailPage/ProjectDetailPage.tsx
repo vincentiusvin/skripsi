@@ -3,7 +3,6 @@ import { Button, Grid, Skeleton, Stack, Tab, Tabs, Typography } from "@mui/mater
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
-import { API } from "../../../../../backend/src/routes.ts";
 import {
   useProjectsDetailGet,
   useProjectsDetailMembersDelete,
@@ -14,9 +13,8 @@ import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import { ChatroomWrapper } from "./ProjectChatroom.tsx";
 import ProjectInfo from "./ProjectInfo.tsx";
 import ProjectManage from "./ProjectManage.tsx";
+import { MemberRoles } from "./ProjectMemberComponent.tsx";
 import Kanban from "./Tasks.tsx";
-
-type MemberRoles = API["ProjectsDetailMembersGet"]["ResBody"]["role"] | "Not Involved";
 
 function InvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
   const { project_id, user_id, role } = props;
@@ -118,15 +116,21 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
           <Button
             endIcon={<Check />}
             variant="contained"
-            disabled={role !== "Not Involved"}
+            disabled={role === "Admin" || role === "Dev"}
             fullWidth
-            onClick={() =>
-              addMember({
-                role: "Pending",
-              })
-            }
+            onClick={() => {
+              if (role === "Not Involved") {
+                addMember({
+                  role: "Pending",
+                });
+              } else if (role === "Invited") {
+                addMember({
+                  role: "Dev",
+                });
+              }
+            }}
           >
-            {role !== "Not Involved" ? "Applied" : "Apply"}
+            {role === "Invited" ? "Accept" : role === "Pending" ? "Applied" : "Apply"}
           </Button>
         </Grid>
       </Grid>
@@ -158,7 +162,7 @@ function ProjectDetailPage() {
     return <Skeleton />;
   }
 
-  if (role === "Not Involved" || role === "Pending") {
+  if (role !== "Admin" && role !== "Dev") {
     return <UninvolvedView project_id={project_id} user_id={user_id} role={role} />;
   } else {
     return <InvolvedView project_id={project_id} user_id={user_id} role={role} />;

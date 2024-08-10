@@ -1,14 +1,37 @@
-import { Button, Grid, Paper, Skeleton, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Paper,
+  Skeleton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { enqueueSnackbar } from "notistack";
+import { useState } from "react";
 import {
   useProjectsDetailGet,
   useProjectsDetailMembersDelete,
   useProjectsDetailMembersPut,
 } from "../../../queries/project_hooks.ts";
-import ProjectMember from "./ProjectMemberComponent.tsx";
+import { useUsersGet } from "../../../queries/user_hooks.ts";
+import ProjectMember, { MemberRoles } from "./ProjectMemberComponent.tsx";
 
-function PendingMember(props: { project_id: number; user_id: number }) {
-  const { project_id, user_id } = props;
+function MemberManage(props: {
+  project_id: number;
+  user_id: number;
+  deleteOption?: {
+    text: string;
+  };
+  putOption?: {
+    text: string;
+    role: MemberRoles;
+  };
+}) {
+  const { project_id, user_id, deleteOption, putOption } = props;
+
   const { mutate: putMember } = useProjectsDetailMembersPut({
     project_id: project_id,
     user_id: user_id,
@@ -40,59 +63,63 @@ function PendingMember(props: { project_id: number; user_id: number }) {
     >
       <Stack direction={"row"} spacing={2} justifyContent={"center"}>
         <ProjectMember project_id={project_id} user_id={user_id} />
-        <Button
-          onClick={() => {
-            putMember({
-              role: "Dev",
-            });
-          }}
-        >
-          Approve
-        </Button>
-        <Button
-          onClick={() => {
-            deleteMember();
-          }}
-        >
-          Reject
-        </Button>
+        {putOption && (
+          <Button
+            onClick={() => {
+              putMember({
+                role: putOption.role,
+              });
+            }}
+          >
+            {putOption.text}
+          </Button>
+        )}
+        {deleteOption && (
+          <Button
+            onClick={() => {
+              deleteMember();
+            }}
+          >
+            {deleteOption.text}
+          </Button>
+        )}
       </Stack>
     </Paper>
   );
 }
 
-function ActiveMember(props: { project_id: number; user_id: number }) {
-  const { project_id, user_id } = props;
-
-  const { mutate: deleteMember } = useProjectsDetailMembersDelete({
-    project_id: project_id,
-    user_id: user_id,
-    onSuccess: () => {
-      enqueueSnackbar({
-        variant: "success",
-        message: <Typography>User berhasil dihapus!</Typography>,
-      });
-    },
-  });
-
+function InviteMembersDialog(props: { project_id: number }) {
+  const { project_id } = props;
+  const { data: users } = useUsersGet();
+  const [inviteMembers, setInviteMembers] = useState(false);
   return (
-    <Paper
-      sx={{
-        padding: 2,
-        borderRadius: 2,
-      }}
-    >
-      <Stack direction={"row"} spacing={2} justifyContent={"center"}>
-        <ProjectMember project_id={project_id} user_id={user_id} />
-        <Button
-          onClick={() => {
-            deleteMember();
-          }}
-        >
-          Remove From Project
-        </Button>
-      </Stack>
-    </Paper>
+    <>
+      <Dialog open={inviteMembers} onClose={() => setInviteMembers(false)}>
+        <DialogTitle>Add members</DialogTitle>
+        <DialogContent>
+          {users ? (
+            <Stack gap={2}>
+              {users.map((x) => (
+                <MemberManage
+                  project_id={project_id}
+                  user_id={x.user_id}
+                  key={x.user_id}
+                  putOption={{
+                    role: "Invited",
+                    text: "Invite",
+                  }}
+                />
+              ))}
+            </Stack>
+          ) : (
+            <Skeleton />
+          )}
+        </DialogContent>
+      </Dialog>
+      <Button onClick={() => setInviteMembers(true)} variant="contained">
+        Invite Members
+      </Button>
+    </>
   );
 }
 
@@ -105,10 +132,14 @@ function ProjectManage(props: { project_id: number }) {
   }
 
   const pending_members = project.project_members.filter((x) => x.role === "Pending");
-  const active_members = project.project_members.filter((x) => x.role !== "Pending");
+  const invited_members = project.project_members.filter((x) => x.role === "Invited");
+  const active_members = project.project_members.filter(
+    (x) => x.role === "Admin" || x.role === "Dev",
+  );
 
   return (
     <Stack gap={2}>
+      <InviteMembersDialog project_id={project_id} />
       <Typography variant="h6" textAlign={"center"}>
         Pending Members
       </Typography>
@@ -116,7 +147,17 @@ function ProjectManage(props: { project_id: number }) {
         pending_members.map((x, i) => (
           <Grid key={i} container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
             <Grid item xs={3} justifyContent={"center"}>
-              <PendingMember project_id={project_id} user_id={x.user_id} />
+              <MemberManage
+                deleteOption={{
+                  text: "Reject",
+                }}
+                putOption={{
+                  text: "Approve",
+                  role: "Dev",
+                }}
+                project_id={project_id}
+                user_id={x.user_id}
+              />
             </Grid>
           </Grid>
         ))
@@ -130,12 +171,38 @@ function ProjectManage(props: { project_id: number }) {
         active_members.map((x, i) => (
           <Grid container width={"85%"} key={i} margin={"0 auto"} spacing={2} columnSpacing={4}>
             <Grid item xs={3} justifyContent={"center"}>
-              <ActiveMember project_id={project_id} user_id={x.user_id} />
+              <MemberManage
+                project_id={project_id}
+                user_id={x.user_id}
+                deleteOption={{
+                  text: "Remove",
+                }}
+              />
             </Grid>
           </Grid>
         ))
       ) : (
         <Typography textAlign={"center"}>There are no active members!</Typography>
+      )}
+      <Typography variant="h6" textAlign={"center"}>
+        Invited Members
+      </Typography>
+      {invited_members.length ? (
+        invited_members.map((x, i) => (
+          <Grid container width={"85%"} key={i} margin={"0 auto"} spacing={2} columnSpacing={4}>
+            <Grid item xs={3} justifyContent={"center"}>
+              <MemberManage
+                project_id={project_id}
+                user_id={x.user_id}
+                deleteOption={{
+                  text: "Cancel",
+                }}
+              />
+            </Grid>
+          </Grid>
+        ))
+      ) : (
+        <Typography textAlign={"center"}>There are no invited members!</Typography>
       )}
     </Stack>
   );

@@ -40,7 +40,7 @@ function ProjectInfo(props: { project_id: number }) {
         </Typography>
         <Grid container width={"75%"} margin={"0 auto"} spacing={2}>
           {project.project_members
-            .filter((x) => x.role !== "Pending")
+            .filter((x) => x.role === "Admin" || x.role === "Dev")
             .map((x, i) => {
               return (
                 <Grid item xs={6} md={4} lg={2} key={i}>

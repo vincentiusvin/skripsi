@@ -16,14 +16,20 @@ export class ProjectService {
   }
 
   /**
-   * Kalau sender admin, kita turutin apapun maunya.
-   *
-   * Selain itu cuma boleh ngurusin dirinya sendiri (user_id dia doang) DAN cuma boleh role "Pending".
-   *
+   * Kalau ngurusin dirinya sendiri (user_id dia), maka cuma boleh role "Pending".
    * Kalau orang organisasi, langsung kita naikin ke "Admin".
    * Kalau bukan, kita jadiin "Pending".
+   *
+   * Juga boleh accept
+   *
+   * Selain itu, admin boleh nerima user atau invite user.
    */
-  async assignMember(project_id: number, user_id: number, sender_id: number, role: ProjectRoles) {
+  async assignMember(
+    project_id: number,
+    user_id: number,
+    sender_id: number,
+    target_role: ProjectRoles,
+  ) {
     const sender_role = await this.getMemberRole(project_id, sender_id);
     const project = await this.project_repo.getProjectByID(project_id);
     if (!project) {
@@ -34,17 +40,27 @@ export class ProjectService {
     if (!org) {
       throw new NotFoundError("Gagal menemukan organisasi projek!");
     }
+    const target_user_role = await this.getMemberRole(project_id, user_id);
 
-    if (sender_role === "Admin") {
-      return this.project_repo.assignMember(project_id, user_id, role);
+    if (sender_id === user_id) {
+      if (target_role === "Pending" && target_user_role === "Not Involved") {
+        const user_is_org_member = org.org_users.some((x) => x.user_id === sender_id);
+        if (user_is_org_member) {
+          return this.project_repo.assignMember(project_id, user_id, "Admin");
+        } else {
+          return this.project_repo.assignMember(project_id, user_id, "Pending");
+        }
+      }
+      if (target_role === "Dev" && target_user_role === "Invited") {
+        return this.project_repo.assignMember(project_id, user_id, "Dev");
+      }
     }
 
-    if (role === "Pending") {
-      const user_is_org_member = org.org_users.some((x) => x.user_id === sender_id);
-      if (user_is_org_member) {
-        return this.project_repo.assignMember(project_id, user_id, "Admin");
-      } else {
-        return this.project_repo.assignMember(project_id, user_id, "Pending");
+    if (sender_role === "Admin") {
+      if (target_role === "Dev" && target_user_role === "Pending") {
+        return this.project_repo.assignMember(project_id, user_id, "Dev");
+      } else if (target_role === "Invited" && target_user_role === "Not Involved") {
+        return this.project_repo.assignMember(project_id, user_id, "Invited");
       }
     }
 
@@ -71,9 +87,13 @@ export class ProjectService {
     return this.project_repo.getMembers(project_id);
   }
 
+  isInvolvedRole(role: ProjectRoles) {
+    return role === "Dev" || role === "Admin";
+  }
+
   async getInvolvedMembers(project_id: number) {
     const members = await this.project_repo.getMembers(project_id);
-    return members.filter((x) => x.role !== "Pending");
+    return members.filter((x) => this.isInvolvedRole(x.role));
   }
 
   addProject(obj: {

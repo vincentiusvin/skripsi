@@ -5,7 +5,7 @@ import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 
-describe("/api/projects", () => {
+describe.only("/api/projects", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -80,6 +80,51 @@ describe("/api/projects", () => {
     expect(accept_dev_req.status).eq(200);
     expect(apply_result.role).eq("Pending");
     expect(accept_result.role).eq("Dev");
+  });
+
+  it("should allow admin to invite members", async () => {
+    const in_dev = caseData.nonmember;
+    const in_admin = caseData.member;
+    const in_project = caseData.project;
+
+    // promote admin
+    const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
+    await assignMember(in_project.id, in_admin.id, "Pending", admin_cookie);
+    const invite_req = await assignMember(in_project.id, in_dev.id, "Invited", admin_cookie);
+    const invite_result = await invite_req.json();
+
+    // dev accepts
+    const dev_cookie = await getLoginCookie(in_dev.name, in_dev.password);
+    const accept_dev_req = await assignMember(in_project.id, in_dev.id, "Dev", dev_cookie);
+    const accept_result = await accept_dev_req.json();
+
+    expect(invite_req.status).eq(200);
+    expect(accept_dev_req.status).eq(200);
+    expect(invite_result.role).eq("Invited");
+    expect(accept_result.role).eq("Dev");
+  });
+
+  it("should not allow users to self promote", async () => {
+    const in_dev = caseData.nonmember;
+    const in_project = caseData.project;
+
+    const dev_cookie = await getLoginCookie(in_dev.name, in_dev.password);
+    const accept_dev_req = await assignMember(in_project.id, in_dev.id, "Dev", dev_cookie);
+
+    expect(accept_dev_req.status).eq(401);
+  });
+
+  it("should not allow admin to promote people that didn't apply", async () => {
+    const in_dev = caseData.nonmember;
+    const in_admin = caseData.member;
+    const in_project = caseData.project;
+
+    // promote admin
+    const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
+    await assignMember(in_project.id, in_admin.id, "Pending", admin_cookie);
+    const invite_req = await assignMember(in_project.id, in_dev.id, "Dev", admin_cookie);
+
+    expect(invite_req.status).eq(401);
   });
 
   it("should be able to add and get buckets", async () => {
