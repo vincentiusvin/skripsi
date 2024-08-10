@@ -1,8 +1,6 @@
-import { Add, Edit, Logout, People, Remove, Send } from "@mui/icons-material";
+import { Add, Edit, Logout, People, Remove } from "@mui/icons-material";
 import {
   Alert,
-  Avatar,
-  Box,
   Button,
   Dialog,
   DialogActions,
@@ -19,98 +17,21 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { Redirect } from "wouter";
+import ChatroomComponent from "../components/Chatroom.tsx";
 import {
   useChatSocket,
   useChatroomsDetailGet,
-  useChatroomsDetailMessagesGet,
-  useChatroomsDetailMessagesPost,
   useChatroomsDetailPut,
   useUsersDetailChatroomsGet,
   useUsersDetailChatroomsPost,
-} from "../queries/chat_hooks";
-import { useSessionGet } from "../queries/sesssion_hooks";
-import { useUsersGet } from "../queries/user_hooks";
+} from "../queries/chat_hooks.ts";
+import { useSessionGet } from "../queries/sesssion_hooks.ts";
+import { useUsersGet } from "../queries/user_hooks.ts";
 
-export function ChatroomContent(props: {
-  messages: {
-    message: string;
-    user_name: string;
-    user_avatar?: string;
-    created_at: Date;
-  }[];
-  onSend: (msg: string) => void;
-}) {
-  const { messages, onSend } = props;
-  const [draft, setDraft] = useState("");
-
-  function send() {
-    setDraft("");
-    onSend(draft);
-  }
-
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (bottomRef.current !== null) {
-      bottomRef.current.scrollIntoView(true);
-    }
-  }, [messages]);
-
-  return (
-    <>
-      <Stack mt={2} marginLeft={2} spacing={1} overflow={"auto"} flexGrow={1} flexBasis={0}>
-        {messages?.map((x, i) => (
-          <Stack
-            key={i}
-            direction={"row"}
-            spacing={2}
-            ref={i === messages.length - 1 ? bottomRef : null}
-          >
-            <Avatar></Avatar>
-            <Box>
-              <Typography fontWeight={"bold"}>{x.user_name}</Typography>
-              <Typography
-                sx={{
-                  wordBreak: "break-word",
-                }}
-              >
-                {x.message}
-              </Typography>
-              <Typography variant="caption">
-                {dayjs(x.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
-              </Typography>
-            </Box>
-          </Stack>
-        ))}
-      </Stack>
-      <Stack my={2} direction={"row"} display={"flex"} spacing={2}>
-        <TextField
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              send();
-            }
-          }}
-          value={draft}
-          sx={{
-            flexGrow: 1,
-          }}
-          onChange={(e) => {
-            setDraft(e.target.value);
-          }}
-        ></TextField>
-        <Button onClick={send} variant="contained">
-          <Send />
-        </Button>
-      </Stack>
-    </>
-  );
-}
-
-export function ChatroomHeader(props: {
+function ChatroomHeader(props: {
   chatroom_name: string;
   chatroom_users: number[];
   onEditName: (name: string) => void;
@@ -286,28 +207,6 @@ function Chatroom(props: { chatroom_id: number; user_id: number; onLeave: () => 
 
   const { data: chatroom } = useChatroomsDetailGet({ chatroom_id });
 
-  const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
-  const { data: users } = useUsersGet();
-  const reshaped_messages = [];
-
-  if (users && messages) {
-    const user_lookup: Record<string, (typeof users)[0]> = {};
-    for (const user of users) {
-      user_lookup[user.user_id] = user;
-    }
-
-    for (const message of messages) {
-      const uid = message.user_id;
-      const user = user_lookup[uid];
-      reshaped_messages.push({
-        user_name: user.user_name,
-        ...message,
-      });
-    }
-  }
-
-  const { mutate: sendMessage } = useChatroomsDetailMessagesPost({ chatroom_id });
-
   const { mutate: editRoom } = useChatroomsDetailPut({
     chatroom_id,
     onSuccess: () => {
@@ -344,12 +243,7 @@ function Chatroom(props: { chatroom_id: number; user_id: number; onLeave: () => 
           });
         }}
       />
-      <ChatroomContent
-        onSend={(msg) => {
-          sendMessage(msg);
-        }}
-        messages={reshaped_messages}
-      />
+      <ChatroomComponent chatroom_id={chatroom_id} />
     </Stack>
   );
 }

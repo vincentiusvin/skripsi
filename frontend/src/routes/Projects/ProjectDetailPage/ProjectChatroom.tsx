@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
-  Skeleton,
   Snackbar,
   Stack,
   Tab,
@@ -16,57 +15,12 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
+import ChatroomComponent from "../../../components/Chatroom.tsx";
 import {
   useChatSocket,
-  useChatroomsDetailGet,
-  useChatroomsDetailMessagesGet,
-  useChatroomsDetailMessagesPost,
   useProjectsDetailChatroomsGet,
   useProjectsDetailChatroomsPost,
 } from "../../../queries/chat_hooks.ts";
-import { useUsersGet } from "../../../queries/user_hooks.ts";
-import { ChatroomContent } from "../../Chatroom.tsx";
-
-function Chatroom(props: { chatroom_id: number }) {
-  const { chatroom_id } = props;
-  const { data: chatroom } = useChatroomsDetailGet({ chatroom_id });
-  const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
-  const { data: users } = useUsersGet();
-  const reshaped_messages = [];
-
-  if (users && messages) {
-    const user_lookup: Record<string, (typeof users)[0]> = {};
-    for (const user of users) {
-      user_lookup[user.user_id] = user;
-    }
-
-    for (const message of messages) {
-      const uid = message.user_id;
-      const user = user_lookup[uid];
-      reshaped_messages.push({
-        user_name: user.user_name,
-        ...message,
-      });
-    }
-  }
-
-  const { mutate: sendMessage } = useChatroomsDetailMessagesPost({ chatroom_id });
-
-  if (!chatroom) {
-    return <Skeleton />;
-  }
-
-  return (
-    <Stack height={"100%"} display={"flex"}>
-      <ChatroomContent
-        onSend={(msg) => {
-          sendMessage(msg);
-        }}
-        messages={reshaped_messages}
-      />
-    </Stack>
-  );
-}
 
 export function ChatroomWrapper(props: { user_id: number; project_id: number }) {
   const { project_id, user_id } = props;
@@ -147,7 +101,11 @@ export function ChatroomWrapper(props: { user_id: number; project_id: number }) 
           </Tabs>
         </Grid>
         <Grid item xs={10} lg={11}>
-          {selectedChatroom && <Chatroom chatroom_id={selectedChatroom.chatroom_id} />}
+          {selectedChatroom && (
+            <Stack height={"100%"} display={"flex"}>
+              <ChatroomComponent chatroom_id={selectedChatroom.chatroom_id} />
+            </Stack>
+          )}
         </Grid>
       </Grid>
     </>

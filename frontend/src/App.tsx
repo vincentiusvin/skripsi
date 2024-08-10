@@ -11,7 +11,6 @@ import "./App.css";
 import Nav from "./components/Nav";
 import { queryClient } from "./helpers/queryclient";
 import AuthPage from "./routes/AuthPage";
-import ChatroomPage from "./routes/Chatroom";
 import HomePage from "./routes/HomePage";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
 import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage";
@@ -22,6 +21,7 @@ import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
 import UserAccountPage from "./routes/User/UserAccountPage";
 import UserAccountPageEdit from "./routes/User/UserAccountPageEdit";
+import ChatroomPage from "./routes/UserChatroom";
 
 const theme = createTheme({
   palette: {
