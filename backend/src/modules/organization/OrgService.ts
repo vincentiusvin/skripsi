@@ -87,9 +87,9 @@ export class OrgService {
 
   async unassignMember(org_id: number, user_id: number, sender_id: number) {
     const sender_role = await this.getMemberRole(org_id, sender_id);
-    if (sender_role !== "Admin") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+    if (sender_id === user_id || sender_role === "Admin") {
+      return await this.org_repo.unassignMember(org_id, user_id);
     }
-    return await this.org_repo.unassignMember(org_id, user_id);
+    throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
   }
 }
