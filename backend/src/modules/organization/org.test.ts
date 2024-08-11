@@ -3,8 +3,9 @@ import { before, beforeEach, describe } from "mocha";
 import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
+import { OrgRoles } from "./OrgMisc.js";
 
-describe("org controller", () => {
+describe.only("org controller", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -83,9 +84,10 @@ describe("org controller", () => {
   });
 
   it("should be able to delete", async () => {
-    const cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
     const in_org = caseData.org;
+    const in_admin = caseData.member;
 
+    const cookie = await getLoginCookie(in_admin.name, in_admin.password);
     const send_req = await deleteOrg(in_org.id, cookie);
     const read_req = await getOrgs(cookie);
     const result = await read_req.json();
@@ -94,6 +96,86 @@ describe("org controller", () => {
     expect(send_req.status).to.eq(200);
     expect(read_req.status).eq(200);
     expect(found_org).to.eq(undefined);
+  });
+
+  it("should be able to invite new org member", async () => {
+    const in_org = caseData.org;
+    const in_new_member = caseData.nonmember;
+    const in_admin = caseData.member;
+
+    const cookie = await getLoginCookie(in_admin.name, in_admin.password);
+    const send_req = await assignMember(in_org.id, in_new_member.id, "Invited", cookie);
+    const read_req = await getMemberRole(in_org.id, in_new_member.id, cookie);
+    const result = await read_req.json();
+
+    expect(send_req.status).to.eq(200);
+    expect(read_req.status).eq(200);
+    expect(result.role).to.eq("Invited");
+  });
+
+  it("should not be able to add org member without inviting", async () => {
+    const in_org = caseData.org;
+    const in_new_member = caseData.nonmember;
+    const in_admin = caseData.member;
+
+    const cookie = await getLoginCookie(in_admin.name, in_admin.password);
+    const send_req = await assignMember(in_org.id, in_new_member.id, "Admin", cookie);
+
+    expect(send_req.status).to.eq(401);
+  });
+
+  it("should not be able to invite as a non admin", async () => {
+    const in_org = caseData.org;
+    const in_new_member = caseData.nonmember;
+    const in_admin = caseData.nonmember;
+
+    const cookie = await getLoginCookie(in_admin.name, in_admin.password);
+    const send_req = await assignMember(in_org.id, in_new_member.id, "Invited", cookie);
+
+    expect(send_req.status).to.eq(401);
+  });
+
+  it("should be able to accept invitation", async () => {
+    const in_org = caseData.org;
+    const in_admin = caseData.member;
+    const in_new_member = caseData.nonmember;
+
+    const cookie_admin = await getLoginCookie(in_admin.name, in_admin.password);
+    const invite_req = await assignMember(in_org.id, in_new_member.id, "Invited", cookie_admin);
+
+    const cookie_invited = await getLoginCookie(in_new_member.name, in_new_member.password);
+    const accept_req = await assignMember(in_org.id, in_new_member.id, "Admin", cookie_invited);
+    const result = await accept_req.json();
+
+    expect(invite_req.status).to.eq(200);
+    expect(accept_req.status).eq(200);
+    expect(result.role).to.eq("Admin");
+  });
+
+  it("should be able to unassign org member", async () => {
+    const cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
+    const in_org = caseData.org;
+    const in_member = caseData.member;
+
+    const send_req = await unassignMember(in_org.id, in_member.id, cookie);
+    const read_req = await getMemberRole(in_org.id, in_member.id, cookie);
+    const result = await read_req.json();
+
+    expect(send_req.status).to.eq(200);
+    expect(read_req.status).eq(200);
+    expect(result.role).to.eq("Not Involved");
+  });
+
+  it("should be able to get org member information", async () => {
+    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const in_org = caseData.org;
+    const in_member = caseData.nonmember;
+
+    const read_req = await getMemberRole(in_org.id, in_member.id, cookie);
+    const result = await read_req.json();
+
+    expect(read_req.status).eq(200);
+    expect(result.role).to.eq("Not Involved");
   });
 });
 
@@ -166,4 +248,45 @@ function deleteOrg(org_id: number, cookie: string) {
     credentials: "include",
     method: "delete",
   });
+}
+
+function assignMember(org_id: number, user_id: number, role: OrgRoles, cookie: string) {
+  return new APIContext("OrgsDetailMembersDetailPut").fetch(
+    `/api/orgs/${org_id}/users/${user_id}`,
+    {
+      headers: {
+        cookie: cookie,
+      },
+      credentials: "include",
+      method: "PUT",
+      body: {
+        role,
+      },
+    },
+  );
+}
+function getMemberRole(org_id: number, user_id: number, cookie: string) {
+  return new APIContext("OrgsDetailMembersDetailGet").fetch(
+    `/api/orgs/${org_id}/users/${user_id}`,
+    {
+      headers: {
+        cookie: cookie,
+      },
+      credentials: "include",
+      method: "get",
+    },
+  );
+}
+
+function unassignMember(project_id: number, user_id: number, cookie: string) {
+  return new APIContext("OrgsDetailMembersDetailDelete").fetch(
+    `/api/orgs/${project_id}/users/${user_id}`,
+    {
+      headers: {
+        cookie: cookie,
+      },
+      credentials: "include",
+      method: "delete",
+    },
+  );
 }

@@ -1,10 +1,11 @@
 import type { Express } from "express";
 import { RequestHandler } from "express";
-import { z } from "zod";
+import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
 import { RH } from "../../helpers/types.js";
 import { validateLogged } from "../../helpers/validate.js";
+import { OrgRoles, parseRole } from "./OrgMisc.js";
 import { OrgService } from "./OrgService.js";
 
 export class OrgController extends Controller {
@@ -103,6 +104,63 @@ export class OrgController extends Controller {
         schema: {
           Params: z.object({
             id: z.coerce.number({ message: "ID tidak valid!" }),
+          }),
+        },
+      }),
+      OrgsDetailMembersDetailGet: new Route({
+        handler: this.getOrgDetailMembersDetail,
+        method: "get",
+        path: "/api/orgs/:org_id/users/:user_id",
+        schema: {
+          Params: z.object({
+            org_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID organisasi tidak valid!" }),
+            user_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+          }),
+        },
+      }),
+      OrgsDetailMembersDetailPut: new Route({
+        handler: this.putOrgDetailMembersDetail,
+        method: "put",
+        path: "/api/orgs/:org_id/users/:user_id",
+        schema: {
+          ReqBody: z.object({
+            role: z
+              .string()
+              .min(1)
+              .transform((arg) => parseRole(arg)) as ZodType<OrgRoles>,
+          }),
+          Params: z.object({
+            org_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID organisasi tidak valid!" }),
+            user_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+          }),
+        },
+      }),
+      OrgsDetailMembersDetailDelete: new Route({
+        handler: this.deleteOrgDetailMembersDetail,
+        method: "delete",
+        path: "/api/orgs/:org_id/users/:user_id",
+        schema: {
+          Params: z.object({
+            org_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID organisasi tidak valid!" }),
+            user_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
           }),
         },
       }),
@@ -271,5 +329,66 @@ export class OrgController extends Controller {
     const id = req.params.id;
     await this.org_service.deleteOrg(id);
     res.status(200).json({ msg: "Organisasi berhasil di hapus" });
+  };
+
+  private putOrgDetailMembersDetail: RH<{
+    ResBody: {
+      role: OrgRoles;
+    };
+    ReqBody: {
+      role: OrgRoles;
+    };
+    Params: {
+      org_id: string;
+      user_id: string;
+    };
+  }> = async (req, res) => {
+    const { org_id: org_id_str, user_id: user_id_str } = req.params;
+    const org_id = Number(org_id_str);
+    const user_id = Number(user_id_str);
+    const role = req.body.role;
+    const sender_id = Number(req.session.user_id!);
+
+    await this.org_service.assignMember(org_id, user_id, sender_id, role);
+
+    const result = await this.org_service.getMemberRole(org_id, user_id);
+    res.json({ role: result });
+  };
+
+  private getOrgDetailMembersDetail: RH<{
+    ResBody: {
+      role: OrgRoles;
+    };
+    Params: {
+      org_id: string;
+      user_id: string;
+    };
+  }> = async (req, res) => {
+    const { org_id: org_id_str, user_id: user_id_str } = req.params;
+    const org_id = Number(org_id_str);
+    const user_id = Number(user_id_str);
+
+    const result = await this.org_service.getMemberRole(org_id, user_id);
+    res.status(200).json({ role: result });
+  };
+
+  private deleteOrgDetailMembersDetail: RH<{
+    ResBody: {
+      role: OrgRoles;
+    };
+    Params: {
+      org_id: string;
+      user_id: string;
+    };
+  }> = async (req, res) => {
+    const { org_id: org_id_str, user_id: user_id_str } = req.params;
+    const org_id = Number(org_id_str);
+    const user_id = Number(user_id_str);
+    const sender_id = Number(req.session.user_id!);
+
+    await this.org_service.unassignMember(org_id, user_id, sender_id);
+
+    const result = await this.org_service.getMemberRole(org_id, user_id);
+    res.status(200).json({ role: result });
   };
 }

@@ -1,6 +1,7 @@
 import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
+import { OrgRoles, parseRole } from "./OrgMisc.js";
 
 function orgWithCategories(eb: ExpressionBuilder<DB, "ms_orgs">) {
   return jsonArrayFrom(
@@ -194,5 +195,52 @@ export class OrgRepository {
       await trx.deleteFrom("orgs_users").where("org_id", "=", id).execute();
       await trx.deleteFrom("ms_orgs").where("id", "=", id).execute();
     });
+  }
+  async getMemberRole(org_id: number, user_id: number): Promise<OrgRoles> {
+    const res = await this.db
+      .selectFrom("orgs_users")
+      .select("role")
+      .where((eb) =>
+        eb.and({
+          "orgs_users.user_id": user_id,
+          "orgs_users.org_id": org_id,
+        }),
+      )
+      .executeTakeFirst();
+
+    if (!res) {
+      return "Not Involved";
+    }
+
+    const ret = parseRole(res.role);
+    return ret;
+  }
+
+  async assignMember(org_id: number, user_id: number, role: OrgRoles) {
+    await this.db
+      .insertInto("orgs_users")
+      .values({
+        org_id: org_id,
+        user_id: user_id,
+        role: role,
+      })
+      .onConflict((oc) =>
+        oc.columns(["user_id", "org_id"]).doUpdateSet({
+          role: role,
+        }),
+      )
+      .execute();
+  }
+
+  async unassignMember(org_id: number, user_id: number) {
+    await this.db
+      .deleteFrom("orgs_users")
+      .where((eb) =>
+        eb.and({
+          "orgs_users.org_id": org_id,
+          "orgs_users.user_id": user_id,
+        }),
+      )
+      .execute();
   }
 }
