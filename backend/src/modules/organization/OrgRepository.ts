@@ -107,13 +107,15 @@ export class OrgRepository {
         throw new Error("Data not inserted!");
       }
 
-      for (const cat_id of org_categories ?? []) {
+      if (org_categories && org_categories.length) {
         await trx
           .insertInto("categories_orgs")
-          .values({
-            org_id: org.id,
-            category_id: cat_id,
-          })
+          .values(
+            org_categories.map((cat_id) => ({
+              org_id: org.id,
+              category_id: cat_id,
+            })),
+          )
           .execute();
       }
 
@@ -122,7 +124,7 @@ export class OrgRepository {
         .values({
           user_id: firstUser,
           org_id: org.id,
-          role: "Owner",
+          role: "Admin",
         })
         .execute();
       return org;
@@ -174,16 +176,20 @@ export class OrgRepository {
         }
       }
 
-      await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
+      if (org_category) {
+        await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
 
-      for (const cat_id of org_category ?? []) {
-        await trx
-          .insertInto("categories_orgs")
-          .values({
-            org_id: id,
-            category_id: cat_id,
-          })
-          .execute();
+        if (org_category.length) {
+          await trx
+            .insertInto("categories_orgs")
+            .values(
+              org_category.map((cat_id) => ({
+                org_id: id,
+                category_id: cat_id,
+              })),
+            )
+            .execute();
+        }
       }
     });
   }

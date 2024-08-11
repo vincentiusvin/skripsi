@@ -153,6 +153,7 @@ describe("/api/projects", () => {
     const in_name = "proj_name";
     const in_org = caseData.org;
     const in_desc = "Testing data desc";
+    const in_category = caseData.project_categories.slice(0, 1).map((x) => x.id);
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await addProject(
@@ -160,6 +161,7 @@ describe("/api/projects", () => {
         org_id: in_org.id,
         project_desc: in_desc,
         project_name: in_name,
+        category_id: in_category,
       },
       cookie,
     );
@@ -172,6 +174,7 @@ describe("/api/projects", () => {
     expect(read_result.project_name).to.eq(in_name);
     expect(read_result.org_id).to.eq(in_org.id);
     expect(read_result.project_desc).to.eq(in_desc);
+    expect(read_result.project_categories.map((x) => x.category_id)).to.deep.eq(in_category);
   });
 
   it("should be able to update projects", async () => {
@@ -179,6 +182,7 @@ describe("/api/projects", () => {
     const in_proj = caseData.project;
     const in_name = "new project name after edit";
     const in_desc = "new project description";
+    const in_category = caseData.project_categories.slice(0, 2).map((x) => x.id);
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await updateProject(
@@ -186,6 +190,7 @@ describe("/api/projects", () => {
       {
         project_desc: in_desc,
         project_name: in_name,
+        category_id: in_category,
       },
       cookie,
     );
@@ -197,6 +202,7 @@ describe("/api/projects", () => {
     expect(read_req.status).eq(200);
     expect(read_result.project_name).to.eq(in_name);
     expect(read_result.project_desc).to.eq(in_desc);
+    expect(read_result.project_categories.map((x) => x.category_id)).to.deep.eq(in_category);
   });
 
   it("should be able to delete projects", async () => {

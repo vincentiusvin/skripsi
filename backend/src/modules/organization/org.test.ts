@@ -37,6 +37,7 @@ describe("org controller", () => {
     const in_addr = "Tangerang";
     const in_phone = "123";
     const in_desc = "Hello";
+    const in_category = caseData.org_categories.slice(0, 1).map((x) => x.id);
 
     const send_req = await addOrg(
       {
@@ -44,6 +45,7 @@ describe("org controller", () => {
         org_description: in_desc,
         org_name: in_name,
         org_phone: in_phone,
+        org_categories: in_category,
       },
       cookie,
     );
@@ -56,6 +58,7 @@ describe("org controller", () => {
     expect(read_req.status).eq(200);
     expect(found_org).to.not.eq(undefined);
     expect(found_org?.org_description).to.eq(in_desc);
+    expect(found_org?.org_categories.map((x) => x.category_id)).to.deep.eq(in_category);
   });
 
   it("should be able to update and get detail", async () => {
@@ -63,6 +66,7 @@ describe("org controller", () => {
     const in_member = caseData.org_user;
     const in_name = "new_name";
     const in_addr = "new_place";
+    const in_category = caseData.org_categories.slice(0, 1).map((x) => x.id);
 
     const cookie = await getLoginCookie(in_member.name, in_member.password);
     const send_req = await updateOrg(
@@ -70,6 +74,7 @@ describe("org controller", () => {
       {
         org_name: in_name,
         org_address: in_addr,
+        org_categories: in_category,
       },
       cookie,
     );
@@ -82,6 +87,7 @@ describe("org controller", () => {
     expect(read_req.status).eq(200);
     expect(result.org_name).eq(in_name);
     expect(result.org_address).eq(in_addr);
+    expect(result.org_categories.map((x) => x.category_id)).to.deep.eq(in_category);
   });
 
   it("should be able to delete", async () => {
@@ -196,6 +202,7 @@ function addOrg(
     org_description: string;
     org_name: string;
     org_phone: string;
+    org_categories?: number[];
   },
   cookie: string,
 ) {

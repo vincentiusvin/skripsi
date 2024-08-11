@@ -218,17 +218,45 @@ export async function baseCase(app: Application) {
     .returning(["ms_messages.message", "ms_messages.user_id", "ms_messages.chatroom_id"])
     .executeTakeFirstOrThrow();
 
+  const org_categories = await app.db
+    .insertInto("ms_category_orgs")
+    .values([
+      {
+        name: "Cat1",
+      },
+      {
+        name: "Cat2",
+      },
+    ])
+    .returning(["id", "name"])
+    .execute();
+
+  const project_categories = await app.db
+    .insertInto("ms_category_projects")
+    .values([
+      {
+        name: "Cat1",
+      },
+      {
+        name: "Cat2",
+      },
+    ])
+    .returning(["id", "name"])
+    .execute();
+
   return {
     org,
     project,
     bucket_fill: bucket[0],
     bucket_empty: bucket[1],
+    org_categories,
+    project_categories,
     task,
-    org_user: org_user,
-    plain_user: plain_user,
-    chat_user: chat_user,
-    dev_user: dev_user,
-    project_admin_user: project_admin_user,
+    org_user,
+    plain_user,
+    chat_user,
+    dev_user,
+    project_admin_user,
     chat,
     message,
   };
