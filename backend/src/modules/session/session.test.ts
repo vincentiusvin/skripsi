@@ -16,25 +16,25 @@ describe("bucket controller", () => {
   });
 
   it("should be able to login as user", async () => {
-    const in_user = caseData.nonmember;
+    const in_user = caseData.plain_user;
     const success_login = await login(in_user.name, in_user.password);
     expect(success_login.status).to.eq(200);
   });
 
   it("should reject wrong password", async () => {
-    const in_user = caseData.nonmember;
+    const in_user = caseData.plain_user;
     const failed_login = await login(in_user.name, in_user.password + "abc");
     expect(failed_login.status).to.eq(400);
   });
 
   it("should reject wrong user", async () => {
-    const in_user = caseData.nonmember;
+    const in_user = caseData.plain_user;
     const failed_login = await login(in_user.name + "abc", in_user.password);
     expect(failed_login.status).to.eq(400);
   });
 
   it("should be able to get session info", async () => {
-    const in_user = caseData.nonmember;
+    const in_user = caseData.plain_user;
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
     const read_req = await getStatus(cookie);
@@ -47,7 +47,7 @@ describe("bucket controller", () => {
   });
 
   it("should be able logout", async () => {
-    const in_user = caseData.nonmember;
+    const in_user = caseData.plain_user;
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await logout(cookie);

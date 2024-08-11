@@ -17,7 +17,7 @@ describe("bucket controller", () => {
 
   it("should be able to add and get buckets", async () => {
     const in_project = caseData.project;
-    const in_user = caseData.nonmember;
+    const in_user = caseData.plain_user;
     const in_name = "Hello";
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
@@ -33,7 +33,7 @@ describe("bucket controller", () => {
   });
 
   it("should be able to update task", async () => {
-    const in_user = caseData.nonmember;
+    const in_user = caseData.plain_user;
     const in_task = caseData.task[0];
     const in_name = "Not cool Task";
     const in_description = "Cool";
@@ -64,7 +64,7 @@ describe("bucket controller", () => {
     [1, 0],
   ]) {
     it("should be able to sort task", async () => {
-      const in_user = caseData.nonmember;
+      const in_user = caseData.plain_user;
       const in_before = caseData.task[idx1];
       const in_task = caseData.task[idx2];
       const in_bucket = caseData.bucket_fill;
@@ -88,7 +88,7 @@ describe("bucket controller", () => {
   }
 
   it("should be able to write and read", async () => {
-    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
     const in_bucket = caseData.bucket_fill;
     const in_name = "New Task";
     const in_description = "Cool";
@@ -113,7 +113,7 @@ describe("bucket controller", () => {
   });
 
   it("should be able to write and read to empty buckets", async () => {
-    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
     const in_bucket = caseData.bucket_empty;
     const in_name = "New Task";
     const in_description = "Cool";

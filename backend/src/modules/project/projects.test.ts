@@ -5,7 +5,7 @@ import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 
-describe.only("/api/projects", () => {
+describe("/api/projects", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -27,7 +27,7 @@ describe.only("/api/projects", () => {
   });
 
   it("should promote org member as admin", async () => {
-    const in_user = caseData.member;
+    const in_user = caseData.org_user;
     const in_project = caseData.project;
     const in_role = "Pending";
 
@@ -43,7 +43,7 @@ describe.only("/api/projects", () => {
   });
 
   it("should allow non org member to apply", async () => {
-    const in_user = caseData.nonmember;
+    const in_user = caseData.plain_user;
     const in_project = caseData.project;
     const in_role = "Pending";
 
@@ -59,8 +59,8 @@ describe.only("/api/projects", () => {
   });
 
   it("should allow admin to approve members", async () => {
-    const in_dev = caseData.nonmember;
-    const in_admin = caseData.member;
+    const in_dev = caseData.plain_user;
+    const in_admin = caseData.project_admin_user;
     const in_project = caseData.project;
 
     // dev applies
@@ -68,11 +68,8 @@ describe.only("/api/projects", () => {
     const send_dev_req = await assignMember(in_project.id, in_dev.id, "Pending", dev_cookie);
     const apply_result = await send_dev_req.json();
 
-    // promote admin
-    const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
-    await assignMember(in_project.id, in_admin.id, "Pending", admin_cookie);
-
     // admin accepts
+    const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
     const accept_dev_req = await assignMember(in_project.id, in_dev.id, "Dev", admin_cookie);
     const accept_result = await accept_dev_req.json();
 
@@ -83,13 +80,12 @@ describe.only("/api/projects", () => {
   });
 
   it("should allow admin to invite members", async () => {
-    const in_dev = caseData.nonmember;
-    const in_admin = caseData.member;
+    const in_dev = caseData.plain_user;
+    const in_admin = caseData.project_admin_user;
     const in_project = caseData.project;
 
     // promote admin
     const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
-    await assignMember(in_project.id, in_admin.id, "Pending", admin_cookie);
     const invite_req = await assignMember(in_project.id, in_dev.id, "Invited", admin_cookie);
     const invite_result = await invite_req.json();
 
@@ -105,7 +101,7 @@ describe.only("/api/projects", () => {
   });
 
   it("should not allow users to self promote", async () => {
-    const in_dev = caseData.nonmember;
+    const in_dev = caseData.plain_user;
     const in_project = caseData.project;
 
     const dev_cookie = await getLoginCookie(in_dev.name, in_dev.password);
@@ -115,13 +111,11 @@ describe.only("/api/projects", () => {
   });
 
   it("should not allow admin to promote people that didn't apply", async () => {
-    const in_dev = caseData.nonmember;
-    const in_admin = caseData.member;
+    const in_dev = caseData.plain_user;
+    const in_admin = caseData.project_admin_user;
     const in_project = caseData.project;
 
-    // promote admin
     const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
-    await assignMember(in_project.id, in_admin.id, "Pending", admin_cookie);
     const invite_req = await assignMember(in_project.id, in_dev.id, "Dev", admin_cookie);
 
     expect(invite_req.status).eq(401);
@@ -155,7 +149,7 @@ describe.only("/api/projects", () => {
   });
 
   it("should be able to add projects and view detail", async () => {
-    const in_user = caseData.member;
+    const in_user = caseData.org_user;
     const in_name = "proj_name";
     const in_org = caseData.org;
     const in_desc = "Testing data desc";

@@ -18,7 +18,7 @@ describe("org controller", () => {
   });
 
   it("should be able to get org", async () => {
-    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
     const expected_org = caseData.org.id;
 
     const read_req = await getOrgs(cookie);
@@ -31,7 +31,7 @@ describe("org controller", () => {
   });
 
   it("should be able to post org", async () => {
-    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
 
     const in_name = "Test Case";
     const in_addr = "Tangerang";
@@ -59,11 +59,12 @@ describe("org controller", () => {
   });
 
   it("should be able to update and get detail", async () => {
-    const cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
     const in_org = caseData.org;
+    const in_member = caseData.org_user;
     const in_name = "new_name";
     const in_addr = "new_place";
 
+    const cookie = await getLoginCookie(in_member.name, in_member.password);
     const send_req = await updateOrg(
       in_org.id,
       {
@@ -85,7 +86,7 @@ describe("org controller", () => {
 
   it("should be able to delete", async () => {
     const in_org = caseData.org;
-    const in_admin = caseData.member;
+    const in_admin = caseData.org_user;
 
     const cookie = await getLoginCookie(in_admin.name, in_admin.password);
     const send_req = await deleteOrg(in_org.id, cookie);
@@ -100,8 +101,8 @@ describe("org controller", () => {
 
   it("should be able to invite new org member", async () => {
     const in_org = caseData.org;
-    const in_new_member = caseData.nonmember;
-    const in_admin = caseData.member;
+    const in_new_member = caseData.plain_user;
+    const in_admin = caseData.org_user;
 
     const cookie = await getLoginCookie(in_admin.name, in_admin.password);
     const send_req = await assignMember(in_org.id, in_new_member.id, "Invited", cookie);
@@ -115,8 +116,8 @@ describe("org controller", () => {
 
   it("should not be able to add org member without inviting", async () => {
     const in_org = caseData.org;
-    const in_new_member = caseData.nonmember;
-    const in_admin = caseData.member;
+    const in_new_member = caseData.plain_user;
+    const in_admin = caseData.org_user;
 
     const cookie = await getLoginCookie(in_admin.name, in_admin.password);
     const send_req = await assignMember(in_org.id, in_new_member.id, "Admin", cookie);
@@ -126,8 +127,8 @@ describe("org controller", () => {
 
   it("should not be able to invite as a non admin", async () => {
     const in_org = caseData.org;
-    const in_new_member = caseData.nonmember;
-    const in_admin = caseData.nonmember;
+    const in_new_member = caseData.plain_user;
+    const in_admin = caseData.plain_user;
 
     const cookie = await getLoginCookie(in_admin.name, in_admin.password);
     const send_req = await assignMember(in_org.id, in_new_member.id, "Invited", cookie);
@@ -137,8 +138,8 @@ describe("org controller", () => {
 
   it("should be able to accept invitation", async () => {
     const in_org = caseData.org;
-    const in_admin = caseData.member;
-    const in_new_member = caseData.nonmember;
+    const in_admin = caseData.org_user;
+    const in_new_member = caseData.plain_user;
 
     const cookie_admin = await getLoginCookie(in_admin.name, in_admin.password);
     const invite_req = await assignMember(in_org.id, in_new_member.id, "Invited", cookie_admin);
@@ -153,10 +154,10 @@ describe("org controller", () => {
   });
 
   it("should be able to unassign org member", async () => {
-    const cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
     const in_org = caseData.org;
-    const in_member = caseData.member;
+    const in_member = caseData.org_user;
 
+    const cookie = await getLoginCookie(in_member.name, in_member.password);
     const send_req = await unassignMember(in_org.id, in_member.id, cookie);
     const read_req = await getMemberRole(in_org.id, in_member.id, cookie);
     const result = await read_req.json();
@@ -167,9 +168,9 @@ describe("org controller", () => {
   });
 
   it("should be able to get org member information", async () => {
-    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
     const in_org = caseData.org;
-    const in_member = caseData.nonmember;
+    const in_member = caseData.plain_user;
 
     const read_req = await getMemberRole(in_org.id, in_member.id, cookie);
     const result = await read_req.json();

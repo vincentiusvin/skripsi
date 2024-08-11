@@ -18,7 +18,7 @@ describe("/api/users", () => {
   });
 
   it("should be able to get user", async () => {
-    const expected_user = caseData.nonmember;
+    const expected_user = caseData.plain_user;
 
     const res = await getUsers();
     const result = await res.json();
