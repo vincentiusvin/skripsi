@@ -5,7 +5,7 @@ import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { OrgRoles } from "./OrgMisc.js";
 
-describe.only("org controller", () => {
+describe("org controller", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
