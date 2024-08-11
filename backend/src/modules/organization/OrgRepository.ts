@@ -17,7 +17,7 @@ function orgWithUsers(eb: ExpressionBuilder<DB, "ms_orgs">) {
   return jsonArrayFrom(
     eb
       .selectFrom("orgs_users")
-      .select(["orgs_users.user_id"])
+      .select(["orgs_users.user_id", "orgs_users.role as user_role"])
       .whereRef("orgs_users.org_id", "=", "ms_orgs.id"),
   );
 }

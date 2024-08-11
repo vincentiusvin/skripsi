@@ -184,6 +184,7 @@ export class OrgController extends Controller {
       }[];
       org_users: {
         user_id: number;
+        user_role: string;
       }[];
     }[];
   }> = async (req, res) => {
@@ -206,6 +207,7 @@ export class OrgController extends Controller {
       }[];
       org_users: {
         user_id: number;
+        user_role: string;
       }[];
     };
   }> = async (req, res) => {
@@ -232,6 +234,7 @@ export class OrgController extends Controller {
       }[];
       org_users: {
         user_id: number;
+        user_role: string;
       }[];
     };
     ReqBody: {
@@ -290,6 +293,7 @@ export class OrgController extends Controller {
       }[];
       org_users: {
         user_id: number;
+        user_role: string;
       }[];
     };
     Params: {

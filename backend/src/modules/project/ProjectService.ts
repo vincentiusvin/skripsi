@@ -44,8 +44,8 @@ export class ProjectService {
 
     if (sender_id === user_id) {
       if (target_role === "Pending" && target_user_role === "Not Involved") {
-        const user_is_org_member = org.org_users.some((x) => x.user_id === sender_id);
-        if (user_is_org_member) {
+        const user_org_role = await this.org_service.getMemberRole(org.org_id, user_id);
+        if (user_org_role === "Admin") {
           return this.project_repo.assignMember(project_id, user_id, "Admin");
         } else {
           return this.project_repo.assignMember(project_id, user_id, "Pending");

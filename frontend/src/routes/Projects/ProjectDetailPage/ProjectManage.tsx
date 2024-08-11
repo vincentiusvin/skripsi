@@ -61,7 +61,7 @@ function MemberManage(props: {
         borderRadius: 2,
       }}
     >
-      <Stack direction={"row"} spacing={2} justifyContent={"center"}>
+      <Stack direction={"row"} spacing={2} justifyContent={"space-between"}>
         <ProjectMember project_id={project_id} user_id={user_id} />
         {putOption && (
           <Button
