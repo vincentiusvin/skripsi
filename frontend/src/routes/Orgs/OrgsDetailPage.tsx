@@ -265,7 +265,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
           <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
             Our Members
           </Typography>
-          <Stack direction={"row"} justifyContent={"center"}>
+          <Stack direction={"row"} justifyContent={"center"} spacing={2}>
             {data.org_users
               .filter((x) => x.user_role === "Admin")
               .map((x) => (
