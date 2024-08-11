@@ -173,7 +173,7 @@ export class ProjectRepository {
         throw new Error("Failed to insert project");
       }
 
-      if (category_id) {
+      if (category_id && category_id.length) {
         await trx
           .insertInto("categories_projects")
           .values(
@@ -213,15 +213,17 @@ export class ProjectRepository {
       if (category_id) {
         await trx.deleteFrom("categories_projects").where("project_id", "=", project_id).execute();
 
-        await trx
-          .insertInto("categories_projects")
-          .values(
-            category_id.map((cat_id) => ({
-              project_id,
-              category_id: cat_id,
-            })),
-          )
-          .execute();
+        if (category_id.length) {
+          await trx
+            .insertInto("categories_projects")
+            .values(
+              category_id.map((cat_id) => ({
+                project_id,
+                category_id: cat_id,
+              })),
+            )
+            .execute();
+        }
       }
     });
   }

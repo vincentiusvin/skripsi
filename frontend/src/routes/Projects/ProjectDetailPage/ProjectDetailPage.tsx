@@ -1,9 +1,11 @@
-import { ArrowBack, Check, Logout } from "@mui/icons-material";
+import { ArrowBack, Check, Delete, Edit, Logout } from "@mui/icons-material";
 import { Button, Grid, Skeleton, Stack, Tab, Tabs, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
+import { APIError } from "../../../helpers/fetch.ts";
 import {
+  useProjectsDetailDelete,
   useProjectsDetailGet,
   useProjectsDetailMembersDelete,
   useProjectsDetailMembersGet,
@@ -19,7 +21,18 @@ import Kanban from "./Tasks.tsx";
 function InvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
   const { project_id, user_id, role } = props;
   const [activeTab, setActiveTab] = useState<"disc" | "info" | "manage" | "tasks">("disc");
-  const { data: project } = useProjectsDetailGet({ project_id });
+
+  const [, setLocation] = useLocation();
+  const { data: project } = useProjectsDetailGet({
+    project_id: project_id,
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+        setLocation("/projects");
+        return false;
+      }
+      return true;
+    },
+  });
 
   const { mutate: leaveProject } = useProjectsDetailMembersDelete({
     project_id: project_id,
@@ -32,6 +45,16 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
     },
   });
 
+  const { mutate: deleteProject } = useProjectsDetailDelete({
+    project_id: project_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>Berhasil menghapus projek!</Typography>,
+      });
+    },
+  });
+
   if (!project) {
     return <Skeleton />;
   }
@@ -39,12 +62,12 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
   return (
     <Stack height={"100%"}>
       <Grid container>
-        <Grid item xs={1}>
+        <Grid item xs={3}>
           <Typography variant="h3" fontWeight={"bold"}>
             {project.project_name}
           </Typography>
         </Grid>
-        <Grid item xs={10}>
+        <Grid item xs={6}>
           <Tabs
             centered
             sx={{
@@ -61,9 +84,34 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             {role === "Admin" && <Tab label={"Manage"} value="manage" />}
           </Tabs>
         </Grid>
+        {role === "Admin" ? (
+          <>
+            <Grid item xs={1}>
+              <Link to={`/projects/${project_id}/edit`}>
+                <Button endIcon={<Edit />} variant="contained" fullWidth>
+                  Edit
+                </Button>
+              </Link>
+            </Grid>
+            <Grid item xs={1}>
+              <Button
+                endIcon={<Delete />}
+                variant="contained"
+                fullWidth
+                onClick={() => {
+                  deleteProject();
+                }}
+              >
+                Hapus
+              </Button>
+            </Grid>
+          </>
+        ) : (
+          <Grid item xs={2} />
+        )}
         <Grid item xs={1}>
-          <Button endIcon={<Logout />} onClick={() => leaveProject()} variant="contained">
-            Leave
+          <Button fullWidth endIcon={<Logout />} onClick={() => leaveProject()} variant="contained">
+            Keluar
           </Button>
         </Grid>
       </Grid>
@@ -78,8 +126,16 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
 function UninvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
   const { project_id, user_id, role } = props;
 
+  const [, setLocation] = useLocation();
   const { data: project } = useProjectsDetailGet({
     project_id: project_id,
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+        setLocation("/projects");
+        return false;
+      }
+      return true;
+    },
   });
 
   const { mutate: addMember } = useProjectsDetailMembersPut({
@@ -156,9 +212,20 @@ function ProjectDetailPage() {
     user_id: user_id,
   });
 
+  const { data: project } = useProjectsDetailGet({
+    project_id,
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+        setLocation("/projects");
+        return false;
+      }
+      return true;
+    },
+  });
+
   const role = membership?.role;
 
-  if (!role || !user_id) {
+  if (!role || !user_id || !project) {
     return <Skeleton />;
   }
 

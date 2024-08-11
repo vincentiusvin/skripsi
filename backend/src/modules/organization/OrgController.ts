@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { RequestHandler } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
+import { NotFoundError } from "../../helpers/error.js";
 import { RH } from "../../helpers/types.js";
 import { validateLogged } from "../../helpers/validate.js";
 import { OrgService } from "./OrgService.js";
@@ -150,6 +151,9 @@ export class OrgController extends Controller {
     const id = Number(req.params.id);
 
     const result = await this.org_service.getOrgByID(id);
+    if (result === undefined) {
+      throw new NotFoundError("Organisasi tidak ditemukan!");
+    }
     res.status(200).json(result);
   };
 

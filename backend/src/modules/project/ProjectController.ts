@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
+import { NotFoundError } from "../../helpers/error.js";
 import { RH } from "../../helpers/types.js";
 import { ProjectRoles, parseRole } from "./ProjectMisc.js";
 import { ProjectService } from "./ProjectService.js";
@@ -342,6 +343,9 @@ export class ProjectController extends Controller {
     const project_id = req.params.project_id;
 
     const result = await this.project_service.getProjectByID(Number(project_id));
+    if (result === undefined) {
+      throw new NotFoundError("Projek tidak ditemukan!");
+    }
     res.status(200).json(result);
   };
 

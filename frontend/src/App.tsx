@@ -18,6 +18,7 @@ import OrgsEditPage from "./routes/Orgs/OrgsEditPage";
 import OrgsListPage from "./routes/Orgs/OrgsListPage";
 import ProjectDetailPage from "./routes/Projects/ProjectDetailPage/ProjectDetailPage";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
+import ProjectsEditPage from "./routes/Projects/ProjectsEditPage.tsx";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
 import UserAccountPage from "./routes/User/UserAccountPage";
 import UserAccountPageEdit from "./routes/User/UserAccountPageEdit";
@@ -62,6 +63,7 @@ function App() {
                 <Route path={"/chatroom"} component={ChatroomPage} />
                 <Route path={"/projects"} component={ProjectListPage} />
                 <Route path={"/projects/:id"} component={ProjectDetailPage} />
+                <Route path={"/projects/:project_id/edit"} component={ProjectsEditPage} />
                 <Route path={"/users/:id"} component={UserAccountPage} />
                 <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
               </Switch>

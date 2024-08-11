@@ -114,6 +114,37 @@ export function useProjectsPost(opts: { onSuccess?: () => void }) {
   });
 }
 
+export function useProjectsDetailPut(opts: { project_id: number; onSuccess?: () => void }) {
+  const { onSuccess, project_id } = opts;
+  return useMutation({
+    mutationFn: new APIContext("ProjectsDetailPut").bodyFetch(`/api/projects/${project_id}`, {
+      method: "PUT",
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useProjectsDetailDelete(opts: { project_id: number; onSuccess?: () => void }) {
+  const { onSuccess, project_id } = opts;
+  return useMutation({
+    mutationFn: () =>
+      new APIContext("ProjectsDetailDelete").fetch(`/api/projects/${project_id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
 export function useProjectsCategoriesGet() {
   return useQuery({
     queryKey: ["categories"],
