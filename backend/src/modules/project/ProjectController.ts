@@ -142,35 +142,6 @@ export class ProjectController extends Controller {
           }),
         },
       }),
-      ProjectsDetailBucketsGet: new Route({
-        handler: this.getProjectsDetailBuckets,
-        method: "get",
-        path: "/api/projects/:project_id/buckets",
-        schema: {
-          Params: z.object({
-            project_id: z
-              .string()
-              .min(1)
-              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
-          }),
-        },
-      }),
-      ProjectsDetailBucketsPost: new Route({
-        handler: this.postProjectsDetailBuckets,
-        method: "post",
-        path: "/api/projects/:project_id/buckets",
-        schema: {
-          ReqBody: z.object({
-            name: z.string({ message: "Nama invalid!" }).min(1, "Nama tidak boleh kosong!"),
-          }),
-          Params: z.object({
-            project_id: z
-              .string()
-              .min(1)
-              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
-          }),
-        },
-      }),
       ProjectsCategoriesGet: new Route({
         handler: this.getProjectsCategories,
         method: "get",
@@ -392,42 +363,5 @@ export class ProjectController extends Controller {
   }> = async (req, res) => {
     const result = await this.project_service.getCategories();
     res.status(200).json(result);
-  };
-
-  private getProjectsDetailBuckets: RH<{
-    Params: {
-      project_id: string;
-    };
-    ResBody: {
-      name: string;
-      id: number;
-    }[];
-  }> = async (req, res) => {
-    const { project_id } = req.params;
-
-    const result = await this.project_service.getBuckets(Number(project_id));
-    res.status(200).json(result);
-  };
-
-  private postProjectsDetailBuckets: RH<{
-    Params: {
-      project_id: string;
-    };
-    ReqBody: {
-      name: string;
-    };
-    ResBody: {
-      msg: string;
-    };
-  }> = async (req, res) => {
-    const { project_id } = req.params;
-    const { name } = req.body;
-
-    await this.project_service.addBucket(Number(project_id), name);
-
-    // TODO: split to task domain
-    res.status(201).json({
-      msg: "Bucket created!",
-    });
   };
 }

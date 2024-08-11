@@ -241,22 +241,4 @@ export class ProjectRepository {
       .select(["id as category_id", "name as category_name"])
       .execute();
   }
-
-  async getProjectBuckets(project_id: number) {
-    return await this.db
-      .selectFrom("ms_task_buckets")
-      .select(["name", "id"])
-      .where("ms_task_buckets.project_id", "=", project_id)
-      .execute();
-  }
-
-  async addBucket(project_id: number, name: string) {
-    return this.db
-      .insertInto("ms_task_buckets")
-      .values({
-        name: name,
-        project_id: Number(project_id),
-      })
-      .execute();
-  }
 }

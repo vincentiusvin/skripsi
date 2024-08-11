@@ -82,4 +82,12 @@ export class TaskService {
   async getTaskByBucket(bucket_id: number) {
     return this.repo.findTasksByBucket(bucket_id);
   }
+
+  getBuckets(project_id: number) {
+    return this.repo.getProjectBuckets(project_id);
+  }
+
+  addBucket(project_id: number, name: string) {
+    return this.repo.addBucket(project_id, name);
+  }
 }

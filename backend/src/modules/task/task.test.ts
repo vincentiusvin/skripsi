@@ -15,6 +15,23 @@ describe("bucket controller", () => {
     caseData = await baseCase(app);
   });
 
+  it("should be able to add and get buckets", async () => {
+    const in_project = caseData.project;
+    const in_user = caseData.nonmember;
+    const in_name = "Hello";
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const send_req = await addBucket(in_project.id, in_name, cookie);
+    await send_req.json();
+    const read_req = await getBuckets(in_project.id, cookie);
+    const result = await read_req.json();
+
+    const found = result.find((x) => x.name === in_name);
+
+    expect(send_req.status).eq(201);
+    expect(found).to.not.eq(undefined);
+  });
+
   it("should be able to update task", async () => {
     const in_user = caseData.nonmember;
     const in_task = caseData.task[0];
@@ -170,5 +187,28 @@ function updateTask(
     credentials: "include",
     method: "put",
     body: data,
+  });
+}
+
+function addBucket(project_id: number, bucket_name: string, cookie: string) {
+  return new APIContext("ProjectsDetailBucketsPost").fetch(`/api/projects/${project_id}/buckets`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "post",
+    body: {
+      name: bucket_name,
+    },
+  });
+}
+
+function getBuckets(project_id: number, cookie: string) {
+  return new APIContext("ProjectsDetailBucketsGet").fetch(`/api/projects/${project_id}/buckets`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "get",
   });
 }

@@ -5,7 +5,7 @@ import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 
-describe.only("/api/projects", () => {
+describe("/api/projects", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -125,23 +125,6 @@ describe.only("/api/projects", () => {
     const invite_req = await assignMember(in_project.id, in_dev.id, "Dev", admin_cookie);
 
     expect(invite_req.status).eq(401);
-  });
-
-  it("should be able to add and get buckets", async () => {
-    const in_project = caseData.project;
-    const in_user = caseData.nonmember;
-    const in_name = "Hello";
-
-    const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const send_req = await addBucket(in_project.id, in_name, cookie);
-    await send_req.json();
-    const read_req = await getBuckets(in_project.id, cookie);
-    const result = await read_req.json();
-
-    const found = result.find((x) => x.name === in_name);
-
-    expect(send_req.status).eq(201);
-    expect(found).to.not.eq(undefined);
   });
 
   it("should be able to unassign user roles", async () => {
@@ -270,29 +253,6 @@ function assignMember(project_id: number, user_id: number, role: ProjectRoles, c
       },
     },
   );
-}
-
-function addBucket(project_id: number, bucket_name: string, cookie: string) {
-  return new APIContext("ProjectsDetailBucketsPost").fetch(`/api/projects/${project_id}/buckets`, {
-    headers: {
-      cookie: cookie,
-    },
-    credentials: "include",
-    method: "post",
-    body: {
-      name: bucket_name,
-    },
-  });
-}
-
-function getBuckets(project_id: number, cookie: string) {
-  return new APIContext("ProjectsDetailBucketsGet").fetch(`/api/projects/${project_id}/buckets`, {
-    headers: {
-      cookie: cookie,
-    },
-    credentials: "include",
-    method: "get",
-  });
 }
 
 function updateProject(

@@ -120,12 +120,4 @@ export class ProjectService {
   getCategories() {
     return this.project_repo.getCategories();
   }
-
-  getBuckets(project_id: number) {
-    return this.project_repo.getProjectBuckets(project_id);
-  }
-
-  addBucket(project_id: number, name: string) {
-    return this.project_repo.addBucket(project_id, name);
-  }
 }
