@@ -106,6 +106,17 @@ export class ProjectService {
     return this.project_repo.addProject(obj);
   }
 
+  updateProject(
+    project_id: number,
+    obj: { project_name?: string; project_desc?: string; category_id?: number[] },
+  ) {
+    return this.project_repo.updateProject(project_id, obj);
+  }
+
+  deleteProject(project_id: number) {
+    return this.project_repo.deleteProject(project_id);
+  }
+
   getCategories() {
     return this.project_repo.getCategories();
   }

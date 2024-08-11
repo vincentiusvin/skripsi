@@ -47,6 +47,43 @@ export class ProjectController extends Controller {
           }),
         },
       }),
+      ProjectsDetailPut: new Route({
+        handler: this.putProjectsDetail,
+        method: "put",
+        path: "/api/projects/:project_id",
+        schema: {
+          Params: z.object({
+            project_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+          }),
+          ReqBody: z.object({
+            project_name: z
+              .string({ message: "Nama invalid!" })
+              .min(1, "Nama tidak boleh kosong!")
+              .optional(),
+            project_desc: z
+              .string({ message: "Deskripsi invalid!" })
+              .min(1, "Deskripsi tidak boleh kosong!")
+              .optional(),
+            category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
+          }),
+        },
+      }),
+      ProjectsDetailDelete: new Route({
+        handler: this.deleteProject,
+        method: "delete",
+        path: "/api/projects/:project_id",
+        schema: {
+          Params: z.object({
+            project_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+          }),
+        },
+      }),
       ProjectsDetailMembersGet: new Route({
         handler: this.getProjectsDetailMembersDetail,
         method: "get",
@@ -232,6 +269,55 @@ export class ProjectController extends Controller {
     });
 
     res.status(200).json(result);
+  };
+
+  private putProjectsDetail: RH<{
+    ResBody: {
+      org_id: number;
+      project_id: number;
+      project_name: string;
+      project_desc: string;
+      project_members: {
+        user_id: number;
+        role: string;
+      }[];
+      project_categories: {
+        category_name: string;
+        category_id: number;
+      }[];
+    };
+    ReqBody: {
+      project_name?: string;
+      project_desc?: string;
+      category_id?: number[];
+    };
+    Params: {
+      project_id: string;
+    };
+  }> = async (req, res) => {
+    const project_id = Number(req.params.project_id);
+    const obj = req.body;
+
+    await this.project_service.updateProject(project_id, obj);
+
+    const result = await this.project_service.getProjectByID(project_id);
+
+    res.status(200).json(result);
+  };
+
+  private deleteProject: RH<{
+    Params: {
+      project_id: string;
+    };
+    ResBody: {
+      msg: string;
+    };
+  }> = async (req, res) => {
+    const project_id = Number(req.params.project_id);
+
+    await this.project_service.deleteProject(project_id);
+
+    res.status(200).json({ msg: "Projek berhasil dihapus!" });
   };
 
   private getProjectsDetail: RH<{
