@@ -5,7 +5,7 @@ import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 
-describe("/api/projects", () => {
+describe.only("/api/projects", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -155,12 +155,12 @@ describe("/api/projects", () => {
   });
 
   it("should be able to add projects and view detail", async () => {
-    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
-
+    const in_user = caseData.member;
     const in_name = "proj_name";
     const in_org = caseData.org;
     const in_desc = "Testing data desc";
 
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await addProject(
       {
         org_id: in_org.id,
@@ -181,12 +181,12 @@ describe("/api/projects", () => {
   });
 
   it("should be able to update projects", async () => {
-    const cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
-
+    const in_user = caseData.project_admin_user;
     const in_proj = caseData.project;
     const in_name = "new project name after edit";
     const in_desc = "new project description";
 
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await updateProject(
       in_proj.id,
       {
@@ -207,11 +207,10 @@ describe("/api/projects", () => {
 
   it("should be able to delete projects", async () => {
     const in_proj = caseData.project;
-    const in_user = caseData.member;
+    const in_user = caseData.project_admin_user;
+
     const cookie = await getLoginCookie(in_user.name, in_user.password);
-
     const send_req = await deleteProject(in_proj.id, cookie);
-
     const read_req = await getProjects();
     const read_result = await read_req.json();
     const find_project = read_result.find((x) => x.project_id === in_proj.id);

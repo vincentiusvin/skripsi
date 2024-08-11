@@ -97,23 +97,39 @@ export class ProjectService {
     return members.filter((x) => this.isInvolvedRole(x.role));
   }
 
-  addProject(obj: {
-    project_name: string;
-    org_id: number;
-    project_desc: string;
-    category_id?: number[];
-  }) {
-    return this.project_repo.addProject(obj);
+  async addProject(
+    obj: {
+      project_name: string;
+      org_id: number;
+      project_desc: string;
+      category_id?: number[];
+    },
+    sender_id: number,
+  ) {
+    const sender_role = await this.org_service.getMemberRole(obj.org_id, sender_id);
+    if (sender_role !== "Admin") {
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+    }
+    return await this.project_repo.addProject(obj);
   }
 
-  updateProject(
+  async updateProject(
     project_id: number,
     obj: { project_name?: string; project_desc?: string; category_id?: number[] },
+    sender_id: number,
   ) {
-    return this.project_repo.updateProject(project_id, obj);
+    const sender_role = await this.getMemberRole(project_id, sender_id);
+    if (sender_role !== "Admin") {
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+    }
+    return await this.project_repo.updateProject(project_id, obj);
   }
 
-  deleteProject(project_id: number) {
+  async deleteProject(project_id: number, sender_id: number) {
+    const sender_role = await this.getMemberRole(project_id, sender_id);
+    if (sender_role !== "Admin") {
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+    }
     return this.project_repo.deleteProject(project_id);
   }
 

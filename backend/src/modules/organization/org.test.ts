@@ -59,9 +59,8 @@ describe("org controller", () => {
   });
 
   it("should be able to update and get detail", async () => {
-    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
+    const cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
     const in_org = caseData.org;
-
     const in_name = "new_name";
     const in_addr = "new_place";
 
@@ -78,6 +77,7 @@ describe("org controller", () => {
     const read_req = await getOrgDetail(in_org.id, cookie);
     const result = await read_req.json();
 
+    expect(send_req.status).eq(200);
     expect(read_req.status).eq(200);
     expect(result.org_name).eq(in_name);
     expect(result.org_address).eq(in_addr);

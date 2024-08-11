@@ -269,8 +269,9 @@ export class ProjectController extends Controller {
   }> = async (req, res) => {
     const project_id = Number(req.params.project_id);
     const obj = req.body;
+    const sender_id = req.session.user_id!;
 
-    await this.project_service.updateProject(project_id, obj);
+    await this.project_service.updateProject(project_id, obj, sender_id);
 
     const result = await this.project_service.getProjectByID(project_id);
 
@@ -286,8 +287,9 @@ export class ProjectController extends Controller {
     };
   }> = async (req, res) => {
     const project_id = Number(req.params.project_id);
+    const sender_id = req.session.user_id!;
 
-    await this.project_service.deleteProject(project_id);
+    await this.project_service.deleteProject(project_id, sender_id);
 
     res.status(200).json({ msg: "Projek berhasil dihapus!" });
   };
@@ -343,13 +345,17 @@ export class ProjectController extends Controller {
     };
   }> = async (req, res) => {
     const { project_name, org_id, project_desc, category_id } = req.body;
+    const sender_id = req.session.user_id!;
 
-    const project_id = await this.project_service.addProject({
-      org_id,
-      project_desc,
-      project_name,
-      category_id,
-    });
+    const project_id = await this.project_service.addProject(
+      {
+        org_id,
+        project_desc,
+        project_name,
+        category_id,
+      },
+      sender_id,
+    );
 
     const result = await this.project_service.getProjectByID(project_id);
     res.status(201).json(result);
