@@ -64,11 +64,11 @@ export class TaskController extends Controller {
               .optional(),
             start_at: z
               .string({ message: "Tanggal mulai tidak valid!" })
-              .date("Tanggal mulai tidak valid!")
+              .datetime("Tanggal mulai tidak valid!")
               .optional(),
             end_at: z
               .string({ message: "Tanggal selesai tidak valid!" })
-              .date("Tanggal selesai tidak valid!")
+              .datetime("Tanggal selesai tidak valid!")
               .optional(),
           }),
         },
@@ -137,11 +137,11 @@ export class TaskController extends Controller {
               .optional(),
             start_at: z
               .string({ message: "Tanggal mulai tidak valid!" })
-              .date("Tanggal mulai tidak valid!")
+              .datetime("Tanggal mulai tidak valid!")
               .optional(),
             end_at: z
               .string({ message: "Tanggal selesai tidak valid!" })
-              .date("Tanggal selesai tidak valid!")
+              .datetime("Tanggal selesai tidak valid!")
               .optional(),
           }),
         },
