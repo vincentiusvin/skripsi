@@ -3,7 +3,7 @@ import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("bucket controller", () => {
+describe.only("bucket controller", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -136,6 +136,19 @@ describe("bucket controller", () => {
     expect(found).to.not.eq(undefined);
     expect(found?.description).to.eq(in_description);
   });
+
+  it("should be able to delete task", async () => {
+    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
+    const in_task = caseData.task[0];
+
+    const send_req = await deleteTask(in_task.id, cookie);
+    await send_req.json();
+    const read_req = await getTaskDetail(in_task.id, cookie);
+    await read_req.json();
+
+    expect(send_req.status).eq(200);
+    expect(read_req.status).eq(404);
+  });
 });
 
 function getTasks(bucket_id: number, cookie: string) {
@@ -165,6 +178,26 @@ function addTask(
     credentials: "include",
     method: "post",
     body: data,
+  });
+}
+
+function deleteTask(task_id: number, cookie: string) {
+  return new APIContext("BucketsDetailTasksPost").fetch(`/api/tasks/${task_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "delete",
+  });
+}
+
+function getTaskDetail(task_id: number, cookie: string) {
+  return new APIContext("BucketsDetailTasksPost").fetch(`/api/tasks/${task_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "get",
   });
 }
 

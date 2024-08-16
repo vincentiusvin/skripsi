@@ -11,6 +11,10 @@ export class TaskService {
     return this.repo.findTaskByID(task_id);
   }
 
+  async deleteTask(task_id: number) {
+    return this.repo.deleteTask(task_id);
+  }
+
   async updateTask(
     task_id: number,
     data: {

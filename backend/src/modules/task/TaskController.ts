@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
+import { NotFoundError } from "../../helpers/error.js";
 import { RH } from "../../helpers/types.js";
 import { TaskService } from "./TaskService.js";
 
@@ -13,6 +14,32 @@ export class TaskController extends Controller {
 
   init() {
     return {
+      TasksDetailGet: new Route({
+        handler: this.getTasksDetail,
+        method: "get",
+        path: "/api/tasks/:task_id",
+        schema: {
+          Params: z.object({
+            task_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID tugas tidak valid!" }),
+          }),
+        },
+      }),
+      TasksDetailDelete: new Route({
+        handler: this.deleteTasksDetail,
+        method: "delete",
+        path: "/api/tasks/:task_id",
+        schema: {
+          Params: z.object({
+            task_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID tugas tidak valid!" }),
+          }),
+        },
+      }),
       TasksDetailPut: new Route({
         handler: this.putTasksDetail,
         method: "put",
@@ -262,9 +289,51 @@ export class TaskController extends Controller {
 
     await this.task_service.addBucket(Number(project_id), name);
 
-    // TODO: split to task domain
     res.status(201).json({
       msg: "Bucket created!",
     });
+  };
+
+  private getTasksDetail: RH<{
+    Params: {
+      task_id: string;
+    };
+    ResBody: {
+      id: number;
+      name: string;
+      description: string | null;
+      end_at: Date | null;
+      start_at: Date | null;
+      users: {
+        user_id: number;
+      }[];
+    };
+  }> = async (req, res) => {
+    const { task_id: task_id_raw } = req.params;
+    const task_id = Number(task_id_raw);
+
+    const result = await this.task_service.getTaskByID(task_id);
+
+    if (!result) {
+      throw new NotFoundError("Gagal untuk menemukan tugas!");
+    }
+
+    res.status(200).json(result);
+  };
+
+  private deleteTasksDetail: RH<{
+    Params: {
+      task_id: string;
+    };
+    ResBody: {
+      msg: string;
+    };
+  }> = async (req, res) => {
+    const { task_id: task_id_raw } = req.params;
+    const task_id = Number(task_id_raw);
+
+    await this.task_service.deleteTask(task_id);
+
+    res.status(200).json({ msg: "Tugas berhasil dihapus!" });
   };
 }

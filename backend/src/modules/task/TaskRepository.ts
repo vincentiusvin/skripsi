@@ -17,6 +17,15 @@ export class TaskRepository {
     this.db = db;
   }
 
+  async deleteTask(task_id: number) {
+    const result = await this.db
+      .deleteFrom("ms_tasks")
+      .where("ms_tasks.id", "=", task_id)
+      .execute();
+
+    return result;
+  }
+
   async findTaskByID(task_id: number) {
     const result = await this.db
       .selectFrom("ms_tasks")
