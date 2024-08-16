@@ -15,19 +15,19 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Add, Edit } from "@mui/icons-material";
+import { Add, MoreVert } from "@mui/icons-material";
 import {
   Box,
   BoxProps,
   Button,
   Card,
-  CardActionArea,
   CardContent,
   CardHeader,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Skeleton,
   Stack,
   TextField,
@@ -103,34 +103,30 @@ function Task(props: { task_id: number; isDragged?: boolean }) {
         opacity: isDragged ? 0.5 : 1,
       }}
     >
-      <Button onClick={() => {}}>
-        <Edit />
-      </Button>
-      <CardActionArea>
-        <CardHeader
-          title={
-            <Typography variant="h5" fontWeight={"bold"}>
-              {task.name}
-            </Typography>
-          }
-          subheader={<Typography variant="body1">{task.description}</Typography>}
-        />
-        <CardContent>
-          {task.start_at && (
-            <>
-              <Typography variant="caption">
-                Mulai: {dayjs(task.start_at).format("ddd, DD/MM/YY")}
-              </Typography>
-              <br />
-            </>
-          )}
-          {task.end_at && (
+      <CardHeader
+        action={<EditTaskDialog task_id={task_id} />}
+        title={
+          <Typography variant="h5" fontWeight={"bold"}>
+            {task.name}
+          </Typography>
+        }
+        subheader={<Typography variant="body1">{task.description}</Typography>}
+      />
+      <CardContent>
+        {task.start_at && (
+          <>
             <Typography variant="caption">
-              Berakhir: {dayjs(task.end_at).format("ddd, DD/MM/YY")}
+              Mulai: {dayjs(task.start_at).format("ddd, DD/MM/YY")}
             </Typography>
-          )}
-        </CardContent>
-      </CardActionArea>
+            <br />
+          </>
+        )}
+        {task.end_at && (
+          <Typography variant="caption">
+            Berakhir: {dayjs(task.end_at).format("ddd, DD/MM/YY")}
+          </Typography>
+        )}
+      </CardContent>
     </Card>
   );
 }
@@ -187,6 +183,86 @@ function AddNewTaskDialog(props: { bucket_id: number }) {
               }}
             >
               Create Task
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+    </>
+  );
+}
+
+function EditTaskDialog(props: { task_id: number }) {
+  const { task_id } = props;
+
+  // undef: gak ada yang dipilih
+  // number: lagi ngedit bucket itu
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [taskName, setTaskName] = useState<string | null>();
+  const [taskDescription, setTaskDescription] = useState<null | string>();
+  const [taskStartAt, setTaskStartAt] = useState<null | Dayjs>();
+  const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>();
+
+  const { data: task } = useTasksDetailGet({ task_id });
+
+  const { mutate: editTask } = useTasksDetailPut({
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Task modified!</Typography>,
+        variant: "success",
+      });
+      setDialogOpen(false);
+    },
+  });
+
+  return (
+    <>
+      <IconButton
+        onClick={() => {
+          setDialogOpen(true);
+        }}
+      >
+        <MoreVert />
+      </IconButton>
+      {dialogOpen && task != null && (
+        <Dialog open={dialogOpen != null} onClose={() => setDialogOpen(false)}>
+          <DialogTitle>Edit task</DialogTitle>
+          <DialogContent>
+            <TextField
+              fullWidth
+              onChange={(e) => setTaskName(e.target.value)}
+              label="Task name"
+              defaultValue={task.name}
+            />
+            <TextField
+              fullWidth
+              onChange={(e) => setTaskDescription(e.target.value)}
+              label="Task description"
+              defaultValue={task.description}
+            />
+            <DatePicker
+              defaultValue={task.start_at != null ? dayjs(task.start_at) : undefined}
+              onAccept={(x) => setTaskStartAt(x)}
+              label="Start At"
+            ></DatePicker>
+            <DatePicker
+              defaultValue={task.end_at != null ? dayjs(task.start_at) : undefined}
+              onAccept={(x) => setTaskEndAt(x)}
+              label="End At"
+            ></DatePicker>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                editTask({
+                  task_id,
+                  name: taskName ?? undefined,
+                  description: taskDescription ?? undefined,
+                  start_at: taskStartAt?.toISOString(),
+                  end_at: taskEndAt?.toISOString(),
+                });
+              }}
+            >
+              Edit Task
             </Button>
           </DialogActions>
         </Dialog>
