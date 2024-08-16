@@ -34,7 +34,7 @@ export function useChatroomsDetailGet(opts: { chatroom_id: number }) {
 export function useChatroomsDetailMessagesGet(opts: { chatroom_id: number }) {
   const { chatroom_id } = opts;
   return useQuery({
-    queryKey: ["messages", "detail", chatroom_id],
+    queryKey: messageKeys.list(chatroom_id),
     queryFn: () =>
       new APIContext("ChatroomsDetailMessagesGet").fetch(`/api/chatrooms/${chatroom_id}/messages`),
   });
@@ -151,7 +151,7 @@ export function useChatSocket(opts: {
     }
     socket.on("roomUpdate", () => {
       queryClient.invalidateQueries({
-        queryKey: ["chatrooms"],
+        queryKey: chatKeys.all(),
       });
       if (onRoomUpdate) {
         onRoomUpdate();
@@ -166,7 +166,7 @@ export function useChatSocket(opts: {
       } = JSON.parse(msg);
 
       queryClient.setQueryData(
-        ["messages", "detail", chatroom_id],
+        messageKeys.list(chatroom_id),
         (old: API["ChatroomsDetailMessagesGet"]["ResBody"]) => (old ? [...old, msgObj] : [msgObj]),
       );
 
