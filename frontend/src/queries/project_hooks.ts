@@ -3,13 +3,28 @@ import { API } from "../../../backend/src/routes";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
+const projectKeys = {
+  all: () => ["projects"] as const,
+  lists: () => [...projectKeys.all(), "list"] as const,
+  list: (param: unknown) => [...projectKeys.lists(), param] as const,
+  details: () => [...projectKeys.all(), "detail"] as const,
+  detail: (project_id: number) => [...projectKeys.details(), project_id] as const,
+  detailMembers: (project_id: number, user_id: number) => [
+    ...projectKeys.detail(project_id),
+    "members",
+    "detail",
+    user_id,
+  ],
+  projectCategories: () => ["project-categories"],
+};
+
 export function useProjectsDetailGet(opts: {
   project_id: number;
   retry?: (failurecount: number, error: unknown) => boolean;
 }) {
   const { project_id, retry } = opts;
   return useQuery({
-    queryKey: ["projects", "detail", project_id],
+    queryKey: projectKeys.detail(project_id),
     queryFn: () => new APIContext("ProjectsDetailGet").fetch(`/api/projects/${project_id}`),
     retry: retry,
   });
@@ -19,7 +34,7 @@ export function useProjectsGet(opts?: { org_id?: number; user_id?: number; keywo
   const { org_id, user_id, keyword } = opts || {};
 
   return useQuery({
-    queryKey: ["projects", "collection", opts],
+    queryKey: projectKeys.list(opts),
     queryFn: () =>
       new APIContext("ProjectsGet").fetch("/api/projects", {
         query: {
@@ -31,13 +46,10 @@ export function useProjectsGet(opts?: { org_id?: number; user_id?: number; keywo
   });
 }
 
-export function useProjectsDetailMembersGet(opts: {
-  project_id: number | undefined;
-  user_id: number | undefined;
-}) {
+export function useProjectsDetailMembersGet(opts: { project_id: number; user_id: number }) {
   const { project_id, user_id } = opts;
   return useQuery({
-    queryKey: ["projects", "detail", project_id, "members", user_id],
+    queryKey: projectKeys.detailMembers(project_id, user_id),
     queryFn: () =>
       new APIContext("ProjectsDetailMembersGet").fetch(
         `/api/projects/${project_id}/users/${user_id}`,
@@ -106,7 +118,7 @@ export function useProjectsPost(opts: { onSuccess?: () => void }) {
       method: "POST",
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
       if (onSuccess) {
         onSuccess();
       }
@@ -121,7 +133,7 @@ export function useProjectsDetailPut(opts: { project_id: number; onSuccess?: () 
       method: "PUT",
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: projectKeys.all() });
       if (onSuccess) {
         onSuccess();
       }
@@ -137,7 +149,7 @@ export function useProjectsDetailDelete(opts: { project_id: number; onSuccess?: 
         method: "DELETE",
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: projectKeys.all() });
       if (onSuccess) {
         onSuccess();
       }
@@ -147,7 +159,7 @@ export function useProjectsDetailDelete(opts: { project_id: number; onSuccess?: 
 
 export function useProjectsCategoriesGet() {
   return useQuery({
-    queryKey: ["categories"],
+    queryKey: projectKeys.projectCategories(),
     queryFn: () => new APIContext("ProjectsCategoriesGet").fetch(`/api/project-categories`),
   });
 }

@@ -2,6 +2,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
+const userKeys = {
+  all: () => ["users"] as const,
+  lists: () => [...userKeys.all(), "list"] as const,
+  details: () => [...userKeys.all(), "detail"] as const,
+  detail: (user_id: number) => [...userKeys.details(), user_id] as const,
+};
+
 export function useUsersPost(opts?: { onSuccess?: () => void }) {
   const { onSuccess } = opts ?? {};
   return useMutation({
@@ -10,7 +17,7 @@ export function useUsersPost(opts?: { onSuccess?: () => void }) {
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["users"],
+        queryKey: userKeys.lists(),
       });
 
       if (onSuccess) {
@@ -22,7 +29,7 @@ export function useUsersPost(opts?: { onSuccess?: () => void }) {
 
 export function useUsersGet() {
   return useQuery({
-    queryKey: ["users", "collection"],
+    queryKey: userKeys.lists(),
     queryFn: () => new APIContext("UsersGet").fetch("/api/users"),
   });
 }
@@ -35,7 +42,7 @@ export function useUserAccountDetailGet(opts: {
   const { user_id, retry, enabled } = opts;
   return useQuery({
     enabled,
-    queryKey: ["users", "detail", user_id],
+    queryKey: userKeys.detail(user_id),
     queryFn: () => new APIContext("UserAccountGet").fetch(`/api/user/account/${user_id}`),
     retry: retry,
   });
@@ -70,7 +77,7 @@ export function useUserAccountDetailUpdate(opts: {
         },
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: userKeys.all() });
       if (onSuccess) {
         onSuccess();
       }

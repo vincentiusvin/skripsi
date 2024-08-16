@@ -195,6 +195,65 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
   );
 }
 
+function UnauthenticatedView(props: { project_id: number }) {
+  const { project_id } = props;
+
+  const [, setLocation] = useLocation();
+  const { data: project } = useProjectsDetailGet({
+    project_id: project_id,
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+        setLocation("/projects");
+        return false;
+      }
+      return true;
+    },
+  });
+
+  if (!project) {
+    return <Skeleton />;
+  }
+
+  return (
+    <>
+      <Grid container mt={2} rowSpacing={2}>
+        <Grid item xs={1}>
+          <Link to={"/projects"}>
+            <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
+              Go Back
+            </Button>
+          </Link>
+        </Grid>
+        <Grid item xs={10}>
+          <Typography variant="h4" fontWeight={"bold"} align="center">
+            {project.project_name}
+          </Typography>
+        </Grid>
+        <Grid item xs={1}></Grid>
+      </Grid>
+      <ProjectInfo project_id={project_id} />
+    </>
+  );
+}
+
+function ProjectTryAuth(props: { project_id: number; user_id: number }) {
+  const { project_id, user_id } = props;
+  const { data: membership } = useProjectsDetailMembersGet({
+    project_id: project_id,
+    user_id: user_id,
+  });
+  const role = membership?.role;
+  if (!role) {
+    return <Skeleton />;
+  }
+
+  if (role === "Admin" || role === "Dev") {
+    return <InvolvedView project_id={project_id} user_id={user_id} role={role} />;
+  } else {
+    return <UninvolvedView project_id={project_id} user_id={user_id} role={role} />;
+  }
+}
+
 function ProjectDetailPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
@@ -205,12 +264,6 @@ function ProjectDetailPage() {
   const project_id = Number(id);
 
   const { data: user_data } = useSessionGet();
-  const user_id = user_data?.logged ? user_data.user_id : undefined;
-
-  const { data: membership } = useProjectsDetailMembersGet({
-    project_id: project_id,
-    user_id: user_id,
-  });
 
   const { data: project } = useProjectsDetailGet({
     project_id,
@@ -223,16 +276,14 @@ function ProjectDetailPage() {
     },
   });
 
-  const role = membership?.role;
-
-  if (!role || !user_id || !project) {
+  if (!project) {
     return <Skeleton />;
   }
 
-  if (role !== "Admin" && role !== "Dev") {
-    return <UninvolvedView project_id={project_id} user_id={user_id} role={role} />;
+  if (user_data && user_data.logged) {
+    return <ProjectTryAuth project_id={project_id} user_id={user_data.user_id} />;
   } else {
-    return <InvolvedView project_id={project_id} user_id={user_id} role={role} />;
+    return <UnauthenticatedView project_id={project_id} />;
   }
 }
 

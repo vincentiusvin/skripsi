@@ -20,16 +20,30 @@ import { useOrgDetailGet } from "../../queries/org_hooks.ts";
 import { useProjectsDetailMembersGet, useProjectsGet } from "../../queries/project_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 
+function RoleInfo(props: { project_id: number; user_id: number }) {
+  const { project_id, user_id } = props;
+  const { data: role_data } = useProjectsDetailMembersGet({
+    project_id,
+    user_id,
+  });
+
+  return role_data?.role === "Admin" ? (
+    <Tooltip title="Joined as administrator">
+      <Shield />
+    </Tooltip>
+  ) : role_data?.role === "Dev" ? (
+    <Tooltip title="Joined as developer">
+      <Code />
+    </Tooltip>
+  ) : null;
+}
+
 function ProjectCard(props: { project: API["ProjectsGet"]["ResBody"][number] }) {
   const { project } = props;
   const { data: org_data } = useOrgDetailGet({
     id: project.org_id,
   });
   const { data: session_data } = useSessionGet();
-  const { data: role_data } = useProjectsDetailMembersGet({
-    project_id: Number(project.project_id),
-    user_id: session_data?.logged ? session_data.user_id : undefined,
-  });
 
   return (
     <Link to={`/projects/${project.project_id}`}>
@@ -42,14 +56,8 @@ function ProjectCard(props: { project: API["ProjectsGet"]["ResBody"][number] }) 
               </Typography>
             }
             action={
-              role_data?.role === "Admin" ? (
-                <Tooltip title="Joined as administrator">
-                  <Shield />
-                </Tooltip>
-              ) : role_data?.role === "Dev" ? (
-                <Tooltip title="Joined as developer">
-                  <Code />
-                </Tooltip>
+              session_data?.logged ? (
+                <RoleInfo project_id={project.project_id} user_id={session_data.user_id} />
               ) : null
             }
             subheader={<Typography variant="body1">by {org_data?.org_name}</Typography>}
