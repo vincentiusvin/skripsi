@@ -137,13 +137,49 @@ describe.only("bucket controller", () => {
     expect(found?.description).to.eq(in_description);
   });
 
-  it("should be able to delete task", async () => {
+  it("should be able to delete task and get by detail", async () => {
     const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
     const in_task = caseData.task[0];
 
     const send_req = await deleteTask(in_task.id, cookie);
     await send_req.json();
     const read_req = await getTaskDetail(in_task.id, cookie);
+    await read_req.json();
+
+    expect(send_req.status).eq(200);
+    expect(read_req.status).eq(404);
+  });
+
+  it("should be able to update bucket and get by detail", async () => {
+    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
+    const in_bucket = caseData.bucket_empty;
+    const in_name = "nama baru bucket";
+
+    const send_req = await updateBucket(
+      in_bucket.id,
+      {
+        name: in_name,
+      },
+      cookie,
+    );
+
+    await send_req.json();
+    const read_req = await getBucketDetail(in_bucket.id, cookie);
+    const result = await read_req.json();
+
+    expect(send_req.status).eq(200);
+    expect(read_req.status).eq(200);
+    expect(result.name).eq(in_name);
+  });
+
+  it("should be able to delete bucket and get by detail", async () => {
+    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
+    const in_bucket = caseData.bucket_empty;
+
+    const send_req = await deleteBucket(in_bucket.id, cookie);
+
+    await send_req.json();
+    const read_req = await getBucketDetail(in_bucket.id, cookie);
     await read_req.json();
 
     expect(send_req.status).eq(200);
@@ -182,7 +218,7 @@ function addTask(
 }
 
 function deleteTask(task_id: number, cookie: string) {
-  return new APIContext("BucketsDetailTasksPost").fetch(`/api/tasks/${task_id}`, {
+  return new APIContext("TasksDetailDelete").fetch(`/api/tasks/${task_id}`, {
     headers: {
       cookie: cookie,
     },
@@ -192,7 +228,7 @@ function deleteTask(task_id: number, cookie: string) {
 }
 
 function getTaskDetail(task_id: number, cookie: string) {
-  return new APIContext("BucketsDetailTasksPost").fetch(`/api/tasks/${task_id}`, {
+  return new APIContext("TasksDetailGet").fetch(`/api/tasks/${task_id}`, {
     headers: {
       cookie: cookie,
     },
@@ -243,5 +279,36 @@ function getBuckets(project_id: number, cookie: string) {
     },
     credentials: "include",
     method: "get",
+  });
+}
+
+function getBucketDetail(bucket_id: number, cookie: string) {
+  return new APIContext("BucketsDetailGet").fetch(`/api/buckets/${bucket_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "get",
+  });
+}
+
+function updateBucket(bucket_id: number, data: { name?: string }, cookie: string) {
+  return new APIContext("BucketsDetailPut").fetch(`/api/buckets/${bucket_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    body: data,
+    credentials: "include",
+    method: "put",
+  });
+}
+
+function deleteBucket(bucket_id: number, cookie: string) {
+  return new APIContext("BucketsDetailDelete").fetch(`/api/buckets/${bucket_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "delete",
   });
 }

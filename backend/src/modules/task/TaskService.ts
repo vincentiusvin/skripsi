@@ -15,6 +15,18 @@ export class TaskService {
     return this.repo.deleteTask(task_id);
   }
 
+  async getBucketByID(bucket_id: number) {
+    return this.repo.getBucketByID(bucket_id);
+  }
+
+  async updateBucket(bucket_id: number, data: { name?: string }) {
+    return this.repo.updateBucket(bucket_id, data);
+  }
+
+  async deleteBucket(bucket_id: number) {
+    return this.repo.deleteBucket(bucket_id);
+  }
+
   async updateTask(
     task_id: number,
     data: {
