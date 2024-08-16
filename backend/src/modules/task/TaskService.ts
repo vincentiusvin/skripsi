@@ -41,18 +41,18 @@ export class TaskService {
     const { bucket_id, name, description, start_at, end_at, before_id } = data;
 
     let target_bucket: number;
+    const old_data = await this.repo.findTaskByID(task_id);
+    if (old_data == undefined) {
+      throw new NotFoundError("Gagal menemukan pekerjaan tersebut!");
+    }
 
     if (bucket_id) {
       target_bucket = bucket_id;
     } else {
-      const old_data = await this.repo.findTaskByID(task_id);
-      if (old_data == undefined) {
-        throw new NotFoundError("Gagal menemukan pekerjaan tersebut!");
-      }
       target_bucket = old_data.bucket_id;
     }
 
-    let updateOrder: number;
+    let updateOrder: number | undefined;
     if (before_id != undefined) {
       const insert_before_this = await this.repo.findTaskByID(before_id);
       if (!insert_before_this) {
@@ -60,7 +60,7 @@ export class TaskService {
       }
       updateOrder = insert_before_this.order;
       await this.repo.bumpOrderBiggerThan(target_bucket, updateOrder);
-    } else {
+    } else if (target_bucket != old_data.bucket_id) {
       const data_after = await this.repo.getMaxOrder(target_bucket);
       if (data_after == undefined) {
         updateOrder = 1;

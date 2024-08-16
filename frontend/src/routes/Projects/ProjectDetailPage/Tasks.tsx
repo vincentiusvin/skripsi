@@ -37,10 +37,10 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { ReactNode, useEffect, useState } from "react";
-import { useProjectsDetailBucketsPost } from "../../../queries/project_hooks";
 import {
   useBucketsDetailTasksPost,
   useFormattedTasks,
+  useProjectsDetailBucketsPost,
   useTasksDetailGet,
   useTasksDetailPut,
 } from "../../../queries/task_hooks.ts";
@@ -143,6 +143,7 @@ function AddNewTaskDialog(props: { bucket_id: number }) {
   const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>(null);
 
   const { mutate: addTask } = useBucketsDetailTasksPost({
+    bucket_id,
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Task created!</Typography>,
@@ -175,7 +176,6 @@ function AddNewTaskDialog(props: { bucket_id: number }) {
               onClick={() => {
                 addTask({
                   name: taskName,
-                  bucket_id: selectedBucketEdit,
                   description: taskDescription ?? undefined,
                   start_at: taskStartAt?.toISOString(),
                   end_at: taskEndAt?.toISOString(),

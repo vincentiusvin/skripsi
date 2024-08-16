@@ -151,30 +151,3 @@ export function useProjectsCategoriesGet() {
     queryFn: () => new APIContext("ProjectsCategoriesGet").fetch(`/api/project-categories`),
   });
 }
-
-export function useProjectsDetailBucketsGet(opts: { project_id: number }) {
-  const { project_id } = opts;
-  return useQuery({
-    queryKey: ["projects"],
-    queryFn: () =>
-      new APIContext("ProjectsDetailBucketsGet").fetch(`/api/projects/${project_id}/buckets`),
-  });
-}
-
-export function useProjectsDetailBucketsPost(opts: { project_id: number; onSuccess: () => void }) {
-  const { project_id, onSuccess } = opts;
-  return useMutation({
-    mutationFn: new APIContext("ProjectsDetailBucketsPost").bodyFetch(
-      `/api/projects/${project_id}/buckets`,
-      {
-        method: "POST",
-      },
-    ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-      if (onSuccess) {
-        onSuccess();
-      }
-    },
-  });
-}
