@@ -71,3 +71,26 @@ export function useTasksDetailPut(opts: { onSuccess?: () => void }) {
     },
   });
 }
+
+export function useTasksDetailGet(opts: { task_id: number }) {
+  const { task_id } = opts;
+  return useQuery({
+    queryKey: ["task", task_id],
+    queryFn: () => new APIContext("TasksDetailGet").fetch(`/api/tasks/${task_id}`),
+  });
+}
+
+export function useTasksDetailDelete(opts: { onSuccess?: () => void; task_id: number }) {
+  const { onSuccess, task_id } = opts;
+  return useMutation({
+    mutationFn: new APIContext("TasksDetailDelete").bodyFetch(`/api/tasks/${task_id}`, {
+      method: "DELETE",
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orgs"] });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
