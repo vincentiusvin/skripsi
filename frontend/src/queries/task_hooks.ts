@@ -106,9 +106,10 @@ export function useTasksDetailPut(opts: { onSuccess?: () => void }) {
 export function useTasksDetailDelete(opts: { onSuccess?: () => void; task_id: number }) {
   const { onSuccess, task_id } = opts;
   return useMutation({
-    mutationFn: new APIContext("TasksDetailDelete").bodyFetch(`/api/tasks/${task_id}`, {
-      method: "DELETE",
-    }),
+    mutationFn: () =>
+      new APIContext("TasksDetailDelete").fetch(`/api/tasks/${task_id}`, {
+        method: "DELETE",
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all() });
       if (onSuccess) {
@@ -132,6 +133,39 @@ export function useProjectsDetailBucketsPost(opts: { project_id: number; onSucce
       if (onSuccess) {
         onSuccess();
       }
+    },
+  });
+}
+
+export function useBucketsDetailGet(opts: { bucket_id: number }) {
+  const { bucket_id } = opts;
+  return useQuery({
+    queryKey: bucketKeys.detail(bucket_id),
+    queryFn: () => new APIContext("BucketsDetailGet").fetch(`/api/buckets/${bucket_id}`),
+  });
+}
+
+export function useBucketsDetailPut(opts: { bucket_id: number }) {
+  const { bucket_id } = opts;
+  return useMutation({
+    mutationFn: new APIContext("BucketsDetailPut").bodyFetch(`/api/buckets/${bucket_id}`, {
+      method: "put",
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bucketKeys.all() });
+    },
+  });
+}
+
+export function useBucketsDetailDelete(opts: { bucket_id: number }) {
+  const { bucket_id } = opts;
+  return useMutation({
+    mutationFn: () =>
+      new APIContext("BucketsDetailDelete").fetch(`/api/buckets/${bucket_id}`, {
+        method: "delete",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bucketKeys.all() });
     },
   });
 }

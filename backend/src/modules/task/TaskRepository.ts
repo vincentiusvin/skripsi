@@ -173,6 +173,7 @@ export class TaskRepository {
       .selectFrom("ms_task_buckets")
       .select(["name", "id", "project_id"])
       .where("ms_task_buckets.project_id", "=", project_id)
+      .orderBy("ms_task_buckets.id asc")
       .execute();
   }
 

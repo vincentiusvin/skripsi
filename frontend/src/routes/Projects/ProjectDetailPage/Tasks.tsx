@@ -38,9 +38,13 @@ import dayjs, { Dayjs } from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { ReactNode, useEffect, useState } from "react";
 import {
+  useBucketsDetailDelete,
+  useBucketsDetailGet,
+  useBucketsDetailPut,
   useBucketsDetailTasksPost,
   useFormattedTasks,
   useProjectsDetailBucketsPost,
+  useTasksDetailDelete,
   useTasksDetailGet,
   useTasksDetailPut,
 } from "../../../queries/task_hooks.ts";
@@ -86,6 +90,62 @@ function Column(props: { id: string; items: string[]; children: ReactNode } & Bo
         {children}
       </Box>
     </SortableContext>
+  );
+}
+
+function EditBucketDialog(props: { bucket_id: number }) {
+  const { bucket_id } = props;
+  const [active, setActive] = useState(false);
+  const { data: bucket } = useBucketsDetailGet({ bucket_id });
+  const [newName, setNewName] = useState<string | undefined>();
+  const { mutate: editBucket } = useBucketsDetailPut({ bucket_id });
+  const { mutate: deleteBucket } = useBucketsDetailDelete({ bucket_id });
+
+  if (!bucket) {
+    return <Skeleton />;
+  }
+
+  return (
+    <>
+      <Dialog open={active} onClose={() => setActive(false)}>
+        <DialogTitle>Edit task</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Insert name"
+            defaultValue={bucket.name}
+            onChange={(x) => setNewName(x.target.value)}
+          ></TextField>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              deleteBucket();
+              setActive(false);
+            }}
+          >
+            Delete Bucket
+          </Button>
+          <Button
+            onClick={() => {
+              if (newName) {
+                editBucket({
+                  name: newName,
+                });
+              }
+              setActive(false);
+            }}
+          >
+            Edit Bucket
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Typography display={"inline"} variant="h6">
+        {bucket.name}
+      </Typography>
+      <IconButton onClick={() => setActive(true)}>
+        <MoreVert />
+      </IconButton>
+    </>
   );
 }
 
@@ -155,9 +215,9 @@ function AddNewTaskDialog(props: { bucket_id: number }) {
 
   return (
     <>
-      <Button onClick={() => setSelectedBucketEdit(bucket_id)}>
+      <IconButton onClick={() => setSelectedBucketEdit(bucket_id)}>
         <Add />
-      </Button>
+      </IconButton>
       {selectedBucketEdit != null && (
         <Dialog open={selectedBucketEdit != null} onClose={() => setSelectedBucketEdit(null)}>
           <DialogTitle>Add new task</DialogTitle>
@@ -214,6 +274,17 @@ function EditTaskDialog(props: { task_id: number }) {
     },
   });
 
+  const { mutate: deleteTask } = useTasksDetailDelete({
+    task_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Task deleted!</Typography>,
+        variant: "success",
+      });
+      setDialogOpen(false);
+    },
+  });
+
   return (
     <>
       <IconButton
@@ -251,6 +322,13 @@ function EditTaskDialog(props: { task_id: number }) {
             ></DatePicker>
           </DialogContent>
           <DialogActions>
+            <Button
+              onClick={() => {
+                deleteTask();
+              }}
+            >
+              Delete Task
+            </Button>
             <Button
               onClick={() => {
                 editTask({
@@ -466,9 +544,7 @@ function Kanban(props: { project_id: number }) {
         >
           {tempTasksData.map(({ bucket, tasks }, i) => (
             <Box key={bucket.id}>
-              <Typography display={"inline"} variant="h6">
-                {bucket.name}
-              </Typography>
+              <EditBucketDialog bucket_id={extractID(bucket.id)!} />
               <AddNewTaskDialog bucket_id={extractID(bucket.id)!} />
               <Column
                 position={"relative"}
