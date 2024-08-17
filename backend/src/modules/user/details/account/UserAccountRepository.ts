@@ -43,7 +43,6 @@ export class UserAccountRepository {
     id: number,
     obj: {
       user_name?: string;
-      user_password?: string;
       user_confirm_password?: string;
       user_email?: string;
       user_education_level?: string;
@@ -51,10 +50,11 @@ export class UserAccountRepository {
       user_about_me?: string;
       user_image?: string;
     },
+    user_password: string,
   ) {
     const {
       user_name,
-      user_password,
+      // user_password,
       user_confirm_password,
       user_email,
       user_education_level,
@@ -79,7 +79,6 @@ export class UserAccountRepository {
           .set({
             name: user_name,
             password: user_password,
-            confirm_password: user_confirm_password,
             email: user_email,
             education_level: user_education_level,
             school: user_school,

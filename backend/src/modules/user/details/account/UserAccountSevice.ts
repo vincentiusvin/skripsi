@@ -1,3 +1,4 @@
+import { hashSync } from "bcryptjs";
 import { ClientError } from "../../../../helpers/error";
 import { UserAccountRepository } from "./UserAccountRepository";
 
@@ -19,15 +20,15 @@ export class UserAccountService {
     id: number,
     obj: {
       user_name?: string;
-      user_password?: string;
-      user_confirm_password?: string;
       user_email?: string;
       user_education_level?: string;
       user_school?: string;
       user_about_me?: string;
       user_image?: string;
     },
+    user_password: string,
   ) {
+    const hashed_password = hashSync(user_password, 10);
     const { user_email } = obj;
     if (user_email) {
       const same_email = await this.getUserAccountByEmail(user_email);
@@ -36,6 +37,6 @@ export class UserAccountService {
         throw new ClientError("Sudah ada user dengan email yang sama !");
       }
     }
-    return await this.user_repo.updateAccountDetails(id, obj);
+    return await this.user_repo.updateAccountDetails(id, obj, hashed_password);
   }
 }

@@ -78,7 +78,7 @@ export class UserAccountController extends Controller {
     };
     ReqBody: {
       user_name?: string;
-      user_password?: string;
+      user_password: string;
       user_email?: string;
       user_education_level?: string;
       user_school?: string;
@@ -96,16 +96,20 @@ export class UserAccountController extends Controller {
       user_image,
     } = req.body;
     const id = req.params.id;
-    await this.user_service.updateAccountDetail(Number(id), {
-      user_name,
+    await this.user_service.updateAccountDetail(
+      Number(id),
+      {
+        user_name,
+        user_email,
+        user_education_level,
+        user_school,
+        user_about_me,
+        user_image,
+      },
       user_password,
-      user_email,
-      user_education_level,
-      user_school,
-      user_about_me,
-      user_image,
-    });
+    );
     const updated = await this.user_service.getUserAccountDetail(Number(id));
+    console.log("updated");
     res.status(200).json(updated);
   };
 }

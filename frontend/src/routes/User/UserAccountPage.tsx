@@ -103,14 +103,16 @@ function UserAccountPage() {
                     Email:
                   </Box>
                 </Typography>
-                <TextField
-                  id="standard-read-only-input"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  variant="standard"
-                  defaultValue={userDetail.user_email}
-                />
+                <Box display="flex" justifyContent="flex-end">
+                  <TextField
+                    id="standard-read-only-input"
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    variant="standard"
+                    defaultValue={userDetail.user_email}
+                  />
+                </Box>
               </Box>
             </Grid>
             <Grid item>

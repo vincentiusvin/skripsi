@@ -6,10 +6,8 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  FormControl,
   Grid,
   IconButton,
-  Input,
   InputAdornment,
   Paper,
   Stack,
@@ -77,8 +75,14 @@ function UserAccountPageEdit() {
 
   const handleUpdateClick = () => {
     if (userPassword !== userConfirmPassword) {
-      throw new Error("password not match");
+      enqueueSnackbar({
+        message: <Typography>Password do not match !</Typography>,
+        autoHideDuration: 5000,
+        variant: "error",
+      });
+      return;
     }
+
     editUser();
   };
 
@@ -128,6 +132,7 @@ function UserAccountPageEdit() {
             </ImageDropzone>
           </DialogContent>
         </Dialog>
+
         <Grid container mt={2}>
           <Grid item xs={1}>
             <Link to={`/users/${id}`}>
@@ -136,93 +141,77 @@ function UserAccountPageEdit() {
               </Button>
             </Link>
           </Grid>
-          <Grid item xs paddingTop="10vw">
-            <Grid item xs={2} md={1}>
-              <Badge
-                overlap="circular"
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                badgeContent={
-                  <Button
-                    variant="contained"
-                    onClick={() => {
-                      setModalOpen(true);
-                    }}
-                  >
-                    <Edit />
-                  </Button>
-                }
-              >
-                <Avatar
-                  src={userImage || (data.user_image ?? "")}
-                  sx={{ width: "20vw", height: "20vw" }}
-                ></Avatar>
-              </Badge>
-            </Grid>
-            <Grid item xs>
-              <Typography variant="h2" color="#6A81FC">
-                <Link
-                  to={`/user/${data.user_id}/account`}
-                  style={{ textDecoration: "none", color: "inherit" }}
+          <Grid xs={11}></Grid>
+          <Grid item xs={6}>
+            <Badge
+              overlap="circular"
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              badgeContent={
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setModalOpen(true);
+                  }}
                 >
-                  Account
-                </Link>
-              </Typography>
-              <Typography variant="h2">
-                <Link
-                  to={`/user/${data.user_id}/contribution`}
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  Contribution
-                </Link>
-              </Typography>
-              <Typography variant="h2">
-                <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
-                  Connections
-                </Link>
-              </Typography>
-            </Grid>
-          </Grid>
-          <Grid item paddingTop="10vw" paddingRight="20vw">
-            <Paper
-              sx={{
-                p: 2,
-                margin: "auto",
-                maxWidth: 500,
-                flexGrow: 1,
-                backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
-              }}
+                  <Edit />
+                </Button>
+              }
             >
-              <Grid item>
-                <Typography variant="button">Username:</Typography>
-                <br />
+              <Avatar
+                src={userImage || (data.user_image ?? "")}
+                sx={{ width: "20vw", height: "20vw" }}
+              ></Avatar>
+            </Badge>
+            <Typography variant="h2" color="#6A81FC">
+              <Link
+                to={`/user/${data.user_id}/account`}
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                Account
+              </Link>
+            </Typography>
+            <Typography variant="h2">
+              <Link
+                to={`/user/${data.user_id}/contribution`}
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                Contribution
+              </Link>
+            </Typography>
+            <Typography variant="h2">
+              <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
+                Connections
+              </Link>
+            </Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Stack gap={4}>
+              <Paper
+                sx={{
+                  px: 4,
+                  py: 2,
+                  backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
+                }}
+              >
                 <TextField
+                  label="Username"
                   required
                   id="filled-required"
                   variant="standard"
                   defaultValue={data.user_name}
                   onChange={(e) => setUserName(e.target.value)}
-                  sx={{ width: "25vw" }}
+                  fullWidth
                 />
-              </Grid>
-              <Grid item>
-                <Typography variant="button">Password:</Typography>
-                <br />
-                {/* <TextField
-                  required
-                  label="Required"
-                  type="password"
-                  variant="standard"
+                <TextField
+                  type={showPassword ? "text" : "password"}
+                  value={userPassword}
                   onChange={(e) => setUserPassword(e.target.value)}
-                  sx={{ width: "25vw" }}
-                /> */}
-                <FormControl sx={{ width: "25vw" }} variant="standard">
-                  <Input
-                    id="standard-adornment-password"
-                    type={showPassword ? "text" : "password"}
-                    value={userPassword}
-                    onChange={(e) => setUserPassword(e.target.value)}
-                    endAdornment={
-                      <InputAdornment position="end">
+                  variant="standard"
+                  label="Password"
+                  fullWidth
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="start">
                         <IconButton
                           aria-label="toggle password visibility"
                           onClick={handleClickShowPassword}
@@ -231,93 +220,60 @@ function UserAccountPageEdit() {
                           {showPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
-                    }
-                  />
-                </FormControl>
-              </Grid>
-              <Grid item>
-                <Typography variant="button">Confirm Password:</Typography>
-                <br />
+                    ),
+                  }}
+                />
                 <TextField
                   required
-                  id="filled-password-input"
-                  label="Required"
+                  label="Confirm Password"
+                  fullWidth
                   onChange={(e) => setUserConfirmPassword(e.target.value)}
                   type="password"
                   variant="standard"
-                  sx={{ width: "25vw" }}
                 />
-              </Grid>
-              <Grid item>
-                <Typography variant="button">Email:</Typography>
-                <br />
                 <TextField
                   required
-                  id="outlined_required"
-                  label="Required"
+                  label="Email"
                   variant="standard"
+                  fullWidth
                   onChange={(e) => setUserEmail(e.target.value)}
                   defaultValue={data.user_email}
-                  sx={{ width: "25vw" }}
                 />
-              </Grid>
-              <Grid item>
-                <Typography variant="button">Education-level:</Typography>
-                <br />
                 <TextField
+                  label="Education Level"
+                  fullWidth
                   variant="standard"
                   onChange={(e) => setUserEducationLevel(e.target.value)}
                   defaultValue={data.user_education_level}
-                  sx={{ width: "25vw" }}
                 />
-              </Grid>
-              <Grid item>
-                <Typography variant="button">School:</Typography>
-                <br />
                 <TextField
+                  label="School"
+                  fullWidth
                   variant="standard"
                   onChange={(e) => setUserSchool(e.target.value)}
                   defaultValue={data.user_school}
-                  sx={{ width: "25vw" }}
                 />
-              </Grid>
-            </Paper>
+              </Paper>
 
-            <Paper
-              sx={{
-                p: 2,
-                margin: "auto",
-                maxWidth: 500,
-                flexGrow: 1,
-                backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
-                marginTop: "2vw",
-              }}
-            >
-              <Grid item>
-                <Typography variant="button">About Me</Typography>
-                <br />
+              <Paper
+                sx={{
+                  px: 4,
+                  py: 2,
+                  backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
+                }}
+              >
                 <TextField
+                  label="About Me"
                   variant="standard"
+                  fullWidth
                   onChange={(e) => setUserAboutMe(e.target.value)}
                   defaultValue={data.user_about_me}
-                  sx={{ width: "25vw" }}
                 />
-              </Grid>
-            </Paper>
-
-            <Grid item xs={8} paddingTop="2vw">
-              {/* <Button endIcon={<Update />} variant="contained" fullWidth onClick={() => editUser()}>
-                Update
-              </Button> */}
-              <Button
-                endIcon={<Update />}
-                variant="contained"
-                fullWidth
-                onClick={handleUpdateClick}
-              >
+              </Paper>
+              <Button endIcon={<Update />} variant="contained" onClick={handleUpdateClick}>
                 Update
               </Button>
-            </Grid>
+            </Stack>
           </Grid>
         </Grid>
       </>
