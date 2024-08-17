@@ -2,9 +2,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
+const sessionKeys = {
+  session: () => ["session"] as const,
+};
+
 export function useSessionGet() {
   return useQuery({
-    queryKey: ["session"],
+    queryKey: sessionKeys.session(),
     queryFn: () => new APIContext("SessionGet").fetch("/api/session"),
   });
 }
@@ -16,7 +20,7 @@ export function useSessionDelete() {
         method: "DELETE",
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session"] });
+      queryClient.invalidateQueries({ queryKey: sessionKeys.session() });
     },
   });
 }
@@ -28,7 +32,7 @@ export function useSessionPut(opts?: { onSuccess: () => void }) {
       method: "PUT",
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session"] });
+      queryClient.invalidateQueries({ queryKey: sessionKeys.session() });
       if (onSuccess) {
         onSuccess();
       }

@@ -5,12 +5,28 @@ import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 import { socket } from "../helpers/socket";
 
+const chatKeys = {
+  all: () => ["chatroom"] as const,
+  lists: () => [...chatKeys.all(), "list"] as const,
+  list: (param: unknown) => [...chatKeys.lists(), param] as const,
+  details: () => [...chatKeys.all(), "detail"] as const,
+  detail: (chat_id: number) => [...chatKeys.details(), chat_id] as const,
+};
+
+const messageKeys = {
+  all: () => ["message"] as const,
+  lists: () => [...messageKeys.all(), "list"] as const,
+  list: (chat_id: number) => [...messageKeys.lists(), { chat_id }] as const,
+  details: () => [...messageKeys.all(), "detail"] as const,
+  detail: (message_id: number) => [...messageKeys.details(), message_id] as const,
+};
+
 // Mutation di sini nggak perlu manggil invalidateQuery karena kita pakai socket untuk nge-invalidate querynya.
 
 export function useChatroomsDetailGet(opts: { chatroom_id: number }) {
   const { chatroom_id } = opts;
   return useQuery({
-    queryKey: ["chatrooms", "detail", chatroom_id],
+    queryKey: chatKeys.detail(chatroom_id),
     queryFn: () => new APIContext("ChatroomsDetailGet").fetch(`/api/chatrooms/${chatroom_id}`),
   });
 }
@@ -18,7 +34,7 @@ export function useChatroomsDetailGet(opts: { chatroom_id: number }) {
 export function useChatroomsDetailMessagesGet(opts: { chatroom_id: number }) {
   const { chatroom_id } = opts;
   return useQuery({
-    queryKey: ["messages", "detail", chatroom_id],
+    queryKey: messageKeys.list(chatroom_id),
     queryFn: () =>
       new APIContext("ChatroomsDetailMessagesGet").fetch(`/api/chatrooms/${chatroom_id}/messages`),
   });
@@ -95,7 +111,7 @@ export function useUsersDetailChatroomsGet(opts: {
 }) {
   const { user_id, retry } = opts;
   return useQuery({
-    queryKey: ["chatrooms", "collection", "user", user_id],
+    queryKey: chatKeys.list({ user_id }),
     queryFn: () =>
       new APIContext("UsersDetailChatroomsGet").fetch(`/api/users/${user_id}/chatrooms`),
     retry: retry,
@@ -105,7 +121,7 @@ export function useUsersDetailChatroomsGet(opts: {
 export function useProjectsDetailChatroomsGet(opts: { project_id: number }) {
   const { project_id } = opts;
   return useQuery({
-    queryKey: ["chatrooms", "collection", "project", project_id],
+    queryKey: chatKeys.list({ project_id }),
     queryFn: () =>
       new APIContext("ProjectsDetailChatroomsGet").fetch(`/api/projects/${project_id}/chatrooms`),
   });
@@ -135,7 +151,7 @@ export function useChatSocket(opts: {
     }
     socket.on("roomUpdate", () => {
       queryClient.invalidateQueries({
-        queryKey: ["chatrooms"],
+        queryKey: chatKeys.all(),
       });
       if (onRoomUpdate) {
         onRoomUpdate();
@@ -150,7 +166,7 @@ export function useChatSocket(opts: {
       } = JSON.parse(msg);
 
       queryClient.setQueryData(
-        ["messages", "detail", chatroom_id],
+        messageKeys.list(chatroom_id),
         (old: API["ChatroomsDetailMessagesGet"]["ResBody"]) => (old ? [...old, msgObj] : [msgObj]),
       );
 

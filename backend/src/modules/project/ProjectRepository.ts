@@ -173,41 +173,72 @@ export class ProjectRepository {
         throw new Error("Failed to insert project");
       }
 
-      for (const cat_id of category_id ?? []) {
+      if (category_id && category_id.length) {
         await trx
           .insertInto("categories_projects")
-          .values({
-            project_id: prj.id,
-            category_id: cat_id,
-          })
+          .values(
+            category_id.map((cat_id) => ({
+              project_id: prj.id,
+              category_id: cat_id,
+            })),
+          )
           .execute();
       }
       return prj.id;
     });
   }
 
+  async updateProject(
+    project_id: number,
+    obj: {
+      project_name?: string;
+      project_desc?: string;
+      category_id?: number[];
+    },
+  ) {
+    const { project_name, project_desc, category_id } = obj;
+
+    return await this.db.transaction().execute(async (trx) => {
+      if (project_name != undefined || project_desc != undefined) {
+        await trx
+          .updateTable("ms_projects")
+          .set({
+            description: project_desc,
+            name: project_name,
+          })
+          .where("ms_projects.id", "=", project_id)
+          .executeTakeFirst();
+      }
+
+      if (category_id) {
+        await trx.deleteFrom("categories_projects").where("project_id", "=", project_id).execute();
+
+        if (category_id.length) {
+          await trx
+            .insertInto("categories_projects")
+            .values(
+              category_id.map((cat_id) => ({
+                project_id,
+                category_id: cat_id,
+              })),
+            )
+            .execute();
+        }
+      }
+    });
+  }
+
+  async deleteProject(project_id: number) {
+    return await this.db
+      .deleteFrom("ms_projects")
+      .where("ms_projects.id", "=", project_id)
+      .execute();
+  }
+
   async getCategories() {
     return await this.db
       .selectFrom("ms_category_projects")
       .select(["id as category_id", "name as category_name"])
-      .execute();
-  }
-
-  async getProjectBuckets(project_id: number) {
-    return await this.db
-      .selectFrom("ms_task_buckets")
-      .select(["name", "id"])
-      .where("ms_task_buckets.project_id", "=", project_id)
-      .execute();
-  }
-
-  async addBucket(project_id: number, name: string) {
-    return this.db
-      .insertInto("ms_task_buckets")
-      .values({
-        name: name,
-        project_id: Number(project_id),
-      })
       .execute();
   }
 }

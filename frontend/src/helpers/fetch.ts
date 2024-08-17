@@ -29,6 +29,7 @@ export class APIContext<T extends keyof API> {
   /**
    * @param _key Key API yang di-define di backend
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(_key: T) {}
 
   /**

@@ -4,7 +4,7 @@ import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("chatroom controller", () => {
+describe("chatting api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
 
@@ -20,7 +20,7 @@ describe("chatroom controller", () => {
   it("should be able to update and view chatroom detail", async () => {
     const in_name = "new chatroom name";
     const in_chat = caseData.chat;
-    const in_user = caseData.chatuser;
+    const in_user = caseData.chat_user;
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await updateRoom(in_chat.id, { name: in_name }, cookie);
@@ -32,7 +32,7 @@ describe("chatroom controller", () => {
   });
 
   it("should be able to add and get user chats", async () => {
-    const in_user = caseData.nonmember;
+    const in_user = caseData.plain_user;
     const in_chatroom_name = "user's chatroom";
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
@@ -61,7 +61,7 @@ describe("chatroom controller", () => {
   });
 
   it("should be able to send and view messages", async () => {
-    const in_user = caseData.chatuser;
+    const in_user = caseData.chat_user;
     const in_chat = caseData.chat;
     const in_message = "Hello testing!";
 
@@ -80,8 +80,11 @@ describe("chatroom controller", () => {
   });
 
   it("should reject unauthorized viewers", async () => {
-    const cookie = await getLoginCookie(caseData.member.name, caseData.member.password);
+    const in_member = caseData.org_user;
+
+    const cookie = await getLoginCookie(in_member.name, in_member.password);
     const read_req = await getChatroomMessages(caseData.chat.id, cookie);
+
     expect(read_req.status).to.eq(401);
   });
 });

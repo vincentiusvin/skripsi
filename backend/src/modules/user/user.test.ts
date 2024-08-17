@@ -4,7 +4,7 @@ import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("/api/users", () => {
+describe("users api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
 
@@ -18,7 +18,7 @@ describe("/api/users", () => {
   });
 
   it("should be able to get user", async () => {
-    const expected_user = caseData.nonmember;
+    const expected_user = caseData.plain_user;
 
     const res = await getUsers();
     const result = await res.json();

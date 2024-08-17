@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
+import { NotFoundError } from "../../helpers/error.js";
 import { RH } from "../../helpers/types.js";
 import { TaskService } from "./TaskService.js";
 
@@ -13,6 +14,32 @@ export class TaskController extends Controller {
 
   init() {
     return {
+      TasksDetailGet: new Route({
+        handler: this.getTasksDetail,
+        method: "get",
+        path: "/api/tasks/:task_id",
+        schema: {
+          Params: z.object({
+            task_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID tugas tidak valid!" }),
+          }),
+        },
+      }),
+      TasksDetailDelete: new Route({
+        handler: this.deleteTasksDetail,
+        method: "delete",
+        path: "/api/tasks/:task_id",
+        schema: {
+          Params: z.object({
+            task_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID tugas tidak valid!" }),
+          }),
+        },
+      }),
       TasksDetailPut: new Route({
         handler: this.putTasksDetail,
         method: "put",
@@ -37,12 +64,57 @@ export class TaskController extends Controller {
               .optional(),
             start_at: z
               .string({ message: "Tanggal mulai tidak valid!" })
-              .date("Tanggal mulai tidak valid!")
+              .datetime("Tanggal mulai tidak valid!")
               .optional(),
             end_at: z
               .string({ message: "Tanggal selesai tidak valid!" })
-              .date("Tanggal selesai tidak valid!")
+              .datetime("Tanggal selesai tidak valid!")
               .optional(),
+          }),
+        },
+      }),
+      BucketsDetailGet: new Route({
+        handler: this.getBucketDetail,
+        path: "/api/buckets/:bucket_id",
+        method: "get",
+        schema: {
+          Params: z.object({
+            bucket_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
+          }),
+        },
+      }),
+      BucketsDetailPut: new Route({
+        handler: this.putBucketDetail,
+        path: "/api/buckets/:bucket_id",
+        method: "put",
+        schema: {
+          Params: z.object({
+            bucket_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
+          }),
+          ReqBody: z.object({
+            name: z
+              .string({ message: "Nama kelompok tugas tidak valid!" })
+              .min(1, "Nama kelompok tugas tidak boleh kosong")
+              .optional(),
+          }),
+        },
+      }),
+      BucketsDetailDelete: new Route({
+        handler: this.deleteBucketDetail,
+        path: "/api/buckets/:bucket_id",
+        method: "delete",
+        schema: {
+          Params: z.object({
+            bucket_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
           }),
         },
       }),
@@ -65,11 +137,11 @@ export class TaskController extends Controller {
               .optional(),
             start_at: z
               .string({ message: "Tanggal mulai tidak valid!" })
-              .date("Tanggal mulai tidak valid!")
+              .datetime("Tanggal mulai tidak valid!")
               .optional(),
             end_at: z
               .string({ message: "Tanggal selesai tidak valid!" })
-              .date("Tanggal selesai tidak valid!")
+              .datetime("Tanggal selesai tidak valid!")
               .optional(),
           }),
         },
@@ -84,6 +156,35 @@ export class TaskController extends Controller {
               .string()
               .min(1)
               .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
+          }),
+        },
+      }),
+      ProjectsDetailBucketsGet: new Route({
+        handler: this.getProjectsDetailBuckets,
+        method: "get",
+        path: "/api/projects/:project_id/buckets",
+        schema: {
+          Params: z.object({
+            project_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+          }),
+        },
+      }),
+      ProjectsDetailBucketsPost: new Route({
+        handler: this.postProjectsDetailBuckets,
+        method: "post",
+        path: "/api/projects/:project_id/buckets",
+        schema: {
+          ReqBody: z.object({
+            name: z.string({ message: "Nama invalid!" }).min(1, "Nama tidak boleh kosong!"),
+          }),
+          Params: z.object({
+            project_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
           }),
         },
       }),
@@ -200,5 +301,153 @@ export class TaskController extends Controller {
     const { bucket_id } = req.params;
     const result = await this.task_service.getTaskByBucket(Number(bucket_id));
     res.status(200).json(result);
+  };
+
+  private getProjectsDetailBuckets: RH<{
+    Params: {
+      project_id: string;
+    };
+    ResBody: {
+      name: string;
+      id: number;
+      project_id: number;
+    }[];
+  }> = async (req, res) => {
+    const { project_id } = req.params;
+
+    const result = await this.task_service.getBuckets(Number(project_id));
+    res.status(200).json(result);
+  };
+
+  private postProjectsDetailBuckets: RH<{
+    Params: {
+      project_id: string;
+    };
+    ReqBody: {
+      name: string;
+    };
+    ResBody: {
+      msg: string;
+    };
+  }> = async (req, res) => {
+    const { project_id } = req.params;
+    const { name } = req.body;
+
+    await this.task_service.addBucket(Number(project_id), name);
+
+    res.status(201).json({
+      msg: "Bucket created!",
+    });
+  };
+
+  private getTasksDetail: RH<{
+    Params: {
+      task_id: string;
+    };
+    ResBody: {
+      id: number;
+      name: string;
+      description: string | null;
+      end_at: Date | null;
+      start_at: Date | null;
+      users: {
+        user_id: number;
+      }[];
+    };
+  }> = async (req, res) => {
+    const { task_id: task_id_raw } = req.params;
+    const task_id = Number(task_id_raw);
+
+    const result = await this.task_service.getTaskByID(task_id);
+
+    if (!result) {
+      throw new NotFoundError("Gagal untuk menemukan tugas!");
+    }
+
+    res.status(200).json(result);
+  };
+
+  private deleteTasksDetail: RH<{
+    Params: {
+      task_id: string;
+    };
+    ResBody: {
+      msg: string;
+    };
+  }> = async (req, res) => {
+    const { task_id: task_id_raw } = req.params;
+    const task_id = Number(task_id_raw);
+
+    await this.task_service.deleteTask(task_id);
+
+    res.status(200).json({ msg: "Tugas berhasil dihapus!" });
+  };
+
+  private getBucketDetail: RH<{
+    Params: {
+      bucket_id: string;
+    };
+    ResBody: {
+      id: number;
+      name: string;
+      project_id: number;
+    };
+  }> = async (req, res) => {
+    const { bucket_id: bucket_id_raw } = req.params;
+    const bucket_id = Number(bucket_id_raw);
+
+    const result = await this.task_service.getBucketByID(bucket_id);
+
+    if (!result) {
+      throw new NotFoundError("Gagal untuk menemukan kelompok tugas!");
+    }
+
+    res.status(200).json(result);
+  };
+
+  private putBucketDetail: RH<{
+    Params: {
+      bucket_id: string;
+    };
+    ResBody: {
+      id: number;
+      name: string;
+      project_id: number;
+    };
+    ReqBody: {
+      name?: string;
+    };
+  }> = async (req, res) => {
+    const { bucket_id: bucket_id_raw } = req.params;
+    const { name } = req.body;
+    const bucket_id = Number(bucket_id_raw);
+
+    await this.task_service.updateBucket(bucket_id, {
+      name,
+    });
+
+    const result = await this.task_service.getBucketByID(bucket_id);
+
+    if (!result) {
+      throw new NotFoundError("Gagal untuk menemukan kelompok tugas!");
+    }
+
+    res.status(200).json(result);
+  };
+
+  private deleteBucketDetail: RH<{
+    Params: {
+      bucket_id: string;
+    };
+    ResBody: {
+      msg: string;
+    };
+  }> = async (req, res) => {
+    const { bucket_id: bucket_id_raw } = req.params;
+    const bucket_id = Number(bucket_id_raw);
+
+    await this.task_service.deleteBucket(bucket_id);
+
+    res.status(200).json({ msg: "Kelompok tugas berhsail dihapus!" });
   };
 }

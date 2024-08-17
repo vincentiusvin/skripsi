@@ -101,7 +101,11 @@ export async function baseCase(app: Application) {
         password: hashSync(orig_password, 10),
       },
       {
-        name: "org and project user",
+        name: "project dev",
+        password: hashSync(orig_password, 10),
+      },
+      {
+        name: "project admin",
         password: hashSync(orig_password, 10),
       },
     ])
@@ -112,14 +116,22 @@ export async function baseCase(app: Application) {
   const plain_user = { ...user_ids[1], password: orig_password };
   const chat_user = { ...user_ids[2], password: orig_password };
   const dev_user = { ...user_ids[3], password: orig_password };
+  const project_admin_user = { ...user_ids[4], password: orig_password };
 
   await app.db
     .insertInto("orgs_users")
-    .values({
-      org_id: org.id,
-      user_id: user_ids[0].id,
-      role: "Admin",
-    })
+    .values([
+      {
+        org_id: org.id,
+        user_id: org_user.id,
+        role: "Admin",
+      },
+      {
+        org_id: org.id,
+        user_id: project_admin_user.id,
+        role: "Admin",
+      },
+    ])
     .execute();
 
   const project = await app.db
@@ -134,11 +146,18 @@ export async function baseCase(app: Application) {
 
   await app.db
     .insertInto("projects_users")
-    .values({
-      project_id: project.id,
-      role: "Dev",
-      user_id: dev_user.id,
-    })
+    .values([
+      {
+        project_id: project.id,
+        role: "Dev",
+        user_id: dev_user.id,
+      },
+      {
+        project_id: project.id,
+        role: "Admin",
+        user_id: project_admin_user.id,
+      },
+    ])
     .execute();
 
   const bucket = await app.db
@@ -199,16 +218,45 @@ export async function baseCase(app: Application) {
     .returning(["ms_messages.message", "ms_messages.user_id", "ms_messages.chatroom_id"])
     .executeTakeFirstOrThrow();
 
+  const org_categories = await app.db
+    .insertInto("ms_category_orgs")
+    .values([
+      {
+        name: "Cat1",
+      },
+      {
+        name: "Cat2",
+      },
+    ])
+    .returning(["id", "name"])
+    .execute();
+
+  const project_categories = await app.db
+    .insertInto("ms_category_projects")
+    .values([
+      {
+        name: "Cat1",
+      },
+      {
+        name: "Cat2",
+      },
+    ])
+    .returning(["id", "name"])
+    .execute();
+
   return {
     org,
     project,
     bucket_fill: bucket[0],
     bucket_empty: bucket[1],
+    org_categories,
+    project_categories,
     task,
-    member: org_user,
-    nonmember: plain_user,
-    chatuser: chat_user,
-    dev_user: dev_user,
+    org_user,
+    plain_user,
+    chat_user,
+    dev_user,
+    project_admin_user,
     chat,
     message,
   };

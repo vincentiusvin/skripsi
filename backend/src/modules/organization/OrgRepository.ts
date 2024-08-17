@@ -1,6 +1,7 @@
 import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
+import { OrgRoles, parseRole } from "./OrgMisc.js";
 
 function orgWithCategories(eb: ExpressionBuilder<DB, "ms_orgs">) {
   return jsonArrayFrom(
@@ -16,7 +17,7 @@ function orgWithUsers(eb: ExpressionBuilder<DB, "ms_orgs">) {
   return jsonArrayFrom(
     eb
       .selectFrom("orgs_users")
-      .select(["orgs_users.user_id"])
+      .select(["orgs_users.user_id", "orgs_users.role as user_role"])
       .whereRef("orgs_users.org_id", "=", "ms_orgs.id"),
   );
 }
@@ -106,13 +107,15 @@ export class OrgRepository {
         throw new Error("Data not inserted!");
       }
 
-      for (const cat_id of org_categories ?? []) {
+      if (org_categories && org_categories.length) {
         await trx
           .insertInto("categories_orgs")
-          .values({
-            org_id: org.id,
-            category_id: cat_id,
-          })
+          .values(
+            org_categories.map((cat_id) => ({
+              org_id: org.id,
+              category_id: cat_id,
+            })),
+          )
           .execute();
       }
 
@@ -121,7 +124,7 @@ export class OrgRepository {
         .values({
           user_id: firstUser,
           org_id: org.id,
-          role: "Owner",
+          role: "Admin",
         })
         .execute();
       return org;
@@ -173,16 +176,20 @@ export class OrgRepository {
         }
       }
 
-      await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
+      if (org_category) {
+        await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
 
-      for (const cat_id of org_category ?? []) {
-        await trx
-          .insertInto("categories_orgs")
-          .values({
-            org_id: id,
-            category_id: cat_id,
-          })
-          .execute();
+        if (org_category.length) {
+          await trx
+            .insertInto("categories_orgs")
+            .values(
+              org_category.map((cat_id) => ({
+                org_id: id,
+                category_id: cat_id,
+              })),
+            )
+            .execute();
+        }
       }
     });
   }
@@ -194,5 +201,52 @@ export class OrgRepository {
       await trx.deleteFrom("orgs_users").where("org_id", "=", id).execute();
       await trx.deleteFrom("ms_orgs").where("id", "=", id).execute();
     });
+  }
+  async getMemberRole(org_id: number, user_id: number): Promise<OrgRoles> {
+    const res = await this.db
+      .selectFrom("orgs_users")
+      .select("role")
+      .where((eb) =>
+        eb.and({
+          "orgs_users.user_id": user_id,
+          "orgs_users.org_id": org_id,
+        }),
+      )
+      .executeTakeFirst();
+
+    if (!res) {
+      return "Not Involved";
+    }
+
+    const ret = parseRole(res.role);
+    return ret;
+  }
+
+  async assignMember(org_id: number, user_id: number, role: OrgRoles) {
+    await this.db
+      .insertInto("orgs_users")
+      .values({
+        org_id: org_id,
+        user_id: user_id,
+        role: role,
+      })
+      .onConflict((oc) =>
+        oc.columns(["user_id", "org_id"]).doUpdateSet({
+          role: role,
+        }),
+      )
+      .execute();
+  }
+
+  async unassignMember(org_id: number, user_id: number) {
+    await this.db
+      .deleteFrom("orgs_users")
+      .where((eb) =>
+        eb.and({
+          "orgs_users.org_id": org_id,
+          "orgs_users.user_id": user_id,
+        }),
+      )
+      .execute();
   }
 }

@@ -1,4 +1,5 @@
-import { ClientError } from "../../helpers/error.js";
+import { AuthError, ClientError } from "../../helpers/error.js";
+import { OrgRoles } from "./OrgMisc.js";
 import { OrgRepository } from "./OrgRepository.js";
 
 export class OrgService {
@@ -65,5 +66,30 @@ export class OrgService {
 
   async deleteOrg(id: number) {
     await this.org_repo.deleteOrg(id);
+  }
+
+  async getMemberRole(org_id: number, user_id: number) {
+    return await this.org_repo.getMemberRole(org_id, user_id);
+  }
+
+  async assignMember(org_id: number, user_id: number, sender_id: number, role: OrgRoles) {
+    const previous_role = await this.getMemberRole(org_id, user_id);
+    const sender_role = await this.getMemberRole(org_id, sender_id);
+    if (role === "Admin" && user_id === sender_id && previous_role === "Invited") {
+      return await this.org_repo.assignMember(org_id, user_id, "Admin");
+    }
+    if (role === "Invited" && sender_role === "Admin" && previous_role === "Not Involved") {
+      return await this.org_repo.assignMember(org_id, user_id, "Invited");
+    }
+
+    throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+  }
+
+  async unassignMember(org_id: number, user_id: number, sender_id: number) {
+    const sender_role = await this.getMemberRole(org_id, sender_id);
+    if (sender_id === user_id || sender_role === "Admin") {
+      return await this.org_repo.unassignMember(org_id, user_id);
+    }
+    throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
   }
 }

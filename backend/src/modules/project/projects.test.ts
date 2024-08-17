@@ -5,7 +5,7 @@ import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 
-describe("/api/projects", () => {
+describe("projects api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -27,7 +27,7 @@ describe("/api/projects", () => {
   });
 
   it("should promote org member as admin", async () => {
-    const in_user = caseData.member;
+    const in_user = caseData.org_user;
     const in_project = caseData.project;
     const in_role = "Pending";
 
@@ -43,7 +43,7 @@ describe("/api/projects", () => {
   });
 
   it("should allow non org member to apply", async () => {
-    const in_user = caseData.nonmember;
+    const in_user = caseData.plain_user;
     const in_project = caseData.project;
     const in_role = "Pending";
 
@@ -59,8 +59,8 @@ describe("/api/projects", () => {
   });
 
   it("should allow admin to approve members", async () => {
-    const in_dev = caseData.nonmember;
-    const in_admin = caseData.member;
+    const in_dev = caseData.plain_user;
+    const in_admin = caseData.project_admin_user;
     const in_project = caseData.project;
 
     // dev applies
@@ -68,11 +68,8 @@ describe("/api/projects", () => {
     const send_dev_req = await assignMember(in_project.id, in_dev.id, "Pending", dev_cookie);
     const apply_result = await send_dev_req.json();
 
-    // promote admin
-    const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
-    await assignMember(in_project.id, in_admin.id, "Pending", admin_cookie);
-
     // admin accepts
+    const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
     const accept_dev_req = await assignMember(in_project.id, in_dev.id, "Dev", admin_cookie);
     const accept_result = await accept_dev_req.json();
 
@@ -82,21 +79,46 @@ describe("/api/projects", () => {
     expect(accept_result.role).eq("Dev");
   });
 
-  it("should be able to add and get buckets", async () => {
+  it("should allow admin to invite members", async () => {
+    const in_dev = caseData.plain_user;
+    const in_admin = caseData.project_admin_user;
     const in_project = caseData.project;
-    const in_user = caseData.nonmember;
-    const in_name = "Hello";
 
-    const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const send_req = await addBucket(in_project.id, in_name, cookie);
-    await send_req.json();
-    const read_req = await getBuckets(in_project.id, cookie);
-    const result = await read_req.json();
+    // promote admin
+    const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
+    const invite_req = await assignMember(in_project.id, in_dev.id, "Invited", admin_cookie);
+    const invite_result = await invite_req.json();
 
-    const found = result.find((x) => x.name === in_name);
+    // dev accepts
+    const dev_cookie = await getLoginCookie(in_dev.name, in_dev.password);
+    const accept_dev_req = await assignMember(in_project.id, in_dev.id, "Dev", dev_cookie);
+    const accept_result = await accept_dev_req.json();
 
-    expect(send_req.status).eq(201);
-    expect(found).to.not.eq(undefined);
+    expect(invite_req.status).eq(200);
+    expect(accept_dev_req.status).eq(200);
+    expect(invite_result.role).eq("Invited");
+    expect(accept_result.role).eq("Dev");
+  });
+
+  it("should not allow users to self promote", async () => {
+    const in_dev = caseData.plain_user;
+    const in_project = caseData.project;
+
+    const dev_cookie = await getLoginCookie(in_dev.name, in_dev.password);
+    const accept_dev_req = await assignMember(in_project.id, in_dev.id, "Dev", dev_cookie);
+
+    expect(accept_dev_req.status).eq(401);
+  });
+
+  it("should not allow admin to promote people that didn't apply", async () => {
+    const in_dev = caseData.plain_user;
+    const in_admin = caseData.project_admin_user;
+    const in_project = caseData.project;
+
+    const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
+    const invite_req = await assignMember(in_project.id, in_dev.id, "Dev", admin_cookie);
+
+    expect(invite_req.status).eq(401);
   });
 
   it("should be able to unassign user roles", async () => {
@@ -127,17 +149,19 @@ describe("/api/projects", () => {
   });
 
   it("should be able to add projects and view detail", async () => {
-    const cookie = await getLoginCookie(caseData.nonmember.name, caseData.nonmember.password);
-
+    const in_user = caseData.org_user;
     const in_name = "proj_name";
     const in_org = caseData.org;
     const in_desc = "Testing data desc";
+    const in_category = caseData.project_categories.slice(0, 1).map((x) => x.id);
 
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await addProject(
       {
         org_id: in_org.id,
         project_desc: in_desc,
         project_name: in_name,
+        category_id: in_category,
       },
       cookie,
     );
@@ -150,22 +174,56 @@ describe("/api/projects", () => {
     expect(read_result.project_name).to.eq(in_name);
     expect(read_result.org_id).to.eq(in_org.id);
     expect(read_result.project_desc).to.eq(in_desc);
+    expect(read_result.project_categories.map((x) => x.category_id)).to.deep.eq(in_category);
   });
 
-  it.skip("should be able to delete projects", async () => {
+  it("should be able to update projects", async () => {
+    const in_user = caseData.project_admin_user;
     const in_proj = caseData.project;
-    const in_user = caseData.member;
-    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const in_name = "new project name after edit";
+    const in_desc = "new project description";
+    const in_category = caseData.project_categories.slice(0, 2).map((x) => x.id);
 
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const send_req = await updateProject(
+      in_proj.id,
+      {
+        project_desc: in_desc,
+        project_name: in_name,
+        category_id: in_category,
+      },
+      cookie,
+    );
+    const send_result = await send_req.json();
+    const read_req = await getProjectDetail(send_result.project_id, cookie);
+    const read_result = await read_req.json();
+
+    expect(send_req.status).eq(200);
+    expect(read_req.status).eq(200);
+    expect(read_result.project_name).to.eq(in_name);
+    expect(read_result.project_desc).to.eq(in_desc);
+    expect(read_result.project_categories.map((x) => x.category_id)).to.deep.eq(in_category);
+  });
+
+  it("should be able to delete projects", async () => {
+    const in_proj = caseData.project;
+    const in_user = caseData.project_admin_user;
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await deleteProject(in_proj.id, cookie);
+    const read_req = await getProjects();
+    const read_result = await read_req.json();
+    const find_project = read_result.find((x) => x.project_id === in_proj.id);
 
     expect(send_req.status).to.eq(200);
+
+    expect(read_req.status).eq(200);
+    expect(find_project).eq(undefined);
   });
 });
 
-// TODO
 function deleteProject(project_id: number, cookie: string) {
-  return new APIContext("ProjectsGet").fetch(`/api/projects`, {
+  return new APIContext("ProjectsGet").fetch(`/api/projects/${project_id}`, {
     method: "delete",
     headers: {
       cookie: cookie,
@@ -196,26 +254,22 @@ function assignMember(project_id: number, user_id: number, role: ProjectRoles, c
   );
 }
 
-function addBucket(project_id: number, bucket_name: string, cookie: string) {
-  return new APIContext("ProjectsDetailBucketsPost").fetch(`/api/projects/${project_id}/buckets`, {
+function updateProject(
+  project_id: number,
+  data: {
+    project_name?: string;
+    project_desc?: string;
+    category_id?: number[] | undefined;
+  },
+  cookie: string,
+) {
+  return new APIContext("ProjectsDetailPut").fetch(`/api/projects/${project_id}`, {
     headers: {
       cookie: cookie,
     },
     credentials: "include",
-    method: "post",
-    body: {
-      name: bucket_name,
-    },
-  });
-}
-
-function getBuckets(project_id: number, cookie: string) {
-  return new APIContext("ProjectsDetailBucketsGet").fetch(`/api/projects/${project_id}/buckets`, {
-    headers: {
-      cookie: cookie,
-    },
-    credentials: "include",
-    method: "get",
+    method: "put",
+    body: data,
   });
 }
 

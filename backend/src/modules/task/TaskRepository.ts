@@ -17,6 +17,44 @@ export class TaskRepository {
     this.db = db;
   }
 
+  async getBucketByID(bucket_id: number) {
+    const result = await this.db
+      .selectFrom("ms_task_buckets")
+      .select(["name", "id", "project_id"])
+      .where("ms_task_buckets.id", "=", bucket_id)
+      .executeTakeFirst();
+
+    return result;
+  }
+
+  async updateBucket(bucket_id: number, data: { name?: string }) {
+    if (data.name != undefined) {
+      await this.db
+        .updateTable("ms_task_buckets")
+        .set({
+          name: data.name,
+        })
+        .where("ms_task_buckets.id", "=", bucket_id)
+        .executeTakeFirst();
+    }
+  }
+
+  async deleteBucket(bucket_id: number) {
+    await this.db
+      .deleteFrom("ms_task_buckets")
+      .where("ms_task_buckets.id", "=", bucket_id)
+      .execute();
+  }
+
+  async deleteTask(task_id: number) {
+    const result = await this.db
+      .deleteFrom("ms_tasks")
+      .where("ms_tasks.id", "=", task_id)
+      .execute();
+
+    return result;
+  }
+
   async findTaskByID(task_id: number) {
     const result = await this.db
       .selectFrom("ms_tasks")
@@ -127,6 +165,25 @@ export class TaskRepository {
         start_at,
       })
       .where("ms_tasks.id", "=", Number(task_id))
+      .execute();
+  }
+
+  async getProjectBuckets(project_id: number) {
+    return await this.db
+      .selectFrom("ms_task_buckets")
+      .select(["name", "id", "project_id"])
+      .where("ms_task_buckets.project_id", "=", project_id)
+      .orderBy("ms_task_buckets.id asc")
+      .execute();
+  }
+
+  async addBucket(project_id: number, name: string) {
+    return this.db
+      .insertInto("ms_task_buckets")
+      .values({
+        name: name,
+        project_id: Number(project_id),
+      })
       .execute();
   }
 }

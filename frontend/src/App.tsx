@@ -11,7 +11,6 @@ import "./App.css";
 import Nav from "./components/Nav";
 import { queryClient } from "./helpers/queryclient";
 import AuthPage from "./routes/AuthPage";
-import ChatroomPage from "./routes/Chatroom";
 import HomePage from "./routes/HomePage";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
 import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage";
@@ -19,9 +18,11 @@ import OrgsEditPage from "./routes/Orgs/OrgsEditPage";
 import OrgsListPage from "./routes/Orgs/OrgsListPage";
 import ProjectDetailPage from "./routes/Projects/ProjectDetailPage/ProjectDetailPage";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
+import ProjectsEditPage from "./routes/Projects/ProjectsEditPage.tsx";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
 import UserAccountPage from "./routes/User/UserAccountPage";
 import UserAccountPageEdit from "./routes/User/UserAccountPageEdit";
+import ChatroomPage from "./routes/UserChatroom";
 
 const theme = createTheme({
   palette: {
@@ -56,12 +57,13 @@ function App() {
                 <Route path={"/auth"} component={AuthPage} />
                 <Route path={"/orgs"} component={OrgsListPage} />
                 <Route path={"/orgs/add"} component={OrgsAddPage} />
-                <Route path={"/orgs/:id"} component={OrgsDetailPage} />
+                <Route path={"/orgs/:org_id"} component={OrgsDetailPage} />
                 <Route path={"/orgs/:org_id/projects/add"} component={ProjectsAddPage} />
                 <Route path={"/orgs/:id/edit"} component={OrgsEditPage} />
                 <Route path={"/chatroom"} component={ChatroomPage} />
                 <Route path={"/projects"} component={ProjectListPage} />
                 <Route path={"/projects/:id"} component={ProjectDetailPage} />
+                <Route path={"/projects/:project_id/edit"} component={ProjectsEditPage} />
                 <Route path={"/users/:id"} component={UserAccountPage} />
                 <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
               </Switch>
