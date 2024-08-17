@@ -57,12 +57,12 @@ export class UserController extends Controller {
               .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
           }),
           ReqBody: z.object({
-            user_name: z.string().min(1).optional(),
-            user_password: z.string().min(1).optional(),
-            user_education_level: z.string().min(1).optional(),
-            user_school: z.string().min(1).optional(),
-            user_about_me: z.string().min(1).optional(),
-            user_image: z.string().min(1).optional(),
+            user_name: z.string().min(1, "Nama tidak boleh kosong!").optional(),
+            user_password: z.string().min(1, "Password tidak boleh kosong!").optional(),
+            user_education_level: z.string().min(1, "Pendidikan tidak boleh kosong!").optional(),
+            user_school: z.string().min(1, "Sekolah tidak boleh kosong!").optional(),
+            user_about_me: z.string().min(1, "Biodata tidak boleh kosong!").optional(),
+            user_image: z.string().min(1, "Gambar tidak boleh kosong!").optional(),
           }),
         },
       }),
@@ -145,8 +145,9 @@ export class UserController extends Controller {
       user_about_me,
       user_image,
     } = req.body;
-    const id = req.params.id;
-    await this.user_service.updateAccountDetail(Number(id), {
+    const user_id = Number(req.params.id);
+
+    await this.user_service.updateAccountDetail(user_id, {
       user_name,
       user_email,
       user_education_level,
@@ -155,7 +156,7 @@ export class UserController extends Controller {
       user_image,
       user_password,
     });
-    const updated = await this.user_service.getUserAccountDetail(Number(id));
+    const updated = await this.user_service.getUserAccountDetail(user_id);
     res.status(200).json(updated);
   };
 }
