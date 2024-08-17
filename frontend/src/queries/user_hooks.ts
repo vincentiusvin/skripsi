@@ -52,7 +52,6 @@ export function useUserAccountDetailUpdate(opts: {
   user_id: number;
   name?: string;
   password?: string;
-  confirmPassword?: string;
   email?: string;
   educationLevel?: string;
   school?: string;

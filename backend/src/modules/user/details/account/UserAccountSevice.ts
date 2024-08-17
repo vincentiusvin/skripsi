@@ -25,18 +25,23 @@ export class UserAccountService {
       user_school?: string;
       user_about_me?: string;
       user_image?: string;
+      user_password?: string;
     },
-    user_password: string,
   ) {
-    const hashed_password = hashSync(user_password, 10);
-    const { user_email } = obj;
+    const { user_password, user_email } = obj;
+    let hashed_password: string | undefined = undefined;
+    if (user_password) {
+      hashed_password = hashSync(user_password, 10);
+    }
     if (user_email) {
       const same_email = await this.getUserAccountByEmail(user_email);
-      console.log("result:" + same_email);
       if (same_email != undefined) {
         throw new ClientError("Sudah ada user dengan email yang sama !");
       }
     }
-    return await this.user_repo.updateAccountDetails(id, obj, hashed_password);
+    return await this.user_repo.updateAccountDetails(id, {
+      ...obj,
+      user_password: hashed_password,
+    });
   }
 }
