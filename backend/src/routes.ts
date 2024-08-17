@@ -17,9 +17,6 @@ import { TaskService } from "./modules/task/TaskService.js";
 import { UserController } from "./modules/user/UserController.js";
 import { UserRepository } from "./modules/user/UserRepository.js";
 import { UserService } from "./modules/user/UserService.js";
-import { UserAccountController } from "./modules/user/details/account/UserAccountController.js";
-import { UserAccountRepository } from "./modules/user/details/account/UserAccountRepository.js";
-import { UserAccountService } from "./modules/user/details/account/UserAccountSevice.js";
 
 export function registerControllers(app: Application) {
   const org_repo = new OrgRepository(app.db);
@@ -27,14 +24,12 @@ export function registerControllers(app: Application) {
   const task_repo = new TaskRepository(app.db);
   const project_repo = new ProjectRepository(app.db);
   const user_repo = new UserRepository(app.db);
-  const user_account_repo = new UserAccountRepository(app.db);
 
   const org_service = new OrgService(org_repo);
   const task_service = new TaskService(task_repo);
   const project_service = new ProjectService(project_repo, org_service);
   const chat_service = new ChatService(chat_repo, project_service);
   const user_service = new UserService(user_repo);
-  const user_account_service = new UserAccountService(user_account_repo);
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),
@@ -43,7 +38,6 @@ export function registerControllers(app: Application) {
     new SessionController(app.express_server, app.db),
     new UserController(app.express_server, user_service),
     new TaskController(app.express_server, task_service),
-    new UserAccountController(app.express_server, user_account_service),
   ] as const;
 
   controllers.forEach((x) => x.register());

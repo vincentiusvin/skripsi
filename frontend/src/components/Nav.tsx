@@ -2,11 +2,11 @@ import { Login, Logout } from "@mui/icons-material";
 import { Avatar, Box, Button, Stack, Typography } from "@mui/material";
 import { Link } from "wouter";
 import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks";
-import { useUserAccountDetailGet } from "../queries/user_hooks";
+import { useUsersDetailGet } from "../queries/user_hooks";
 
 function UserImage(props: { user_id: number }) {
   const { user_id } = props;
-  const { data: userDetail } = useUserAccountDetailGet({
+  const { data: userDetail } = useUsersDetailGet({
     user_id,
   });
   return (

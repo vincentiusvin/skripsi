@@ -34,47 +34,24 @@ export function useUsersGet() {
   });
 }
 
-export function useUserAccountDetailGet(opts: {
+export function useUsersDetailGet(opts: {
   user_id: number;
   retry?: (failurecount: number, error: unknown) => boolean;
-  enabled?: boolean;
 }) {
-  const { user_id, retry, enabled } = opts;
+  const { user_id, retry } = opts;
   return useQuery({
-    enabled,
     queryKey: userKeys.detail(user_id),
-    queryFn: () => new APIContext("UserAccountGet").fetch(`/api/user/account/${user_id}`),
+    queryFn: () => new APIContext("UserAccountGet").fetch(`/api/users/${user_id}`),
     retry: retry,
   });
 }
 
-export function useUserAccountDetailUpdate(opts: {
-  user_id: number;
-  name?: string;
-  password?: string;
-  email?: string;
-  educationLevel?: string;
-  school?: string;
-  about_me?: string;
-  image?: string;
-  onSuccess?: () => void;
-}) {
-  const { user_id, name, password, email, educationLevel, school, about_me, image, onSuccess } =
-    opts;
+export function useUsersDetailUpdate(opts: { user_id: number; onSuccess?: () => void }) {
+  const { user_id, onSuccess } = opts;
   return useMutation({
-    mutationFn: () =>
-      new APIContext("UserAccountUpdate").fetch(`/api/user/account/${user_id}`, {
-        method: "PUT",
-        body: {
-          user_name: name,
-          user_password: password,
-          user_email: email,
-          user_education_level: educationLevel,
-          user_school: school,
-          user_about_me: about_me,
-          user_image: image,
-        },
-      }),
+    mutationFn: new APIContext("UserAccountUpdate").bodyFetch(`/api/users/${user_id}`, {
+      method: "PUT",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.all() });
       if (onSuccess) {

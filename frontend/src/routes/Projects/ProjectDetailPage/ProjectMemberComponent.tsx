@@ -1,13 +1,13 @@
 import { Avatar, Skeleton, Stack, Typography } from "@mui/material";
 import { API } from "../../../../../backend/src/routes.ts";
 import { useProjectsDetailMembersGet } from "../../../queries/project_hooks.ts";
-import { useUserAccountDetailGet } from "../../../queries/user_hooks.ts";
+import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
 
 export type MemberRoles = API["ProjectsDetailMembersGet"]["ResBody"]["role"] | "Not Involved";
 
 function ProjectMember(props: { user_id: number; project_id: number }) {
   const { user_id, project_id } = props;
-  const { data: user_data } = useUserAccountDetailGet({
+  const { data: user_data } = useUsersDetailGet({
     user_id,
   });
   const { data: member_data } = useProjectsDetailMembersGet({
