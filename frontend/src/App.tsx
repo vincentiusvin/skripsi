@@ -20,6 +20,8 @@ import OrgsListPage from "./routes/Orgs/OrgsListPage";
 import ProjectDetailPage from "./routes/Projects/ProjectDetailPage/ProjectDetailPage";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
+import UserAccountPage from "./routes/User/UserAccountPage";
+import UserAccountPageEdit from "./routes/User/UserAccountPageEdit";
 
 const theme = createTheme({
   palette: {
@@ -60,6 +62,8 @@ function App() {
                 <Route path={"/chatroom"} component={ChatroomPage} />
                 <Route path={"/projects"} component={ProjectListPage} />
                 <Route path={"/projects/:id"} component={ProjectDetailPage} />
+                <Route path={"/users/:id"} component={UserAccountPage} />
+                <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
               </Switch>
             </Box>
           </LocalizationProvider>

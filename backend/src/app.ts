@@ -56,7 +56,7 @@ export class Application {
 
     this.express_server.use(sessionMiddleware);
 
-    this.express_server.use(json());
+    this.express_server.use(json({ limit: "50mb" }));
 
     this.socket_server.engine.use(sessionMiddleware);
 

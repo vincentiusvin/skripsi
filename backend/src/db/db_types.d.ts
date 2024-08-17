@@ -100,10 +100,15 @@ export interface MsTasks {
 }
 
 export interface MsUsers {
+  about_me: string | null;
   created_at: Generated<Timestamp>;
+  education_level: string | null;
+  email: string | null;
   id: Generated<number>;
+  image: string | null;
   name: string;
   password: string;
+  school: string | null;
 }
 
 export interface OrgsUsers {
