@@ -20,7 +20,7 @@ import { Link, useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
-import { useUserAccountDetailGet, useUserAccountDetailUpdate } from "../../queries/user_hooks";
+import { useUsersDetailGet, useUsersDetailUpdate } from "../../queries/user_hooks";
 
 function UserAccountPageEdit() {
   const { id } = useParams();
@@ -35,7 +35,7 @@ function UserAccountPageEdit() {
   const [userImage, setUserImage] = useState<string | undefined>(undefined);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
-  const { data } = useUserAccountDetailGet({
+  const { data } = useUsersDetailGet({
     user_id: Number(id),
     retry: (failureCount, error) => {
       if ((error instanceof APIError && error.status == 404) || failureCount > 3) {
@@ -46,15 +46,8 @@ function UserAccountPageEdit() {
     },
   });
 
-  const { mutate: editUser } = useUserAccountDetailUpdate({
+  const { mutate: editUser } = useUsersDetailUpdate({
     user_id: Number(id),
-    name: userName,
-    password: userPassword,
-    email: userEmail,
-    educationLevel: userEducationLevel,
-    school: userSchool,
-    about_me: userAboutMe,
-    image: userImage,
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Update Successful !</Typography>,
@@ -83,7 +76,15 @@ function UserAccountPageEdit() {
       return;
     }
 
-    editUser();
+    editUser({
+      user_name: userName,
+      user_password: userPassword,
+      user_email: userEmail,
+      user_education_level: userEducationLevel,
+      user_school: userSchool,
+      user_about_me: userAboutMe,
+      user_image: userImage,
+    });
   };
 
   if (data) {

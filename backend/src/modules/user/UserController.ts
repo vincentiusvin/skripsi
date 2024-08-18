@@ -30,6 +30,42 @@ export class UserController extends Controller {
         method: "get",
         path: "/api/users",
       }),
+
+      UserAccountGet: new Route({
+        handler: this.getUserAccount,
+        method: "get",
+        path: "/api/users/:id",
+        schema: {
+          Params: z.object({
+            id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid" }),
+          }),
+        },
+      }),
+
+      UserAccountUpdate: new Route({
+        handler: this.updateUserAccount,
+        method: "put",
+        path: "/api/users/:id",
+        schema: {
+          Params: z.object({
+            id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+          }),
+          ReqBody: z.object({
+            user_name: z.string().min(1, "Nama tidak boleh kosong!").optional(),
+            user_password: z.string().min(1, "Password tidak boleh kosong!").optional(),
+            user_education_level: z.string().min(1, "Pendidikan tidak boleh kosong!").optional(),
+            user_school: z.string().min(1, "Sekolah tidak boleh kosong!").optional(),
+            user_about_me: z.string().min(1, "Biodata tidak boleh kosong!").optional(),
+            user_image: z.string().min(1, "Gambar tidak boleh kosong!").optional(),
+          }),
+        },
+      }),
     };
   }
 
@@ -57,5 +93,70 @@ export class UserController extends Controller {
   }> = async (req, res) => {
     const result = await this.user_service.getUsers();
     res.status(200).json(result);
+  };
+
+  private getUserAccount: RH<{
+    Params: { id: string };
+    ResBody: {
+      user_id: number;
+      user_name: string;
+      user_password: string;
+      user_email: string | null;
+      user_education_level: string | null;
+      user_school: string | null;
+      user_about_me: string | null;
+      user_image: string | null;
+    };
+  }> = async (req, res) => {
+    const id = Number(req.params.id);
+    const result = await this.user_service.getUserAccountDetail(id);
+    res.status(200).json(result);
+  };
+
+  private updateUserAccount: RH<{
+    ResBody: {
+      user_id: number;
+      user_name: string;
+      user_email: string | null;
+      user_education_level: string | null;
+      user_school: string | null;
+      user_about_me: string | null;
+      user_image: string | null;
+    };
+    Params: {
+      id: string;
+    };
+    ReqBody: {
+      user_name?: string;
+      user_password?: string;
+      user_email?: string;
+      user_education_level?: string;
+      user_school?: string;
+      user_about_me?: string;
+      user_image?: string;
+    };
+  }> = async (req, res) => {
+    const {
+      user_name,
+      user_password,
+      user_email,
+      user_education_level,
+      user_school,
+      user_about_me,
+      user_image,
+    } = req.body;
+    const user_id = Number(req.params.id);
+
+    await this.user_service.updateAccountDetail(user_id, {
+      user_name,
+      user_email,
+      user_education_level,
+      user_school,
+      user_about_me,
+      user_image,
+      user_password,
+    });
+    const updated = await this.user_service.getUserAccountDetail(user_id);
+    res.status(200).json(updated);
   };
 }

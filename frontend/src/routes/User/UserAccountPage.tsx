@@ -3,13 +3,13 @@ import { Avatar, Box, Button, Grid, Paper, TextField, Typography } from "@mui/ma
 import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../../helpers/fetch";
 import { useSessionGet } from "../../queries/sesssion_hooks";
-import { useUserAccountDetailGet } from "../../queries/user_hooks";
+import { useUsersDetailGet } from "../../queries/user_hooks";
 
 function UserAccountPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
 
-  const { data: userDetail } = useUserAccountDetailGet({
+  const { data: userDetail } = useUsersDetailGet({
     user_id: Number(id),
     retry: (failureCount, error) => {
       if ((error instanceof APIError && error.status == 404) || failureCount > 3) {

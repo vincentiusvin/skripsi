@@ -6,7 +6,7 @@ import {
   useChatroomsDetailMessagesGet,
   useChatroomsDetailMessagesPost,
 } from "../queries/chat_hooks.ts";
-import { useUserAccountDetailGet } from "../queries/user_hooks.ts";
+import { useUsersDetailGet } from "../queries/user_hooks.ts";
 
 function Message(props: {
   message: {
@@ -16,7 +16,7 @@ function Message(props: {
   };
 }) {
   const { message } = props;
-  const { data: user_data } = useUserAccountDetailGet({ user_id: message.user_id });
+  const { data: user_data } = useUsersDetailGet({ user_id: message.user_id });
   return (
     <Stack direction={"row"} spacing={2}>
       <Avatar src={user_data?.user_name}></Avatar>

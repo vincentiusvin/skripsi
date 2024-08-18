@@ -29,11 +29,11 @@ import {
 } from "../../queries/org_hooks";
 import { useProjectsGet } from "../../queries/project_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
-import { useUserAccountDetailGet, useUsersGet } from "../../queries/user_hooks.ts";
+import { useUsersDetailGet, useUsersGet } from "../../queries/user_hooks.ts";
 
 function UserCard(props: { org_id: number; user_id: number }) {
   const { user_id, org_id } = props;
-  const { data: user_data } = useUserAccountDetailGet({
+  const { data: user_data } = useUsersDetailGet({
     user_id,
   });
   const { data: role_data } = useOrgsDetailMembersGet({
