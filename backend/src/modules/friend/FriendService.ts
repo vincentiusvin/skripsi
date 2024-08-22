@@ -1,3 +1,4 @@
+import { ClientError } from "../../helpers/error.js";
 import { FriendStatus } from "./FriendMisc.js";
 import { FriendRepository } from "./FriendRepository.js";
 
@@ -9,10 +10,6 @@ export class FriendService {
 
   getFriends(user_id: number) {
     return this.repo.getFriends(user_id);
-  }
-
-  getFriendData(from_user_id: number, to_user_id: number) {
-    return this.repo.getFriendData(from_user_id, to_user_id);
   }
 
   async getFriendStatus(from_user_id: number, to_user_id: number): Promise<FriendStatus> {
@@ -29,13 +26,19 @@ export class FriendService {
   }
 
   async acceptFriend(from_user_id: number, to_user_id: number) {
-    const current_data = await this.getFriendData(from_user_id, to_user_id);
-    if (current_data?.status === "Pending") {
+    const current_status = await this.getFriendStatus(from_user_id, to_user_id);
+    if (current_status === "Pending") {
       return this.repo.updateFriend(from_user_id, to_user_id, "Accepted");
+    } else {
+      throw new ClientError("Anda tidak memiliki permintaan teman dari orang ini!");
     }
   }
 
-  deleteFriend(user1: number, user2: number) {
+  async deleteFriend(user1: number, user2: number) {
+    const current_status = await this.getFriendStatus(user1, user2);
+    if (current_status === "None") {
+      throw new ClientError("Anda tidak memiliki relasi dengan orang ini!");
+    }
     return this.repo.deleteFriend(user1, user2);
   }
 }

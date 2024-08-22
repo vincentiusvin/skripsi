@@ -23,6 +23,7 @@ export async function mochaGlobalTeardown() {
 }
 
 export async function clearDB(app: Application) {
+  await app.db.deleteFrom("ms_friends").execute();
   await app.db.deleteFrom("tasks_users").execute();
   await app.db.deleteFrom("ms_tasks").execute();
   await app.db.deleteFrom("ms_task_buckets").execute();

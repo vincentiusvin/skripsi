@@ -8,6 +8,9 @@ type NeededData = {
 
 /**
  * Map representasi DB ke bagaimana anchor_user melihatnya.
+ * Accepted bakal dilihat secara sama oleh kedua orang.
+ * Pending bakal dilihat sebagai "Sent" oleh pengirim dan "Pending" oleh penerima.
+ * Disimpen di DB tetap sebagai "Pending".
  */
 export function transfromFriendData<T extends NeededData>(data: T, anchor_user_id: number) {
   const { from_user_id, to_user_id, status, ...rest } = data;

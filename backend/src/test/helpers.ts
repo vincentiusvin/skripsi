@@ -108,6 +108,18 @@ export async function baseCase(app: Application) {
         name: "project admin",
         password: hashSync(orig_password, 10),
       },
+      {
+        name: "friend send",
+        password: hashSync(orig_password, 10),
+      },
+      {
+        name: "friend pending",
+        password: hashSync(orig_password, 10),
+      },
+      {
+        name: "friend acc",
+        password: hashSync(orig_password, 10),
+      },
     ])
     .returning(["id", "name"])
     .execute();
@@ -117,6 +129,9 @@ export async function baseCase(app: Application) {
   const chat_user = { ...user_ids[2], password: orig_password };
   const dev_user = { ...user_ids[3], password: orig_password };
   const project_admin_user = { ...user_ids[4], password: orig_password };
+  const friend_send_user = { ...user_ids[5], password: orig_password };
+  const friend_recv_user = { ...user_ids[6], password: orig_password };
+  const friend_acc_user = { ...user_ids[7], password: orig_password };
 
   await app.db
     .insertInto("orgs_users")
@@ -218,6 +233,22 @@ export async function baseCase(app: Application) {
     .returning(["ms_messages.message", "ms_messages.user_id", "ms_messages.chatroom_id"])
     .executeTakeFirstOrThrow();
 
+  await app.db
+    .insertInto("ms_friends")
+    .values([
+      {
+        from_user_id: friend_send_user.id,
+        to_user_id: friend_recv_user.id,
+        status: "Pending",
+      },
+      {
+        from_user_id: friend_send_user.id,
+        to_user_id: friend_acc_user.id,
+        status: "Accepted",
+      },
+    ])
+    .execute();
+
   const org_categories = await app.db
     .insertInto("ms_category_orgs")
     .values([
@@ -257,6 +288,9 @@ export async function baseCase(app: Application) {
     chat_user,
     dev_user,
     project_admin_user,
+    friend_acc_user,
+    friend_recv_user,
+    friend_send_user,
     chat,
     message,
   };

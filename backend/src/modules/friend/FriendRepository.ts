@@ -39,8 +39,8 @@ export class FriendRepository {
             eb("ms_friends.to_user_id", "=", to_user_id),
           ]),
           eb.and([
-            eb("ms_friends.from_user_id", "=", from_user_id),
-            eb("ms_friends.to_user_id", "=", to_user_id),
+            eb("ms_friends.from_user_id", "=", to_user_id),
+            eb("ms_friends.to_user_id", "=", from_user_id),
           ]),
         ]),
       )
