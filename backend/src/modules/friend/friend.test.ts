@@ -4,7 +4,7 @@ import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe.only("friend api", () => {
+describe("friend api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -28,17 +28,46 @@ describe.only("friend api", () => {
     expect(result.status).to.eq("Sent");
   });
 
-  it("should be able to accept friend request", async () => {
-    const in_us = caseData.friend_recv_user;
-    const in_them = caseData.friend_send_user;
-    const cookie = await getLoginCookie(in_us.name, in_them.password);
+  const accept_cases = [
+    {
+      us: "friend_acc_user",
+      them: "friend_recv_user",
+      description: "unrelated",
+      ok: false,
+    },
+    {
+      us: "friend_send_user",
+      them: "friend_recv_user",
+      description: "sender",
+      ok: false,
+    },
+    {
+      us: "friend_recv_user",
+      them: "friend_send_user",
+      description: "receiver",
+      ok: true,
+    },
+  ] as const;
 
-    const read_req = await putFriend(in_us.id, in_them.id, "Accepted", cookie);
-    const result = await read_req.json();
+  for (const { us, them, ok, description } of accept_cases) {
+    it(`${
+      ok ? "should" : "shouldn't"
+    } be able to accept friend request as ${description}`, async () => {
+      const in_us = caseData[us];
+      const in_them = caseData[them];
+      const cookie = await getLoginCookie(in_us.name, in_them.password);
 
-    expect(read_req.status).eq(200);
-    expect(result.status).to.eq("Accepted");
-  });
+      const read_req = await putFriend(in_us.id, in_them.id, "Accepted", cookie);
+      const result = await read_req.json();
+
+      if (ok) {
+        expect(read_req.status).eq(200);
+        expect(result.status).to.eq("Accepted");
+      } else {
+        expect(read_req.status).eq(400);
+      }
+    });
+  }
 
   const test_cases = [
     {
@@ -93,31 +122,26 @@ describe.only("friend api", () => {
       us: "friend_acc_user",
       them: "friend_send_user",
       description: "receiver",
-      http_status: 200,
-    } as const,
+      ok: true,
+    },
     {
       us: "friend_send_user",
       them: "friend_acc_user",
       description: "sender",
-      http_status: 200,
-    } as const,
+      ok: true,
+    },
     {
       us: "friend_recv_user",
       them: "friend_acc_user",
       description: "unrelated",
-      http_status: 400,
-      negate: true,
-    } as const,
-  ];
+      ok: false,
+    },
+  ] as const;
 
-  for (const { us, them, description, http_status, negate } of unfriend_cases) {
-    it(`${
-      negate ? "shouldn't" : "should"
-    } be able to unfriend people as ${description}`, async () => {
+  for (const { us, them, description, ok } of unfriend_cases) {
+    it(`${ok ? "should" : "shouldn't"} be able to unfriend people as ${description}`, async () => {
       const in_us = caseData[us];
       const in_them = caseData[them];
-      const expected_status = "None";
-      const expected_http = http_status;
 
       const cookie = await getLoginCookie(in_us.name, in_us.password);
       const send_req = await deleteFriend(in_us.id, in_them.id, cookie);
@@ -125,8 +149,12 @@ describe.only("friend api", () => {
       const read_req = await getFriend(in_us.id, in_them.id, cookie);
       const result = await read_req.json();
 
-      expect(send_req.status).eq(expected_http);
-      expect(result.status).to.eq(expected_status);
+      if (ok) {
+        expect(send_req.status).eq(200);
+        expect(result.status).to.eq("None");
+      } else {
+        expect(send_req.status).eq(400);
+      }
     });
   }
 });
