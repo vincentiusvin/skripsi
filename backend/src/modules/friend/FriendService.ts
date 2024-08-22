@@ -28,7 +28,7 @@ export class FriendService {
   async acceptFriend(from_user_id: number, to_user_id: number) {
     const current_status = await this.getFriendStatus(from_user_id, to_user_id);
     if (current_status === "Pending") {
-      return this.repo.updateFriend(from_user_id, to_user_id, "Accepted");
+      return await this.repo.updateFriend(to_user_id, from_user_id, "Accepted"); // memang harus dibalik
     } else {
       throw new ClientError("Anda tidak memiliki permintaan teman dari orang ini!");
     }

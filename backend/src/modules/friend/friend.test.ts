@@ -4,7 +4,7 @@ import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("friend api", () => {
+describe.only("friend api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -26,6 +26,18 @@ describe("friend api", () => {
 
     expect(read_req.status).eq(200);
     expect(result.status).to.eq("Sent");
+  });
+
+  it("should be able to accept friend request", async () => {
+    const in_us = caseData.friend_recv_user;
+    const in_them = caseData.friend_send_user;
+    const cookie = await getLoginCookie(in_us.name, in_them.password);
+
+    const read_req = await putFriend(in_us.id, in_them.id, "Accepted", cookie);
+    const result = await read_req.json();
+
+    expect(read_req.status).eq(200);
+    expect(result.status).to.eq("Accepted");
   });
 
   const test_cases = [
