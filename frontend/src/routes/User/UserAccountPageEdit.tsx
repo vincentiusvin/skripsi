@@ -143,7 +143,7 @@ function UserAccountPageEdit() {
             </Link>
           </Grid>
           <Grid xs={10}></Grid>
-          <Grid item xs={6}>
+          <Grid item xs={4}>
             <Stack alignItems={"center"}>
               <Badge
                 overlap="circular"
@@ -187,7 +187,7 @@ function UserAccountPageEdit() {
               </Typography>
             </Stack>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={8}>
             <Stack gap={4}>
               <Paper
                 sx={{

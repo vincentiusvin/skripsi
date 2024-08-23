@@ -34,7 +34,7 @@ export function useFriendsPut(opts: { user_id: number; with_id: number; onSucces
   const { onSuccess, user_id, with_id } = opts;
   return useMutation({
     mutationFn: new APIContext("UsersDetailFriendsDetailPut").bodyFetch(
-      `/api/users${user_id}/friends${with_id}`,
+      `/api/users/${user_id}/friends/${with_id}`,
       {
         method: "PUT",
       },
@@ -56,12 +56,13 @@ export function useFriendsDelete(opts: {
 }) {
   const { onSuccess, user_id, with_id } = opts;
   return useMutation({
-    mutationFn: new APIContext("UsersDetailFriendsDetailDelete").bodyFetch(
-      `/api/users${user_id}/friends${with_id}`,
-      {
-        method: "delete",
-      },
-    ),
+    mutationFn: () =>
+      new APIContext("UsersDetailFriendsDetailDelete").fetch(
+        `/api/users/${user_id}/friends/${with_id}`,
+        {
+          method: "delete",
+        },
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: friendKeys.list(user_id) });
       queryClient.invalidateQueries({ queryKey: friendKeys.detail(user_id, with_id) });

@@ -1,7 +1,13 @@
-import { ArrowBack, Email, School } from "@mui/icons-material";
+import { ArrowBack, Cancel, Check, Email, People, School } from "@mui/icons-material";
 import { Avatar, Button, Grid, Paper, Skeleton, Stack, Typography } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../../helpers/fetch";
+import {
+  useFriendsDelete,
+  useFriendsDetailGet,
+  useFriendsPut,
+} from "../../queries/friend_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks";
 import { useUsersDetailGet } from "../../queries/user_hooks";
 
@@ -46,9 +52,12 @@ function UserAccountPage() {
           </Link>
         )}
       </Grid>
-      <Grid item xs={6}>
+      <Grid item xs={4}>
         <Stack alignItems={"center"}>
           <Avatar src={userDetail.user_image ?? ""} sx={{ width: 256, height: 256 }}></Avatar>
+          {userLog && userLog.logged ? (
+            <AddFriend our_user_id={userLog.user_id} viewed_user_id={userDetail.user_id} />
+          ) : null}
           <Typography variant="h2" color="#6A81FC">
             <Link
               to={`/user/${userDetail.user_id}/account`}
@@ -72,7 +81,7 @@ function UserAccountPage() {
           </Typography>
         </Stack>
       </Grid>
-      <Grid item xs={6}>
+      <Grid item xs={8}>
         <Stack gap={4}>
           <Paper
             sx={{
@@ -131,4 +140,111 @@ function UserAccountPage() {
     </Grid>
   );
 }
+
+function AddFriend(props: { viewed_user_id: number; our_user_id: number }) {
+  const { viewed_user_id, our_user_id } = props;
+
+  const { data: friend_data } = useFriendsDetailGet({
+    user_id: our_user_id,
+    with_id: viewed_user_id,
+  });
+
+  const { mutate: putFriend } = useFriendsPut({
+    user_id: our_user_id,
+    with_id: viewed_user_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Permintaan dikirim!</Typography>,
+        variant: "success",
+      });
+    },
+  });
+
+  const { mutate: deleteFriend } = useFriendsDelete({
+    user_id: our_user_id,
+    with_id: viewed_user_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Permintaan dihapus!</Typography>,
+        variant: "success",
+      });
+    },
+  });
+
+  if (!friend_data || our_user_id === viewed_user_id) {
+    return null;
+  }
+  if (friend_data.status === "None") {
+    return (
+      <Button
+        startIcon={<People />}
+        variant="contained"
+        onClick={() => {
+          putFriend({
+            status: "Sent",
+          });
+        }}
+      >
+        Tambahkan sebagai teman
+      </Button>
+    );
+  } else if (friend_data.status === "Sent") {
+    return (
+      <>
+        <Typography>Permintaan teman dikirim</Typography>
+        <Button
+          startIcon={<Cancel />}
+          variant="contained"
+          onClick={() => {
+            deleteFriend();
+          }}
+        >
+          Batalkan
+        </Button>
+      </>
+    );
+  } else if (friend_data.status === "Pending") {
+    return (
+      <>
+        <Typography>Permintaan teman diterima</Typography>
+        <Button
+          startIcon={<Check />}
+          variant="contained"
+          onClick={() => {
+            putFriend({
+              status: "Accepted",
+            });
+          }}
+        >
+          Terima
+        </Button>
+        <Button
+          startIcon={<Cancel />}
+          variant="contained"
+          onClick={() => {
+            deleteFriend();
+          }}
+        >
+          Tolak
+        </Button>
+      </>
+    );
+  } else if (friend_data.status === "Accepted") {
+    return (
+      <>
+        <Typography>Pengguna ini adalah teman anda</Typography>
+        <Button
+          startIcon={<Cancel />}
+          variant="contained"
+          onClick={() => {
+            deleteFriend();
+          }}
+        >
+          Hapus
+        </Button>
+      </>
+    );
+  }
+}
+
 export default UserAccountPage;
