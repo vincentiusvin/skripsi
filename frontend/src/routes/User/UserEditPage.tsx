@@ -58,7 +58,7 @@ function UserAccountPageEdit() {
     },
   });
 
-  const [showPassword, setShowPassword] = React.useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -164,27 +164,6 @@ function UserAccountPageEdit() {
                   sx={{ width: 256, height: 256 }}
                 ></Avatar>
               </Badge>
-              <Typography variant="h2" color="#6A81FC">
-                <Link
-                  to={`/user/${data.user_id}/account`}
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  Account
-                </Link>
-              </Typography>
-              <Typography variant="h2">
-                <Link
-                  to={`/user/${data.user_id}/contribution`}
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  Contribution
-                </Link>
-              </Typography>
-              <Typography variant="h2">
-                <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
-                  Connections
-                </Link>
-              </Typography>
             </Stack>
           </Grid>
           <Grid item xs={8}>

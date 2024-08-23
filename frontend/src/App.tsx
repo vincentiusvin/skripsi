@@ -20,9 +20,8 @@ import ProjectDetailPage from "./routes/Projects/ProjectDetailPage/ProjectDetail
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectsEditPage from "./routes/Projects/ProjectsEditPage.tsx";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
-import UserAccountPage from "./routes/User/UserAccountPage";
-import UserAccountPageEdit from "./routes/User/UserAccountPageEdit";
-import UserFriendPage from "./routes/User/UserFriendPage.tsx";
+import UserAccountPageEdit from "./routes/User/UserEditPage.tsx";
+import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
 import ChatroomPage from "./routes/UserChatroom";
 
 const theme = createTheme({
@@ -67,7 +66,6 @@ function App() {
                 <Route path={"/projects/:project_id/edit"} component={ProjectsEditPage} />
                 <Route path={"/users/:id"} component={UserAccountPage} />
                 <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
-                <Route path={"/friends"} component={UserFriendPage} />
               </Switch>
             </Box>
           </LocalizationProvider>

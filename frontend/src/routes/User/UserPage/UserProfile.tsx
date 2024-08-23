@@ -1,22 +1,21 @@
-import { ArrowBack, Cancel, Check, Email, People, School } from "@mui/icons-material";
+import { Cancel, Check, Email, People, School } from "@mui/icons-material";
 import { Avatar, Button, Grid, Paper, Skeleton, Stack, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import { Link, useLocation, useParams } from "wouter";
-import { APIError } from "../../helpers/fetch";
+import { useLocation } from "wouter";
+import { APIError } from "../../../helpers/fetch.ts";
 import {
   useFriendsDelete,
   useFriendsDetailGet,
   useFriendsPut,
-} from "../../queries/friend_hooks.ts";
-import { useSessionGet } from "../../queries/sesssion_hooks";
-import { useUsersDetailGet } from "../../queries/user_hooks";
+} from "../../../queries/friend_hooks.ts";
+import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
 
-function UserAccountPage() {
-  const { id } = useParams();
+function UserProfile(props: { viewed_id: number; our_id?: number }) {
+  const { viewed_id, our_id } = props;
+
   const [, setLocation] = useLocation();
-
   const { data: userDetail } = useUsersDetailGet({
-    user_id: Number(id),
+    user_id: viewed_id,
     retry: (failureCount, error) => {
       if ((error instanceof APIError && error.status == 404) || failureCount > 3) {
         setLocation("/");
@@ -26,59 +25,18 @@ function UserAccountPage() {
     },
   });
 
-  const { data: userLog } = useSessionGet();
-  const isViewingSelf =
-    userDetail && userLog && userLog.logged && userLog.user_id === userDetail.user_id;
-
   if (!userDetail) {
     return <Skeleton />;
   }
+
   return (
-    <Grid container rowGap={2} mt={2}>
-      <Grid item xs={2}>
-        <Link to={"/"}>
-          <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
-            Go Back
-          </Button>
-        </Link>
-      </Grid>
-      <Grid item xs={8}></Grid>
-      <Grid item xs={2}>
-        {isViewingSelf && (
-          <Link to={`${id}/edit`}>
-            <Button variant="contained" fullWidth>
-              Edit Profile
-            </Button>
-          </Link>
-        )}
-      </Grid>
+    <Grid container>
       <Grid item xs={4}>
         <Stack alignItems={"center"}>
           <Avatar src={userDetail.user_image ?? ""} sx={{ width: 256, height: 256 }}></Avatar>
-          {userLog && userLog.logged ? (
-            <AddFriend our_user_id={userLog.user_id} viewed_user_id={userDetail.user_id} />
+          {our_id != undefined ? (
+            <AddFriend our_user_id={our_id} viewed_user_id={userDetail.user_id} />
           ) : null}
-          <Typography variant="h2" color="#6A81FC">
-            <Link
-              to={`/user/${userDetail.user_id}/account`}
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              Account
-            </Link>
-          </Typography>
-          <Typography variant="h2">
-            <Link
-              to={`/user/${userDetail.user_id}/contribution`}
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              Contribution
-            </Link>
-          </Typography>
-          <Typography variant="h2">
-            <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
-              Connections
-            </Link>
-          </Typography>
         </Stack>
       </Grid>
       <Grid item xs={8}>
@@ -247,4 +205,4 @@ function AddFriend(props: { viewed_user_id: number; our_user_id: number }) {
   }
 }
 
-export default UserAccountPage;
+export default UserProfile;
