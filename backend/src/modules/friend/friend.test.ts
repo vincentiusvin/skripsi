@@ -174,7 +174,7 @@ describe("friend api", () => {
 });
 
 function putFriend(from_id: number, to_id: number, status: "Accepted" | "Sent", cookie: string) {
-  return new APIContext("UserDetailFriendDetailPut").fetch(
+  return new APIContext("UsersDetailFriendsDetailPut").fetch(
     `/api/users/${from_id}/friends/${to_id}`,
     {
       headers: {
@@ -190,7 +190,7 @@ function putFriend(from_id: number, to_id: number, status: "Accepted" | "Sent", 
 }
 
 function deleteFriend(from_id: number, to_id: number, cookie: string) {
-  return new APIContext("UserDetailFriendDetailDelete").fetch(
+  return new APIContext("UsersDetailFriendsDetailDelete").fetch(
     `/api/users/${from_id}/friends/${to_id}`,
     {
       headers: {
@@ -203,7 +203,7 @@ function deleteFriend(from_id: number, to_id: number, cookie: string) {
 }
 
 function getFriend(from_id: number, to_id: number, cookie: string) {
-  return new APIContext("UserDetailFriendDetailGet").fetch(
+  return new APIContext("UsersDetailFriendsDetailGet").fetch(
     `/api/users/${from_id}/friends/${to_id}`,
     {
       headers: {
@@ -216,7 +216,7 @@ function getFriend(from_id: number, to_id: number, cookie: string) {
 }
 
 function getAllFriends(user_id: number, cookie: string) {
-  return new APIContext("UserDetailFriendsGet").fetch(`/api/users/${user_id}/friends`, {
+  return new APIContext("UsersDetailFriendsGet").fetch(`/api/users/${user_id}/friends`, {
     headers: {
       cookie: cookie,
     },

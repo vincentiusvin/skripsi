@@ -14,7 +14,7 @@ export class FriendController extends Controller {
 
   init() {
     return {
-      UserDetailFriendDetailPut: new Route({
+      UsersDetailFriendsDetailPut: new Route({
         handler: this.putUserDetailFriendDetail,
         method: "put",
         path: "/api/users/:from_id/friends/:to_id",
@@ -31,7 +31,7 @@ export class FriendController extends Controller {
           }),
         },
       }),
-      UserDetailFriendDetailGet: new Route({
+      UsersDetailFriendsDetailGet: new Route({
         handler: this.getUserDetailFriendDetail,
         method: "get",
         path: "/api/users/:from_id/friends/:to_id",
@@ -48,7 +48,7 @@ export class FriendController extends Controller {
           }),
         },
       }),
-      UserDetailFriendDetailDelete: new Route({
+      UsersDetailFriendsDetailDelete: new Route({
         handler: this.deleteUserDetailFriendDetail,
         method: "delete",
         path: "/api/users/:from_id/friends/:to_id",
@@ -65,7 +65,7 @@ export class FriendController extends Controller {
           }),
         },
       }),
-      UserDetailFriendsGet: new Route({
+      UsersDetailFriendsGet: new Route({
         handler: this.getUserDetailFriend,
         method: "get",
         path: "/api/users/:user_id/friends",
