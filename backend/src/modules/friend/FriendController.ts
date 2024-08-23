@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
+import { AuthError } from "../../helpers/error.js";
 import { RH } from "../../helpers/types.js";
 import { FriendStatus } from "./FriendMisc.js";
 import { FriendService } from "./FriendService.js";
@@ -94,6 +95,10 @@ export class FriendController extends Controller {
     const to_user_id = Number(req.params.to_id);
     const { status } = req.body;
 
+    if (from_user_id != req.session.user_id) {
+      throw new AuthError("Anda tidak memiliki akses untuk mengubah koneksi orang lain!");
+    }
+
     if (status === "Accepted") {
       await this.friend_service.acceptFriend(from_user_id, to_user_id);
     } else if (status === "Sent") {
@@ -125,6 +130,10 @@ export class FriendController extends Controller {
   }> = async (req, res) => {
     const from_user_id = Number(req.params.from_id);
     const to_user_id = Number(req.params.to_id);
+
+    if (from_user_id != req.session.user_id) {
+      throw new AuthError("Anda tidak memiliki akses untuk mengubah koneksi orang lain!");
+    }
 
     await this.friend_service.deleteFriend(from_user_id, to_user_id);
     res.status(200).json({ msg: "Teman berhasil dihapus!" });
