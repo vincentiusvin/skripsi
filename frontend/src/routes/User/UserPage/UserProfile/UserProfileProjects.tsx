@@ -1,8 +1,8 @@
 import { Work } from "@mui/icons-material";
 import { Button, Dialog, DialogContent, DialogTitle, Paper, Skeleton, Stack } from "@mui/material";
 import { useState } from "react";
-import ProjectCard from "../../../components/ProjectCard.tsx";
-import { useProjectsGet } from "../../../queries/project_hooks.ts";
+import ProjectCard from "../../../../components/ProjectCard.tsx";
+import { useProjectsGet } from "../../../../queries/project_hooks.ts";
 
 function UserProjectsList(props: { user_id: number }) {
   const { user_id } = props;

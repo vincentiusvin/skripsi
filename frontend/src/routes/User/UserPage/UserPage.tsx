@@ -5,7 +5,8 @@ import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../../../helpers/fetch.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
-import UserProfile from "./UserProfile.tsx";
+import UserFriends from "./UserFriends.tsx";
+import UserProfile from "./UserProfile/UserProfile.tsx";
 
 function UserAccountPage() {
   const { id } = useParams();
@@ -27,7 +28,7 @@ function UserAccountPage() {
   const isLogged = userDetail && userLog && userLog.logged;
   const isViewingSelf = isLogged && userLog.user_id === userDetail.user_id;
 
-  const [activeTab, setActiveTab] = useState<"acc" | "contrib">("acc");
+  const [activeTab, setActiveTab] = useState<"acc" | "conn" | "contrib">("acc");
 
   if (!userDetail) {
     return <Skeleton />;
@@ -48,6 +49,7 @@ function UserAccountPage() {
           }}
         >
           <Tab label={"Profil"} value="acc" />
+          {isViewingSelf ? <Tab label={"Teman"} value="conn" /> : null}
           <Tab label={"Kontribusi"} value="contrib" />
         </Tabs>
       </Grid>
@@ -64,6 +66,7 @@ function UserAccountPage() {
         {activeTab === "acc" ? (
           <UserProfile viewed_id={viewed_id} our_id={isLogged ? userLog.user_id : undefined} />
         ) : null}
+        {activeTab === "conn" && isViewingSelf ? <UserFriends user_id={viewed_id} /> : null}
       </Grid>
     </Grid>
   );
