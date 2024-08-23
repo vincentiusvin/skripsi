@@ -1,18 +1,18 @@
-import { Work } from "@mui/icons-material";
+import { CorporateFare } from "@mui/icons-material";
 import { Button, Dialog, DialogContent, DialogTitle, Paper, Skeleton, Stack } from "@mui/material";
 import { useState } from "react";
-import ProjectCard from "../../../components/ProjectCard.tsx";
-import { useProjectsGet } from "../../../queries/project_hooks.ts";
+import OrgCard from "../../../components/OrgCard.tsx";
+import { useOrgsGet } from "../../../queries/org_hooks.ts";
 
-function UserProjectsList(props: { user_id: number }) {
+function UserOrgsList(props: { user_id: number }) {
   const { user_id } = props;
-  const { data: projects } = useProjectsGet({
+  const { data: orgs } = useOrgsGet({
     user_id,
   });
 
   const [modalOpen, setModalOpen] = useState(false);
 
-  if (!projects) {
+  if (!orgs) {
     return <Skeleton />;
   }
 
@@ -23,22 +23,22 @@ function UserProjectsList(props: { user_id: number }) {
           setModalOpen(true);
         }}
         variant="outlined"
-        startIcon={<Work />}
+        startIcon={<CorporateFare />}
       >
-        Terlibat dalam {projects.length} projek
+        Terlibat dalam {orgs.length} organisasi
       </Button>
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
         <DialogTitle>Daftar Organisasi</DialogTitle>
         <DialogContent>
           <Stack gap={2}>
-            {projects.map((x) => (
+            {orgs.map((x) => (
               <Paper
                 key={x.org_id}
                 sx={{
                   p: 2,
                 }}
               >
-                <ProjectCard project_id={x.project_id} />
+                <OrgCard org_id={x.org_id} />
               </Paper>
             ))}
           </Stack>
@@ -48,4 +48,4 @@ function UserProjectsList(props: { user_id: number }) {
   );
 }
 
-export default UserProjectsList;
+export default UserOrgsList;
