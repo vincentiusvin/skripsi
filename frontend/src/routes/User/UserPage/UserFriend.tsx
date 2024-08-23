@@ -23,7 +23,7 @@ function UserFriendList(props: { user_id: number }) {
         variant="outlined"
         startIcon={<People />}
       >
-        {friends.length} teman
+        {friends.filter((x) => x.status === "Accepted").length} teman
       </Button>
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
         <DialogTitle>Daftar Teman</DialogTitle>

@@ -41,7 +41,9 @@ export function useFriendsPut(opts: { user_id: number; with_id: number; onSucces
     ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: friendKeys.list(user_id) });
+      queryClient.invalidateQueries({ queryKey: friendKeys.list(with_id) });
       queryClient.invalidateQueries({ queryKey: friendKeys.detail(user_id, with_id) });
+      queryClient.invalidateQueries({ queryKey: friendKeys.detail(with_id, user_id) });
       if (onSuccess) {
         onSuccess();
       }
@@ -65,7 +67,9 @@ export function useFriendsDelete(opts: {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: friendKeys.list(user_id) });
+      queryClient.invalidateQueries({ queryKey: friendKeys.list(with_id) });
       queryClient.invalidateQueries({ queryKey: friendKeys.detail(user_id, with_id) });
+      queryClient.invalidateQueries({ queryKey: friendKeys.detail(with_id, user_id) });
       if (onSuccess) {
         onSuccess();
       }
