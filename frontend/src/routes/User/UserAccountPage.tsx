@@ -1,5 +1,5 @@
-import { ArrowBack } from "@mui/icons-material";
-import { Avatar, Box, Button, Grid, Paper, TextField, Typography } from "@mui/material";
+import { ArrowBack, Email, School } from "@mui/icons-material";
+import { Avatar, Button, Grid, Paper, Skeleton, Stack, Typography } from "@mui/material";
 import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../../helpers/fetch";
 import { useSessionGet } from "../../queries/sesssion_hooks";
@@ -22,154 +22,113 @@ function UserAccountPage() {
 
   const { data: userLog } = useSessionGet();
   const isViewingSelf =
-    userLog && userDetail && userLog.logged && userLog.user_id == userDetail.user_id;
-  if (userDetail) {
-    return (
-      <Grid container mt={2}>
-        <Grid item xs={1}>
-          <Link to={"/"}>
-            <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
-              Go Back
+    userDetail && userLog && userLog.logged && userLog.user_id === userDetail.user_id;
+
+  if (!userDetail) {
+    return <Skeleton />;
+  }
+  return (
+    <Grid container rowGap={2} mt={2}>
+      <Grid item xs={2}>
+        <Link to={"/"}>
+          <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
+            Go Back
+          </Button>
+        </Link>
+      </Grid>
+      <Grid item xs={8}></Grid>
+      <Grid item xs={2}>
+        {isViewingSelf && (
+          <Link to={`${id}/edit`}>
+            <Button variant="contained" fullWidth>
+              Edit Profile
             </Button>
           </Link>
-        </Grid>
-        <Grid item xs paddingTop="10vw">
-          <Grid item xs={2} md={1}>
-            <Avatar
-              src={userDetail.user_image ?? ""}
-              sx={{ width: "20vw", height: "20vw" }}
-            ></Avatar>
-          </Grid>
-          {isViewingSelf && (
-            <Link to={`${id}/edit`}>
-              <Button>Edit Profile</Button>
-            </Link>
-          )}
-          <Grid item xs>
-            <Typography variant="h2" color="#6A81FC">
-              <Link
-                to={`/user/${userDetail.user_id}/account`}
-                style={{ textDecoration: "none", color: "inherit" }}
-              >
-                Account
-              </Link>
-            </Typography>
-            <Typography variant="h2">
-              <Link
-                to={`/user/${userDetail.user_id}/contribution`}
-                style={{ textDecoration: "none", color: "inherit" }}
-              >
-                Contribution
-              </Link>
-            </Typography>
-            <Typography variant="h2">
-              <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
-                Connections
-              </Link>
-            </Typography>
-          </Grid>
-        </Grid>
-        <Grid item paddingTop="10vw" paddingRight="20vw">
-          <Paper
-            sx={{
-              p: 2,
-              margin: "auto",
-              maxWidth: 500,
-              flexGrow: 1,
-              backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
-            }}
-          >
-            <Grid item>
-              <Box display="flex" alignItems="center">
-                <Typography variant="button">
-                  <Box display="inline" lineHeight={1} fontSize="1.5vw" marginRight="1vw">
-                    Username:
-                  </Box>
-                </Typography>
-                <TextField
-                  id="standard-read-only-input"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  variant="standard"
-                  defaultValue={userDetail.user_name}
-                />
-              </Box>
-            </Grid>
-            <Grid item>
-              <Box display="flex" alignItems="center">
-                <Typography variant="button">
-                  <Box display="inline" lineHeight={1} fontSize="1.5vw" marginRight="1vw">
-                    Email:
-                  </Box>
-                </Typography>
-                <Box display="flex" justifyContent="flex-end">
-                  <TextField
-                    id="standard-read-only-input"
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                    variant="standard"
-                    defaultValue={userDetail.user_email}
-                  />
-                </Box>
-              </Box>
-            </Grid>
-            <Grid item>
-              <Box display="flex" alignItems="center">
-                <Typography variant="button">
-                  <Box display="inline" lineHeight={1} fontSize="1.5vw" marginRight="1vw">
-                    Education Level:
-                  </Box>
-                </Typography>
-                <TextField
-                  id="standard-read-only-input"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  variant="standard"
-                  defaultValue={userDetail.user_education_level}
-                />
-              </Box>
-            </Grid>
-            <Grid item>
-              <Box display="flex" alignItems="center">
-                <Typography variant="button">
-                  <Box display="inline" lineHeight={1} fontSize="1.5vw" marginRight="1vw">
-                    School:
-                  </Box>
-                </Typography>
-                <TextField
-                  id="standard-read-only-input"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  variant="standard"
-                  defaultValue={userDetail.user_school}
-                />
-              </Box>
-            </Grid>
-          </Paper>
-
-          <Paper
-            sx={{
-              p: 2,
-              margin: "auto",
-              maxWidth: 500,
-              flexGrow: 1,
-              backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
-              marginTop: "2vw",
-            }}
-          >
-            <Grid item>
-              <Typography variant="button">About Me</Typography>
-              <br />
-              <Typography>{userDetail.user_about_me}</Typography>
-            </Grid>
-          </Paper>
-        </Grid>
+        )}
       </Grid>
-    );
-  }
+      <Grid item xs={6}>
+        <Stack alignItems={"center"}>
+          <Avatar src={userDetail.user_image ?? ""} sx={{ width: 256, height: 256 }}></Avatar>
+          <Typography variant="h2" color="#6A81FC">
+            <Link
+              to={`/user/${userDetail.user_id}/account`}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              Account
+            </Link>
+          </Typography>
+          <Typography variant="h2">
+            <Link
+              to={`/user/${userDetail.user_id}/contribution`}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              Contribution
+            </Link>
+          </Typography>
+          <Typography variant="h2">
+            <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
+              Connections
+            </Link>
+          </Typography>
+        </Stack>
+      </Grid>
+      <Grid item xs={6}>
+        <Stack gap={4}>
+          <Paper
+            sx={{
+              px: 4,
+              py: 2,
+              backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
+            }}
+          >
+            <Typography variant="h4" fontWeight={"bold"}>
+              {userDetail.user_name}
+            </Typography>
+            <Stack direction="row" gap={2}>
+              <Email />
+              {
+                <Typography variant="body1">
+                  {userDetail.user_email ? userDetail.user_email : "Belum ada informasi"}
+                </Typography>
+              }
+            </Stack>
+            <Stack direction="row" gap={2}>
+              <School />
+              <Typography variant="body1">
+                {userDetail.user_education_level ? (
+                  <Typography component={"span"} sx={{ textDecoration: "underline" }}>
+                    {userDetail.user_education_level}
+                  </Typography>
+                ) : null}
+                {userDetail.user_education_level && userDetail.user_school ? " di " : null}
+                {userDetail.user_school ? (
+                  <Typography component={"span"} sx={{ textDecoration: "underline" }}>
+                    {userDetail.user_school}
+                  </Typography>
+                ) : null}
+                {!userDetail.user_education_level && !userDetail.user_school
+                  ? "Belum ada informasi"
+                  : null}
+              </Typography>
+            </Stack>
+          </Paper>
+          <Paper
+            sx={{
+              px: 4,
+              py: 2,
+              backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
+            }}
+          >
+            <Typography variant="h6" fontWeight={"bold"} textAlign={"center"}>
+              Tentang
+            </Typography>
+            <Typography>
+              {userDetail.user_about_me ? userDetail.user_about_me : "Belum ada informasi"}
+            </Typography>
+          </Paper>
+        </Stack>
+      </Grid>
+    </Grid>
+  );
 }
 export default UserAccountPage;
