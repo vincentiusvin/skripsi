@@ -1,38 +1,84 @@
-import { Avatar, Skeleton, Stack, Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 import { API } from "../../../../../backend/src/routes.ts";
-import { useProjectsDetailMembersGet } from "../../../queries/project_hooks.ts";
-import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
+import UserCard from "../../../components/UserCard.tsx";
+import {
+  useProjectsDetailMembersDelete,
+  useProjectsDetailMembersGet,
+  useProjectsDetailMembersPut,
+} from "../../../queries/project_hooks.ts";
 
 export type MemberRoles = API["ProjectsDetailMembersGet"]["ResBody"]["role"] | "Not Involved";
 
-function ProjectMember(props: { user_id: number; project_id: number }) {
-  const { user_id, project_id } = props;
-  const { data: user_data } = useUsersDetailGet({
-    user_id,
-  });
+function ProjectMember(props: {
+  user_id: number;
+  project_id: number;
+  deleteOption?: {
+    text: string;
+  };
+  putOption?: {
+    text: string;
+    role: MemberRoles;
+  };
+}) {
+  const { user_id, project_id, putOption, deleteOption } = props;
   const { data: member_data } = useProjectsDetailMembersGet({
     user_id,
     project_id,
   });
+  const { mutate: putMember } = useProjectsDetailMembersPut({
+    project_id: project_id,
+    user_id: user_id,
+    onSuccess: (x) => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>User berhasil ditambahkan sebagai {x.role}!</Typography>,
+      });
+    },
+  });
 
-  if (!user_data || !member_data) {
-    return (
-      <Stack direction={"row"} alignItems={"center"} gap={2}>
-        <Avatar src={undefined}></Avatar>
-        <Skeleton width={"100%"}></Skeleton>
-      </Stack>
-    );
-  }
+  const { mutate: deleteMember } = useProjectsDetailMembersDelete({
+    project_id: project_id,
+    user_id: user_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>User berhasil dihapus!</Typography>,
+      });
+    },
+  });
+
   return (
-    <Stack direction={"row"} alignItems={"center"} gap={2}>
-      <Avatar src={user_data.user_image ?? undefined}></Avatar>
-      <Stack>
-        <Typography>{user_data.user_name}</Typography>
-        <Typography variant="body2" color={"GrayText"}>
-          {member_data.role}
-        </Typography>
-      </Stack>
-    </Stack>
+    <UserCard
+      user_id={user_id}
+      subtitle={member_data?.role}
+      sidebar={
+        <>
+          {putOption && (
+            <Button
+              variant="outlined"
+              onClick={() => {
+                putMember({
+                  role: putOption.role,
+                });
+              }}
+            >
+              {putOption.text}
+            </Button>
+          )}
+          {deleteOption && (
+            <Button
+              variant="outlined"
+              onClick={() => {
+                deleteMember();
+              }}
+            >
+              {deleteOption.text}
+            </Button>
+          )}
+        </>
+      }
+    />
   );
 }
 
