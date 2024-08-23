@@ -9,6 +9,7 @@ import {
   useFriendsPut,
 } from "../../../queries/friend_hooks.ts";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
+import UserFriendList from "./UserFriend.tsx";
 
 function UserProfile(props: { viewed_id: number; our_id?: number }) {
   const { viewed_id, our_id } = props;
@@ -32,11 +33,12 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
   return (
     <Grid container>
       <Grid item xs={4}>
-        <Stack alignItems={"center"}>
+        <Stack alignItems={"center"} spacing={4}>
           <Avatar src={userDetail.user_image ?? ""} sx={{ width: 256, height: 256 }}></Avatar>
           {our_id != undefined ? (
             <AddFriend our_user_id={our_id} viewed_user_id={userDetail.user_id} />
           ) : null}
+          <UserFriendList user_id={viewed_id} />
         </Stack>
       </Grid>
       <Grid item xs={8}>
@@ -148,7 +150,7 @@ function AddFriend(props: { viewed_user_id: number; our_user_id: number }) {
     );
   } else if (friend_data.status === "Sent") {
     return (
-      <>
+      <Stack>
         <Typography>Permintaan teman dikirim</Typography>
         <Button
           startIcon={<Cancel />}
@@ -159,11 +161,11 @@ function AddFriend(props: { viewed_user_id: number; our_user_id: number }) {
         >
           Batalkan
         </Button>
-      </>
+      </Stack>
     );
   } else if (friend_data.status === "Pending") {
     return (
-      <>
+      <Stack>
         <Typography>Permintaan teman diterima</Typography>
         <Button
           startIcon={<Check />}
@@ -185,11 +187,11 @@ function AddFriend(props: { viewed_user_id: number; our_user_id: number }) {
         >
           Tolak
         </Button>
-      </>
+      </Stack>
     );
   } else if (friend_data.status === "Accepted") {
     return (
-      <>
+      <Stack>
         <Typography>Pengguna ini adalah teman anda</Typography>
         <Button
           startIcon={<Cancel />}
@@ -200,7 +202,7 @@ function AddFriend(props: { viewed_user_id: number; our_user_id: number }) {
         >
           Hapus
         </Button>
-      </>
+      </Stack>
     );
   }
 }

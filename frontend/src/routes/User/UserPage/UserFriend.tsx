@@ -1,4 +1,6 @@
-import { Grid, Paper, Skeleton } from "@mui/material";
+import { People } from "@mui/icons-material";
+import { Button, Dialog, DialogContent, DialogTitle, Paper, Skeleton, Stack } from "@mui/material";
+import { useState } from "react";
 import { Link } from "wouter";
 import UserCard from "../../../components/UserCard.tsx";
 import { useFriendsGet } from "../../../queries/friend_hooks.ts";
@@ -7,24 +9,44 @@ function UserFriendList(props: { user_id: number }) {
   const { user_id } = props;
   const { data: friends } = useFriendsGet({ user_id });
 
+  const [modalOpen, setModalOpen] = useState(false);
+
   if (!friends) {
     return <Skeleton />;
   }
 
   return (
-    <Grid container spacing={4}>
-      {friends
-        .filter((x) => x.status === "Accepted")
-        .map((x) => (
-          <Grid item xs={4} key={x.user_id}>
-            <Link to={`/users/${x.user_id}`}>
-              <Paper>
-                <UserCard user_id={user_id} />
-              </Paper>
-            </Link>
-          </Grid>
-        ))}
-    </Grid>
+    <>
+      <Button
+        onClick={() => {
+          setModalOpen(true);
+        }}
+        variant="outlined"
+        startIcon={<People />}
+      >
+        {friends.length} teman
+      </Button>
+      <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
+        <DialogTitle>Daftar Teman</DialogTitle>
+        <DialogContent>
+          <Stack gap={2}>
+            {friends
+              .filter((x) => x.status === "Accepted")
+              .map((x) => (
+                <Link to={`/users/${x.user_id}`} key={x.user_id}>
+                  <Paper
+                    sx={{
+                      p: 2,
+                    }}
+                  >
+                    <UserCard user_id={x.user_id} />
+                  </Paper>
+                </Link>
+              ))}
+          </Stack>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
