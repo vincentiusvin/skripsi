@@ -1,11 +1,10 @@
-import { ArrowBack, Edit } from "@mui/icons-material";
+import { Edit } from "@mui/icons-material";
 import { Button, Grid, Skeleton, Tab, Tabs } from "@mui/material";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../../../helpers/fetch.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
-import UserFriendList from "./UserFriend.tsx";
 import UserProfile from "./UserProfile.tsx";
 
 function UserAccountPage() {
@@ -28,7 +27,7 @@ function UserAccountPage() {
   const isLogged = userDetail && userLog && userLog.logged;
   const isViewingSelf = isLogged && userLog.user_id === userDetail.user_id;
 
-  const [activeTab, setActiveTab] = useState<"acc" | "conn" | "contrib">("acc");
+  const [activeTab, setActiveTab] = useState<"acc" | "contrib">("acc");
 
   if (!userDetail) {
     return <Skeleton />;
@@ -36,13 +35,7 @@ function UserAccountPage() {
 
   return (
     <Grid container rowGap={2} mt={2}>
-      <Grid item xs={2}>
-        <Link to={"/"}>
-          <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
-            Go Back
-          </Button>
-        </Link>
-      </Grid>
+      <Grid item xs={2}></Grid>
       <Grid item xs={8}>
         <Tabs
           centered
@@ -55,7 +48,6 @@ function UserAccountPage() {
           }}
         >
           <Tab label={"Profil"} value="acc" />
-          <Tab label={"Teman"} value="conn" />
           <Tab label={"Kontribusi"} value="contrib" />
         </Tabs>
       </Grid>
@@ -63,7 +55,7 @@ function UserAccountPage() {
         {isViewingSelf && (
           <Link to={`${id}/edit`}>
             <Button variant="contained" fullWidth endIcon={<Edit />}>
-              Edit Profile
+              Edit Profil
             </Button>
           </Link>
         )}
@@ -72,7 +64,6 @@ function UserAccountPage() {
         {activeTab === "acc" ? (
           <UserProfile viewed_id={viewed_id} our_id={isLogged ? userLog.user_id : undefined} />
         ) : null}
-        {activeTab === "conn" ? <UserFriendList user_id={viewed_id} /> : null}
       </Grid>
     </Grid>
   );
