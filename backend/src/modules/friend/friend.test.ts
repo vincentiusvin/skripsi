@@ -16,6 +16,16 @@ describe("friend api", () => {
     caseData = await baseCase(app);
   });
 
+  it("shouldn't be able to duplicate friends", async () => {
+    const in_from = caseData.friend_acc_user;
+    const in_to = caseData.friend_send_user;
+
+    const cookie = await getLoginCookie(in_from.name, in_from.password);
+    const read_req = await putFriend(in_from.id, in_to.id, "Sent", cookie);
+
+    expect(read_req.status).to.eq(400);
+  });
+
   it("should be able to get friends", async () => {
     const in_user = caseData.friend_send_user;
     const expected_friend = caseData.friend_acc_user;

@@ -21,8 +21,15 @@ export class FriendService {
     }
   }
 
-  addFriend(from_user_id: number, to_user_id: number) {
-    return this.repo.addFriend(from_user_id, to_user_id, "Pending");
+  async addFriend(from_user_id: number, to_user_id: number) {
+    const current_status = await this.getFriendStatus(from_user_id, to_user_id);
+    if (current_status === "None") {
+      return this.repo.addFriend(from_user_id, to_user_id, "Pending");
+    } else if (current_status === "Accepted") {
+      throw new ClientError("Anda sudah berteman dengan orang ini!");
+    } else if (current_status === "Sent" || current_status === "Pending") {
+      throw new ClientError("Anda memiliki permintaan pertemanan dengan orang ini!");
+    }
   }
 
   async acceptFriend(from_user_id: number, to_user_id: number) {
