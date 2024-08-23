@@ -28,7 +28,7 @@ function UserProjectsList(props: { user_id: number }) {
         Terlibat dalam {projects.length} projek
       </Button>
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
-        <DialogTitle>Daftar Organisasi</DialogTitle>
+        <DialogTitle>Daftar Projek</DialogTitle>
         <DialogContent>
           <Stack gap={2}>
             {projects.map((x) => (
