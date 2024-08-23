@@ -1,5 +1,6 @@
 import { Avatar, Grid, Skeleton, Stack, Typography } from "@mui/material";
 import { ReactNode } from "react";
+import { Link } from "wouter";
 import { useUsersDetailGet } from "../queries/user_hooks.ts";
 
 function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: ReactNode }) {
@@ -23,11 +24,17 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
     return (
       <Grid container width={280} spacing={4} alignItems={"center"}>
         <Grid item xs={4} lg={2}>
-          <Avatar src={user_data.user_image ?? undefined}></Avatar>
+          <Link to={`/users/${user_id}`}>
+            <Avatar src={user_data.user_image ?? undefined}></Avatar>
+          </Link>
         </Grid>
         <Grid item xs={8} lg={4}>
           <Stack>
-            <Typography>{user_data.user_name}</Typography>
+            <Link to={`/users/${user_id}`}>
+              <Typography variant="h6" color="white">
+                {user_data.user_name}
+              </Typography>
+            </Link>
             <Typography variant="body2" color={"GrayText"}>
               {subtitle}
             </Typography>
@@ -42,11 +49,17 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
     return (
       <Grid container width={140} spacing={4} alignItems={"center"}>
         <Grid item xs={4}>
-          <Avatar src={user_data.user_image ?? undefined}></Avatar>
+          <Link to={`/users/${user_id}`}>
+            <Avatar src={user_data.user_image ?? undefined}></Avatar>
+          </Link>
         </Grid>
         <Grid item xs={8}>
           <Stack>
-            <Typography>{user_data.user_name}</Typography>
+            <Link to={`/users/${user_id}`}>
+              <Typography variant="h6" color="white">
+                {user_data.user_name}
+              </Typography>
+            </Link>
             <Typography variant="body2" color={"GrayText"}>
               {subtitle}
             </Typography>

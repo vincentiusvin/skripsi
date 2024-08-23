@@ -1,7 +1,6 @@
 import { People } from "@mui/icons-material";
 import { Button, Dialog, DialogContent, DialogTitle, Paper, Skeleton, Stack } from "@mui/material";
 import { useState } from "react";
-import { Link } from "wouter";
 import UserCard from "../../../components/UserCard.tsx";
 import { useFriendsGet } from "../../../queries/friend_hooks.ts";
 
@@ -33,15 +32,14 @@ function UserFriendList(props: { user_id: number }) {
             {friends
               .filter((x) => x.status === "Accepted")
               .map((x) => (
-                <Link to={`/users/${x.user_id}`} key={x.user_id}>
-                  <Paper
-                    sx={{
-                      p: 2,
-                    }}
-                  >
-                    <UserCard user_id={x.user_id} />
-                  </Paper>
-                </Link>
+                <Paper
+                  key={x.user_id}
+                  sx={{
+                    p: 2,
+                  }}
+                >
+                  <UserCard user_id={x.user_id} />
+                </Paper>
               ))}
           </Stack>
         </DialogContent>
