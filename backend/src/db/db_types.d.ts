@@ -55,6 +55,13 @@ export interface MsChatrooms {
   project_id: number | null;
 }
 
+export interface MsFriends {
+  created_at: Generated<Timestamp>;
+  from_user_id: number;
+  status: string;
+  to_user_id: number;
+}
+
 export interface MsMessages {
   chatroom_id: number;
   created_at: Generated<Timestamp>;
@@ -144,6 +151,7 @@ export interface DB {
   ms_category_orgs: MsCategoryOrgs;
   ms_category_projects: MsCategoryProjects;
   ms_chatrooms: MsChatrooms;
+  ms_friends: MsFriends;
   ms_messages: MsMessages;
   ms_orgs: MsOrgs;
   ms_projects: MsProjects;

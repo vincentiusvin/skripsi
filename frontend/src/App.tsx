@@ -20,8 +20,8 @@ import ProjectDetailPage from "./routes/Projects/ProjectDetailPage/ProjectDetail
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectsEditPage from "./routes/Projects/ProjectsEditPage.tsx";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
-import UserAccountPage from "./routes/User/UserAccountPage";
-import UserAccountPageEdit from "./routes/User/UserAccountPageEdit";
+import UserAccountPageEdit from "./routes/User/UserEditPage.tsx";
+import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
 import ChatroomPage from "./routes/UserChatroom";
 
 const theme = createTheme({

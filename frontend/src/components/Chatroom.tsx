@@ -19,7 +19,7 @@ function Message(props: {
   const { data: user_data } = useUsersDetailGet({ user_id: message.user_id });
   return (
     <Stack direction={"row"} spacing={2}>
-      <Avatar src={user_data?.user_name}></Avatar>
+      <Avatar src={user_data?.user_image ?? ""}></Avatar>
       <Box>
         <Typography fontWeight={"bold"}>{user_data?.user_name}</Typography>
         <Typography

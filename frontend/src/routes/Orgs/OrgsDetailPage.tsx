@@ -1,6 +1,5 @@
 import { Add, Delete, Edit, People } from "@mui/icons-material";
 import {
-  Avatar,
   Box,
   Button,
   Card,
@@ -19,6 +18,7 @@ import {
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
+import UserCard from "../../components/UserCard.tsx";
 import { APIError } from "../../helpers/fetch";
 import {
   useOrgDetailGet,
@@ -29,41 +29,15 @@ import {
 } from "../../queries/org_hooks";
 import { useProjectsGet } from "../../queries/project_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
-import { useUsersDetailGet, useUsersGet } from "../../queries/user_hooks.ts";
+import { useUsersGet } from "../../queries/user_hooks.ts";
 
-function UserCard(props: { org_id: number; user_id: number }) {
-  const { user_id, org_id } = props;
-  const { data: user_data } = useUsersDetailGet({
-    user_id,
-  });
+function MemberCard(props: { org_id: number; user_id: number; invite?: boolean }) {
+  const { user_id, org_id, invite } = props;
   const { data: role_data } = useOrgsDetailMembersGet({
     user_id,
     org_id,
   });
 
-  if (!user_data || !role_data) {
-    return (
-      <Stack direction={"row"} alignItems={"center"} gap={2}>
-        <Avatar src={undefined}></Avatar>
-        <Skeleton width={"100%"}></Skeleton>
-      </Stack>
-    );
-  }
-  return (
-    <Stack direction={"row"} alignItems={"center"} gap={2}>
-      <Avatar src={user_data.user_image ?? undefined}></Avatar>
-      <Stack>
-        <Typography>{user_data.user_name}</Typography>
-        <Typography variant="body2" color={"GrayText"}>
-          {role_data.role}
-        </Typography>
-      </Stack>
-    </Stack>
-  );
-}
-
-function InviteUser(props: { org_id: number; user_id: number }) {
-  const { user_id, org_id } = props;
   const { mutate: putMember } = useOrgsDetailMembersPut({
     org_id: org_id,
     user_id: user_id,
@@ -75,20 +49,27 @@ function InviteUser(props: { org_id: number; user_id: number }) {
     },
   });
 
-  return (
-    <Stack direction={"row"} justifyContent={"space-between"} spacing={2}>
-      <UserCard org_id={org_id} user_id={user_id} />
-      <Button
-        onClick={() => {
-          putMember({
-            role: "Invited",
-          });
-        }}
-      >
-        Add
-      </Button>
-    </Stack>
-  );
+  if (!invite) {
+    return <UserCard user_id={user_id} subtitle={role_data?.role} />;
+  } else {
+    return (
+      <UserCard
+        user_id={user_id}
+        subtitle={role_data?.role}
+        sidebar={
+          <Button
+            onClick={() => {
+              putMember({
+                role: "Invited",
+              });
+            }}
+          >
+            Add
+          </Button>
+        }
+      />
+    );
+  }
 }
 
 function InviteUserDialog(props: { org_id: number }) {
@@ -103,7 +84,7 @@ function InviteUserDialog(props: { org_id: number }) {
           {users ? (
             <Stack gap={2}>
               {users.map((x) => (
-                <InviteUser org_id={org_id} user_id={x.user_id} key={x.user_id} />
+                <MemberCard org_id={org_id} user_id={x.user_id} key={x.user_id} invite />
               ))}
             </Stack>
           ) : (
@@ -244,9 +225,6 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
           sx={{
             p: 2,
             margin: "auto",
-            maxWidth: "90vw",
-            flexGrow: 1,
-            alignItems: "center",
             backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
           }}
         >
@@ -265,11 +243,11 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
           <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
             Our Members
           </Typography>
-          <Stack direction={"row"} justifyContent={"center"} spacing={4}>
+          <Stack direction={"row"} justifyContent={"center"}>
             {data.org_users
               .filter((x) => x.user_role === "Admin")
               .map((x) => (
-                <UserCard user_id={x.user_id} org_id={org_id} key={x.user_id} />
+                <MemberCard user_id={x.user_id} org_id={org_id} key={x.user_id} />
               ))}
           </Stack>
           <Typography textAlign={"center"} variant="h4" fontWeight={"bold"}>

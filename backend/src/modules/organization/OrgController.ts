@@ -187,8 +187,14 @@ export class OrgController extends Controller {
         user_role: string;
       }[];
     }[];
+    ReqQuery: {
+      user_id?: string;
+    };
   }> = async (req, res) => {
-    const result = await this.org_service.getOrgs();
+    const { user_id } = req.query;
+    const result = await this.org_service.getOrgs({
+      user_id: user_id != undefined ? Number(user_id) : undefined,
+    });
     res.status(200).json(result);
   };
 

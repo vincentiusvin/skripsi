@@ -28,8 +28,10 @@ export class OrgRepository {
     this.db = db;
   }
 
-  async getOrgs() {
-    return await this.db
+  getOrgs(filter?: { user_id?: number }) {
+    const { user_id } = filter ?? {};
+
+    let query = this.db
       .selectFrom("ms_orgs")
       .select((eb) => [
         "ms_orgs.id as org_id",
@@ -40,8 +42,22 @@ export class OrgRepository {
         "ms_orgs.image as org_image",
         orgWithCategories(eb).as("org_categories"),
         orgWithUsers(eb).as("org_users"),
-      ])
-      .execute();
+      ]);
+
+    if (user_id) {
+      query = query.where((eb) =>
+        eb(
+          "ms_orgs.id",
+          "in",
+          eb
+            .selectFrom("orgs_users")
+            .select("orgs_users.org_id")
+            .where("orgs_users.user_id", "=", user_id),
+        ),
+      );
+    }
+
+    return query.execute();
   }
 
   async getOrgsByID(id: number) {

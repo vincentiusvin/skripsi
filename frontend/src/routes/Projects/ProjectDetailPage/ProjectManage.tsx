@@ -4,89 +4,14 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
-  Paper,
   Skeleton,
   Stack,
   Typography,
 } from "@mui/material";
-import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import {
-  useProjectsDetailGet,
-  useProjectsDetailMembersDelete,
-  useProjectsDetailMembersPut,
-} from "../../../queries/project_hooks.ts";
+import { useProjectsDetailGet } from "../../../queries/project_hooks.ts";
 import { useUsersGet } from "../../../queries/user_hooks.ts";
-import ProjectMember, { MemberRoles } from "./ProjectMemberComponent.tsx";
-
-function MemberManage(props: {
-  project_id: number;
-  user_id: number;
-  deleteOption?: {
-    text: string;
-  };
-  putOption?: {
-    text: string;
-    role: MemberRoles;
-  };
-}) {
-  const { project_id, user_id, deleteOption, putOption } = props;
-
-  const { mutate: putMember } = useProjectsDetailMembersPut({
-    project_id: project_id,
-    user_id: user_id,
-    onSuccess: (x) => {
-      enqueueSnackbar({
-        variant: "success",
-        message: <Typography>User berhasil ditambahkan sebagai {x.role}!</Typography>,
-      });
-    },
-  });
-
-  const { mutate: deleteMember } = useProjectsDetailMembersDelete({
-    project_id: project_id,
-    user_id: user_id,
-    onSuccess: () => {
-      enqueueSnackbar({
-        variant: "success",
-        message: <Typography>User berhasil dihapus!</Typography>,
-      });
-    },
-  });
-
-  return (
-    <Paper
-      sx={{
-        padding: 2,
-        borderRadius: 2,
-      }}
-    >
-      <Stack direction={"row"} spacing={2} justifyContent={"space-between"}>
-        <ProjectMember project_id={project_id} user_id={user_id} />
-        {putOption && (
-          <Button
-            onClick={() => {
-              putMember({
-                role: putOption.role,
-              });
-            }}
-          >
-            {putOption.text}
-          </Button>
-        )}
-        {deleteOption && (
-          <Button
-            onClick={() => {
-              deleteMember();
-            }}
-          >
-            {deleteOption.text}
-          </Button>
-        )}
-      </Stack>
-    </Paper>
-  );
-}
+import ProjectMember from "./ProjectMemberComponent.tsx";
 
 function InviteMembersDialog(props: { project_id: number }) {
   const { project_id } = props;
@@ -100,7 +25,7 @@ function InviteMembersDialog(props: { project_id: number }) {
           {users ? (
             <Stack gap={2}>
               {users.map((x) => (
-                <MemberManage
+                <ProjectMember
                   project_id={project_id}
                   user_id={x.user_id}
                   key={x.user_id}
@@ -147,7 +72,7 @@ function ProjectManage(props: { project_id: number }) {
         pending_members.map((x, i) => (
           <Grid key={i} container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
             <Grid item xs={3} justifyContent={"center"}>
-              <MemberManage
+              <ProjectMember
                 deleteOption={{
                   text: "Reject",
                 }}
@@ -171,7 +96,7 @@ function ProjectManage(props: { project_id: number }) {
         active_members.map((x, i) => (
           <Grid container width={"85%"} key={i} margin={"0 auto"} spacing={2} columnSpacing={4}>
             <Grid item xs={3} justifyContent={"center"}>
-              <MemberManage
+              <ProjectMember
                 project_id={project_id}
                 user_id={x.user_id}
                 deleteOption={{
@@ -191,7 +116,7 @@ function ProjectManage(props: { project_id: number }) {
         invited_members.map((x, i) => (
           <Grid container width={"85%"} key={i} margin={"0 auto"} spacing={2} columnSpacing={4}>
             <Grid item xs={3} justifyContent={"center"}>
-              <MemberManage
+              <ProjectMember
                 project_id={project_id}
                 user_id={x.user_id}
                 deleteOption={{
