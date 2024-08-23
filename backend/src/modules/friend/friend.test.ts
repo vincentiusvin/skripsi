@@ -16,6 +16,20 @@ describe("friend api", () => {
     caseData = await baseCase(app);
   });
 
+  it("should be able to get friends", async () => {
+    const in_user = caseData.friend_send_user;
+    const expected_friend = caseData.friend_acc_user;
+    const expected_status = "Accepted";
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const read_req = await getAllFriends(in_user.id, cookie);
+    const result = await read_req.json();
+
+    expect(read_req.status).eq(200);
+    const found = result.find((x) => x.user_id === expected_friend.id);
+    expect(found?.status).to.eq(expected_status);
+  });
+
   it("should be able to send friend request", async () => {
     const in_from = caseData.plain_user;
     const in_to = caseData.dev_user;
@@ -199,4 +213,14 @@ function getFriend(from_id: number, to_id: number, cookie: string) {
       method: "get",
     },
   );
+}
+
+function getAllFriends(user_id: number, cookie: string) {
+  return new APIContext("UserDetailFriendsGet").fetch(`/api/users/${user_id}/friends`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "get",
+  });
 }

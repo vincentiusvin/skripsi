@@ -65,6 +65,19 @@ export class FriendController extends Controller {
           }),
         },
       }),
+      UserDetailFriendsGet: new Route({
+        handler: this.getUserDetailFriend,
+        method: "get",
+        path: "/api/users/:user_id/friends",
+        schema: {
+          Params: z.object({
+            user_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID user pertama tidak valid!" }),
+          }),
+        },
+      }),
     };
   }
 
@@ -115,5 +128,18 @@ export class FriendController extends Controller {
 
     await this.friend_service.deleteFriend(from_user_id, to_user_id);
     res.status(200).json({ msg: "Teman berhasil dihapus!" });
+  };
+
+  getUserDetailFriend: RH<{
+    Params: { user_id: string };
+    ResBody: {
+      status: FriendStatus;
+      user_id: number;
+    }[];
+  }> = async (req, res) => {
+    const user_id = Number(req.params.user_id);
+
+    const result = await this.friend_service.getFriends(user_id);
+    res.status(200).json(result);
   };
 }

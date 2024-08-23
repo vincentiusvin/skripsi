@@ -47,7 +47,7 @@ export function transfromFriendData<T extends NeededData>(data: T, anchor_user_i
 
   return {
     ...rest,
-    user_id: sent_by_us ? from_user_id : to_user_id,
+    user_id: sent_by_us ? to_user_id : from_user_id,
     status: new_status,
   };
 }
