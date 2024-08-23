@@ -8,8 +8,8 @@ export class OrgService {
     this.org_repo = repo;
   }
 
-  async getOrgs() {
-    return await this.org_repo.getOrgs();
+  async getOrgs(filter?: { user_id?: number }) {
+    return await this.org_repo.getOrgs(filter);
   }
 
   async getOrgByID(id: number) {

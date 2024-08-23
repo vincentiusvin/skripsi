@@ -10,6 +10,7 @@ import {
 } from "../../../queries/friend_hooks.ts";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
 import UserFriendList from "./UserFriend.tsx";
+import UserProjectList from "./UserProjects.tsx";
 
 function UserProfile(props: { viewed_id: number; our_id?: number }) {
   const { viewed_id, our_id } = props;
@@ -39,6 +40,7 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
             <AddFriend our_user_id={our_id} viewed_user_id={userDetail.user_id} />
           ) : null}
           <UserFriendList user_id={viewed_id} />
+          <UserProjectList user_id={viewed_id} />
         </Stack>
       </Grid>
       <Grid item xs={8}>
