@@ -6,12 +6,8 @@ export class ContributionService {
     this.cont_repo = cont_repo;
   }
 
-  getContributionsByUserId(user_id: number) {
-    return this.cont_repo.getContributionsByUserId(user_id);
-  }
-
-  getContributionByProjectId(project_id: number) {
-    return this.cont_repo.getContributionsByProjectId(project_id);
+  getContributions(params: { user_id?: number; project_id?: number }) {
+    return this.cont_repo.getContributions(params.user_id, params.project_id);
   }
 
   getContributionDetail(contributions_id: number) {

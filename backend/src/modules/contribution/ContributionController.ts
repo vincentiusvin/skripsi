@@ -14,31 +14,9 @@ export class ContributionController extends Controller {
   init() {
     return {
       contributionGetByUserId: new Route({
-        handler: this.contributionGetByUserId,
+        handler: this.contributionGet,
         method: "get",
-        path: "/api/contribution/:id/user",
-        schema: {
-          Params: z.object({
-            id: z
-              .string()
-              .min(1)
-              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid" }),
-          }),
-        },
-      }),
-
-      contributionGetByProjectId: new Route({
-        handler: this.contributionGetByProjectId,
-        method: "get",
-        path: "/api/contribution/:id/project",
-        schema: {
-          Params: z.object({
-            id: z
-              .string()
-              .min(1)
-              .refine((arg) => !isNaN(Number(arg)), { message: "ID proyek tidak valid" }),
-          }),
-        },
+        path: "/api/contribution",
       }),
       contributionGetDetail: new Route({
         handler: this.contributionGetDetail,
@@ -81,29 +59,23 @@ export class ContributionController extends Controller {
     };
   }
 
-  private contributionGetByUserId: RH<{
-    params: { id: string };
+  private contributionGet: RH<{
     ResBody: {
       contributions_name: string;
       contributions_description: string;
       contributions_status: string;
     }[];
+    ReqQuery: {
+      user_id?: string;
+      project_id?: string;
+    };
   }> = async (req, res) => {
-    const id = Number(req.params.id);
-    const result = await this.cont_service.getContributionsByUserId(id);
-    res.status(200).json(result);
-  };
+    const { user_id, project_id } = req.query;
 
-  private contributionGetByProjectId: RH<{
-    params: { id: string };
-    ResBody: {
-      contributions_name: string;
-      contributions_description: string;
-      contributions_status: string;
-    }[];
-  }> = async (req, res) => {
-    const id = Number(req.params.id);
-    const result = await this.cont_service.getContributionsByUserId(id);
+    const result = await this.cont_service.getContributions({
+      user_id: user_id || undefined ? Number(user_id) : undefined,
+      project_id: project_id || undefined ? Number(user_id) : undefined,
+    });
     res.status(200).json(result);
   };
 

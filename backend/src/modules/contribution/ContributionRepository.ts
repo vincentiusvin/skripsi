@@ -7,8 +7,8 @@ export class ContributionRepository {
     this.db = db;
   }
 
-  async getContributionsByUserId(user_id: number) {
-    return await this.db
+  async getContributions(user_id?: number, project_id?: number) {
+    const query = this.db
       .selectFrom("ms_contributions")
       .innerJoin(
         "ms_contributions_users",
@@ -19,27 +19,16 @@ export class ContributionRepository {
         "ms_contributions.name as contributions_name",
         "ms_contributions.description as contributions_description",
         "ms_contributions.status as contributions_status",
-      ])
-      .where("ms_contributions_users.user_id", "=", user_id)
-      .execute();
-  }
+      ]);
+    if (user_id !== undefined) {
+      query.where("ms_contributions_users.user_id", "=", user_id);
+    }
 
-  async getContributionsByProjectId(project_id: number) {
-    return await this.db
-      .selectFrom("ms_contributions")
-      .innerJoin(
-        "ms_contributions_users",
-        "ms_contributions.id",
-        "ms_contributions_users.contributions_id",
-      )
-      .select([
-        "ms_contributions_users.user_id",
-        "ms_contributions.name as contributions_name",
-        "ms_contributions.description as contributions_description",
-        "ms_contributions.status as contributions_status",
-      ])
-      .where("ms_contributions.project_id", "=", project_id)
-      .execute();
+    console.log("id:" + project_id);
+    if (project_id !== undefined) {
+      query.where("ms_contributions.project_id", "=", project_id);
+    }
+    return await query.execute();
   }
 
   async getContributionsDetail(contributions_id: number) {
