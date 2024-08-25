@@ -8,11 +8,13 @@
     "test:watch": "nodemon --exec mocha",
     "test:cov": "c8 mocha",
     "start": "nodemon --exec tsx --env-file=../.env src/index.ts",
-    "start:prod": "node dist/migrate.js && node dist/index.js",
+    "start:prod": "node dist/migrate.js latest && node dist/index.js",
     "build": "tsc",
-    "db:generate-types": "kysely-codegen --env-file=../.env --out-file ./src/db/db_types.d.ts",
-    "db:migrate": "tsx --env-file=../.env src/migrate.ts",
-    "db": "npm run db:migrate && npm run db:generate-types"
+    "db:int:generate-types": "kysely-codegen --env-file=../.env --out-file ./src/db/db_types.d.ts",
+    "db:int:migrate": "tsx --env-file=../.env src/migrate.ts",
+    "db:dummy": "tsx --env-file=../.env src/dummy.ts",
+    "db:latest": "npm run db:int:migrate latest && npm run db:int:generate-types",
+    "db:init": "npm run db:int:migrate init && npm run db:int:generate-types"
   },
   "author": "",
   "license": "ISC",
