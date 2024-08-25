@@ -29,11 +29,7 @@ export class ContributionService {
     return await this.cont_repo.addContributions(obj, firstUser);
   }
 
-  async approveContributions(id: number) {
-    return await this.cont_repo.approveContributions(id);
-  }
-
-  async rejectContributions(id: number) {
-    return await this.cont_repo.rejectContributions(id);
+  async statusContributions(id: number, status: string) {
+    return await this.cont_repo.statusContributions(id, status);
   }
 }

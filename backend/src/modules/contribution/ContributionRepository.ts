@@ -105,28 +105,12 @@ export class ContributionRepository {
     });
   }
 
-  async approveContributions(id: number) {
+  async statusContributions(id: number, status: string) {
     return await this.db.transaction().execute(async (trx) => {
       const cont = await trx
         .updateTable("ms_contributions")
         .set({
-          status: "Approved",
-        })
-        .where("id", "=", id)
-        .executeTakeFirst();
-
-      if (!cont) {
-        throw new Error("Data not updated!");
-      }
-    });
-  }
-
-  async rejectContributions(id: number) {
-    return await this.db.transaction().execute(async (trx) => {
-      const cont = await trx
-        .updateTable("ms_contributions")
-        .set({
-          status: "Rejected",
+          status: status,
         })
         .where("id", "=", id)
         .executeTakeFirst();

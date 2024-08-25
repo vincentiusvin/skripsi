@@ -68,24 +68,13 @@ export class ContributionController extends Controller {
         },
       }),
 
-      contributionApprove: new Route({
-        handler: this.contributionApprove,
+      contributionStatus: new Route({
+        handler: this.contributionStatus,
         method: "put",
-        path: "/api/contribution/approve",
+        path: "/api/contribution/:id/status",
         schema: {
           ReqBody: z.object({
-            id: z.number().min(1, "Id tidak boleh kosong"),
-          }),
-        },
-      }),
-
-      contributionReject: new Route({
-        handler: this.contributionReject,
-        method: "put",
-        path: "/api/contribution/reject",
-        schema: {
-          ReqBody: z.object({
-            id: z.number().min(1, "Id tidak boleh kosong"),
+            status: z.string().min(1, "Status tidak boleh kosong"),
           }),
         },
       }),
@@ -161,31 +150,19 @@ export class ContributionController extends Controller {
     res.status(201).json(response);
   };
 
-  private contributionApprove: RH<{
-    ResBody: { status: "Approved" };
+  private contributionStatus: RH<{
+    Params: { id: string };
+    ResBody: { status: string };
     ReqBody: {
-      id: number;
+      status: string;
     };
   }> = async (req, res) => {
-    const { id } = req.body;
+    const id = Number(req.params.id);
+    const { status } = req.body;
     if (id == undefined) {
       throw new Error("Gagal Approve kontribusi");
     }
-    await this.cont_service.approveContributions(id);
-    res.status(200).json({ status: "Approved" });
-  };
-
-  private contributionReject: RH<{
-    ResBody: { status: "Rejected" };
-    ReqBody: {
-      id: number;
-    };
-  }> = async (req, res) => {
-    const { id } = req.body;
-    if (id == undefined) {
-      throw new Error("Gagal Approve kontribusi");
-    }
-    await this.cont_service.rejectContributions(id);
-    res.status(200).json({ status: "Rejected" });
+    await this.cont_service.statusContributions(id, status);
+    res.status(200).json({ status: status });
   };
 }
