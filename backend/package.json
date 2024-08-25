@@ -8,7 +8,7 @@
     "test:watch": "nodemon --exec mocha",
     "test:cov": "c8 mocha",
     "start": "nodemon --exec tsx --env-file=../.env src/index.ts",
-    "start:prod": "node dist/migrate.js && node dist/index.js",
+    "start:prod": "node dist/migrate.js latest && node dist/index.js",
     "build": "tsc",
     "db:int:generate-types": "kysely-codegen --env-file=../.env --out-file ./src/db/db_types.d.ts",
     "db:int:migrate": "tsx --env-file=../.env src/migrate.ts",
