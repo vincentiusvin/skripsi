@@ -12,6 +12,7 @@
     "build": "tsc",
     "db:generate-types": "kysely-codegen --env-file=../.env --out-file ./src/db/db_types.d.ts",
     "db:migrate": "tsx --env-file=../.env src/migrate.ts",
+    "db:dummy": "tsx --env-file=../.env src/dummy.ts",
     "db": "npm run db:migrate && npm run db:generate-types"
   },
   "author": "",

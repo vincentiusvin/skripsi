@@ -7,7 +7,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       build.references("ms_orgs.id").notNull().onDelete("cascade").onUpdate("cascade"),
     )
     .addColumn("category_id", "integer", (build) =>
-      build.references("ms_category_orgs.id").notNull(),
+      build.references("ms_category_orgs.id").onDelete("cascade").onUpdate("cascade").notNull(),
     )
     .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
     .addPrimaryKeyConstraint("categories_orgs_pk", ["org_id", "category_id"])
