@@ -283,7 +283,7 @@ export class ChatController extends Controller {
 
     const socks = await this.socket_server.fetchSockets();
     const filtered = socks.filter((x) => members.includes(x.data.userId));
-    filtered.forEach((x) => x.emit("msg", chatroom_id, JSON.stringify(ret)));
+    filtered.forEach((x) => x.emit("msgUpd", chatroom_id, JSON.stringify(ret)));
 
     res.status(200).json(ret);
   };

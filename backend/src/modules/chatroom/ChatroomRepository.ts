@@ -37,6 +37,7 @@ export class ChatRepository {
         "ms_messages.user_id as user_id",
       ])
       .where("ms_messages.chatroom_id", "=", chatroom_id)
+      .orderBy("id asc")
       .execute();
   }
 

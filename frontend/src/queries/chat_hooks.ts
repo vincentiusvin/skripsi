@@ -56,6 +56,22 @@ export function useChatroomsDetailMessagesPost(opts: { chatroom_id: number }) {
   });
 }
 
+export function useChatroomsDetailMessagesPut(opts: { chatroom_id: number; message_id: number }) {
+  const { chatroom_id, message_id } = opts;
+  return useMutation({
+    mutationFn: async (message: string) =>
+      await new APIContext("ChatroomsDetailMessagesPut").fetch(
+        `/api/chatrooms/${chatroom_id}/messages/${message_id}`,
+        {
+          method: "PUT",
+          body: {
+            message: message,
+          },
+        },
+      ),
+  });
+}
+
 export function useChatroomsDetailPut(opts: { chatroom_id: number; onSuccess?: () => void }) {
   const { chatroom_id, onSuccess } = opts;
   return useMutation({
@@ -168,6 +184,33 @@ export function useChatSocket(opts: {
       queryClient.setQueryData(
         messageKeys.list(chatroom_id),
         (old: API["ChatroomsDetailMessagesGet"]["ResBody"]) => (old ? [...old, msgObj] : [msgObj]),
+      );
+
+      if (onMsg) {
+        onMsg(chatroom_id, msg);
+      }
+    });
+
+    socket.on("msgUpd", (chatroom_id: number, msg: string) => {
+      const msgObj: {
+        message: string;
+        id: number;
+        user_id: number;
+        created_at: Date;
+      } = JSON.parse(msg);
+
+      queryClient.setQueryData(
+        messageKeys.list(chatroom_id),
+        (old: API["ChatroomsDetailMessagesGet"]["ResBody"]) => {
+          const cloned = structuredClone(old);
+          const found = cloned.find((x) => x.id === msgObj.id);
+          if (!found) {
+            return old;
+          }
+          found.message = msgObj.message;
+          found.created_at = msgObj.created_at;
+          return cloned;
+        },
       );
 
       if (onMsg) {
