@@ -135,6 +135,29 @@ export class ChatController extends Controller {
           }),
         },
       }),
+      ChatroomsDetailMessagesPut: new Route({
+        handler: this.putChatroomsDetailMessages,
+        method: "put",
+        path: "/api/chatrooms/:chatroom_id/messages/:message_id",
+        priors: [validateLogged as RequestHandler],
+        schema: {
+          Params: z.object({
+            chatroom_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
+            message_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pesan tidak valid!" }),
+          }),
+          ReqBody: z.object({
+            message: z
+              .string({ message: "Isi pesan tidak valid!" })
+              .min(1, "Pesan tidak boleh kosong!"),
+          }),
+        },
+      }),
       ChatroomsDetailMessagesGet: new Route({
         handler: this.getChatroomsDetailMessages,
         method: "get",
@@ -157,6 +180,7 @@ export class ChatController extends Controller {
       chatroom_id: string;
     };
     ResBody: {
+      id: number;
       message: string;
       user_id: number;
       created_at: Date;
@@ -184,6 +208,7 @@ export class ChatController extends Controller {
       message: string;
     };
     ResBody: {
+      id: number;
       message: string;
       user_id: number;
       created_at: Date;
@@ -203,7 +228,7 @@ export class ChatController extends Controller {
       throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
     }
 
-    const ret = await this.chat_service.sendMessages(chatroom_id, user_id, message);
+    const ret = await this.chat_service.sendMessage(chatroom_id, user_id, message);
 
     if (!ret) {
       throw new Error("Pesan tidak terkirim!");
@@ -216,6 +241,51 @@ export class ChatController extends Controller {
     filtered.forEach((x) => x.emit("msg", chatroom_id, JSON.stringify(ret)));
 
     res.status(201).json(ret);
+  };
+
+  private putChatroomsDetailMessages: RH<{
+    Params: {
+      chatroom_id: string;
+      message_id: string;
+    };
+    ReqBody: {
+      message: string;
+    };
+    ResBody: {
+      id: number;
+      message: string;
+      user_id: number;
+      created_at: Date;
+    };
+  }> = async (req, res) => {
+    const { chatroom_id: chatroom_id_str, message_id: message_id_str } = req.params;
+    const { message } = req.body;
+    const chatroom_id = Number(chatroom_id_str);
+    const message_id = Number(message_id_str);
+    const user_id = req.session.user_id!;
+
+    if (message.length === 0) {
+      throw new ClientError("Pesan tidak boleh kosong!");
+    }
+
+    const val = await this.chat_service.isAllowed(chatroom_id, user_id);
+    if (!val) {
+      throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
+    }
+
+    const ret = await this.chat_service.updateMessage(message_id, { message });
+
+    if (!ret) {
+      throw new Error("Pesan tidak terkirim!");
+    }
+
+    const members = await this.chat_service.getMembers(chatroom_id);
+
+    const socks = await this.socket_server.fetchSockets();
+    const filtered = socks.filter((x) => members.includes(x.data.userId));
+    filtered.forEach((x) => x.emit("msg", chatroom_id, JSON.stringify(ret)));
+
+    res.status(200).json(ret);
   };
 
   private getChatroomsDetail: RH<{

@@ -230,7 +230,12 @@ export async function baseCase(app: Application) {
       message: "testing message",
       user_id: user_ids[2].id,
     })
-    .returning(["ms_messages.message", "ms_messages.user_id", "ms_messages.chatroom_id"])
+    .returning([
+      "ms_messages.id",
+      "ms_messages.message",
+      "ms_messages.user_id",
+      "ms_messages.chatroom_id",
+    ])
     .executeTakeFirstOrThrow();
 
   await app.db

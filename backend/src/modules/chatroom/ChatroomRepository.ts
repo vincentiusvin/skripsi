@@ -31,6 +31,7 @@ export class ChatRepository {
     return await this.db
       .selectFrom("ms_messages")
       .select([
+        "ms_messages.id as id",
         "ms_messages.message as message",
         "ms_messages.created_at as created_at",
         "ms_messages.user_id as user_id",
@@ -47,7 +48,27 @@ export class ChatRepository {
         message: message,
         user_id: sender_id,
       })
-      .returning(["message", "user_id", "created_at"])
+      .returning(["id", "message", "user_id", "created_at"])
+      .executeTakeFirst();
+  }
+
+  async updateMessage(
+    message_id: number,
+    obj: { chatroom_id?: number; sender_id?: number; message?: string },
+  ) {
+    const { chatroom_id, sender_id, message } = obj;
+    if (chatroom_id == undefined && sender_id == undefined && message == undefined) {
+      return;
+    }
+    return await this.db
+      .updateTable("ms_messages")
+      .set({
+        chatroom_id: chatroom_id,
+        message: message,
+        user_id: sender_id,
+      })
+      .where("id", "=", message_id)
+      .returning(["id", "message", "user_id", "created_at"])
       .executeTakeFirst();
   }
 
