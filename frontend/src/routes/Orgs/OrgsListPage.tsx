@@ -23,8 +23,8 @@ function OrgsListPage() {
         </Button>
       </Link>
       <Grid container spacing={2} mt={2}>
-        {data?.map((x, i) => (
-          <Grid item xs={3} key={i}>
+        {data?.map((x) => (
+          <Grid item xs={12} sm={6} md={3} key={x.org_id}>
             <Link to={`/orgs/${x.org_id}`}>
               <Card variant="elevation">
                 <CardActionArea>
