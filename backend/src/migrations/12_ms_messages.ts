@@ -5,6 +5,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .createTable("ms_messages")
     .addColumn("id", "serial", (build) => build.primaryKey())
     .addColumn("message", "text", (build) => build.notNull())
+    .addColumn("is_edited", "boolean", (build) => build.notNull().defaultTo(false))
     .addColumn("user_id", "integer", (build) =>
       build.references("ms_users.id").notNull().onDelete("cascade").onUpdate("cascade"),
     )

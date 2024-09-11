@@ -79,6 +79,22 @@ describe("chatting api", () => {
     expect(sent_message?.user_id).to.eq(in_user.id);
   });
 
+  it("should be able to update messages", async () => {
+    const in_user = caseData.chat_user;
+    const in_chat = caseData.chat;
+    const in_message = caseData.message;
+    const in_edited = "new edited message text";
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+
+    const send_req = await updateMessage(in_chat.id, in_message.id, in_edited, cookie);
+    const send_result = await send_req.json();
+
+    expect(send_req.status).to.eq(200);
+    expect(send_result.id).to.eq(in_message.id);
+    expect(send_result.message).to.eq(in_edited);
+  });
+
   it("should reject unauthorized viewers", async () => {
     const in_member = caseData.org_user;
 
@@ -172,6 +188,22 @@ function sendMessage(chatroom_id: number, message: string, cookie: string) {
       },
       credentials: "include",
       method: "post",
+      body: {
+        message: message,
+      },
+    },
+  );
+}
+
+function updateMessage(chatroom_id: number, message_id: number, message: string, cookie: string) {
+  return new APIContext("ChatroomsDetailMessagesPost").fetch(
+    `/api/chatrooms/${chatroom_id}/messages/${message_id}`,
+    {
+      headers: {
+        cookie: cookie,
+      },
+      credentials: "include",
+      method: "put",
       body: {
         message: message,
       },
