@@ -1,4 +1,4 @@
-import { Check, Edit, Send } from "@mui/icons-material";
+import { Cancel, Check, Edit, Send } from "@mui/icons-material";
 import { Avatar, Box, Button, IconButton, Stack, TextField, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
@@ -28,36 +28,42 @@ function Message(props: {
   const [editMsg, setEditMsg] = useState<string | undefined>();
 
   return (
-    <Stack direction={"row"} spacing={2}>
+    <Stack direction={"row"} spacing={2} alignItems={"center"}>
       {isEditing ? (
         <>
           <Avatar src={user_data?.user_image ?? ""}></Avatar>
           <Box>
             <Typography fontWeight={"bold"}>{user_data?.user_name}</Typography>
             <TextField
+              fullWidth
               onChange={(e) => {
                 setEditMsg(e.target.value);
               }}
               defaultValue={message.message}
             ></TextField>
-            ;
             <Typography variant="caption">
               {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
             </Typography>
           </Box>
-          <Box>
-            <IconButton
-              onClick={() => {
-                if (editMsg) {
-                  updateMessage(editMsg);
-                }
-                setIsEditing(false);
-                setEditMsg(undefined);
-              }}
-            >
-              <Check />
-            </IconButton>
-          </Box>
+          <IconButton
+            onClick={() => {
+              if (editMsg) {
+                updateMessage(editMsg);
+              }
+              setIsEditing(false);
+              setEditMsg(undefined);
+            }}
+          >
+            <Check />
+          </IconButton>
+          <IconButton
+            onClick={() => {
+              setIsEditing(false);
+              setEditMsg(undefined);
+            }}
+          >
+            <Cancel />
+          </IconButton>
         </>
       ) : (
         <>
