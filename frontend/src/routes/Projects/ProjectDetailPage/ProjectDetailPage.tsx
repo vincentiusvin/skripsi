@@ -61,13 +61,13 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
 
   return (
     <Stack height={"100%"}>
-      <Grid container>
-        <Grid item xs={3}>
-          <Typography variant="h3" fontWeight={"bold"}>
+      <Grid container rowGap={2}>
+        <Grid item xs={12} lg={3} order={1}>
+          <Typography variant="h3" fontWeight={"bold"} textAlign={"center"}>
             {project.project_name}
           </Typography>
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12} lg={6} order={{ lg: 2, xs: 7 }}>
           <Tabs
             centered
             sx={{
@@ -86,14 +86,14 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
         </Grid>
         {role === "Admin" ? (
           <>
-            <Grid item xs={1}>
+            <Grid item xs={4} lg={1} order={3}>
               <Link to={`/projects/${project_id}/edit`}>
                 <Button endIcon={<Edit />} variant="contained" fullWidth>
                   Edit
                 </Button>
               </Link>
             </Grid>
-            <Grid item xs={1}>
+            <Grid item xs={4} lg={1} order={4}>
               <Button
                 endIcon={<Delete />}
                 variant="contained"
@@ -107,9 +107,9 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             </Grid>
           </>
         ) : (
-          <Grid item xs={2} />
+          <Grid item xs={8} lg={2} order={5} />
         )}
-        <Grid item xs={1}>
+        <Grid item xs={4} lg={1} order={6}>
           <Button fullWidth endIcon={<Logout />} onClick={() => leaveProject()} variant="contained">
             Keluar
           </Button>
@@ -156,19 +156,19 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
   return (
     <>
       <Grid container mt={2} rowSpacing={2}>
-        <Grid item xs={1}>
+        <Grid item xs={3} lg={2}>
           <Link to={"/projects"}>
             <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
               Go Back
             </Button>
           </Link>
         </Grid>
-        <Grid item xs={10}>
+        <Grid item xs={6} lg={8}>
           <Typography variant="h4" fontWeight={"bold"} align="center">
             {project.project_name}
           </Typography>
         </Grid>
-        <Grid item xs={1}>
+        <Grid item xs={3} lg={2}>
           <Button
             endIcon={<Check />}
             variant="contained"

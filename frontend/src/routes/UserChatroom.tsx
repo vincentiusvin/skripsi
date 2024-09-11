@@ -312,6 +312,8 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
       </Dialog>
       <Grid item xs={2} lg={1}>
         <Button
+          fullWidth
+          variant="contained"
           onClick={() => {
             setAddRoomOpen(true);
           }}
