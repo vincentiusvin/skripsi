@@ -184,6 +184,7 @@ export class ChatController extends Controller {
       message: string;
       user_id: number;
       created_at: Date;
+      is_edited: boolean;
     }[];
   }> = async (req, res) => {
     const { chatroom_id: chatroom_id_str } = req.params;

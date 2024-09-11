@@ -197,6 +197,7 @@ export function useChatSocket(opts: {
         id: number;
         user_id: number;
         created_at: Date;
+        is_edited: boolean;
       } = JSON.parse(msg);
 
       queryClient.setQueryData(
@@ -209,6 +210,7 @@ export function useChatSocket(opts: {
           }
           found.message = msgObj.message;
           found.created_at = msgObj.created_at;
+          found.is_edited = msgObj.is_edited;
           return cloned;
         },
       );

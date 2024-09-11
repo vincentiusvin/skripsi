@@ -45,7 +45,10 @@ export class ChatService {
     message_id: number,
     obj: { chatroom_id?: number; sender_id?: number; message?: string },
   ) {
-    return await this.repo.updateMessage(message_id, obj);
+    return await this.repo.updateMessage(message_id, {
+      ...obj,
+      is_edited: true,
+    });
   }
 
   async getChatroomByID(chatroom_id: number) {

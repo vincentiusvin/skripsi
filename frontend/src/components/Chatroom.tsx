@@ -15,6 +15,7 @@ function Message(props: {
     message: string;
     user_id: number;
     created_at: Date;
+    is_edited: boolean;
   };
   chatroom_id: number;
 }) {
@@ -79,6 +80,7 @@ function Message(props: {
             </Typography>
             <Typography variant="caption">
               {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+              {message.is_edited ? " (Edited)" : ""}
             </Typography>
           </Box>
           <Box>

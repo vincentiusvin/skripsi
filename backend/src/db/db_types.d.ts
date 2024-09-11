@@ -66,6 +66,7 @@ export interface MsMessages {
   chatroom_id: number;
   created_at: Generated<Timestamp>;
   id: Generated<number>;
+  is_edited: Generated<boolean>;
   message: string;
   user_id: number;
 }
