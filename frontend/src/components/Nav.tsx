@@ -110,7 +110,14 @@ function Nav() {
       <Stack direction={"row"} spacing={2} alignItems={"center"} justifyContent={"space-between"}>
         {data?.logged ? (
           <>
-            <Box>
+            <Box
+              sx={{
+                display: {
+                  xs: "none",
+                  md: "block",
+                },
+              }}
+            >
               <Typography>Hello, {data.user_name}</Typography>
             </Box>
             <Link to={`/users/${data.user_id}`}>
@@ -119,8 +126,26 @@ function Nav() {
               </Button>
             </Link>
             <Button
-              variant="outlined"
+              sx={{
+                display: {
+                  xs: "inline-flex",
+                  md: "none",
+                },
+              }}
               color="primary"
+              variant="outlined"
+              onClick={() => logout()}
+            >
+              <Logout />
+            </Button>
+            <Button
+              sx={{
+                display: {
+                  xs: "none",
+                  md: "inline-flex",
+                },
+              }}
+              variant="outlined"
               startIcon={<Logout />}
               onClick={() => logout()}
             >

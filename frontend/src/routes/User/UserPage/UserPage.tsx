@@ -36,8 +36,8 @@ function UserAccountPage() {
 
   return (
     <Grid container rowGap={2} mt={2}>
-      <Grid item xs={2}></Grid>
-      <Grid item xs={8}>
+      <Grid item xs={12} md={2}></Grid>
+      <Grid item xs={12} md={8}>
         <Tabs
           centered
           sx={{
@@ -53,7 +53,7 @@ function UserAccountPage() {
           <Tab label={"Kontribusi"} value="contrib" />
         </Tabs>
       </Grid>
-      <Grid item xs={2}>
+      <Grid item xs={12} md={2}>
         {isViewingSelf && (
           <Link to={`${id}/edit`}>
             <Button variant="contained" fullWidth endIcon={<Edit />}>

@@ -189,19 +189,19 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
 
   return (
     <Grid container mt={2} rowGap={2}>
-      <Grid item xs={2}>
+      <Grid item xs={12} md={2}>
         {isAdmin ? (
           <InviteUserDialog org_id={org_id} />
         ) : isInvited ? (
           <RespondInvite org_id={org_id} user_id={user_id} />
         ) : null}
       </Grid>
-      <Grid item xs={8}>
+      <Grid item xs={12} md={8}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           {data.org_name}
         </Typography>
       </Grid>
-      <Grid item xs={1}>
+      <Grid item xs={6} md={1}>
         {isAdmin ? (
           <Link to={`/orgs/${org_id}/edit`}>
             <Button endIcon={<Edit />} variant="contained" fullWidth>
@@ -210,7 +210,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
           </Link>
         ) : null}
       </Grid>
-      <Grid item xs={1}>
+      <Grid item xs={6} md={1}>
         {isAdmin ? (
           <Link to={"/orgs"}>
             <Button endIcon={<Delete />} variant="contained" fullWidth onClick={() => deleteOrg()}>
@@ -260,12 +260,12 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
           </Stack>
         </Paper>
       </Grid>
-      <Grid item xs={10}>
+      <Grid item xs={6} md={10}>
         <Typography variant="h6" fontWeight={"bold"}>
           Projects
         </Typography>
       </Grid>
-      <Grid item xs={2} paddingLeft="1vw">
+      <Grid item xs={6} md={2} paddingLeft="1vw">
         {isAdmin ? (
           <Link to={`/orgs/${org_id}/projects/add`}>
             <Button endIcon={<Add />} variant="contained" fullWidth>
@@ -275,7 +275,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
         ) : null}
       </Grid>
       {projectData.map((x, i) => (
-        <Grid item xs={3} key={i}>
+        <Grid item xs={12} sm={6} lg={4} key={i}>
           <Link to={`/projects/${x.project_id}`}>
             <Card variant="elevation">
               <CardActionArea>

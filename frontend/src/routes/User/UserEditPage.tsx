@@ -135,7 +135,7 @@ function UserAccountPageEdit() {
         </Dialog>
 
         <Grid container mt={2} rowGap={2}>
-          <Grid item xs={2}>
+          <Grid item xs={12} md={2}>
             <Link to={`/users/${id}`}>
               <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
                 Go Back
@@ -143,7 +143,7 @@ function UserAccountPageEdit() {
             </Link>
           </Grid>
           <Grid xs={10}></Grid>
-          <Grid item xs={4}>
+          <Grid item xs={12} md={4}>
             <Stack alignItems={"center"}>
               <Badge
                 overlap="circular"
@@ -166,7 +166,7 @@ function UserAccountPageEdit() {
               </Badge>
             </Stack>
           </Grid>
-          <Grid item xs={8}>
+          <Grid item xs={12} md={8}>
             <Stack gap={4}>
               <Paper
                 sx={{
