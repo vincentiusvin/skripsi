@@ -72,9 +72,9 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             variant="scrollable"
             scrollButtons="auto"
             allowScrollButtonsMobile
-            centered
             sx={{
-              flexGrow: 1,
+              maxWidth: "min-content",
+              margin: "auto",
             }}
             value={activeTab}
             onChange={(_e, newRoomId) => {

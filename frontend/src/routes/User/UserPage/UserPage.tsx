@@ -44,7 +44,8 @@ function UserAccountPage() {
           centered
           allowScrollButtonsMobile
           sx={{
-            flexGrow: 1,
+            maxWidth: "min-content",
+            margin: "auto",
           }}
           value={activeTab}
           onChange={(_e, tab) => {
