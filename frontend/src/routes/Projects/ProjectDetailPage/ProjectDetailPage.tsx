@@ -69,6 +69,9 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
         </Grid>
         <Grid item xs={12} lg={6} order={{ lg: 2, xs: 7 }}>
           <Tabs
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             centered
             sx={{
               flexGrow: 1,

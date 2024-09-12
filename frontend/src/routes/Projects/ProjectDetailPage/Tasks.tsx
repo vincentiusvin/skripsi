@@ -450,7 +450,7 @@ function Kanban(props: { project_id: number }) {
   );
 
   return (
-    <Stack height={"100%"}>
+    <Stack height={"100%"} width={"100%"} overflow={"scroll"}>
       <Stack direction={"row"} spacing={5} flexGrow={1} pb={8}>
         <DndContext
           sensors={sensors}

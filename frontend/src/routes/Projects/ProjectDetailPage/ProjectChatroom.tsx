@@ -90,6 +90,8 @@ export function ChatroomWrapper(props: { user_id: number; project_id: number }) 
           </Button>
           <Tabs
             orientation="vertical"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             value={activeRoom}
             onChange={(_e, newRoomId) => {
               setActiveRoom(newRoomId);

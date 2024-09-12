@@ -39,7 +39,10 @@ function UserAccountPage() {
       <Grid item xs={12} md={2}></Grid>
       <Grid item xs={12} md={8}>
         <Tabs
+          variant="scrollable"
+          scrollButtons="auto"
           centered
+          allowScrollButtonsMobile
           sx={{
             flexGrow: 1,
           }}
