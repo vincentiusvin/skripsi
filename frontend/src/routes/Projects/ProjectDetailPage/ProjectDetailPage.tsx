@@ -1,5 +1,6 @@
 import { Check, Delete, Edit, Logout, MoreVert } from "@mui/icons-material";
 import {
+  Box,
   Button,
   IconButton,
   ListItemIcon,
@@ -78,7 +79,14 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
     <Stack height={"100%"}>
       <Grid2 container rowGap={2}>
         <Grid2 xs={10} lg={3} order={1} xsOffset={1} lgOffset={0}>
-          <Typography variant="h3" fontWeight={"bold"} textAlign={"center"}>
+          <Typography
+            variant="h3"
+            fontWeight={"bold"}
+            textAlign={"center"}
+            sx={{
+              wordBreak: "break-word",
+            }}
+          >
             {project.project_name}
           </Typography>
         </Grid2>
@@ -147,10 +155,12 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
           ) : null}
         </Grid2>
       </Grid2>
-      {activeTab === "disc" && <ChatroomWrapper project_id={project_id} user_id={user_id} />}
-      {activeTab === "info" && <ProjectInfo project_id={project_id} />}
-      {activeTab === "manage" && <ProjectManage project_id={project_id} />}
-      {activeTab === "tasks" && <Kanban project_id={project_id} />}
+      <Box minHeight={"100vh"}>
+        {activeTab === "disc" && <ChatroomWrapper project_id={project_id} user_id={user_id} />}
+        {activeTab === "info" && <ProjectInfo project_id={project_id} />}
+        {activeTab === "manage" && <ProjectManage project_id={project_id} />}
+        {activeTab === "tasks" && <Kanban project_id={project_id} />}
+      </Box>
     </Stack>
   );
 }
@@ -188,7 +198,14 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
   return (
     <Grid2 container mt={2} rowSpacing={2}>
       <Grid2 xs={12} md={8} mdOffset={2}>
-        <Typography variant="h4" fontWeight={"bold"} align="center">
+        <Typography
+          variant="h4"
+          fontWeight={"bold"}
+          align="center"
+          sx={{
+            wordBreak: "break-word",
+          }}
+        >
           {project.project_name}
         </Typography>
       </Grid2>
@@ -243,7 +260,14 @@ function UnauthenticatedView(props: { project_id: number }) {
     <>
       <Grid2 container mt={2} rowSpacing={2}>
         <Grid2 xs={12}>
-          <Typography variant="h4" fontWeight={"bold"} align="center">
+          <Typography
+            variant="h4"
+            fontWeight={"bold"}
+            align="center"
+            sx={{
+              wordBreak: "break-word",
+            }}
+          >
             {project.project_name}
           </Typography>
         </Grid2>
