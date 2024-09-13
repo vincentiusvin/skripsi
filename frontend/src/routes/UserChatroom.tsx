@@ -111,7 +111,7 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | undefined>();
 
   return (
-    <Grid container height={"100%"}>
+    <Grid container height={"100%"} spacing={1}>
       <Snackbar open={!connected}>
         <Alert severity="error">
           <Typography>You are not connected!</Typography>

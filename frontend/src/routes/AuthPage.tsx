@@ -39,40 +39,45 @@ function AuthPage() {
   }
 
   return (
-    (<Grid container height={"100%"} alignItems={"center"}>
-      <Grid size={6}>Hello</Grid>
-      <Grid alignItems={"center"} size={6}>
-        <Grid container spacing={2}>
-          <Grid size={12}>
-            <TextField
-              fullWidth
-              onChange={(e) => setUsername(e.target.value)}
-              label="Username"
-              sx={{ display: "block" }}
-            ></TextField>
-          </Grid>
-          <Grid size={12}>
-            <TextField
-              fullWidth
-              type="password"
-              onChange={(e) => setPassword(e.target.value)}
-              label="Password"
-              sx={{ display: "block" }}
-            ></TextField>
-          </Grid>
-          <Grid size={6}>
-            <Button fullWidth onClick={() => login()}>
-              Login
-            </Button>
-          </Grid>
-          <Grid size={6}>
-            <Button fullWidth onClick={() => register()}>
-              Register
-            </Button>
-          </Grid>
+    <Grid container height={"100%"} alignItems={"center"}>
+      <Grid
+        size={{
+          md: 6,
+          xs: 12,
+        }}
+      >
+        Hello
+      </Grid>
+      <Grid container alignItems={"center"} size={{ md: 6, xs: 12 }} spacing={2}>
+        <Grid size={12}>
+          <TextField
+            fullWidth
+            onChange={(e) => setUsername(e.target.value)}
+            label="Username"
+            sx={{ display: "block" }}
+          ></TextField>
+        </Grid>
+        <Grid size={12}>
+          <TextField
+            fullWidth
+            type="password"
+            onChange={(e) => setPassword(e.target.value)}
+            label="Password"
+            sx={{ display: "block" }}
+          ></TextField>
+        </Grid>
+        <Grid size={6}>
+          <Button fullWidth onClick={() => login()}>
+            Login
+          </Button>
+        </Grid>
+        <Grid size={6}>
+          <Button fullWidth onClick={() => register()}>
+            Register
+          </Button>
         </Grid>
       </Grid>
-    </Grid>)
+    </Grid>
   );
 }
 

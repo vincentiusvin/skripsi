@@ -24,12 +24,13 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
   }
 
   return (
-    (<Grid container alignItems={"center"} rowGap={2}>
+    <Grid container alignItems={"center"} rowGap={2}>
       <Grid
         size={{
           xs: 12,
-          lg: sidebar ? 6 : 12
-        }}>
+          lg: sidebar ? 6 : 12,
+        }}
+      >
         <Stack direction={"row"} spacing={4} alignItems={"center"}>
           <Link to={`/users/${user_id}`}>
             <Avatar
@@ -56,12 +57,13 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
         <Grid
           size={{
             xs: 12,
-            lg: 6
-          }}>
+            lg: 6,
+          }}
+        >
           <Stack spacing={2}>{sidebar}</Stack>
         </Grid>
       ) : null}
-    </Grid>)
+    </Grid>
   );
 }
 
