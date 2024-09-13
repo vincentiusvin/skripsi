@@ -243,13 +243,15 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
           <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
             Our Members
           </Typography>
-          <Stack direction={"row"} justifyContent={"center"}>
+          <Grid container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
             {data.org_users
               .filter((x) => x.user_role === "Admin")
               .map((x) => (
-                <MemberCard user_id={x.user_id} org_id={org_id} key={x.user_id} />
+                <Grid item xs={12} md={3} justifyContent={"center"} key={x.user_id}>
+                  <MemberCard user_id={x.user_id} org_id={org_id} />
+                </Grid>
               ))}
-          </Stack>
+          </Grid>
           <Typography textAlign={"center"} variant="h4" fontWeight={"bold"}>
             Categories
           </Typography>
