@@ -21,14 +21,18 @@ import {
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Redirect } from "wouter";
-import ChatroomComponent from "../../components/Chatroom.tsx";
+import ChatroomComponent from "../components/Chatroom/Chatroom.tsx";
+import {
+  AddMembersDialog,
+  ChangeNameDialog,
+  LeaveRoom,
+} from "../components/Chatroom/ChatroomMisc.tsx";
 import {
   useChatSocket,
   useUsersDetailChatroomsGet,
   useUsersDetailChatroomsPost,
-} from "../../queries/chat_hooks.ts";
-import { useSessionGet } from "../../queries/sesssion_hooks.ts";
-import { AddMembersDialog, ChangeNameDialog, LeaveRoom } from "./UserChatroomHeader.tsx";
+} from "../queries/chat_hooks.ts";
+import { useSessionGet } from "../queries/sesssion_hooks.ts";
 
 function AddRoomDialog(props: { user_id: number }) {
   const { user_id } = props;
@@ -102,7 +106,7 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
     },
   });
 
-  const [sideOpen, setSideOpen] = useState(true);
+  const [sideOpen, setSideOpen] = useState(false);
 
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | undefined>();
 

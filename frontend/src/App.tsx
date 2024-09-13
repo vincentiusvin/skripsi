@@ -22,7 +22,7 @@ import ProjectsEditPage from "./routes/Projects/ProjectsEditPage.tsx";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
 import UserAccountPageEdit from "./routes/User/UserEditPage.tsx";
 import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
-import ChatroomPage from "./routes/UserChatroom/UserChatroom.tsx";
+import ChatroomPage from "./routes/UserChatroom.tsx";
 
 const theme = createTheme({
   palette: {

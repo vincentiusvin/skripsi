@@ -41,7 +41,6 @@ function UserAccountPage() {
         <Tabs
           variant="scrollable"
           scrollButtons="auto"
-          centered
           allowScrollButtonsMobile
           sx={{
             maxWidth: "min-content",

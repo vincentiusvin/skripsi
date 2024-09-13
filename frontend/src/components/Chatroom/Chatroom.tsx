@@ -6,8 +6,8 @@ import {
   useChatroomsDetailMessagesGet,
   useChatroomsDetailMessagesPost,
   useChatroomsDetailMessagesPut,
-} from "../queries/chat_hooks.ts";
-import { useUsersDetailGet } from "../queries/user_hooks.ts";
+} from "../../queries/chat_hooks.ts";
+import { useUsersDetailGet } from "../../queries/user_hooks.ts";
 
 function Message(props: {
   message: {
