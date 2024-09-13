@@ -1,4 +1,4 @@
-import { Add, Delete, Edit, People } from "@mui/icons-material";
+import { Add, Delete, Edit, MoreVert, People } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -10,11 +10,17 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
   Paper,
   Skeleton,
   Stack,
   Typography,
 } from "@mui/material";
+import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -92,14 +98,12 @@ function InviteUserDialog(props: { org_id: number }) {
           )}
         </DialogContent>
       </Dialog>
-      <Button
-        onClick={() => setDialogOpen(true)}
-        variant="contained"
-        fullWidth
-        endIcon={<People />}
-      >
-        Invite Members
-      </Button>
+      <MenuItem onClick={() => setDialogOpen(true)}>
+        <ListItemIcon>
+          <People />
+        </ListItemIcon>
+        <ListItemText>Tambah Pengurus</ListItemText>
+      </MenuItem>
     </>
   );
 }
@@ -180,6 +184,8 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
     },
   });
 
+  const [drawerAnchor, setDrawerAnchor] = useState<HTMLElement | undefined>();
+
   if (!data || !projectData) {
     return <Skeleton />;
   }
@@ -188,38 +194,166 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
   const isInvited = role_data && role_data.role === "Invited";
 
   return (
-    <Grid container mt={2} rowGap={2}>
-      <Grid item xs={2}>
+    <Grid2 container mt={2} rowGap={2}>
+      <Grid2 xs={12}>
+        {isInvited ? <RespondInvite org_id={org_id} user_id={user_id} /> : null}
+      </Grid2>
+      <Grid2 xs={10} xsOffset={1}>
+        <Typography variant="h4" fontWeight={"bold"} align="center">
+          {data.org_name}
+        </Typography>
+      </Grid2>
+      <Grid2 xs={1} alignItems={"center"} justifyContent={"end"} display="flex">
         {isAdmin ? (
-          <InviteUserDialog org_id={org_id} />
-        ) : isInvited ? (
-          <RespondInvite org_id={org_id} user_id={user_id} />
+          <>
+            <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
+              <MoreVert />
+            </IconButton>
+            <Menu
+              open={drawerAnchor != undefined}
+              onClose={() => setDrawerAnchor(undefined)}
+              anchorEl={drawerAnchor}
+            >
+              <Link to={`/orgs/${org_id}/edit`}>
+                <MenuItem>
+                  <ListItemIcon>
+                    <Edit />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <Typography
+                      sx={{
+                        textDecoration: "none",
+                        color: "white",
+                      }}
+                    >
+                      Edit
+                    </Typography>
+                  </ListItemText>
+                </MenuItem>
+              </Link>
+              <MenuItem onClick={() => deleteOrg()}>
+                <ListItemIcon>
+                  <Delete />
+                </ListItemIcon>
+                <ListItemText>Hapus</ListItemText>
+              </MenuItem>
+              <InviteUserDialog org_id={org_id} />
+            </Menu>
+          </>
         ) : null}
-      </Grid>
-      <Grid item xs={8}>
+      </Grid2>
+
+      <Grid2 xs={12}>
+        <Paper
+          sx={{
+            p: 2,
+            margin: "auto",
+            backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
+          }}
+        >
+          <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
+            About Us
+          </Typography>
+          <Typography textAlign={"center"}>{data.org_description}</Typography>
+          <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
+            Our Address
+          </Typography>
+          <Typography textAlign={"center"}>{data.org_address}</Typography>
+          <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
+            Contact Us
+          </Typography>
+          <Typography textAlign={"center"}>{data.org_phone}</Typography>
+          <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
+            Our Members
+          </Typography>
+          <Grid container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
+            {data.org_users
+              .filter((x) => x.user_role === "Admin")
+              .map((x) => (
+                <Grid item xs={12} md={3} justifyContent={"center"} key={x.user_id}>
+                  <MemberCard user_id={x.user_id} org_id={org_id} />
+                </Grid>
+              ))}
+          </Grid>
+          <Typography textAlign={"center"} variant="h4" fontWeight={"bold"}>
+            Categories
+          </Typography>
+          <Stack spacing={1} direction={"row"} justifyContent={"center"}>
+            {data.org_categories.map((category) => (
+              <Chip label={category.category_name} key={category.category_id} />
+            ))}
+          </Stack>
+        </Paper>
+      </Grid2>
+      <Grid2 xs={6} md={10}>
+        <Typography variant="h6" fontWeight={"bold"}>
+          Projects
+        </Typography>
+      </Grid2>
+      <Grid2 xs={6} md={2} paddingLeft="1vw">
+        {isAdmin ? (
+          <Link to={`/orgs/${org_id}/projects/add`}>
+            <Button endIcon={<Add />} variant="contained" fullWidth>
+              Add Projects
+            </Button>
+          </Link>
+        ) : null}
+      </Grid2>
+      {projectData.map((x, i) => (
+        <Grid2 xs={12} sm={6} lg={4} key={i}>
+          <Link to={`/projects/${x.project_id}`}>
+            <Card variant="elevation">
+              <CardActionArea>
+                <CardContent>
+                  <Stack direction={"row"} alignItems={"center"} spacing={2}>
+                    <Box>
+                      <Typography variant="h5" fontWeight={"bold"}>
+                        {x.project_name}
+                      </Typography>
+                      <Typography>{x.org_id}</Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Link>
+        </Grid2>
+      ))}
+    </Grid2>
+  );
+}
+
+function OrgsDetailUnauthenticated() {
+  const { org_id: org_id_raw } = useParams();
+  const [, setLocation] = useLocation();
+  const org_id = Number(org_id_raw);
+
+  const { data } = useOrgDetailGet({
+    id: org_id,
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+        setLocation("/orgs");
+        return false;
+      }
+      return true;
+    },
+  });
+
+  const { data: projectData } = useProjectsGet({
+    org_id: org_id,
+  });
+
+  if (!data || !projectData) {
+    return <Skeleton />;
+  }
+
+  return (
+    <Grid container mt={2} rowGap={2}>
+      <Grid item xs={12}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           {data.org_name}
         </Typography>
       </Grid>
-      <Grid item xs={1}>
-        {isAdmin ? (
-          <Link to={`/orgs/${org_id}/edit`}>
-            <Button endIcon={<Edit />} variant="contained" fullWidth>
-              Edit
-            </Button>
-          </Link>
-        ) : null}
-      </Grid>
-      <Grid item xs={1}>
-        {isAdmin ? (
-          <Link to={"/orgs"}>
-            <Button endIcon={<Delete />} variant="contained" fullWidth onClick={() => deleteOrg()}>
-              Delete
-            </Button>
-          </Link>
-        ) : null}
-      </Grid>
-
       <Grid item xs={12}>
         <Paper
           sx={{
@@ -243,13 +377,15 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
           <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
             Our Members
           </Typography>
-          <Stack direction={"row"} justifyContent={"center"}>
+          <Grid container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
             {data.org_users
               .filter((x) => x.user_role === "Admin")
               .map((x) => (
-                <MemberCard user_id={x.user_id} org_id={org_id} key={x.user_id} />
+                <Grid item xs={12} md={3} justifyContent={"center"} key={x.user_id}>
+                  <MemberCard user_id={x.user_id} org_id={org_id} />
+                </Grid>
               ))}
-          </Stack>
+          </Grid>
           <Typography textAlign={"center"} variant="h4" fontWeight={"bold"}>
             Categories
           </Typography>
@@ -260,22 +396,13 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
           </Stack>
         </Paper>
       </Grid>
-      <Grid item xs={10}>
+      <Grid item xs={12}>
         <Typography variant="h6" fontWeight={"bold"}>
           Projects
         </Typography>
       </Grid>
-      <Grid item xs={2} paddingLeft="1vw">
-        {isAdmin ? (
-          <Link to={`/orgs/${org_id}/projects/add`}>
-            <Button endIcon={<Add />} variant="contained" fullWidth>
-              Add Projects
-            </Button>
-          </Link>
-        ) : null}
-      </Grid>
       {projectData.map((x, i) => (
-        <Grid item xs={3} key={i}>
+        <Grid item xs={12} sm={6} lg={4} key={i}>
           <Link to={`/projects/${x.project_id}`}>
             <Card variant="elevation">
               <CardActionArea>
@@ -304,7 +431,7 @@ function OrgsDetailPage() {
   if (user_data?.logged) {
     return <OrgsDetailAuthenticated user_id={user_data.user_id} />;
   } else {
-    return null;
+    return <OrgsDetailUnauthenticated />;
   }
 }
 

@@ -1,5 +1,7 @@
 import { Login, Logout } from "@mui/icons-material";
-import { Avatar, Box, Button, Stack, Typography } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { Avatar, Box, Button, Menu, MenuItem, Stack, Typography } from "@mui/material";
+import { useState } from "react";
 import { Link } from "wouter";
 import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks";
 import { useUsersDetailGet } from "../queries/user_hooks";
@@ -13,8 +15,8 @@ function UserImage(props: { user_id: number }) {
     <Avatar
       src={userDetail?.user_image ?? ""}
       sx={{
-        width: "2vw",
-        height: "2vw",
+        width: 36,
+        height: 36,
       }}
     />
   );
@@ -23,6 +25,29 @@ function UserImage(props: { user_id: number }) {
 function Nav() {
   const { data } = useSessionGet();
   const { mutate: logout } = useSessionDelete();
+  const [drawerAnchor, setDrawerAnchor] = useState<HTMLElement | undefined>();
+  const navButtons = [
+    {
+      name: "Home",
+      link: "/",
+      disabled: false,
+    },
+    {
+      name: "Orgs",
+      link: "/orgs",
+      disabled: false,
+    },
+    {
+      name: "Projects",
+      link: "/projects",
+      disabled: false,
+    },
+    {
+      name: "Chatroom",
+      link: "/chatroom",
+      disabled: !data?.logged,
+    },
+  ];
 
   return (
     <Stack
@@ -34,24 +59,65 @@ function Nav() {
       alignItems={"center"}
       justifyContent={"space-between"}
     >
-      <Stack direction={"row"} spacing={5}>
-        <Link to={"/"} asChild>
-          <Button>Home</Button>
-        </Link>
-        <Link to={"/orgs"} asChild>
-          <Button>Orgs</Button>
-        </Link>
-        <Link to={"/projects"} asChild>
-          <Button>Projects</Button>
-        </Link>
-        <Link to={"/chatroom"} asChild>
-          <Button disabled={!data?.logged}>Chat</Button>
-        </Link>
+      <Stack
+        direction={"row"}
+        spacing={5}
+        sx={{
+          display: {
+            xs: "none",
+            md: "flex",
+          },
+        }}
+      >
+        {navButtons.map((x) => (
+          <Link to={x.link} asChild key={x.name}>
+            <Button disabled={x.disabled}>{x.name}</Button>
+          </Link>
+        ))}
       </Stack>
+      <Box
+        sx={{
+          display: {
+            md: "none",
+          },
+        }}
+      >
+        <Button onClick={(e) => setDrawerAnchor(e.currentTarget)} variant="outlined">
+          <MenuIcon />
+        </Button>
+        <Menu
+          open={drawerAnchor != undefined}
+          onClose={() => setDrawerAnchor(undefined)}
+          anchorEl={drawerAnchor}
+        >
+          {navButtons.map((x) => (
+            <Link to={x.link} key={x.name}>
+              <MenuItem disabled={x.disabled}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    textDecoration: "none",
+                    color: "white",
+                  }}
+                >
+                  {x.name}
+                </Typography>
+              </MenuItem>
+            </Link>
+          ))}
+        </Menu>
+      </Box>
       <Stack direction={"row"} spacing={2} alignItems={"center"} justifyContent={"space-between"}>
         {data?.logged ? (
           <>
-            <Box>
+            <Box
+              sx={{
+                display: {
+                  xs: "none",
+                  md: "block",
+                },
+              }}
+            >
               <Typography>Hello, {data.user_name}</Typography>
             </Box>
             <Link to={`/users/${data.user_id}`}>
@@ -60,8 +126,26 @@ function Nav() {
               </Button>
             </Link>
             <Button
-              variant="outlined"
+              sx={{
+                display: {
+                  xs: "inline-flex",
+                  md: "none",
+                },
+              }}
               color="primary"
+              variant="outlined"
+              onClick={() => logout()}
+            >
+              <Logout />
+            </Button>
+            <Button
+              sx={{
+                display: {
+                  xs: "none",
+                  md: "inline-flex",
+                },
+              }}
+              variant="outlined"
               startIcon={<Logout />}
               onClick={() => logout()}
             >

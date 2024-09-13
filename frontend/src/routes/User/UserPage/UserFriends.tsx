@@ -16,76 +16,65 @@ function UserFriends(props: { user_id: number }) {
     return <Skeleton />;
   }
 
-  const outgoing = friends.filter((x) => x.status === "Sent");
   const incoming = friends.filter((x) => x.status === "Pending");
+  const outgoing = friends.filter((x) => x.status === "Sent");
   const accepted = friends.filter((x) => x.status === "Accepted");
+
+  const friendTypes = [
+    {
+      members: incoming,
+      deleteOption: {
+        text: "Tolak",
+      },
+      putOption: {
+        text: "terima",
+        status: "Accepted",
+      },
+      name: "Permintaan Masuk",
+    },
+    {
+      members: outgoing,
+      deleteOption: {
+        text: "Batal",
+      },
+      putOption: undefined,
+      name: "Permintaan Terkirim",
+    },
+    {
+      members: accepted,
+      deleteOption: {
+        text: "Hapus",
+      },
+      putOption: undefined,
+      name: "Teman",
+    },
+  ] as const;
 
   return (
     <Stack gap={2}>
-      <Typography variant="h6" textAlign={"center"}>
-        Permintaan Masuk
-      </Typography>
-      {incoming.length ? (
-        incoming.map((x, i) => (
-          <Grid key={i} container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
-            <Grid item xs={3} justifyContent={"center"}>
-              <FriendManage
-                deleteOption={{
-                  text: "Tolak",
-                }}
-                putOption={{
-                  text: "terima",
-                  status: "Accepted",
-                }}
-                user_id={user_id}
-                with_id={x.user_id}
-              />
+      {friendTypes.map((x) => (
+        <>
+          <Typography variant="h6" textAlign={"center"}>
+            {x.name}
+          </Typography>
+          {x.members.length ? (
+            <Grid container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
+              {x.members.map((m) => (
+                <Grid key={m.user_id} item xs={12} md={4} lg={3} justifyContent={"center"}>
+                  <FriendManage
+                    deleteOption={x.deleteOption}
+                    putOption={x.putOption}
+                    user_id={user_id}
+                    with_id={m.user_id}
+                  />
+                </Grid>
+              ))}
             </Grid>
-          </Grid>
-        ))
-      ) : (
-        <Typography textAlign={"center"}>Tidak ada permintaan yang masuk!</Typography>
-      )}
-      <Typography variant="h6" textAlign={"center"}>
-        Permintaan Terkirim
-      </Typography>
-      {outgoing.length ? (
-        outgoing.map((x, i) => (
-          <Grid container width={"85%"} key={i} margin={"0 auto"} spacing={2} columnSpacing={4}>
-            <Grid item xs={3} justifyContent={"center"}>
-              <FriendManage
-                deleteOption={{
-                  text: "Batal",
-                }}
-                user_id={user_id}
-                with_id={x.user_id}
-              />
-            </Grid>
-          </Grid>
-        ))
-      ) : (
-        <Typography textAlign={"center"}>Tidak ada permintaan yang terkirim!</Typography>
-      )}
-      <Typography variant="h6" textAlign={"center"}>
-        Teman
-      </Typography>
-      {accepted.length ? (
-        accepted.map((x, i) => (
-          <Grid container width={"85%"} key={i} margin={"0 auto"} spacing={2} columnSpacing={4}>
-            <Grid item xs={3} justifyContent={"center"}>
-              <FriendManage
-                deleteOption={{
-                  text: "Hapus",
-                }}
-                user_id={user_id}
-                with_id={x.user_id}
-              />
-            </Grid>
-          </Grid>
-        ))
-      ) : (
-        <Typography textAlign={"center"}>Tidak ada permintaan yang keluar!</Typography>
-      )}
+          ) : (
+            <Typography textAlign={"center"}>There are no {x.name.toLocaleLowerCase()}!</Typography>
+          )}
+        </>
+      ))}
     </Stack>
   );
 }
