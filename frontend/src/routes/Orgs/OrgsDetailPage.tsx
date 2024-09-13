@@ -323,13 +323,115 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
   );
 }
 
+function OrgsDetailUnauthenticated() {
+  const { org_id: org_id_raw } = useParams();
+  const [, setLocation] = useLocation();
+  const org_id = Number(org_id_raw);
+
+  const { data } = useOrgDetailGet({
+    id: org_id,
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+        setLocation("/orgs");
+        return false;
+      }
+      return true;
+    },
+  });
+
+  const { data: projectData } = useProjectsGet({
+    org_id: org_id,
+  });
+
+  if (!data || !projectData) {
+    return <Skeleton />;
+  }
+
+  return (
+    <Grid container mt={2} rowGap={2}>
+      <Grid item xs={12}>
+        <Typography variant="h4" fontWeight={"bold"} align="center">
+          {data.org_name}
+        </Typography>
+      </Grid>
+      <Grid item xs={12}>
+        <Paper
+          sx={{
+            p: 2,
+            margin: "auto",
+            backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
+          }}
+        >
+          <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
+            About Us
+          </Typography>
+          <Typography textAlign={"center"}>{data.org_description}</Typography>
+          <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
+            Our Address
+          </Typography>
+          <Typography textAlign={"center"}>{data.org_address}</Typography>
+          <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
+            Contact Us
+          </Typography>
+          <Typography textAlign={"center"}>{data.org_phone}</Typography>
+          <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
+            Our Members
+          </Typography>
+          <Grid container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
+            {data.org_users
+              .filter((x) => x.user_role === "Admin")
+              .map((x) => (
+                <Grid item xs={12} md={3} justifyContent={"center"} key={x.user_id}>
+                  <MemberCard user_id={x.user_id} org_id={org_id} />
+                </Grid>
+              ))}
+          </Grid>
+          <Typography textAlign={"center"} variant="h4" fontWeight={"bold"}>
+            Categories
+          </Typography>
+          <Stack spacing={1} direction={"row"} justifyContent={"center"}>
+            {data.org_categories.map((category) => (
+              <Chip label={category.category_name} key={category.category_id} />
+            ))}
+          </Stack>
+        </Paper>
+      </Grid>
+      <Grid item xs={12}>
+        <Typography variant="h6" fontWeight={"bold"}>
+          Projects
+        </Typography>
+      </Grid>
+      {projectData.map((x, i) => (
+        <Grid item xs={12} sm={6} lg={4} key={i}>
+          <Link to={`/projects/${x.project_id}`}>
+            <Card variant="elevation">
+              <CardActionArea>
+                <CardContent>
+                  <Stack direction={"row"} alignItems={"center"} spacing={2}>
+                    <Box>
+                      <Typography variant="h5" fontWeight={"bold"}>
+                        {x.project_name}
+                      </Typography>
+                      <Typography>{x.org_id}</Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Link>
+        </Grid>
+      ))}
+    </Grid>
+  );
+}
+
 function OrgsDetailPage() {
   const { data: user_data } = useSessionGet();
 
   if (user_data?.logged) {
     return <OrgsDetailAuthenticated user_id={user_data.user_id} />;
   } else {
-    return null;
+    return <OrgsDetailUnauthenticated />;
   }
 }
 
