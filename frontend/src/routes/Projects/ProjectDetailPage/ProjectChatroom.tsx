@@ -116,7 +116,7 @@ export function ChatroomWrapper(props: { user_id: number; project_id: number }) 
           {selectedChatroom && (
             <Stack height={"100%"} display={"flex"}>
               <Paper>
-                <Stack direction={"row"} justifyContent={"space-between"}>
+                <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
                   {sideOpen ? (
                     <IconButton onClick={() => setSideOpen(() => false)}>
                       <ArrowLeft />
