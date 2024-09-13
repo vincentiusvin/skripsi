@@ -1,5 +1,18 @@
-import { ArrowBack, Check, Delete, Edit, Logout } from "@mui/icons-material";
-import { Button, Grid, Skeleton, Stack, Tab, Tabs, Typography } from "@mui/material";
+import { ArrowBack, Check, Delete, Edit, Logout, MoreVert } from "@mui/icons-material";
+import {
+  Button,
+  Grid,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Skeleton,
+  Stack,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -55,6 +68,8 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
     },
   });
 
+  const [drawerAnchor, setDrawerAnchor] = useState<HTMLElement | undefined>();
+
   if (!project) {
     return <Skeleton />;
   }
@@ -62,12 +77,12 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
   return (
     <Stack height={"100%"}>
       <Grid container rowGap={2}>
-        <Grid item xs={12} lg={3} order={1}>
+        <Grid item xs={10} lg={3} order={1}>
           <Typography variant="h3" fontWeight={"bold"} textAlign={"center"}>
             {project.project_name}
           </Typography>
         </Grid>
-        <Grid item xs={12} lg={6} order={{ lg: 2, xs: 7 }}>
+        <Grid item xs={12} lg={6} order={{ lg: 2, xs: 4 }}>
           <Tabs
             variant="scrollable"
             scrollButtons="auto"
@@ -87,35 +102,57 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             {role === "Admin" && <Tab label={"Manage"} value="manage" />}
           </Tabs>
         </Grid>
-        {role === "Admin" ? (
-          <>
-            <Grid item xs={4} lg={1} order={3}>
-              <Link to={`/projects/${project_id}/edit`}>
-                <Button endIcon={<Edit />} variant="contained" fullWidth>
-                  Edit
-                </Button>
-              </Link>
-            </Grid>
-            <Grid item xs={4} lg={1} order={4}>
-              <Button
-                endIcon={<Delete />}
-                variant="contained"
-                fullWidth
-                onClick={() => {
-                  deleteProject();
-                }}
+        <Grid
+          item
+          xs={1}
+          lg={3}
+          order={3}
+          alignItems={"center"}
+          display="flex"
+          justifyContent={"end"}
+        >
+          {role === "Admin" ? (
+            <>
+              <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
+                <MoreVert />
+              </IconButton>
+              <Menu
+                open={drawerAnchor != undefined}
+                onClose={() => setDrawerAnchor(undefined)}
+                anchorEl={drawerAnchor}
               >
-                Hapus
-              </Button>
-            </Grid>
-          </>
-        ) : (
-          <Grid item xs={8} lg={2} order={5} />
-        )}
-        <Grid item xs={4} lg={1} order={6}>
-          <Button fullWidth endIcon={<Logout />} onClick={() => leaveProject()} variant="contained">
-            Keluar
-          </Button>
+                <Link to={`/projects/${project_id}/edit`}>
+                  <MenuItem>
+                    <ListItemIcon>
+                      <Edit />
+                    </ListItemIcon>
+                    <ListItemText>
+                      <Typography
+                        sx={{
+                          textDecoration: "none",
+                          color: "white",
+                        }}
+                      >
+                        Edit
+                      </Typography>
+                    </ListItemText>
+                  </MenuItem>
+                </Link>
+                <MenuItem onClick={() => deleteProject()}>
+                  <ListItemIcon>
+                    <Delete />
+                  </ListItemIcon>
+                  <ListItemText>Hapus</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => leaveProject()}>
+                  <ListItemIcon>
+                    <Logout />
+                  </ListItemIcon>
+                  <ListItemText>Keluar</ListItemText>
+                </MenuItem>
+              </Menu>
+            </>
+          ) : null}
         </Grid>
       </Grid>
       {activeTab === "disc" && <ChatroomWrapper project_id={project_id} user_id={user_id} />}

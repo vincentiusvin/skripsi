@@ -1,4 +1,4 @@
-import { Add, Delete, Edit, People } from "@mui/icons-material";
+import { Add, Delete, Edit, MoreVert, People } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -10,6 +10,11 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
   Paper,
   Skeleton,
   Stack,
@@ -92,14 +97,12 @@ function InviteUserDialog(props: { org_id: number }) {
           )}
         </DialogContent>
       </Dialog>
-      <Button
-        onClick={() => setDialogOpen(true)}
-        variant="contained"
-        fullWidth
-        endIcon={<People />}
-      >
-        Invite Members
-      </Button>
+      <MenuItem onClick={() => setDialogOpen(true)}>
+        <ListItemIcon>
+          <People />
+        </ListItemIcon>
+        <ListItemText>Tambah Pengurus</ListItemText>
+      </MenuItem>
     </>
   );
 }
@@ -180,6 +183,8 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
     },
   });
 
+  const [drawerAnchor, setDrawerAnchor] = useState<HTMLElement | undefined>();
+
   if (!data || !projectData) {
     return <Skeleton />;
   }
@@ -189,34 +194,52 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
 
   return (
     <Grid container mt={2} rowGap={2}>
-      <Grid item xs={12} md={2}>
-        {isAdmin ? (
-          <InviteUserDialog org_id={org_id} />
-        ) : isInvited ? (
-          <RespondInvite org_id={org_id} user_id={user_id} />
-        ) : null}
+      <Grid item xs={12}>
+        {isInvited ? <RespondInvite org_id={org_id} user_id={user_id} /> : null}
       </Grid>
-      <Grid item xs={12} md={8}>
+      <Grid item xs={1}></Grid>
+      <Grid item xs={10}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           {data.org_name}
         </Typography>
       </Grid>
-      <Grid item xs={6} md={1}>
+      <Grid item xs={1} alignItems={"center"} justifyContent={"end"} display="flex">
         {isAdmin ? (
-          <Link to={`/orgs/${org_id}/edit`}>
-            <Button endIcon={<Edit />} variant="contained" fullWidth>
-              Edit
-            </Button>
-          </Link>
-        ) : null}
-      </Grid>
-      <Grid item xs={6} md={1}>
-        {isAdmin ? (
-          <Link to={"/orgs"}>
-            <Button endIcon={<Delete />} variant="contained" fullWidth onClick={() => deleteOrg()}>
-              Delete
-            </Button>
-          </Link>
+          <>
+            <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
+              <MoreVert />
+            </IconButton>
+            <Menu
+              open={drawerAnchor != undefined}
+              onClose={() => setDrawerAnchor(undefined)}
+              anchorEl={drawerAnchor}
+            >
+              <Link to={`/orgs/${org_id}/edit`}>
+                <MenuItem>
+                  <ListItemIcon>
+                    <Edit />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <Typography
+                      sx={{
+                        textDecoration: "none",
+                        color: "white",
+                      }}
+                    >
+                      Edit
+                    </Typography>
+                  </ListItemText>
+                </MenuItem>
+              </Link>
+              <MenuItem onClick={() => deleteOrg()}>
+                <ListItemIcon>
+                  <Delete />
+                </ListItemIcon>
+                <ListItemText>Hapus</ListItemText>
+              </MenuItem>
+              <InviteUserDialog org_id={org_id} />
+            </Menu>
+          </>
         ) : null}
       </Grid>
 
