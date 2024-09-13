@@ -82,7 +82,6 @@ function OrgsAddPage() {
               cursor: "pointer",
             }}
             onChange={async (file) => {
-              console.log(file);
               const b64 = file ? await fileToBase64DataURL(file) : null;
               setOrgImage(b64);
             }}
