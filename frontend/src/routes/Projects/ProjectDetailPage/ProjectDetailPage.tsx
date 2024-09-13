@@ -1,7 +1,6 @@
-import { ArrowBack, Check, Delete, Edit, Logout, MoreVert } from "@mui/icons-material";
+import { Check, Delete, Edit, Logout, MoreVert } from "@mui/icons-material";
 import {
   Button,
-  Grid,
   IconButton,
   ListItemIcon,
   ListItemText,
@@ -187,44 +186,37 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
   }
 
   return (
-    <>
-      <Grid container mt={2} rowSpacing={2}>
-        <Grid item xs={3} lg={2}>
-          <Link to={"/projects"}>
-            <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
-              Go Back
-            </Button>
-          </Link>
-        </Grid>
-        <Grid item xs={6} lg={8}>
-          <Typography variant="h4" fontWeight={"bold"} align="center">
-            {project.project_name}
-          </Typography>
-        </Grid>
-        <Grid item xs={3} lg={2}>
-          <Button
-            endIcon={<Check />}
-            variant="contained"
-            disabled={role === "Admin" || role === "Dev"}
-            fullWidth
-            onClick={() => {
-              if (role === "Not Involved") {
-                addMember({
-                  role: "Pending",
-                });
-              } else if (role === "Invited") {
-                addMember({
-                  role: "Dev",
-                });
-              }
-            }}
-          >
-            {role === "Invited" ? "Accept" : role === "Pending" ? "Applied" : "Apply"}
-          </Button>
-        </Grid>
-      </Grid>
-      <ProjectInfo project_id={project_id} />
-    </>
+    <Grid2 container mt={2} rowSpacing={2}>
+      <Grid2 xs={12} md={8} mdOffset={2}>
+        <Typography variant="h4" fontWeight={"bold"} align="center">
+          {project.project_name}
+        </Typography>
+      </Grid2>
+      <Grid2 xs={12} md={2}>
+        <Button
+          endIcon={<Check />}
+          variant="contained"
+          disabled={role === "Admin" || role === "Dev"}
+          fullWidth
+          onClick={() => {
+            if (role === "Not Involved") {
+              addMember({
+                role: "Pending",
+              });
+            } else if (role === "Invited") {
+              addMember({
+                role: "Dev",
+              });
+            }
+          }}
+        >
+          {role === "Invited" ? "Accept" : role === "Pending" ? "Applied" : "Apply"}
+        </Button>
+      </Grid2>
+      <Grid2 xs={12}>
+        <ProjectInfo project_id={project_id} />
+      </Grid2>
+    </Grid2>
   );
 }
 
@@ -249,22 +241,16 @@ function UnauthenticatedView(props: { project_id: number }) {
 
   return (
     <>
-      <Grid container mt={2} rowSpacing={2}>
-        <Grid item xs={1}>
-          <Link to={"/projects"}>
-            <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
-              Go Back
-            </Button>
-          </Link>
-        </Grid>
-        <Grid item xs={10}>
+      <Grid2 container mt={2} rowSpacing={2}>
+        <Grid2 xs={12}>
           <Typography variant="h4" fontWeight={"bold"} align="center">
             {project.project_name}
           </Typography>
-        </Grid>
-        <Grid item xs={1}></Grid>
-      </Grid>
-      <ProjectInfo project_id={project_id} />
+        </Grid2>
+        <Grid2 xs={12}>
+          <ProjectInfo project_id={project_id} />
+        </Grid2>
+      </Grid2>
     </>
   );
 }

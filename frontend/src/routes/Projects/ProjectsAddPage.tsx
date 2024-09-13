@@ -1,4 +1,4 @@
-import { ArrowBack, Save } from "@mui/icons-material";
+import { Save } from "@mui/icons-material";
 import {
   Button,
   FormControl,
@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Link, useLocation, useParams } from "wouter";
+import { useLocation, useParams } from "wouter";
 import { useProjectsCategoriesGet, useProjectsPost } from "../../queries/project_hooks";
 
 function ProjectsAddPage() {
@@ -48,24 +48,12 @@ function ProjectsAddPage() {
 
   return (
     <Grid container spacing={2} mt={2}>
-      <Grid item xs={2}>
-        <Link to={"/projects"}>
-          <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
-            Kembali
-          </Button>
-        </Link>
-      </Grid>
-      <Grid item xs={8}>
+      <Grid item xs={12}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           Tambah Project
         </Typography>
       </Grid>
-      <Grid item xs={2}>
-        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addProject()}>
-          Simpan
-        </Button>
-      </Grid>
-      <Grid item xs={8}>
+      <Grid item xs={12}>
         <Stack spacing={4}>
           <TextField
             fullWidth
@@ -96,6 +84,11 @@ function ProjectsAddPage() {
             </Select>
           </FormControl>
         </Stack>
+      </Grid>
+      <Grid item xs={12}>
+        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addProject()}>
+          Simpan
+        </Button>
       </Grid>
     </Grid>
   );

@@ -1,4 +1,4 @@
-import { AddAPhoto, ArrowBack, Save } from "@mui/icons-material";
+import { AddAPhoto, Save } from "@mui/icons-material";
 import {
   Avatar,
   Button,
@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
@@ -65,24 +65,12 @@ function OrgsAddPage() {
 
   return (
     <Grid container spacing={2} mt={2}>
-      <Grid item xs={2}>
-        <Link to={"/orgs"}>
-          <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
-            Kembali
-          </Button>
-        </Link>
-      </Grid>
-      <Grid item xs={8}>
+      <Grid item xs={12}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           Tambah Organisasi
         </Typography>
       </Grid>
-      <Grid item xs={2}>
-        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addOrg()}>
-          Simpan
-        </Button>
-      </Grid>
-      <Grid item xs={4}>
+      <Grid item xs={12} md={4}>
         <Paper sx={{ minHeight: 300 }}>
           <ImageDropzone
             sx={{
@@ -124,7 +112,7 @@ function OrgsAddPage() {
           </ImageDropzone>
         </Paper>
       </Grid>
-      <Grid item xs={8}>
+      <Grid item xs={12} md={8}>
         <Stack spacing={4}>
           <TextField
             fullWidth
@@ -164,6 +152,11 @@ function OrgsAddPage() {
             </Select>
           </FormControl>
         </Stack>
+      </Grid>
+      <Grid item xs={12}>
+        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addOrg()}>
+          Simpan
+        </Button>
       </Grid>
     </Grid>
   );
