@@ -3,11 +3,11 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Grid,
   Skeleton,
   Stack,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { Fragment, useState } from "react";
 import { useProjectsDetailGet } from "../../../queries/project_hooks.ts";
 import { useUsersGet } from "../../../queries/user_hooks.ts";
@@ -93,7 +93,7 @@ function ProjectManage(props: { project_id: number }) {
   ] as const;
 
   return (
-    <Stack gap={2}>
+    (<Stack gap={2}>
       <InviteMembersDialog project_id={project_id} />
       {memberTypes.map((x, i) => (
         <Fragment key={i}>
@@ -103,7 +103,14 @@ function ProjectManage(props: { project_id: number }) {
           {x.members.length ? (
             <Grid container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
               {x.members.map((m) => (
-                <Grid key={m.user_id} item xs={12} md={4} lg={3} justifyContent={"center"}>
+                <Grid
+                  key={m.user_id}
+                  justifyContent={"center"}
+                  size={{
+                    xs: 12,
+                    md: 4,
+                    lg: 3
+                  }}>
                   <ProjectMember
                     deleteOption={x.deleteOption}
                     putOption={x.putOption}
@@ -118,7 +125,7 @@ function ProjectManage(props: { project_id: number }) {
           )}
         </Fragment>
       ))}
-    </Stack>
+    </Stack>)
   );
 }
 

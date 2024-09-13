@@ -13,7 +13,7 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -77,8 +77,18 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
 
   return (
     <Stack height={"100%"}>
-      <Grid2 container rowGap={2}>
-        <Grid2 xs={10} lg={3} order={1} xsOffset={1} lgOffset={0}>
+      <Grid container rowGap={2}>
+        <Grid
+          order={1}
+          size={{
+            xs: 10,
+            lg: 3,
+          }}
+          offset={{
+            xs: 1,
+            lg: 0,
+          }}
+        >
           <Typography
             variant="h3"
             fontWeight={"bold"}
@@ -89,8 +99,14 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
           >
             {project.project_name}
           </Typography>
-        </Grid2>
-        <Grid2 xs={12} lg={6} order={{ lg: 2, xs: 4 }}>
+        </Grid>
+        <Grid
+          order={{ lg: 2, xs: 4 }}
+          size={{
+            xs: 12,
+            lg: 6,
+          }}
+        >
           <Tabs
             variant="scrollable"
             scrollButtons="auto"
@@ -109,8 +125,17 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             <Tab label={"Info"} value="info" />
             {role === "Admin" && <Tab label={"Manage"} value="manage" />}
           </Tabs>
-        </Grid2>
-        <Grid2 xs={1} lg={3} order={3} alignItems={"center"} display="flex" justifyContent={"end"}>
+        </Grid>
+        <Grid
+          order={3}
+          alignItems={"center"}
+          display="flex"
+          justifyContent={"end"}
+          size={{
+            xs: 1,
+            lg: 3,
+          }}
+        >
           {role === "Admin" ? (
             <>
               <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
@@ -153,8 +178,8 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
               </Menu>
             </>
           ) : null}
-        </Grid2>
-      </Grid2>
+        </Grid>
+      </Grid>
       <Box minHeight={"100vh"}>
         {activeTab === "disc" && <ChatroomWrapper project_id={project_id} user_id={user_id} />}
         {activeTab === "info" && <ProjectInfo project_id={project_id} />}
@@ -196,8 +221,16 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
   }
 
   return (
-    <Grid2 container mt={2} rowSpacing={2}>
-      <Grid2 xs={12} md={8} mdOffset={2}>
+    <Grid container mt={2} rowSpacing={2}>
+      <Grid
+        size={{
+          xs: 12,
+          md: 8,
+        }}
+        offset={{
+          md: 2,
+        }}
+      >
         <Typography
           variant="h4"
           fontWeight={"bold"}
@@ -208,8 +241,13 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
         >
           {project.project_name}
         </Typography>
-      </Grid2>
-      <Grid2 xs={12} md={2}>
+      </Grid>
+      <Grid
+        size={{
+          xs: 12,
+          md: 2,
+        }}
+      >
         <Button
           endIcon={<Check />}
           variant="contained"
@@ -229,11 +267,11 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
         >
           {role === "Invited" ? "Accept" : role === "Pending" ? "Applied" : "Apply"}
         </Button>
-      </Grid2>
-      <Grid2 xs={12}>
+      </Grid>
+      <Grid size={12}>
         <ProjectInfo project_id={project_id} />
-      </Grid2>
-    </Grid2>
+      </Grid>
+    </Grid>
   );
 }
 
@@ -258,8 +296,8 @@ function UnauthenticatedView(props: { project_id: number }) {
 
   return (
     <>
-      <Grid2 container mt={2} rowSpacing={2}>
-        <Grid2 xs={12}>
+      <Grid container mt={2} rowSpacing={2}>
+        <Grid size={12}>
           <Typography
             variant="h4"
             fontWeight={"bold"}
@@ -270,11 +308,11 @@ function UnauthenticatedView(props: { project_id: number }) {
           >
             {project.project_name}
           </Typography>
-        </Grid2>
-        <Grid2 xs={12}>
+        </Grid>
+        <Grid size={12}>
           <ProjectInfo project_id={project_id} />
-        </Grid2>
-      </Grid2>
+        </Grid>
+      </Grid>
     </>
   );
 }

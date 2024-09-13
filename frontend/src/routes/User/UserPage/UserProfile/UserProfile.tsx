@@ -1,5 +1,6 @@
 import { Email, School } from "@mui/icons-material";
-import { Avatar, Grid, Paper, Skeleton, Stack, Typography } from "@mui/material";
+import { Avatar, Paper, Skeleton, Stack, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { useLocation } from "wouter";
 import { APIError } from "../../../../helpers/fetch.ts";
 import { useUsersDetailGet } from "../../../../queries/user_hooks.ts";
@@ -29,7 +30,12 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
 
   return (
     <Grid container rowGap={2}>
-      <Grid item xs={12} md={4}>
+      <Grid
+        size={{
+          xs: 12,
+          md: 4,
+        }}
+      >
         <Stack alignItems={"center"} spacing={2}>
           <Avatar src={userDetail.user_image ?? ""} sx={{ width: 256, height: 256 }}></Avatar>
           {our_id != undefined ? (
@@ -40,7 +46,12 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
           <UserOrgsList user_id={viewed_id} />
         </Stack>
       </Grid>
-      <Grid item xs={12} md={8}>
+      <Grid
+        size={{
+          xs: 12,
+          md: 8,
+        }}
+      >
         <Stack gap={4}>
           <Paper
             sx={{

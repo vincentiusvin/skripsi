@@ -1,4 +1,5 @@
-import { Button, Grid, TextField, Typography } from "@mui/material";
+import { Button, TextField, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -38,13 +39,11 @@ function AuthPage() {
   }
 
   return (
-    <Grid container height={"100%"} alignItems={"center"}>
-      <Grid item xs={6}>
-        Hello
-      </Grid>
-      <Grid item xs={6} alignItems={"center"}>
+    (<Grid container height={"100%"} alignItems={"center"}>
+      <Grid size={6}>Hello</Grid>
+      <Grid alignItems={"center"} size={6}>
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <TextField
               fullWidth
               onChange={(e) => setUsername(e.target.value)}
@@ -52,7 +51,7 @@ function AuthPage() {
               sx={{ display: "block" }}
             ></TextField>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <TextField
               fullWidth
               type="password"
@@ -61,19 +60,19 @@ function AuthPage() {
               sx={{ display: "block" }}
             ></TextField>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Button fullWidth onClick={() => login()}>
               Login
             </Button>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Button fullWidth onClick={() => register()}>
               Register
             </Button>
           </Grid>
         </Grid>
       </Grid>
-    </Grid>
+    </Grid>)
   );
 }
 

@@ -6,7 +6,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
   IconButton,
   Menu,
   Paper,
@@ -18,6 +17,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Redirect } from "wouter";
@@ -118,7 +118,12 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
         </Alert>
       </Snackbar>
       {sideOpen || selectedChatroom == undefined ? (
-        <Grid item xs={4} lg={2}>
+        <Grid
+          size={{
+            xs: 4,
+            lg: 2,
+          }}
+        >
           <AddRoomDialog user_id={user_id} />
           <Tabs
             variant="scrollable"
@@ -136,7 +141,12 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
           </Tabs>
         </Grid>
       ) : null}
-      <Grid item xs={sideOpen ? 8 : 12} lg={sideOpen ? 10 : 12}>
+      <Grid
+        size={{
+          xs: sideOpen ? 8 : 12,
+          lg: sideOpen ? 10 : 12,
+        }}
+      >
         {selectedChatroom && (
           <Stack height={"100%"} display={"flex"}>
             <Paper>

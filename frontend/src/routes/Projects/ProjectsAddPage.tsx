@@ -2,7 +2,6 @@ import { Save } from "@mui/icons-material";
 import {
   Button,
   FormControl,
-  Grid,
   InputLabel,
   MenuItem,
   Select,
@@ -10,6 +9,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
@@ -47,13 +47,13 @@ function ProjectsAddPage() {
   const { data: categories } = useProjectsCategoriesGet();
 
   return (
-    <Grid container spacing={2} mt={2}>
-      <Grid item xs={12}>
+    (<Grid container spacing={2} mt={2}>
+      <Grid size={12}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           Tambah Project
         </Typography>
       </Grid>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Stack spacing={4}>
           <TextField
             fullWidth
@@ -85,12 +85,12 @@ function ProjectsAddPage() {
           </FormControl>
         </Stack>
       </Grid>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addProject()}>
           Simpan
         </Button>
       </Grid>
-    </Grid>
+    </Grid>)
   );
 }
 

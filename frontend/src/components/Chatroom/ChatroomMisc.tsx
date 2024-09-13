@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  Grid,
   ListItemIcon,
   ListItemText,
   MenuItem,
@@ -14,6 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { useChatroomsDetailGet, useChatroomsDetailPut } from "../../queries/chat_hooks.ts";
@@ -89,10 +89,10 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
           <Grid container>
             {outUsers.map((x, i) => (
               <React.Fragment key={i}>
-                <Grid item xs={10}>
+                <Grid size={10}>
                   <Typography>{x.user_name}</Typography>
                 </Grid>
-                <Grid item xs={2}>
+                <Grid size={2}>
                   <Button onClick={() => setEditRoomMembers((old) => [...(old ?? []), x.user_id])}>
                     <Add />
                   </Button>
@@ -114,10 +114,10 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
               <Grid container>
                 {pendingUsers.map((x, i) => (
                   <React.Fragment key={i}>
-                    <Grid item key={i} xs={10}>
+                    <Grid key={i} size={10}>
                       <Typography>{x.user_name}</Typography>
                     </Grid>
-                    <Grid item xs={2}>
+                    <Grid size={2}>
                       <Button
                         onClick={() =>
                           setEditRoomMembers((old) =>

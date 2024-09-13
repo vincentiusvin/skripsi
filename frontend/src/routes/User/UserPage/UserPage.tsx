@@ -1,5 +1,6 @@
 import { Edit } from "@mui/icons-material";
-import { Button, Grid, Skeleton, Tab, Tabs } from "@mui/material";
+import { Button, Skeleton, Tab, Tabs } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { APIError } from "../../../helpers/fetch.ts";
@@ -36,8 +37,18 @@ function UserAccountPage() {
 
   return (
     <Grid container rowGap={2} mt={2}>
-      <Grid item xs={12} md={2}></Grid>
-      <Grid item xs={12} md={8}>
+      <Grid
+        size={{
+          xs: 12,
+          md: 2,
+        }}
+      ></Grid>
+      <Grid
+        size={{
+          xs: 12,
+          md: 8,
+        }}
+      >
         <Tabs
           variant="scrollable"
           scrollButtons="auto"
@@ -56,7 +67,12 @@ function UserAccountPage() {
           <Tab label={"Kontribusi"} value="contrib" />
         </Tabs>
       </Grid>
-      <Grid item xs={12} md={2}>
+      <Grid
+        size={{
+          xs: 12,
+          md: 2,
+        }}
+      >
         {isViewingSelf && (
           <Link to={`${id}/edit`}>
             <Button variant="contained" fullWidth endIcon={<Edit />}>
@@ -65,7 +81,7 @@ function UserAccountPage() {
           </Link>
         )}
       </Grid>
-      <Grid item xs={12}>
+      <Grid size={12}>
         {activeTab === "acc" ? (
           <UserProfile viewed_id={viewed_id} our_id={isLogged ? userLog.user_id : undefined} />
         ) : null}
