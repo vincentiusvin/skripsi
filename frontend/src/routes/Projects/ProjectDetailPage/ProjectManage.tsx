@@ -8,7 +8,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useProjectsDetailGet } from "../../../queries/project_hooks.ts";
 import { useUsersGet } from "../../../queries/user_hooks.ts";
 import ProjectMember from "./ProjectMemberComponent.tsx";
@@ -95,8 +95,8 @@ function ProjectManage(props: { project_id: number }) {
   return (
     <Stack gap={2}>
       <InviteMembersDialog project_id={project_id} />
-      {memberTypes.map((x) => (
-        <>
+      {memberTypes.map((x, i) => (
+        <Fragment key={i}>
           <Typography variant="h6" textAlign={"center"}>
             {x.name}
           </Typography>
@@ -116,7 +116,7 @@ function ProjectManage(props: { project_id: number }) {
           ) : (
             <Typography textAlign={"center"}>There are no {x.name.toLocaleLowerCase()}!</Typography>
           )}
-        </>
+        </Fragment>
       ))}
     </Stack>
   );
