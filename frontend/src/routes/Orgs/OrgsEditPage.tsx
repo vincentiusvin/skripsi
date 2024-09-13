@@ -70,24 +70,31 @@ function OrgsEditPage() {
 
   return (
     <Grid container spacing={2} mt={2}>
-      <Grid item xs={2}>
+      <Grid item xs={3} md={2}>
         <Link to={"/orgs"}>
           <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
             Kembali
           </Button>
         </Link>
       </Grid>
-      <Grid item xs={8}>
-        <Typography variant="h4" fontWeight={"bold"} align="center">
+      <Grid item xs={6} md={8}>
+        <Typography
+          variant="h4"
+          fontWeight={"bold"}
+          align="center"
+          sx={{
+            wordBreak: "break-word",
+          }}
+        >
           Edit Organisasi
         </Typography>
       </Grid>
-      <Grid item xs={2}>
+      <Grid item xs={3} md={2}>
         <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => editOrg()}>
           Simpan
         </Button>
       </Grid>
-      <Grid item xs={4}>
+      <Grid item xs={12} md={4}>
         <Paper sx={{ minHeight: 300 }}>
           <ImageDropzone
             sx={{
@@ -128,7 +135,7 @@ function OrgsEditPage() {
           </ImageDropzone>
         </Paper>
       </Grid>
-      <Grid item xs={8}>
+      <Grid item xs={12} md={8}>
         <Stack spacing={4}>
           <TextField
             fullWidth

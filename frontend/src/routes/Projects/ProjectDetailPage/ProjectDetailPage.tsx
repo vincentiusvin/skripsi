@@ -13,6 +13,7 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
+import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -76,13 +77,13 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
 
   return (
     <Stack height={"100%"}>
-      <Grid container rowGap={2}>
-        <Grid item xs={10} lg={3} order={1}>
+      <Grid2 container rowGap={2}>
+        <Grid2 xs={10} lg={3} order={1} xsOffset={1} lgOffset={0}>
           <Typography variant="h3" fontWeight={"bold"} textAlign={"center"}>
             {project.project_name}
           </Typography>
-        </Grid>
-        <Grid item xs={12} lg={6} order={{ lg: 2, xs: 4 }}>
+        </Grid2>
+        <Grid2 xs={12} lg={6} order={{ lg: 2, xs: 4 }}>
           <Tabs
             variant="scrollable"
             scrollButtons="auto"
@@ -101,16 +102,8 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             <Tab label={"Info"} value="info" />
             {role === "Admin" && <Tab label={"Manage"} value="manage" />}
           </Tabs>
-        </Grid>
-        <Grid
-          item
-          xs={1}
-          lg={3}
-          order={3}
-          alignItems={"center"}
-          display="flex"
-          justifyContent={"end"}
-        >
+        </Grid2>
+        <Grid2 xs={1} lg={3} order={3} alignItems={"center"} display="flex" justifyContent={"end"}>
           {role === "Admin" ? (
             <>
               <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
@@ -153,8 +146,8 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
               </Menu>
             </>
           ) : null}
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
       {activeTab === "disc" && <ChatroomWrapper project_id={project_id} user_id={user_id} />}
       {activeTab === "info" && <ProjectInfo project_id={project_id} />}
       {activeTab === "manage" && <ProjectManage project_id={project_id} />}
