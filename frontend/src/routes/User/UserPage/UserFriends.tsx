@@ -60,7 +60,7 @@ function UserFriends(props: { user_id: number }) {
           {x.members.length ? (
             <Grid container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
               {x.members.map((m) => (
-                <Grid key={m.user_id} item xs={12} md={3} justifyContent={"center"}>
+                <Grid key={m.user_id} item xs={12} md={4} lg={3} justifyContent={"center"}>
                   <FriendManage
                     deleteOption={x.deleteOption}
                     putOption={x.putOption}
