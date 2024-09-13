@@ -3,7 +3,6 @@ import {
   Avatar,
   Button,
   FormControl,
-  Grid,
   InputLabel,
   MenuItem,
   Paper,
@@ -13,6 +12,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
@@ -70,7 +70,7 @@ function OrgsEditPage() {
 
   return (
     <Grid container spacing={2} mt={2}>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Typography
           variant="h4"
           fontWeight={"bold"}
@@ -82,7 +82,12 @@ function OrgsEditPage() {
           Edit Organisasi
         </Typography>
       </Grid>
-      <Grid item xs={12} md={4}>
+      <Grid
+        size={{
+          xs: 12,
+          md: 4,
+        }}
+      >
         <Paper sx={{ minHeight: 300 }}>
           <ImageDropzone
             sx={{
@@ -123,7 +128,12 @@ function OrgsEditPage() {
           </ImageDropzone>
         </Paper>
       </Grid>
-      <Grid item xs={12} md={8}>
+      <Grid
+        size={{
+          xs: 12,
+          md: 8,
+        }}
+      >
         <Stack spacing={4}>
           <TextField
             fullWidth
@@ -168,7 +178,7 @@ function OrgsEditPage() {
           </FormControl>
         </Stack>
       </Grid>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => editOrg()}>
           Simpan
         </Button>

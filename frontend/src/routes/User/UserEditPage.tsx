@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Grid,
   IconButton,
   InputAdornment,
   Paper,
@@ -14,6 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { useLocation, useParams } from "wouter";
@@ -133,9 +133,13 @@ function UserAccountPageEdit() {
             </ImageDropzone>
           </DialogContent>
         </Dialog>
-
         <Grid container mt={2} rowGap={2}>
-          <Grid item xs={12} md={4}>
+          <Grid
+            size={{
+              xs: 12,
+              md: 4,
+            }}
+          >
             <Stack alignItems={"center"}>
               <Badge
                 overlap="circular"
@@ -158,7 +162,12 @@ function UserAccountPageEdit() {
               </Badge>
             </Stack>
           </Grid>
-          <Grid item xs={12} md={8}>
+          <Grid
+            size={{
+              xs: 12,
+              md: 8,
+            }}
+          >
             <Stack gap={4}>
               <Paper
                 sx={{

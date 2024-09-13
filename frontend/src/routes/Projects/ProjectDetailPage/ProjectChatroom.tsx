@@ -6,7 +6,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
   IconButton,
   Menu,
   Paper,
@@ -17,6 +16,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import ChatroomComponent from "../../../components/Chatroom/Chatroom.tsx";
@@ -61,100 +61,106 @@ export function ChatroomWrapper(props: { user_id: number; project_id: number }) 
   });
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | undefined>();
 
-  return (
-    <>
-      <Snackbar open={!connected}>
-        <Alert severity="error">
-          <Typography>You are not connected!</Typography>
-        </Alert>
-      </Snackbar>
-      <Dialog open={addRoomOpen} onClose={() => setAddRoomOpen(false)}>
-        <DialogTitle>Add new room</DialogTitle>
-        <DialogContent>
-          <TextField fullWidth onChange={(e) => setAddRoomName(e.target.value)} label="Room name" />
-        </DialogContent>
-        <DialogActions>
+  return (<>
+    <Snackbar open={!connected}>
+      <Alert severity="error">
+        <Typography>You are not connected!</Typography>
+      </Alert>
+    </Snackbar>
+    <Dialog open={addRoomOpen} onClose={() => setAddRoomOpen(false)}>
+      <DialogTitle>Add new room</DialogTitle>
+      <DialogContent>
+        <TextField fullWidth onChange={(e) => setAddRoomName(e.target.value)} label="Room name" />
+      </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={() =>
+            createRoom({
+              name: addRoomName,
+            })
+          }
+        >
+          Create room
+        </Button>
+      </DialogActions>
+    </Dialog>
+    <Grid container height={"100%"}>
+      {sideOpen || selectedChatroom == undefined ? (
+        <Grid
+          size={{
+            xs: 4,
+            lg: 2
+          }}>
           <Button
-            onClick={() =>
-              createRoom({
-                name: addRoomName,
-              })
-            }
+            fullWidth
+            variant="contained"
+            onClick={() => {
+              setAddRoomOpen(true);
+            }}
           >
-            Create room
+            Add room
           </Button>
-        </DialogActions>
-      </Dialog>
-      <Grid container height={"100%"}>
-        {sideOpen || selectedChatroom == undefined ? (
-          <Grid item xs={4} lg={2}>
-            <Button
-              fullWidth
-              variant="contained"
-              onClick={() => {
-                setAddRoomOpen(true);
-              }}
-            >
-              Add room
-            </Button>
-            <Tabs
-              orientation="vertical"
-              scrollButtons="auto"
-              allowScrollButtonsMobile
-              value={activeRoom}
-              onChange={(_e, newRoomId) => {
-                setActiveRoom(newRoomId);
-              }}
-            >
-              {chatrooms?.map((x, i) => (
-                <Tab key={i} label={x.chatroom_name} value={x.chatroom_id} />
-              ))}
-            </Tabs>
-          </Grid>
-        ) : null}
-        <Grid item xs={sideOpen ? 8 : 12} lg={sideOpen ? 10 : 12}>
-          {selectedChatroom && (
-            <Stack height={"100%"} display={"flex"}>
-              <Paper>
-                <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
-                  {sideOpen ? (
-                    <IconButton onClick={() => setSideOpen(() => false)}>
-                      <ArrowLeft />
-                    </IconButton>
-                  ) : (
-                    <IconButton onClick={() => setSideOpen(() => true)}>
-                      <ArrowRight />
-                    </IconButton>
-                  )}
-                  <Typography
-                    variant="h5"
-                    fontWeight={"bold"}
-                    my={1}
-                    mx={2}
-                    overflow={"hidden"}
-                    sx={{
-                      wordWrap: "break-word",
-                    }}
-                  >
-                    {selectedChatroom.chatroom_name}
-                  </Typography>
-                  <Menu
-                    open={menuAnchor != undefined}
-                    anchorEl={menuAnchor}
-                    onClose={() => setMenuAnchor(undefined)}
-                  >
-                    <ChangeNameDialog chatroom_id={selectedChatroom.chatroom_id} />
-                  </Menu>
-                  <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)}>
-                    <MoreVert />
-                  </IconButton>
-                </Stack>
-              </Paper>
-              <ChatroomComponent chatroom_id={selectedChatroom.chatroom_id} />
-            </Stack>
-          )}
+          <Tabs
+            orientation="vertical"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            value={activeRoom}
+            onChange={(_e, newRoomId) => {
+              setActiveRoom(newRoomId);
+            }}
+          >
+            {chatrooms?.map((x, i) => (
+              <Tab key={i} label={x.chatroom_name} value={x.chatroom_id} />
+            ))}
+          </Tabs>
         </Grid>
+      ) : null}
+      <Grid
+        size={{
+          xs: sideOpen ? 8 : 12,
+          lg: sideOpen ? 10 : 12
+        }}>
+        {selectedChatroom && (
+          <Stack height={"100%"} display={"flex"}>
+            <Paper>
+              <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
+                {sideOpen ? (
+                  <IconButton onClick={() => setSideOpen(() => false)}>
+                    <ArrowLeft />
+                  </IconButton>
+                ) : (
+                  <IconButton onClick={() => setSideOpen(() => true)}>
+                    <ArrowRight />
+                  </IconButton>
+                )}
+                <Typography
+                  variant="h5"
+                  fontWeight={"bold"}
+                  my={1}
+                  mx={2}
+                  overflow={"hidden"}
+                  sx={{
+                    wordWrap: "break-word",
+                  }}
+                >
+                  {selectedChatroom.chatroom_name}
+                </Typography>
+                <Menu
+                  open={menuAnchor != undefined}
+                  anchorEl={menuAnchor}
+                  onClose={() => setMenuAnchor(undefined)}
+                >
+                  <ChangeNameDialog chatroom_id={selectedChatroom.chatroom_id} />
+                </Menu>
+                <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)}>
+                  <MoreVert />
+                </IconButton>
+              </Stack>
+            </Paper>
+            <ChatroomComponent chatroom_id={selectedChatroom.chatroom_id} />
+          </Stack>
+        )}
       </Grid>
-    </>
-  );
+    </Grid>
+  </>);
 }

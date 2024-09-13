@@ -9,7 +9,6 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Grid,
   IconButton,
   ListItemIcon,
   ListItemText,
@@ -20,7 +19,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -194,16 +193,16 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
   const isInvited = role_data && role_data.role === "Invited";
 
   return (
-    <Grid2 container mt={2} rowGap={2}>
-      <Grid2 xs={12}>
+    <Grid container mt={2} rowGap={2}>
+      <Grid size={12}>
         {isInvited ? <RespondInvite org_id={org_id} user_id={user_id} /> : null}
-      </Grid2>
-      <Grid2 xs={10} xsOffset={1}>
+      </Grid>
+      <Grid size={10} offset={1}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           {data.org_name}
         </Typography>
-      </Grid2>
-      <Grid2 xs={1} alignItems={"center"} justifyContent={"end"} display="flex">
+      </Grid>
+      <Grid alignItems={"center"} justifyContent={"end"} display="flex" size={1}>
         {isAdmin ? (
           <>
             <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
@@ -241,9 +240,8 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
             </Menu>
           </>
         ) : null}
-      </Grid2>
-
-      <Grid2 xs={12}>
+      </Grid>
+      <Grid size={12}>
         <Paper
           sx={{
             p: 2,
@@ -270,7 +268,14 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
             {data.org_users
               .filter((x) => x.user_role === "Admin")
               .map((x) => (
-                <Grid item xs={12} md={3} justifyContent={"center"} key={x.user_id}>
+                <Grid
+                  justifyContent={"center"}
+                  key={x.user_id}
+                  size={{
+                    xs: 12,
+                    md: 3,
+                  }}
+                >
                   <MemberCard user_id={x.user_id} org_id={org_id} />
                 </Grid>
               ))}
@@ -284,13 +289,24 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
             ))}
           </Stack>
         </Paper>
-      </Grid2>
-      <Grid2 xs={6} md={10}>
+      </Grid>
+      <Grid
+        size={{
+          xs: 6,
+          md: 10,
+        }}
+      >
         <Typography variant="h6" fontWeight={"bold"}>
           Projects
         </Typography>
-      </Grid2>
-      <Grid2 xs={6} md={2} paddingLeft="1vw">
+      </Grid>
+      <Grid
+        paddingLeft="1vw"
+        size={{
+          xs: 6,
+          md: 2,
+        }}
+      >
         {isAdmin ? (
           <Link to={`/orgs/${org_id}/projects/add`}>
             <Button endIcon={<Add />} variant="contained" fullWidth>
@@ -298,9 +314,16 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
             </Button>
           </Link>
         ) : null}
-      </Grid2>
+      </Grid>
       {projectData.map((x, i) => (
-        <Grid2 xs={12} sm={6} lg={4} key={i}>
+        <Grid
+          key={i}
+          size={{
+            xs: 12,
+            sm: 6,
+            lg: 4,
+          }}
+        >
           <Link to={`/projects/${x.project_id}`}>
             <Card variant="elevation">
               <CardActionArea>
@@ -317,9 +340,9 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
               </CardActionArea>
             </Card>
           </Link>
-        </Grid2>
+        </Grid>
       ))}
-    </Grid2>
+    </Grid>
   );
 }
 
@@ -349,12 +372,12 @@ function OrgsDetailUnauthenticated() {
 
   return (
     <Grid container mt={2} rowGap={2}>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           {data.org_name}
         </Typography>
       </Grid>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Paper
           sx={{
             p: 2,
@@ -381,7 +404,14 @@ function OrgsDetailUnauthenticated() {
             {data.org_users
               .filter((x) => x.user_role === "Admin")
               .map((x) => (
-                <Grid item xs={12} md={3} justifyContent={"center"} key={x.user_id}>
+                <Grid
+                  justifyContent={"center"}
+                  key={x.user_id}
+                  size={{
+                    xs: 12,
+                    md: 3,
+                  }}
+                >
                   <MemberCard user_id={x.user_id} org_id={org_id} />
                 </Grid>
               ))}
@@ -396,13 +426,20 @@ function OrgsDetailUnauthenticated() {
           </Stack>
         </Paper>
       </Grid>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Typography variant="h6" fontWeight={"bold"}>
           Projects
         </Typography>
       </Grid>
       {projectData.map((x, i) => (
-        <Grid item xs={12} sm={6} lg={4} key={i}>
+        <Grid
+          key={i}
+          size={{
+            xs: 12,
+            sm: 6,
+            lg: 4,
+          }}
+        >
           <Link to={`/projects/${x.project_id}`}>
             <Card variant="elevation">
               <CardActionArea>
