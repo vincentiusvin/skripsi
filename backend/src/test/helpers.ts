@@ -280,6 +280,17 @@ export async function baseCase(app: Application) {
     .returning(["id", "name"])
     .execute();
 
+  const contributions = await app.db
+    .insertInto("ms_contributions")
+    .values({
+      name: "bla",
+      description: "bla2",
+      project_id: project.id,
+      status: "pending",
+    })
+    .returning(["id", "name", "description", "project_id", "status"])
+    .execute();
+
   return {
     org,
     project,
@@ -298,6 +309,7 @@ export async function baseCase(app: Application) {
     friend_send_user,
     chat,
     message,
+    contributions,
   };
 }
 

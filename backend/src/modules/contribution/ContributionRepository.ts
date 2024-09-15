@@ -9,25 +9,36 @@ export class ContributionRepository {
   }
 
   async getContributions(user_id?: number, project_id?: number) {
-    const query = this.db
+    let query = this.db
       .selectFrom("ms_contributions")
-      .innerJoin(
-        "ms_contributions_users",
-        "ms_contributions.id",
-        "ms_contributions_users.contributions_id",
-      )
-      .select([
+      .select((eb) => [
         "ms_contributions.name as contributions_name",
         "ms_contributions.description as contributions_description",
         "ms_contributions.status as contributions_status",
+        "ms_contributions.project_id as project_id",
+        "ms_contributions.id as id",
+        jsonArrayFrom(
+          eb
+            .selectFrom("ms_contributions_users")
+            .select("ms_contributions_users.user_id")
+            .whereRef("ms_contributions_users.contributions_id", "=", "ms_contributions.id"),
+        ).as("contribution_users"),
       ]);
     if (user_id !== undefined) {
-      query.where("ms_contributions_users.user_id", "=", user_id);
+      query = query.where((eb) =>
+        eb(
+          "ms_contributions.id",
+          "in",
+          eb
+            .selectFrom("ms_contributions_users")
+            .select("ms_contributions_users.user_id")
+            .where("ms_contributions_users.user_id", "=", user_id),
+        ),
+      );
     }
 
-    console.log("id:" + project_id);
     if (project_id !== undefined) {
-      query.where("ms_contributions.project_id", "=", project_id);
+      query = query.where("ms_contributions.project_id", "=", project_id);
     }
     return await query.execute();
   }
@@ -39,13 +50,14 @@ export class ContributionRepository {
         "ms_contributions.name as contributions_name",
         "ms_contributions.description as contributions_description",
         "ms_contributions.status as contributions_status",
-        "ms_users.name as user_name",
+        "ms_contributions.project_id as project_id",
+        "ms_contributions.id as id",
         jsonArrayFrom(
           eb
             .selectFrom("ms_contributions_users")
             .select("ms_contributions_users.user_id")
             .whereRef("ms_contributions_users.contributions_id", "=", "ms_contributions.id"),
-        ).as("user_ids"),
+        ).as("contribution_users"),
       ])
       .where("ms_contributions.id", "=", contributions_id)
       .executeTakeFirst();

@@ -13,7 +13,7 @@ export class ContributionController extends Controller {
 
   init() {
     return {
-      contributionGetByUserId: new Route({
+      ContributionsGet: new Route({
         handler: this.contributionGet,
         method: "get",
         path: "/api/contributions",
@@ -64,6 +64,11 @@ export class ContributionController extends Controller {
       contributions_name: string;
       contributions_description: string;
       contributions_status: string;
+      contribution_users: {
+        user_id: number;
+      }[];
+      project_id: number;
+      id: number;
     }[];
     ReqQuery: {
       user_id?: string;
@@ -85,8 +90,11 @@ export class ContributionController extends Controller {
       contributions_name: string;
       contributions_description: string;
       contributions_status: string;
-      user_ids: number[];
+      contribution_users: {
+        user_id: number;
+      }[];
       project_id: number;
+      id: number;
     };
   }> = async (req, res) => {
     const id = Number(req.params.id);
