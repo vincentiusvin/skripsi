@@ -1,4 +1,4 @@
-import { AddAPhoto, ArrowBack, Edit, Update, Visibility, VisibilityOff } from "@mui/icons-material";
+import { AddAPhoto, Edit, Save, Visibility, VisibilityOff } from "@mui/icons-material";
 import {
   Avatar,
   Badge,
@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Grid,
   IconButton,
   InputAdornment,
   Paper,
@@ -14,9 +13,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
-import { Link, useLocation, useParams } from "wouter";
+import { useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
@@ -133,17 +133,13 @@ function UserAccountPageEdit() {
             </ImageDropzone>
           </DialogContent>
         </Dialog>
-
         <Grid container mt={2} rowGap={2}>
-          <Grid item xs={2}>
-            <Link to={`/users/${id}`}>
-              <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
-                Go Back
-              </Button>
-            </Link>
-          </Grid>
-          <Grid xs={10}></Grid>
-          <Grid item xs={4}>
+          <Grid
+            size={{
+              xs: 12,
+              md: 4,
+            }}
+          >
             <Stack alignItems={"center"}>
               <Badge
                 overlap="circular"
@@ -166,7 +162,12 @@ function UserAccountPageEdit() {
               </Badge>
             </Stack>
           </Grid>
-          <Grid item xs={8}>
+          <Grid
+            size={{
+              xs: 12,
+              md: 8,
+            }}
+          >
             <Stack gap={4}>
               <Paper
                 sx={{
@@ -252,8 +253,8 @@ function UserAccountPageEdit() {
                   defaultValue={data.user_about_me}
                 />
               </Paper>
-              <Button endIcon={<Update />} variant="contained" onClick={handleUpdateClick}>
-                Update
+              <Button endIcon={<Save />} variant="contained" onClick={handleUpdateClick}>
+                Simpan
               </Button>
             </Stack>
           </Grid>

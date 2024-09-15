@@ -139,12 +139,20 @@ function EditBucketDialog(props: { bucket_id: number }) {
           </Button>
         </DialogActions>
       </Dialog>
-      <Typography display={"inline"} variant="h6">
-        {bucket.name}
-      </Typography>
-      <IconButton onClick={() => setActive(true)}>
-        <MoreVert />
-      </IconButton>
+      <Box maxWidth={256}>
+        <Typography
+          display={"inline"}
+          variant="h6"
+          sx={{
+            wordBreak: "break-word",
+          }}
+        >
+          {bucket.name}
+        </Typography>
+        <IconButton onClick={() => setActive(true)}>
+          <MoreVert />
+        </IconButton>
+      </Box>
     </>
   );
 }
@@ -166,7 +174,13 @@ function Task(props: { task_id: number; isDragged?: boolean }) {
       <CardHeader
         action={<EditTaskDialog task_id={task_id} />}
         title={
-          <Typography variant="h5" fontWeight={"bold"}>
+          <Typography
+            variant="h5"
+            fontWeight={"bold"}
+            sx={{
+              wordBreak: "break-word",
+            }}
+          >
             {task.name}
           </Typography>
         }
@@ -450,7 +464,7 @@ function Kanban(props: { project_id: number }) {
   );
 
   return (
-    <Stack height={"100%"}>
+    <Stack height={"100%"} width={"100%"} overflow={"scroll"}>
       <Stack direction={"row"} spacing={5} flexGrow={1} pb={8}>
         <DndContext
           sensors={sensors}

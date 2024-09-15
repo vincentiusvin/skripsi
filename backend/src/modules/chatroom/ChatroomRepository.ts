@@ -31,23 +31,53 @@ export class ChatRepository {
     return await this.db
       .selectFrom("ms_messages")
       .select([
+        "ms_messages.id as id",
         "ms_messages.message as message",
         "ms_messages.created_at as created_at",
         "ms_messages.user_id as user_id",
+        "ms_messages.is_edited as is_edited",
       ])
       .where("ms_messages.chatroom_id", "=", chatroom_id)
+      .orderBy("id asc")
       .execute();
   }
 
-  async addMessage(chatroom_id: number, sender_id: number, message: string) {
+  async addMessage(chatroom_id: number, sender_id: number, message: string, is_edited?: boolean) {
     return await this.db
       .insertInto("ms_messages")
       .values({
         chatroom_id: chatroom_id,
         message: message,
         user_id: sender_id,
+        is_edited,
       })
-      .returning(["message", "user_id", "created_at"])
+      .returning(["id", "message", "user_id", "created_at", "is_edited"])
+      .executeTakeFirst();
+  }
+
+  async updateMessage(
+    message_id: number,
+    obj: { chatroom_id?: number; sender_id?: number; message?: string; is_edited?: boolean },
+  ) {
+    const { chatroom_id, sender_id, message, is_edited } = obj;
+    if (
+      chatroom_id == undefined &&
+      sender_id == undefined &&
+      message == undefined &&
+      is_edited == undefined
+    ) {
+      return;
+    }
+    return await this.db
+      .updateTable("ms_messages")
+      .set({
+        chatroom_id: chatroom_id,
+        message: message,
+        user_id: sender_id,
+        is_edited,
+      })
+      .where("id", "=", message_id)
+      .returning(["id", "message", "user_id", "created_at", "is_edited"])
       .executeTakeFirst();
   }
 

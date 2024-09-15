@@ -54,4 +54,21 @@ async function migrate(option: (typeof ARGS)[number]) {
   await db.destroy();
 }
 
-migrate("latest");
+function checkMigrationTarget(str: string): str is (typeof ARGS)[number] {
+  const relaxedArgs = ARGS as readonly string[];
+  return relaxedArgs.includes(str);
+}
+
+async function run() {
+  const migration_target = process.argv[2];
+  if (checkMigrationTarget(migration_target)) {
+    console.log(`Migrating to ${migration_target}...`);
+    await migrate(migration_target);
+    console.log(`Succesfully migrated to ${migration_target}`);
+  } else {
+    console.error("Invalid migration target!");
+    process.exit(1);
+  }
+}
+
+run();

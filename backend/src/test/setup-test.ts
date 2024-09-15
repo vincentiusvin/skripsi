@@ -6,7 +6,7 @@ export async function mochaGlobalSetup() {
   await app.db.schema.dropSchema("public").cascade().execute();
   await app.db.schema.createSchema("public").execute();
 
-  execSync("tsx src/migrate.ts", {
+  execSync("tsx src/migrate.ts latest", {
     env: process.env,
   });
 

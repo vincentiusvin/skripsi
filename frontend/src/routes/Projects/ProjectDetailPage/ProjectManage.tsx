@@ -3,12 +3,12 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Grid,
   Skeleton,
   Stack,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import Grid from "@mui/material/Grid2";
+import { Fragment, useState } from "react";
 import { useProjectsDetailGet } from "../../../queries/project_hooks.ts";
 import { useUsersGet } from "../../../queries/user_hooks.ts";
 import ProjectMember from "./ProjectMemberComponent.tsx";
@@ -62,74 +62,70 @@ function ProjectManage(props: { project_id: number }) {
     (x) => x.role === "Admin" || x.role === "Dev",
   );
 
+  const memberTypes = [
+    {
+      members: pending_members,
+      deleteOption: {
+        text: "Reject",
+      },
+      putOption: {
+        text: "Approve",
+        role: "Dev",
+      },
+      name: "Pending Members",
+    },
+    {
+      members: active_members,
+      deleteOption: {
+        text: "Remove",
+      },
+      putOption: undefined,
+      name: "Active Members",
+    },
+    {
+      members: invited_members,
+      deleteOption: {
+        text: "Cancel",
+      },
+      putOption: undefined,
+      name: "Invited Members",
+    },
+  ] as const;
+
   return (
-    <Stack gap={2}>
+    (<Stack gap={2}>
       <InviteMembersDialog project_id={project_id} />
-      <Typography variant="h6" textAlign={"center"}>
-        Pending Members
-      </Typography>
-      {pending_members.length ? (
-        pending_members.map((x, i) => (
-          <Grid key={i} container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
-            <Grid item xs={3} justifyContent={"center"}>
-              <ProjectMember
-                deleteOption={{
-                  text: "Reject",
-                }}
-                putOption={{
-                  text: "Approve",
-                  role: "Dev",
-                }}
-                project_id={project_id}
-                user_id={x.user_id}
-              />
+      {memberTypes.map((x, i) => (
+        <Fragment key={i}>
+          <Typography variant="h6" textAlign={"center"}>
+            {x.name}
+          </Typography>
+          {x.members.length ? (
+            <Grid container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
+              {x.members.map((m) => (
+                <Grid
+                  key={m.user_id}
+                  justifyContent={"center"}
+                  size={{
+                    xs: 12,
+                    md: 4,
+                    lg: 3
+                  }}>
+                  <ProjectMember
+                    deleteOption={x.deleteOption}
+                    putOption={x.putOption}
+                    project_id={project_id}
+                    user_id={m.user_id}
+                  />
+                </Grid>
+              ))}
             </Grid>
-          </Grid>
-        ))
-      ) : (
-        <Typography textAlign={"center"}>There are no pending members!</Typography>
-      )}
-      <Typography variant="h6" textAlign={"center"}>
-        Active Members
-      </Typography>
-      {active_members.length ? (
-        active_members.map((x, i) => (
-          <Grid container width={"85%"} key={i} margin={"0 auto"} spacing={2} columnSpacing={4}>
-            <Grid item xs={3} justifyContent={"center"}>
-              <ProjectMember
-                project_id={project_id}
-                user_id={x.user_id}
-                deleteOption={{
-                  text: "Remove",
-                }}
-              />
-            </Grid>
-          </Grid>
-        ))
-      ) : (
-        <Typography textAlign={"center"}>There are no active members!</Typography>
-      )}
-      <Typography variant="h6" textAlign={"center"}>
-        Invited Members
-      </Typography>
-      {invited_members.length ? (
-        invited_members.map((x, i) => (
-          <Grid container width={"85%"} key={i} margin={"0 auto"} spacing={2} columnSpacing={4}>
-            <Grid item xs={3} justifyContent={"center"}>
-              <ProjectMember
-                project_id={project_id}
-                user_id={x.user_id}
-                deleteOption={{
-                  text: "Cancel",
-                }}
-              />
-            </Grid>
-          </Grid>
-        ))
-      ) : (
-        <Typography textAlign={"center"}>There are no invited members!</Typography>
-      )}
-    </Stack>
+          ) : (
+            <Typography textAlign={"center"}>There are no {x.name.toLocaleLowerCase()}!</Typography>
+          )}
+        </Fragment>
+      ))}
+    </Stack>)
   );
 }
 

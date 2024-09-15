@@ -1,4 +1,5 @@
-import { Button, Grid, TextField, Typography } from "@mui/material";
+import { Button, TextField, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -39,38 +40,41 @@ function AuthPage() {
 
   return (
     <Grid container height={"100%"} alignItems={"center"}>
-      <Grid item xs={6}>
+      <Grid
+        size={{
+          md: 6,
+          xs: 12,
+        }}
+      >
         Hello
       </Grid>
-      <Grid item xs={6} alignItems={"center"}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              onChange={(e) => setUsername(e.target.value)}
-              label="Username"
-              sx={{ display: "block" }}
-            ></TextField>
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              type="password"
-              onChange={(e) => setPassword(e.target.value)}
-              label="Password"
-              sx={{ display: "block" }}
-            ></TextField>
-          </Grid>
-          <Grid item xs={6}>
-            <Button fullWidth onClick={() => login()}>
-              Login
-            </Button>
-          </Grid>
-          <Grid item xs={6}>
-            <Button fullWidth onClick={() => register()}>
-              Register
-            </Button>
-          </Grid>
+      <Grid container alignItems={"center"} size={{ md: 6, xs: 12 }} spacing={2}>
+        <Grid size={12}>
+          <TextField
+            fullWidth
+            onChange={(e) => setUsername(e.target.value)}
+            label="Username"
+            sx={{ display: "block" }}
+          ></TextField>
+        </Grid>
+        <Grid size={12}>
+          <TextField
+            fullWidth
+            type="password"
+            onChange={(e) => setPassword(e.target.value)}
+            label="Password"
+            sx={{ display: "block" }}
+          ></TextField>
+        </Grid>
+        <Grid size={6}>
+          <Button fullWidth onClick={() => login()}>
+            Login
+          </Button>
+        </Grid>
+        <Grid size={6}>
+          <Button fullWidth onClick={() => register()}>
+            Register
+          </Button>
         </Grid>
       </Grid>
     </Grid>

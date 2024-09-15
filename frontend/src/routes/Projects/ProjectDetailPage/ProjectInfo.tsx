@@ -1,4 +1,5 @@
-import { Box, Chip, Grid, Skeleton, Stack, Typography } from "@mui/material";
+import { Box, Chip, Skeleton, Stack, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { useProjectsDetailGet } from "../../../queries/project_hooks.ts";
 import ProjectMember from "./ProjectMemberComponent.tsx";
 
@@ -43,7 +44,14 @@ function ProjectInfo(props: { project_id: number }) {
             .filter((x) => x.role === "Admin" || x.role === "Dev")
             .map((x, i) => {
               return (
-                <Grid item xs={6} md={4} lg={2} key={i}>
+                <Grid
+                  key={i}
+                  size={{
+                    xs: 12,
+                    md: 6,
+                    lg: 4,
+                  }}
+                >
                   <ProjectMember project_id={project_id} user_id={x.user_id} />
                 </Grid>
               );

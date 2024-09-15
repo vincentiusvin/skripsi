@@ -22,7 +22,7 @@ import ProjectsEditPage from "./routes/Projects/ProjectsEditPage.tsx";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
 import UserAccountPageEdit from "./routes/User/UserEditPage.tsx";
 import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
-import ChatroomPage from "./routes/UserChatroom";
+import ChatroomPage from "./routes/UserChatroom.tsx";
 
 const theme = createTheme({
   palette: {
@@ -51,7 +51,7 @@ function App() {
             <CssBaseline />
             <Nav />
             <Divider />
-            <Box mx={4} flexGrow={1}>
+            <Box mx={4} flexGrow={1} pb={4}>
               <Switch>
                 <Route path={"/"} component={HomePage} />
                 <Route path={"/auth"} component={AuthPage} />

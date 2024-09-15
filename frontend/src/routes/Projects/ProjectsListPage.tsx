@@ -4,7 +4,6 @@ import {
   CardActionArea,
   CardContent,
   CardHeader,
-  Grid,
   InputAdornment,
   Tab,
   Tabs,
@@ -12,6 +11,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { useDebounce } from "use-debounce";
 import { Link } from "wouter";
 import { API } from "../../../../backend/src/routes.ts";
@@ -90,8 +90,18 @@ function ProjectListPage() {
 
   return (
     <Grid container spacing={2} mt={2}>
-      <Grid item xs={2} />
-      <Grid item xs={8}>
+      <Grid
+        size={{
+          xs: 0,
+          md: 3,
+        }}
+      />
+      <Grid
+        size={{
+          xs: 12,
+          md: 6,
+        }}
+      >
         <Tabs
           centered
           sx={{
@@ -110,8 +120,14 @@ function ProjectListPage() {
           <Tab label={"My Projects"} value={"personal"} />
         </Tabs>
       </Grid>
-      <Grid item xs={2}>
+      <Grid
+        size={{
+          xs: 12,
+          md: 3,
+        }}
+      >
         <TextField
+          fullWidth
           label={"Search"}
           value={keyword ?? ""}
           InputProps={{
@@ -131,8 +147,15 @@ function ProjectListPage() {
           }}
         />
       </Grid>
-      {data?.map((x, i) => (
-        <Grid item xs={3} key={i}>
+      {data?.map((x) => (
+        <Grid
+          key={x.project_id}
+          size={{
+            xs: 12,
+            sm: 6,
+            md: 3,
+          }}
+        >
           <ProjectCard project={x} />
         </Grid>
       ))}

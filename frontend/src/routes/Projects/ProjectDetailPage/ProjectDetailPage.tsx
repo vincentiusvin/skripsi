@@ -1,5 +1,19 @@
-import { ArrowBack, Check, Delete, Edit, Logout } from "@mui/icons-material";
-import { Button, Grid, Skeleton, Stack, Tab, Tabs, Typography } from "@mui/material";
+import { Check, Delete, Edit, Logout, MoreVert } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Skeleton,
+  Stack,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Link, useLocation, useParams } from "wouter";
@@ -55,23 +69,51 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
     },
   });
 
+  const [drawerAnchor, setDrawerAnchor] = useState<HTMLElement | undefined>();
+
   if (!project) {
     return <Skeleton />;
   }
 
   return (
     <Stack height={"100%"}>
-      <Grid container>
-        <Grid item xs={3}>
-          <Typography variant="h3" fontWeight={"bold"}>
+      <Grid container rowGap={2}>
+        <Grid
+          order={1}
+          size={{
+            xs: 10,
+            lg: 3,
+          }}
+          offset={{
+            xs: 1,
+            lg: 0,
+          }}
+        >
+          <Typography
+            variant="h3"
+            fontWeight={"bold"}
+            textAlign={"center"}
+            sx={{
+              wordBreak: "break-word",
+            }}
+          >
             {project.project_name}
           </Typography>
         </Grid>
-        <Grid item xs={6}>
+        <Grid
+          order={{ lg: 2, xs: 4 }}
+          size={{
+            xs: 12,
+            lg: 6,
+          }}
+        >
           <Tabs
-            centered
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
-              flexGrow: 1,
+              maxWidth: "min-content",
+              margin: "auto",
             }}
             value={activeTab}
             onChange={(_e, newRoomId) => {
@@ -84,41 +126,66 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             {role === "Admin" && <Tab label={"Manage"} value="manage" />}
           </Tabs>
         </Grid>
-        {role === "Admin" ? (
-          <>
-            <Grid item xs={1}>
-              <Link to={`/projects/${project_id}/edit`}>
-                <Button endIcon={<Edit />} variant="contained" fullWidth>
-                  Edit
-                </Button>
-              </Link>
-            </Grid>
-            <Grid item xs={1}>
-              <Button
-                endIcon={<Delete />}
-                variant="contained"
-                fullWidth
-                onClick={() => {
-                  deleteProject();
-                }}
+        <Grid
+          order={3}
+          alignItems={"center"}
+          display="flex"
+          justifyContent={"end"}
+          size={{
+            xs: 1,
+            lg: 3,
+          }}
+        >
+          {role === "Admin" ? (
+            <>
+              <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
+                <MoreVert />
+              </IconButton>
+              <Menu
+                open={drawerAnchor != undefined}
+                onClose={() => setDrawerAnchor(undefined)}
+                anchorEl={drawerAnchor}
               >
-                Hapus
-              </Button>
-            </Grid>
-          </>
-        ) : (
-          <Grid item xs={2} />
-        )}
-        <Grid item xs={1}>
-          <Button fullWidth endIcon={<Logout />} onClick={() => leaveProject()} variant="contained">
-            Keluar
-          </Button>
+                <Link to={`/projects/${project_id}/edit`}>
+                  <MenuItem>
+                    <ListItemIcon>
+                      <Edit />
+                    </ListItemIcon>
+                    <ListItemText>
+                      <Typography
+                        sx={{
+                          textDecoration: "none",
+                          color: "white",
+                        }}
+                      >
+                        Edit
+                      </Typography>
+                    </ListItemText>
+                  </MenuItem>
+                </Link>
+                <MenuItem onClick={() => deleteProject()}>
+                  <ListItemIcon>
+                    <Delete />
+                  </ListItemIcon>
+                  <ListItemText>Hapus</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => leaveProject()}>
+                  <ListItemIcon>
+                    <Logout />
+                  </ListItemIcon>
+                  <ListItemText>Keluar</ListItemText>
+                </MenuItem>
+              </Menu>
+            </>
+          ) : null}
         </Grid>
       </Grid>
-      {activeTab === "disc" && <ChatroomWrapper project_id={project_id} user_id={user_id} />}
-      {activeTab === "info" && <ProjectInfo project_id={project_id} />}
-      {activeTab === "manage" && <ProjectManage project_id={project_id} />}
-      {activeTab === "tasks" && <Kanban project_id={project_id} />}
+      <Box minHeight={"100vh"}>
+        {activeTab === "disc" && <ChatroomWrapper project_id={project_id} user_id={user_id} />}
+        {activeTab === "info" && <ProjectInfo project_id={project_id} />}
+        {activeTab === "manage" && <ProjectManage project_id={project_id} />}
+        {activeTab === "tasks" && <Kanban project_id={project_id} />}
+      </Box>
     </Stack>
   );
 }
@@ -154,44 +221,57 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
   }
 
   return (
-    <>
-      <Grid container mt={2} rowSpacing={2}>
-        <Grid item xs={1}>
-          <Link to={"/projects"}>
-            <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
-              Go Back
-            </Button>
-          </Link>
-        </Grid>
-        <Grid item xs={10}>
-          <Typography variant="h4" fontWeight={"bold"} align="center">
-            {project.project_name}
-          </Typography>
-        </Grid>
-        <Grid item xs={1}>
-          <Button
-            endIcon={<Check />}
-            variant="contained"
-            disabled={role === "Admin" || role === "Dev"}
-            fullWidth
-            onClick={() => {
-              if (role === "Not Involved") {
-                addMember({
-                  role: "Pending",
-                });
-              } else if (role === "Invited") {
-                addMember({
-                  role: "Dev",
-                });
-              }
-            }}
-          >
-            {role === "Invited" ? "Accept" : role === "Pending" ? "Applied" : "Apply"}
-          </Button>
-        </Grid>
+    <Grid container mt={2} rowSpacing={2}>
+      <Grid
+        size={{
+          xs: 12,
+          md: 8,
+        }}
+        offset={{
+          md: 2,
+        }}
+      >
+        <Typography
+          variant="h4"
+          fontWeight={"bold"}
+          align="center"
+          sx={{
+            wordBreak: "break-word",
+          }}
+        >
+          {project.project_name}
+        </Typography>
       </Grid>
-      <ProjectInfo project_id={project_id} />
-    </>
+      <Grid
+        size={{
+          xs: 12,
+          md: 2,
+        }}
+      >
+        <Button
+          endIcon={<Check />}
+          variant="contained"
+          disabled={role === "Admin" || role === "Dev"}
+          fullWidth
+          onClick={() => {
+            if (role === "Not Involved") {
+              addMember({
+                role: "Pending",
+              });
+            } else if (role === "Invited") {
+              addMember({
+                role: "Dev",
+              });
+            }
+          }}
+        >
+          {role === "Invited" ? "Accept" : role === "Pending" ? "Applied" : "Apply"}
+        </Button>
+      </Grid>
+      <Grid size={12}>
+        <ProjectInfo project_id={project_id} />
+      </Grid>
+    </Grid>
   );
 }
 
@@ -217,21 +297,22 @@ function UnauthenticatedView(props: { project_id: number }) {
   return (
     <>
       <Grid container mt={2} rowSpacing={2}>
-        <Grid item xs={1}>
-          <Link to={"/projects"}>
-            <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
-              Go Back
-            </Button>
-          </Link>
-        </Grid>
-        <Grid item xs={10}>
-          <Typography variant="h4" fontWeight={"bold"} align="center">
+        <Grid size={12}>
+          <Typography
+            variant="h4"
+            fontWeight={"bold"}
+            align="center"
+            sx={{
+              wordBreak: "break-word",
+            }}
+          >
             {project.project_name}
           </Typography>
         </Grid>
-        <Grid item xs={1}></Grid>
+        <Grid size={12}>
+          <ProjectInfo project_id={project_id} />
+        </Grid>
       </Grid>
-      <ProjectInfo project_id={project_id} />
     </>
   );
 }

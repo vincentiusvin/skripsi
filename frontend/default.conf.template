@@ -10,5 +10,7 @@ server {
     }
     location /api {
        proxy_pass   http://$VITE_PROXY_HOST:$VITE_PROXY_PORT;
+       proxy_set_header Upgrade $http_upgrade;
+       proxy_set_header Connection "upgrade";
     }
 }

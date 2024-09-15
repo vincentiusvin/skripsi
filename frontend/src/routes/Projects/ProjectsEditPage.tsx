@@ -1,8 +1,7 @@
-import { ArrowBack, Save } from "@mui/icons-material";
+import { Save } from "@mui/icons-material";
 import {
   Button,
   FormControl,
-  Grid,
   InputLabel,
   MenuItem,
   Select,
@@ -11,9 +10,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Link, useLocation, useParams } from "wouter";
+import { useLocation, useParams } from "wouter";
 import {
   useProjectsCategoriesGet,
   useProjectsDetailGet,
@@ -61,24 +61,12 @@ function ProjectsEditPage() {
 
   return (
     <Grid container spacing={2} mt={2}>
-      <Grid item xs={2}>
-        <Link to={`/projects/${project_id}`}>
-          <Button startIcon={<ArrowBack />} variant="contained" fullWidth>
-            Kembali
-          </Button>
-        </Link>
-      </Grid>
-      <Grid item xs={8}>
+      <Grid size={12}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           Edit Project
         </Typography>
       </Grid>
-      <Grid item xs={2}>
-        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addProject()}>
-          Simpan
-        </Button>
-      </Grid>
-      <Grid item xs={8}>
+      <Grid size={12}>
         <Stack spacing={4}>
           <TextField
             fullWidth
@@ -112,6 +100,11 @@ function ProjectsEditPage() {
             </Select>
           </FormControl>
         </Stack>
+      </Grid>
+      <Grid size={12}>
+        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addProject()}>
+          Simpan
+        </Button>
       </Grid>
     </Grid>
   );

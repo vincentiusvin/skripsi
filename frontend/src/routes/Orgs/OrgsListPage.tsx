@@ -6,25 +6,31 @@ import {
   CardActionArea,
   CardContent,
   CardMedia,
-  Grid,
   Stack,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { Link } from "wouter";
 import { useOrgsGet } from "../../queries/org_hooks";
 
 function OrgsListPage() {
   const { data } = useOrgsGet();
   return (
-    <Box mt={4}>
+    (<Box mt={4}>
       <Link to={"/orgs/add"}>
         <Button startIcon={<Add />} variant="contained" fullWidth>
           Add Organization
         </Button>
       </Link>
       <Grid container spacing={2} mt={2}>
-        {data?.map((x, i) => (
-          <Grid item xs={3} key={i}>
+        {data?.map((x) => (
+          <Grid
+            key={x.org_id}
+            size={{
+              xs: 12,
+              sm: 6,
+              md: 3
+            }}>
             <Link to={`/orgs/${x.org_id}`}>
               <Card variant="elevation">
                 <CardActionArea>
@@ -45,7 +51,7 @@ function OrgsListPage() {
           </Grid>
         ))}
       </Grid>
-    </Box>
+    </Box>)
   );
 }
 

@@ -37,8 +37,18 @@ export class ChatService {
     return await this.repo.getMessages(chatroom_id);
   }
 
-  async sendMessages(chatroom_id: number, sender_id: number, message: string) {
+  async sendMessage(chatroom_id: number, sender_id: number, message: string) {
     return await this.repo.addMessage(chatroom_id, sender_id, message);
+  }
+
+  async updateMessage(
+    message_id: number,
+    obj: { chatroom_id?: number; sender_id?: number; message?: string },
+  ) {
+    return await this.repo.updateMessage(message_id, {
+      ...obj,
+      is_edited: true,
+    });
   }
 
   async getChatroomByID(chatroom_id: number) {
