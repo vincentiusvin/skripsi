@@ -4,6 +4,9 @@ import { ExtractRH, UnionToIntersection } from "./helpers/types";
 import { ChatController } from "./modules/chatroom/ChatroomController.js";
 import { ChatRepository } from "./modules/chatroom/ChatroomRepository.js";
 import { ChatService } from "./modules/chatroom/ChatroomService.js";
+import { ContributionController } from "./modules/contribution/ContributionController.js";
+import { ContributionRepository } from "./modules/contribution/ContributionRepository.js";
+import { ContributionService } from "./modules/contribution/ContributionService.js";
 import { FriendController } from "./modules/friend/FriendController.js";
 import { FriendRepository } from "./modules/friend/FriendRepository.js";
 import { FriendService } from "./modules/friend/FriendService.js";
@@ -28,6 +31,7 @@ export function registerControllers(app: Application) {
   const project_repo = new ProjectRepository(app.db);
   const user_repo = new UserRepository(app.db);
   const friend_repo = new FriendRepository(app.db);
+  const contribution_repo = new ContributionRepository(app.db);
 
   const org_service = new OrgService(org_repo);
   const task_service = new TaskService(task_repo);
@@ -35,6 +39,7 @@ export function registerControllers(app: Application) {
   const chat_service = new ChatService(chat_repo, project_service);
   const user_service = new UserService(user_repo);
   const friend_service = new FriendService(friend_repo);
+  const contribution_service = new ContributionService(contribution_repo);
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),
@@ -44,6 +49,7 @@ export function registerControllers(app: Application) {
     new UserController(app.express_server, user_service),
     new TaskController(app.express_server, task_service),
     new FriendController(app.express_server, friend_service),
+    new ContributionController(app.express_server, contribution_service),
   ] as const;
 
   controllers.forEach((x) => x.register());
