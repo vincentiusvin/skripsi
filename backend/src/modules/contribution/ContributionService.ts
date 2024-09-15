@@ -16,16 +16,25 @@ export class ContributionService {
 
   async addContributions(
     obj: {
-      cont_name: string;
-      cont_description: string;
-      cont_project_id: number;
+      contributions_name: string;
+      contributions_description: string;
+      contributions_project_id: number;
     },
-    firstUser: number,
+    users: number[],
   ) {
-    return await this.cont_repo.addContributions(obj, firstUser);
+    return await this.cont_repo.addContributions(obj, users);
   }
 
-  async statusContributions(id: number, status: string) {
-    return await this.cont_repo.statusContributions(id, status);
+  async statusContributions(
+    id: number,
+    obj: {
+      contributions_name?: string;
+      contributions_description?: string;
+      contributions_project_id?: number;
+      user_id?: number[];
+      status?: string;
+    },
+  ) {
+    return await this.cont_repo.statusContributions(id, obj);
   }
 }

@@ -65,21 +65,21 @@ export class ContributionRepository {
 
   async addContributions(
     obj: {
-      cont_name: string;
-      cont_description: string;
-      cont_project_id: number;
+      contributions_name: string;
+      contributions_description: string;
+      contributions_project_id: number;
     },
-    firstUser: number,
+    users: number[],
   ) {
-    const { cont_name, cont_description, cont_project_id } = obj;
+    const { contributions_name, contributions_description, contributions_project_id } = obj;
     return await this.db.transaction().execute(async (trx) => {
       const cont = await trx
         .insertInto("ms_contributions")
         .values({
-          name: cont_name,
-          description: cont_description,
-          project_id: cont_project_id,
-          status: "pending",
+          name: contributions_name,
+          description: contributions_description,
+          project_id: contributions_project_id,
+          status: "Pending",
         })
         .returning(["ms_contributions.id"])
         .executeTakeFirst();
@@ -87,23 +87,43 @@ export class ContributionRepository {
       if (!cont) {
         throw new Error("Data not inserted!");
       }
-
-      await trx
-        .insertInto("ms_contributions_users")
-        .values({
-          user_id: firstUser,
-          contributions_id: cont.id,
-        })
-        .execute();
+      for (const x of users) {
+        await trx
+          .insertInto("ms_contributions_users")
+          .values({
+            user_id: x,
+            contributions_id: cont.id,
+          })
+          .execute();
+      }
       return cont;
     });
   }
 
-  async statusContributions(id: number, status: string) {
+  async statusContributions(
+    id: number,
+    obj: {
+      contributions_name?: string;
+      contributions_description?: string;
+      contributions_project_id?: number;
+      user_id?: number[];
+      status?: string;
+    },
+  ) {
+    const {
+      contributions_name,
+      contributions_description,
+      contributions_project_id,
+      user_id,
+      status,
+    } = obj;
     return await this.db.transaction().execute(async (trx) => {
       const cont = await trx
         .updateTable("ms_contributions")
         .set({
+          name: contributions_name,
+          description: contributions_description,
+          project_id: contributions_project_id,
           status: status,
         })
         .where("id", "=", id)
@@ -111,6 +131,18 @@ export class ContributionRepository {
 
       if (!cont) {
         throw new Error("Data not updated!");
+      }
+      if (user_id != undefined) {
+        await trx.deleteFrom("ms_contributions_users").where("contributions_id", "=", id).execute();
+        for (const x of user_id) {
+          await trx
+            .insertInto("ms_contributions_users")
+            .values({
+              user_id: x,
+              contributions_id: id,
+            })
+            .execute();
+        }
       }
     });
   }

@@ -21,7 +21,7 @@ export class ContributionController extends Controller {
       contributionGetDetail: new Route({
         handler: this.contributionGetDetail,
         method: "get",
-        path: "/api/contribution/:id",
+        path: "/api/contributions/:id",
         schema: {
           Params: z.object({
             id: z
@@ -35,13 +35,15 @@ export class ContributionController extends Controller {
       contributionAdd: new Route({
         handler: this.contributionAdd,
         method: "post",
-        path: "/api/contribution",
+        path: "/api/contributions",
         schema: {
           ReqBody: z.object({
-            cont_name: z.string().min(1, "Nama kontribusi tidak boleh kosong!"),
-            cont_description: z.string().min(1, "Deskripsi kontribusi tidak boleh kosong!"),
-            cont_project_id: z.number().min(1, "Project ID tidak boleh kosong!"),
-            user_id: z.number().min(1, "User id tidak boleh kosong!"),
+            contributions_name: z.string().min(1, "Nama kontribusi tidak boleh kosong!"),
+            contributions_description: z
+              .string()
+              .min(1, "Deskripsi kontribusi tidak boleh kosong!"),
+            contributions_project_id: z.number().min(1, "Project ID tidak boleh kosong!"),
+            user_id: z.array(z.number(), { message: "User Id invalid!" }).min(1),
           }),
         },
       }),
@@ -49,10 +51,20 @@ export class ContributionController extends Controller {
       contributionStatus: new Route({
         handler: this.contributionStatus,
         method: "put",
-        path: "/api/contribution/:id/status",
+        path: "/api/contributions/:id",
         schema: {
           ReqBody: z.object({
-            status: z.string().min(1, "Status tidak boleh kosong"),
+            contributions_name: z.string().min(1, "Nama kontribusi tidak boleh kosong!").optional(),
+            contributions_description: z
+              .string()
+              .min(1, "Deskripsi kontribusi tidak boleh kosong!")
+              .optional(),
+            contributions_project_id: z
+              .number()
+              .min(1, "Project ID tidak boleh kosong!")
+              .optional(),
+            user_id: z.array(z.number(), { message: "User Id invalid!" }).min(1).optional(),
+            status: z.string().min(1, "Status tidak boleh kosong").optional(),
           }),
         },
       }),
@@ -103,47 +115,75 @@ export class ContributionController extends Controller {
   };
 
   private contributionAdd: RH<{
-    ResBody: { contribution_id: number };
+    ResBody: {
+      contributions_name: string;
+      contributions_description: string;
+      contributions_status: string;
+      contribution_users: {
+        user_id: number;
+      }[];
+      project_id: number;
+      id: number;
+    };
     ReqBody: {
-      cont_name: string;
-      cont_description: string;
-      cont_project_id: number;
-      user_id: number;
+      contributions_name: string;
+      contributions_description: string;
+      contributions_project_id: number;
+      user_id: number[];
     };
   }> = async (req, res) => {
-    const { cont_name, cont_description, cont_project_id, user_id } = req.body;
-
-    if (user_id == undefined) {
-      throw new Error("Gagal menambahkan kontribusi!");
-    }
+    const { contributions_name, contributions_description, contributions_project_id, user_id } =
+      req.body;
 
     const result = await this.cont_service.addContributions(
       {
-        cont_name,
-        cont_description,
-        cont_project_id,
+        contributions_name,
+        contributions_description,
+        contributions_project_id,
       },
       user_id,
     );
 
-    const response = { contribution_id: result.id };
-
-    res.status(201).json(response);
+    const resultFinal = await this.cont_service.getContributionDetail(result.id);
+    res.status(201).json(resultFinal);
   };
 
   private contributionStatus: RH<{
     Params: { id: string };
-    ResBody: { status: string };
+    ResBody: {
+      contributions_name: string;
+      contributions_description: string;
+      contributions_status: string;
+      contribution_users: {
+        user_id: number;
+      }[];
+      project_id: number;
+      id: number;
+    };
     ReqBody: {
-      status: string;
+      contributions_name?: string;
+      contributions_description?: string;
+      contributions_project_id?: number;
+      user_id?: number[];
+      status?: string;
     };
   }> = async (req, res) => {
     const id = Number(req.params.id);
-    const { status } = req.body;
-    if (id == undefined) {
-      throw new Error("Gagal Approve kontribusi");
-    }
-    await this.cont_service.statusContributions(id, status);
-    res.status(200).json({ status: status });
+    const {
+      contributions_name,
+      contributions_description,
+      contributions_project_id,
+      user_id,
+      status,
+    } = req.body;
+    await this.cont_service.statusContributions(id, {
+      contributions_name,
+      contributions_description,
+      contributions_project_id,
+      user_id,
+      status,
+    });
+    const result = await this.cont_service.getContributionDetail(id);
+    res.status(200).json(result);
   };
 }
