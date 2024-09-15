@@ -11,3 +11,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     )
     .execute();
 }
+
+export async function down(db: Kysely<unknown>): Promise<void> {
+  await db.schema.dropTable("ms_contributions_users").execute();
+}

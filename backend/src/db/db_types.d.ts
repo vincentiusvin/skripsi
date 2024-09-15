@@ -64,11 +64,6 @@ export interface MsContributions {
   status: string;
 }
 
-export interface MsContributionsProjects {
-  contributions_id: number;
-  project_id: Generated<number>;
-}
-
 export interface MsContributionsUsers {
   contributions_id: Generated<number>;
   user_id: number;
@@ -172,7 +167,6 @@ export interface DB {
   ms_category_projects: MsCategoryProjects;
   ms_chatrooms: MsChatrooms;
   ms_contributions: MsContributions;
-  ms_contributions_projects: MsContributionsProjects;
   ms_contributions_users: MsContributionsUsers;
   ms_friends: MsFriends;
   ms_messages: MsMessages;

@@ -16,7 +16,7 @@ export class ContributionController extends Controller {
       contributionGetByUserId: new Route({
         handler: this.contributionGet,
         method: "get",
-        path: "/api/contribution",
+        path: "/api/contributions",
       }),
       contributionGetDetail: new Route({
         handler: this.contributionGetDetail,
@@ -85,7 +85,8 @@ export class ContributionController extends Controller {
       contributions_name: string;
       contributions_description: string;
       contributions_status: string;
-      user_name: string;
+      user_ids: number[];
+      project_id: number;
     };
   }> = async (req, res) => {
     const id = Number(req.params.id);

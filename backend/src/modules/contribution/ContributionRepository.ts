@@ -1,4 +1,5 @@
 import { Kysely } from "kysely";
+import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types";
 
 export class ContributionRepository {
@@ -34,17 +35,17 @@ export class ContributionRepository {
   async getContributionsDetail(contributions_id: number) {
     return await this.db
       .selectFrom("ms_contributions")
-      .innerJoin(
-        "ms_contributions_users",
-        "ms_contributions.id",
-        "ms_contributions_users.contributions_id",
-      )
-      .innerJoin("ms_users", "ms_contributions_users.user_id", "ms_users.id")
-      .select([
+      .select((eb) => [
         "ms_contributions.name as contributions_name",
         "ms_contributions.description as contributions_description",
         "ms_contributions.status as contributions_status",
         "ms_users.name as user_name",
+        jsonArrayFrom(
+          eb
+            .selectFrom("ms_contributions_users")
+            .select("ms_contributions_users.user_id")
+            .whereRef("ms_contributions_users.contributions_id", "=", "ms_contributions.id"),
+        ).as("user_ids"),
       ])
       .where("ms_contributions.id", "=", contributions_id)
       .executeTakeFirst();

@@ -13,3 +13,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
     .execute();
 }
+
+export async function down(db: Kysely<unknown>): Promise<void> {
+  await db.schema.dropTable("ms_contributions").execute();
+}
