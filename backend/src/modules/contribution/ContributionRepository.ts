@@ -82,14 +82,6 @@ export class ContributionRepository {
           contributions_id: cont.id,
         })
         .execute();
-
-      await trx
-        .insertInto("ms_contributions_projects")
-        .values({
-          project_id: cont_project_id,
-          contributions_id: cont.id,
-        })
-        .execute();
       return cont;
     });
   }
