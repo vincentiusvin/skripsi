@@ -72,7 +72,7 @@ function ProjectManage(props: { project_id: number }) {
         text: "Approve",
         role: "Dev",
       },
-      name: "Pending Members",
+      name: "Anggota Pending",
     },
     {
       members: active_members,
@@ -80,7 +80,7 @@ function ProjectManage(props: { project_id: number }) {
         text: "Remove",
       },
       putOption: undefined,
-      name: "Active Members",
+      name: "Anggota Aktif",
     },
     {
       members: invited_members,
@@ -88,7 +88,7 @@ function ProjectManage(props: { project_id: number }) {
         text: "Cancel",
       },
       putOption: undefined,
-      name: "Invited Members",
+      name: "Anggota Diundang",
     },
   ] as const;
 
@@ -122,7 +122,7 @@ function ProjectManage(props: { project_id: number }) {
               ))}
             </Grid>
           ) : (
-            <Typography textAlign={"center"}>There are no {x.name.toLocaleLowerCase()}!</Typography>
+            <Typography textAlign={"center"}>Tidak ada {x.name.toLocaleLowerCase()}!</Typography>
           )}
         </Fragment>
       ))}
