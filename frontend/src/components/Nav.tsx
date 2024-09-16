@@ -1,8 +1,9 @@
-import { Login, Logout } from "@mui/icons-material";
+import { DarkMode, LightMode, Login, Logout } from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Avatar, Box, Button, Menu, MenuItem, Stack, Typography } from "@mui/material";
 import { useState } from "react";
 import { Link } from "wouter";
+import { useAppTheme } from "../helpers/theme.ts";
 import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks";
 import { useUsersDetailGet } from "../queries/user_hooks";
 
@@ -48,6 +49,8 @@ function Nav() {
       disabled: !data?.logged,
     },
   ];
+
+  const [theme, setTheme] = useAppTheme();
 
   return (
     <Stack
@@ -163,6 +166,15 @@ function Nav() {
               Log In
             </Button>
           </Link>
+        )}
+        {theme === "dark" ? (
+          <Button onClick={() => setTheme("light")} variant="outlined">
+            <LightMode />
+          </Button>
+        ) : (
+          <Button onClick={() => setTheme("dark")} variant="outlined">
+            <DarkMode />
+          </Button>
         )}
       </Stack>
     </Stack>
