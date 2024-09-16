@@ -42,11 +42,11 @@ function OrgCard(props: { org_id: number; subtitle?: ReactNode; sidebar?: ReactN
         >
           <Stack>
             <Link to={`/orgs/${org_id}`}>
-              <Typography variant="h6" color="white">
+              <Typography variant="h6" color="primary">
                 {org_data.org_name}
               </Typography>
             </Link>
-            <Typography variant="body2" color={"GrayText"}>
+            <Typography variant="body2" color={"primary"}>
               {subtitle}
             </Typography>
           </Stack>
@@ -72,7 +72,7 @@ function OrgCard(props: { org_id: number; subtitle?: ReactNode; sidebar?: ReactN
         <Grid size={8}>
           <Stack>
             <Link to={`/orgs/${org_id}`}>
-              <Typography variant="h6" color="white">
+              <Typography variant="h6" color="primary">
                 {org_data.org_name}
               </Typography>
             </Link>

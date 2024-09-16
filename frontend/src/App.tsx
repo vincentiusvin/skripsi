@@ -24,15 +24,33 @@ import UserAccountPageEdit from "./routes/User/UserEditPage.tsx";
 import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
 import ChatroomPage from "./routes/UserChatroom.tsx";
 
-const theme = createTheme({
+// const darkTheme = createTheme({
+//   palette: {
+//     mode: "dark",
+//     primary: {
+//       main: "#B1A6FF",
+//     },
+//   },
+//   typography: {
+//     fontFamily: "Poppins",
+//   },
+// });
+
+const lightTheme = createTheme({
   palette: {
-    mode: "dark",
+    mode: "light",
+    primary: {
+      main: "#B1A6FF",
+    },
+  },
+  typography: {
+    fontFamily: "Poppins",
   },
 });
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={lightTheme}>
       <SnackbarProvider
         anchorOrigin={{
           horizontal: "center",

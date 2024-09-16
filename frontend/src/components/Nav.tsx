@@ -97,7 +97,7 @@ function Nav() {
                   variant="h6"
                   sx={{
                     textDecoration: "none",
-                    color: "white",
+                    color: "primary",
                   }}
                 >
                   {x.name}

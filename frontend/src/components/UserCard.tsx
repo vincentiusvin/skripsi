@@ -45,7 +45,7 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
             <Link to={`/users/${user_id}`}>
               <Typography
                 variant="h6"
-                color="white"
+                color="primary"
                 sx={{
                   wordBreak: "break-word",
                 }}
