@@ -73,7 +73,14 @@ function App() {
               <CssBaseline />
               <Nav />
               <Divider />
-              <Box mx={2} flexGrow={1} pb={4}>
+              <Box
+                paddingX={{
+                  md: 4,
+                  xs: 2,
+                }}
+                flexGrow={1}
+                pb={4}
+              >
                 <Switch>
                   <Route path={"/"} component={HomePage} />
                   <Route path={"/auth"} component={AuthPage} />
