@@ -155,7 +155,7 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
                       <Typography
                         sx={{
                           textDecoration: "none",
-                          color: "white",
+                          color: "primary",
                         }}
                       >
                         Edit

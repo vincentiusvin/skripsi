@@ -29,7 +29,7 @@ function ProjectCard(props: { project_id: number; subtitle?: ReactNode; sidebar?
         >
           <Stack>
             <Link to={`/projects/${project_id}`}>
-              <Typography variant="h6" color="white">
+              <Typography variant="h6" color="primary">
                 {project_data.project_name}
               </Typography>
             </Link>
@@ -54,7 +54,7 @@ function ProjectCard(props: { project_id: number; subtitle?: ReactNode; sidebar?
         <Grid size={12}>
           <Stack>
             <Link to={`/orgs/${project_id}`}>
-              <Typography variant="h6" color="white">
+              <Typography variant="h6" color="primary">
                 {project_data.project_name}
               </Typography>
             </Link>

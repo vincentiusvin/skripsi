@@ -1,8 +1,9 @@
-import { Login, Logout } from "@mui/icons-material";
+import { DarkMode, LightMode, Login, Logout } from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Avatar, Box, Button, Menu, MenuItem, Stack, Typography } from "@mui/material";
 import { useState } from "react";
 import { Link } from "wouter";
+import { useAppTheme } from "../helpers/theme.ts";
 import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks";
 import { useUsersDetailGet } from "../queries/user_hooks";
 
@@ -49,12 +50,17 @@ function Nav() {
     },
   ];
 
+  const [theme, setTheme] = useAppTheme();
+
   return (
     <Stack
       direction={"row"}
       spacing={2}
       paddingY={2}
-      paddingX={4}
+      paddingX={{
+        md: 4,
+        xs: 2,
+      }}
       color={"primary.main"}
       alignItems={"center"}
       justifyContent={"space-between"}
@@ -82,7 +88,14 @@ function Nav() {
           },
         }}
       >
-        <Button onClick={(e) => setDrawerAnchor(e.currentTarget)} variant="outlined">
+        <Button
+          onClick={(e) => setDrawerAnchor(e.currentTarget)}
+          variant="outlined"
+          sx={{
+            minWidth: 0,
+            width: 0,
+          }}
+        >
           <MenuIcon />
         </Button>
         <Menu
@@ -97,7 +110,7 @@ function Nav() {
                   variant="h6"
                   sx={{
                     textDecoration: "none",
-                    color: "white",
+                    color: "primary",
                   }}
                 >
                   {x.name}
@@ -131,6 +144,8 @@ function Nav() {
                   xs: "inline-flex",
                   md: "none",
                 },
+                minWidth: 0,
+                width: 0,
               }}
               color="primary"
               variant="outlined"
@@ -163,6 +178,29 @@ function Nav() {
               Log In
             </Button>
           </Link>
+        )}
+        {theme === "dark" ? (
+          <Button
+            onClick={() => setTheme("light")}
+            variant="outlined"
+            sx={{
+              minWidth: 0,
+              width: 0,
+            }}
+          >
+            <LightMode />
+          </Button>
+        ) : (
+          <Button
+            onClick={() => setTheme("dark")}
+            variant="outlined"
+            sx={{
+              minWidth: 0,
+              width: 0,
+            }}
+          >
+            <DarkMode />
+          </Button>
         )}
       </Stack>
     </Stack>

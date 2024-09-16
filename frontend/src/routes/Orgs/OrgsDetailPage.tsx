@@ -222,7 +222,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
                     <Typography
                       sx={{
                         textDecoration: "none",
-                        color: "white",
+                        color: "primary",
                       }}
                     >
                       Edit
