@@ -10,7 +10,7 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
 
   if (!user_data) {
     return (
-      <Stack direction="row" spacing={4} alignItems="center">
+      <Stack direction="row" spacing={4} alignItems="center" height="100%" width={"100%"}>
         <Avatar
           sx={{
             width: 36,
@@ -24,7 +24,7 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
   }
 
   return (
-    <Grid container alignItems={"center"} rowGap={2}>
+    <Grid container alignItems={"center"} rowGap={2} height={"100%"} width={"100%"}>
       <Grid
         size={{
           xs: 12,
@@ -43,7 +43,13 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
           </Link>
           <Stack>
             <Link to={`/users/${user_id}`}>
-              <Typography variant="h6" color="white">
+              <Typography
+                variant="h6"
+                color="white"
+                sx={{
+                  wordBreak: "break-word",
+                }}
+              >
                 {user_data.user_name}
               </Typography>
             </Link>

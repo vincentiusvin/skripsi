@@ -93,7 +93,7 @@ function ProjectManage(props: { project_id: number }) {
   ] as const;
 
   return (
-    (<Stack gap={2}>
+    <Stack gap={2}>
       <InviteMembersDialog project_id={project_id} />
       {memberTypes.map((x, i) => (
         <Fragment key={i}>
@@ -109,8 +109,9 @@ function ProjectManage(props: { project_id: number }) {
                   size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                  }}>
+                    lg: 3,
+                  }}
+                >
                   <ProjectMember
                     deleteOption={x.deleteOption}
                     putOption={x.putOption}
@@ -125,7 +126,7 @@ function ProjectManage(props: { project_id: number }) {
           )}
         </Fragment>
       ))}
-    </Stack>)
+    </Stack>
   );
 }
 
