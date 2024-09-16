@@ -31,6 +31,18 @@ describe("chatting api", () => {
     expect(result.chatroom_name).to.eq(in_name);
   });
 
+  it("should be able to delete chatrooms", async () => {
+    const in_chat = caseData.chat;
+    const in_user = caseData.chat_user;
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const send_req = await deleteRoom(in_chat.id, cookie);
+    expect(send_req.status).to.eq(200);
+
+    const read_req = await getChatroomDetail(in_chat.id, cookie);
+    expect(read_req.status).to.eq(404);
+  });
+
   it("should be able to add and get user chats", async () => {
     const in_user = caseData.plain_user;
     const in_chatroom_name = "user's chatroom";
@@ -226,5 +238,15 @@ function updateRoom(
       name: opts.name,
       user_ids: opts.user_ids,
     },
+  });
+}
+
+function deleteRoom(chatroom_id: number, cookie: string) {
+  return new APIContext("ChatroomsDetailDelete").fetch(`/api/chatrooms/${chatroom_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "delete",
   });
 }

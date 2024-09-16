@@ -72,7 +72,7 @@ function ProjectManage(props: { project_id: number }) {
         text: "Approve",
         role: "Dev",
       },
-      name: "Pending Members",
+      name: "Anggota Pending",
     },
     {
       members: active_members,
@@ -80,7 +80,7 @@ function ProjectManage(props: { project_id: number }) {
         text: "Remove",
       },
       putOption: undefined,
-      name: "Active Members",
+      name: "Anggota Aktif",
     },
     {
       members: invited_members,
@@ -88,12 +88,12 @@ function ProjectManage(props: { project_id: number }) {
         text: "Cancel",
       },
       putOption: undefined,
-      name: "Invited Members",
+      name: "Anggota Diundang",
     },
   ] as const;
 
   return (
-    (<Stack gap={2}>
+    <Stack gap={2}>
       <InviteMembersDialog project_id={project_id} />
       {memberTypes.map((x, i) => (
         <Fragment key={i}>
@@ -109,8 +109,9 @@ function ProjectManage(props: { project_id: number }) {
                   size={{
                     xs: 12,
                     md: 4,
-                    lg: 3
-                  }}>
+                    lg: 3,
+                  }}
+                >
                   <ProjectMember
                     deleteOption={x.deleteOption}
                     putOption={x.putOption}
@@ -121,11 +122,11 @@ function ProjectManage(props: { project_id: number }) {
               ))}
             </Grid>
           ) : (
-            <Typography textAlign={"center"}>There are no {x.name.toLocaleLowerCase()}!</Typography>
+            <Typography textAlign={"center"}>Tidak ada {x.name.toLocaleLowerCase()}!</Typography>
           )}
         </Fragment>
       ))}
-    </Stack>)
+    </Stack>
   );
 }
 

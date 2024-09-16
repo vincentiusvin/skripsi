@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Add, MoreVert } from "@mui/icons-material";
+import { Add, DragIndicator, MoreVert } from "@mui/icons-material";
 import {
   Box,
   BoxProps,
@@ -54,8 +54,9 @@ function extractID(str: string): number | undefined {
   return id != undefined ? Number(id) : undefined;
 }
 
-function Cell(props: { id: string; children: ReactNode }) {
-  const { id, children } = props;
+function Task(props: { id: string; isDragged?: boolean }) {
+  const { id, isDragged } = props;
+  const task_id = extractID(id)!;
   const {
     attributes,
     listeners,
@@ -66,15 +67,64 @@ function Cell(props: { id: string; children: ReactNode }) {
     id,
   });
 
+  const { data: task } = useTasksDetailGet({ task_id });
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
+  if (task == undefined) {
+    return <Skeleton />;
+  }
+
   return (
-    <Box style={style} {...listeners} {...attributes} ref={draggableRef}>
-      {children}
-    </Box>
+    <Card
+      style={style}
+      {...attributes}
+      ref={draggableRef}
+      sx={{
+        opacity: isDragged ? 0.5 : 1,
+      }}
+    >
+      <CardHeader
+        action={
+          <>
+            <EditTaskDialog task_id={task_id} />
+            <IconButton {...listeners}>
+              <DragIndicator />
+            </IconButton>
+          </>
+        }
+        title={
+          <Typography
+            variant="h5"
+            fontWeight={"bold"}
+            sx={{
+              wordBreak: "break-word",
+            }}
+          >
+            {task.name}
+          </Typography>
+        }
+        subheader={<Typography variant="body1">{task.description}</Typography>}
+      />
+      <CardContent>
+        {task.start_at && (
+          <>
+            <Typography variant="caption">
+              Mulai: {dayjs(task.start_at).format("ddd, DD/MM/YY")}
+            </Typography>
+            <br />
+          </>
+        )}
+        {task.end_at && (
+          <Typography variant="caption">
+            Berakhir: {dayjs(task.end_at).format("ddd, DD/MM/YY")}
+          </Typography>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -154,54 +204,6 @@ function EditBucketDialog(props: { bucket_id: number }) {
         </IconButton>
       </Box>
     </>
-  );
-}
-
-function Task(props: { task_id: number; isDragged?: boolean }) {
-  const { task_id, isDragged } = props;
-  const { data: task } = useTasksDetailGet({ task_id });
-
-  if (task == undefined) {
-    return <Skeleton />;
-  }
-
-  return (
-    <Card
-      sx={{
-        opacity: isDragged ? 0.5 : 1,
-      }}
-    >
-      <CardHeader
-        action={<EditTaskDialog task_id={task_id} />}
-        title={
-          <Typography
-            variant="h5"
-            fontWeight={"bold"}
-            sx={{
-              wordBreak: "break-word",
-            }}
-          >
-            {task.name}
-          </Typography>
-        }
-        subheader={<Typography variant="body1">{task.description}</Typography>}
-      />
-      <CardContent>
-        {task.start_at && (
-          <>
-            <Typography variant="caption">
-              Mulai: {dayjs(task.start_at).format("ddd, DD/MM/YY")}
-            </Typography>
-            <br />
-          </>
-        )}
-        {task.end_at && (
-          <Typography variant="caption">
-            Berakhir: {dayjs(task.end_at).format("ddd, DD/MM/YY")}
-          </Typography>
-        )}
-      </CardContent>
-    </Card>
   );
 }
 
@@ -448,19 +450,11 @@ function Kanban(props: { project_id: number }) {
       : undefined;
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 10,
-      },
-    }),
+    useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        distance: 10,
-      },
-    }),
+    useSensor(TouchSensor),
   );
 
   return (
@@ -578,19 +572,14 @@ function Kanban(props: { project_id: number }) {
               >
                 <Stack spacing={5} width={"250px"} height={1}>
                   {tasks?.map((task) => (
-                    <Cell key={task.id} id={task.id}>
-                      <Task
-                        isDragged={task.id === activeDragID}
-                        task_id={extractID(task.id)!}
-                      ></Task>
-                    </Cell>
+                    <Task key={task.id} id={task.id} isDragged={task.id === activeDragID}></Task>
                   ))}
                 </Stack>
               </Column>
             </Box>
           ))}
           <DragOverlay>
-            {activelyDragged ? <Task task_id={extractID(activelyDragged.id)!}></Task> : null}
+            {activelyDragged != undefined ? <Task id={activelyDragged.id}></Task> : null}
           </DragOverlay>
           <Box>
             <Stack direction={"row"} alignItems={"top"}>

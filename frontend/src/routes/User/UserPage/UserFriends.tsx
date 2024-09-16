@@ -80,7 +80,7 @@ function UserFriends(props: { user_id: number }) {
               ))}
             </Grid>
           ) : (
-            <Typography textAlign={"center"}>There are no {x.name.toLocaleLowerCase()}!</Typography>
+            <Typography textAlign={"center"}>Tidak ada {x.name.toLocaleLowerCase()}!</Typography>
           )}
         </>
       ))}

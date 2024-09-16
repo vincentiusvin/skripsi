@@ -116,6 +116,20 @@ export class ChatController extends Controller {
           }),
         },
       }),
+      ChatroomsDetailDelete: new Route({
+        handler: this.deleteChatroomsDetail,
+        method: "delete",
+        path: "/api/chatrooms/:chatroom_id",
+        priors: [validateLogged as RequestHandler],
+        schema: {
+          Params: z.object({
+            chatroom_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
+          }),
+        },
+      }),
       ChatroomsDetailMessagesPost: new Route({
         handler: this.postChatroomsDetailMessages,
         method: "post",
@@ -443,6 +457,31 @@ export class ChatController extends Controller {
 
     res.status(200).json({
       msg: "Update successful!",
+    });
+  };
+
+  private deleteChatroomsDetail: RH<{
+    ResBody: { msg: string };
+    Params: { chatroom_id: string };
+  }> = async (req, res) => {
+    const { chatroom_id: chatroom_id_str } = req.params;
+    const chatroom_id = Number(chatroom_id_str);
+    const user_id = req.session.user_id!;
+
+    const val = await this.chat_service.isAllowed(chatroom_id, user_id);
+    if (!val) {
+      throw new AuthError("Anda tidak memiliki akses untuk membaca chat ini!");
+    }
+
+    const members = await this.chat_service.getMembers(chatroom_id);
+    await this.chat_service.deleteChatroom(chatroom_id);
+
+    const socks = await this.socket_server.fetchSockets();
+    const filtered = socks.filter((x) => members.includes(x.data.userId));
+    filtered.forEach((x) => x.emit("roomUpdate"));
+
+    res.status(200).json({
+      msg: "Delete successful!",
     });
   };
 }

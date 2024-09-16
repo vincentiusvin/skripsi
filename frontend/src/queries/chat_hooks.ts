@@ -92,6 +92,22 @@ export function useChatroomsDetailPut(opts: { chatroom_id: number; onSuccess?: (
   });
 }
 
+export function useChatroomsDetailDelete(opts: { chatroom_id: number; onSuccess?: () => void }) {
+  const { chatroom_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: async () => {
+      const res = await new APIContext("ChatroomsDetailDelete").fetch(
+        `/api/chatrooms/${chatroom_id}`,
+        {
+          method: "delete",
+        },
+      );
+      return res;
+    },
+    onSuccess: onSuccess,
+  });
+}
+
 export function useUsersDetailChatroomsPost(opts: { user_id?: number; onSuccess?: () => void }) {
   const { user_id, onSuccess } = opts;
   return useMutation({
