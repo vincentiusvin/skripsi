@@ -74,4 +74,8 @@ export class ChatService {
   async updateChatroom(chatroom_id: number, name?: string, user_ids?: number[]) {
     await this.repo.updateChatroom(chatroom_id, name, user_ids);
   }
+
+  async deleteChatroom(chatroom_id: number) {
+    await this.repo.deleteChatroom(chatroom_id);
+  }
 }

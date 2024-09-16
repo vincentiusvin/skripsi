@@ -173,7 +173,7 @@ export class ChatRepository {
         .execute();
     }
 
-    if (user_ids) {
+    if (user_ids != undefined) {
       await this.db.transaction().execute(async (trx) => {
         await trx.deleteFrom("chatrooms_users").where("chatroom_id", "=", chatroom_id).execute();
 
@@ -190,5 +190,12 @@ export class ChatRepository {
         }
       });
     }
+  }
+
+  async deleteChatroom(chatroom_id: number) {
+    return await this.db
+      .deleteFrom("ms_chatrooms")
+      .where("ms_chatrooms.id", "=", chatroom_id)
+      .execute();
   }
 }

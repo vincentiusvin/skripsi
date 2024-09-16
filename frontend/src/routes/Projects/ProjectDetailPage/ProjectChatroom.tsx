@@ -20,7 +20,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import ChatroomComponent from "../../../components/Chatroom/Chatroom.tsx";
-import { ChangeNameDialog } from "../../../components/Chatroom/ChatroomMisc.tsx";
+import { ChangeNameDialog, DeleteRoom } from "../../../components/Chatroom/ChatroomMisc.tsx";
 import {
   useChatSocket,
   useProjectsDetailChatroomsGet,
@@ -153,6 +153,13 @@ export function ChatroomWrapper(props: { user_id: number; project_id: number }) 
                     anchorEl={menuAnchor}
                     onClose={() => setMenuAnchor(undefined)}
                   >
+                    <DeleteRoom
+                      chatroom_id={selectedChatroom.chatroom_id}
+                      onLeave={() => {
+                        setActiveRoom(false);
+                        setMenuAnchor(undefined);
+                      }}
+                    />
                     <ChangeNameDialog chatroom_id={selectedChatroom.chatroom_id} />
                   </Menu>
                   <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)}>

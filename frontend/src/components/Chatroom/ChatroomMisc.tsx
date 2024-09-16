@@ -1,4 +1,4 @@
-import { Add, Edit, Logout, People, Remove } from "@mui/icons-material";
+import { Add, Delete, Edit, Logout, People, Remove } from "@mui/icons-material";
 import {
   Button,
   Dialog,
@@ -16,7 +16,11 @@ import {
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
-import { useChatroomsDetailGet, useChatroomsDetailPut } from "../../queries/chat_hooks.ts";
+import {
+  useChatroomsDetailDelete,
+  useChatroomsDetailGet,
+  useChatroomsDetailPut,
+} from "../../queries/chat_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
 
 export function AddMembersDialog(props: { chatroom_id: number }) {
@@ -138,7 +142,7 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
           <Button
             onClick={() => {
               editRoom({
-                user_ids: editRoomMembers,
+                user_ids: [...(editRoomMembers ?? []), ...inUsers.map((x) => x.user_id)],
               });
               setEditRoomMembersOpen(false);
             }}
@@ -239,6 +243,40 @@ export function LeaveRoom(props: { chatroom_id: number; user_id: number; onLeave
         <Logout />
       </ListItemIcon>
       <ListItemText>Leave</ListItemText>
+    </MenuItem>
+  );
+}
+
+export function DeleteRoom(props: { chatroom_id: number; onLeave?: () => void }) {
+  const { chatroom_id, onLeave } = props;
+
+  const { data: chatroom } = useChatroomsDetailGet({ chatroom_id });
+  const { mutate: deleteRoom } = useChatroomsDetailDelete({
+    chatroom_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>Ruangan dihapus!</Typography>,
+      });
+    },
+  });
+
+  if (!chatroom) {
+    return <Skeleton />;
+  }
+  return (
+    <MenuItem
+      onClick={() => {
+        deleteRoom();
+        if (onLeave) {
+          onLeave();
+        }
+      }}
+    >
+      <ListItemIcon>
+        <Delete />
+      </ListItemIcon>
+      <ListItemText>Hapus</ListItemText>
     </MenuItem>
   );
 }

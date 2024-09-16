@@ -4,7 +4,7 @@ import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("chatting api", () => {
+describe.only("chatting api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
 
@@ -29,6 +29,18 @@ describe("chatting api", () => {
     const read_req = await getChatroomDetail(in_chat.id, cookie);
     const result = await read_req.json();
     expect(result.chatroom_name).to.eq(in_name);
+  });
+
+  it("should be able to delete chatrooms", async () => {
+    const in_chat = caseData.chat;
+    const in_user = caseData.chat_user;
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const send_req = await deleteRoom(in_chat.id, cookie);
+    expect(send_req.status).to.eq(200);
+
+    const read_req = await getChatroomDetail(in_chat.id, cookie);
+    expect(read_req.status).to.eq(404);
   });
 
   it("should be able to add and get user chats", async () => {
@@ -226,5 +238,15 @@ function updateRoom(
       name: opts.name,
       user_ids: opts.user_ids,
     },
+  });
+}
+
+function deleteRoom(chatroom_id: number, cookie: string) {
+  return new APIContext("ChatroomsDetailDelete").fetch(`/api/chatrooms/${chatroom_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "delete",
   });
 }
