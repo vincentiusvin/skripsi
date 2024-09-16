@@ -450,19 +450,11 @@ function Kanban(props: { project_id: number }) {
       : undefined;
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 10,
-      },
-    }),
+    useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        distance: 10,
-      },
-    }),
+    useSensor(TouchSensor),
   );
 
   return (
