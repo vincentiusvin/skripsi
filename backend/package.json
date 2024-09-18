@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha",
+    "test:smoke": "mocha --config .mocharc.smoke.json",
     "test:watch": "nodemon --exec mocha",
     "test:cov": "c8 mocha",
     "start": "nodemon --exec tsx --env-file=../.env src/index.ts",
