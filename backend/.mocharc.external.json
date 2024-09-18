@@ -2,6 +2,6 @@
   "$schema": "https://json.schemastore.org/mocharc.json",
   "node-option": ["import=tsx", "env-file=../.env.test"],
   "extension": ".ts",
-  "spec": ["src/**/*.smoke.ts"],
+  "spec": ["src/**/*.external.ts"],
   "require": ["src/test/setup-test.ts"]
 }
