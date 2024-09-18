@@ -6,7 +6,7 @@ describe("email service", () => {
     const private_key = process.env.BACKEND_MAIL_PRIVATE;
 
     if (public_key == undefined || private_key == undefined) {
-      throw new Error("Cannot configure email smoke test!");
+      throw new Error("Cannot configure email credentials for unmocked test!");
     }
 
     const service = new EmailService({
