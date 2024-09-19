@@ -10,6 +10,9 @@ import { ContributionService } from "./modules/contribution/ContributionService.
 import { FriendController } from "./modules/friend/FriendController.js";
 import { FriendRepository } from "./modules/friend/FriendRepository.js";
 import { FriendService } from "./modules/friend/FriendService.js";
+import { NotificationController } from "./modules/notification/NotificationController.js";
+import { NotificationRepository } from "./modules/notification/NotificationRepository.js";
+import { NotificationService } from "./modules/notification/NotificationService.js";
 import { OrgController } from "./modules/organization/OrgController.js";
 import { OrgRepository } from "./modules/organization/OrgRepository.js";
 import { OrgService } from "./modules/organization/OrgService.js";
@@ -32,6 +35,7 @@ export function registerControllers(app: Application) {
   const user_repo = new UserRepository(app.db);
   const friend_repo = new FriendRepository(app.db);
   const contribution_repo = new ContributionRepository(app.db);
+  const notification_repo = new NotificationRepository(app.db);
 
   const org_service = new OrgService(org_repo);
   const task_service = new TaskService(task_repo);
@@ -40,6 +44,7 @@ export function registerControllers(app: Application) {
   const user_service = new UserService(user_repo);
   const friend_service = new FriendService(friend_repo);
   const contribution_service = new ContributionService(contribution_repo);
+  const notification_service = new NotificationService(notification_repo);
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),
@@ -50,6 +55,7 @@ export function registerControllers(app: Application) {
     new TaskController(app.express_server, task_service),
     new FriendController(app.express_server, friend_service),
     new ContributionController(app.express_server, contribution_service),
+    new NotificationController(app.express_server, notification_service),
   ] as const;
 
   controllers.forEach((x) => x.register());

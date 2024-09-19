@@ -11,7 +11,7 @@ export class NotificationRepository {
     const { user_id, read } = opts;
     let query = this.db
       .selectFrom("ms_notifications")
-      .select(["title", "type", "description", "user_id", "created_at", "read"]);
+      .select(["title", "type", "description", "user_id", "created_at", "read", "id"]);
 
     if (user_id != undefined) {
       query = query.where("user_id", "=", user_id);
@@ -27,7 +27,7 @@ export class NotificationRepository {
   async getNotification(notification_id: number) {
     return await this.db
       .selectFrom("ms_notifications")
-      .select(["title", "type", "description", "user_id", "created_at", "read"])
+      .select(["title", "type", "description", "user_id", "created_at", "read", "id"])
       .where("ms_notifications.id", "=", notification_id)
       .executeTakeFirst();
   }
@@ -38,7 +38,7 @@ export class NotificationRepository {
   ) {
     const { read, title, description, type } = opts;
 
-    if (read == undefined || title == undefined || description == undefined || type == undefined) {
+    if (read == undefined && title == undefined && description == undefined && type == undefined) {
       return;
     }
 

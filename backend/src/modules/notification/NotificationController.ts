@@ -41,6 +41,7 @@ export class NotificationController extends Controller {
       created_at: Date;
       description: string;
       type: string;
+      id: number;
     }[];
   }> = async (req, res) => {
     const { user_id, read } = req.query;
@@ -67,6 +68,7 @@ export class NotificationController extends Controller {
       created_at: Date;
       description: string;
       type: string;
+      id: number;
     };
   }> = async (req, res) => {
     const { notification_id: notification_id_str } = req.params;
