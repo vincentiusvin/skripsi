@@ -3,6 +3,8 @@ import { before, beforeEach, describe } from "mocha";
 import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
+import { NotificationRepository } from "./NotificationRepository.js";
+import { NotificationService } from "./NotificationService.js";
 
 describe("notification api", () => {
   let app: Application;
@@ -45,6 +47,45 @@ describe("notification api", () => {
     const found = result.find((x) => x.id === in_notif.id);
     expect(found).to.not.eq(undefined);
     expect(found?.read).to.eq(in_status);
+  });
+});
+
+describe("notification service", () => {
+  let app: Application;
+  let caseData: Awaited<ReturnType<typeof baseCase>>;
+  let service: NotificationService;
+  before(async () => {
+    app = Application.getApplication();
+  });
+
+  beforeEach(async () => {
+    await clearDB(app);
+    caseData = await baseCase(app);
+    service = new NotificationService(new NotificationRepository(app.db));
+  });
+
+  it("should be able to add notifications", async () => {
+    const in_user = caseData.notif_user;
+    const in_data: {
+      title: string;
+      description: string;
+      type: string;
+      user_id: number;
+    } = {
+      title: "Notif baru",
+      description: "halo",
+      type: "testing",
+      user_id: in_user.id,
+    };
+
+    const id = await service.addNotification(in_data);
+    if (!id) {
+      throw new Error("Failed to insert notification!");
+    }
+    const notif = await service.getNotification(id.id);
+
+    expect(notif).to.not.eq(undefined);
+    expect(notif).to.deep.include(in_data);
   });
 });
 

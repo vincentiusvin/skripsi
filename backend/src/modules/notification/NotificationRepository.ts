@@ -72,6 +72,6 @@ export class NotificationRepository {
         read: false,
       })
       .returning("id")
-      .execute();
+      .executeTakeFirst();
   }
 }
