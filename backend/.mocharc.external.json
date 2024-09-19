@@ -3,5 +3,6 @@
   "node-option": ["import=tsx", "env-file=../.env.test"],
   "extension": ".ts",
   "spec": ["src/**/*.external.ts"],
-  "require": ["src/test/setup-test.ts"]
+  "require": ["src/test/setup-test.ts"],
+  "timeout": 10000
 }
