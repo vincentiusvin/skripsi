@@ -85,6 +85,16 @@ export interface MsMessages {
   user_id: number;
 }
 
+export interface MsNotifications {
+  created_at: Generated<Timestamp>;
+  description: string;
+  id: Generated<number>;
+  read: Generated<boolean>;
+  title: string;
+  type: string;
+  user_id: number;
+}
+
 export interface MsOrgs {
   address: string;
   created_at: Generated<Timestamp>;
@@ -170,6 +180,7 @@ export interface DB {
   ms_contributions_users: MsContributionsUsers;
   ms_friends: MsFriends;
   ms_messages: MsMessages;
+  ms_notifications: MsNotifications;
   ms_orgs: MsOrgs;
   ms_projects: MsProjects;
   ms_task_buckets: MsTaskBuckets;
