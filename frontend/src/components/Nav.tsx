@@ -126,7 +126,7 @@ function NotificationDialog(props: { user_id: number }) {
         </IconButton>
       )}
       <Dialog open={openNotification} onClose={() => setOpenNotification(false)}>
-        <DialogTitle>Notifikasi</DialogTitle>
+        <DialogTitle> Notifikasi</DialogTitle>
         <DialogContent
           sx={{
             minWidth: {
