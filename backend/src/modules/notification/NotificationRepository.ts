@@ -1,5 +1,6 @@
 import { Kysely } from "kysely";
 import { DB } from "../../db/db_types.js";
+import { NotificationTypes, parseNotificationType } from "./NotificationMisc.js";
 
 export class NotificationRepository {
   private db: Kysely<DB>;
@@ -11,7 +12,7 @@ export class NotificationRepository {
     const { user_id, read } = opts;
     let query = this.db
       .selectFrom("ms_notifications")
-      .select(["title", "type", "description", "user_id", "created_at", "read", "id"]);
+      .select(["title", "type", "type_id", "description", "user_id", "created_at", "read", "id"]);
 
     if (user_id != undefined) {
       query = query.where("user_id", "=", user_id);
@@ -21,24 +22,49 @@ export class NotificationRepository {
       query = query.where("read", "=", read);
     }
 
-    return await query.execute();
+    const result = await query.execute();
+    return result.map((x) => ({
+      ...x,
+      type: parseNotificationType(x.type),
+    }));
   }
 
   async getNotification(notification_id: number) {
-    return await this.db
+    const result = await this.db
       .selectFrom("ms_notifications")
-      .select(["title", "type", "description", "user_id", "created_at", "read", "id"])
+      .select(["title", "type", "type_id", "description", "user_id", "created_at", "read", "id"])
       .where("ms_notifications.id", "=", notification_id)
       .executeTakeFirst();
+
+    if (!result) {
+      return undefined;
+    }
+
+    return {
+      ...result,
+      type: parseNotificationType(result.type),
+    };
   }
 
   async updateNotification(
     notification_id: number,
-    opts: { read?: boolean; title?: string; description?: string; type?: string },
+    opts: {
+      read?: boolean;
+      title?: string;
+      description?: string;
+      type?: NotificationTypes;
+      type_id?: number;
+    },
   ) {
-    const { read, title, description, type } = opts;
+    const { read, title, description, type, type_id } = opts;
 
-    if (read == undefined && title == undefined && description == undefined && type == undefined) {
+    if (
+      read == undefined &&
+      title == undefined &&
+      description == undefined &&
+      type == undefined &&
+      type_id == undefined
+    ) {
       return;
     }
 
@@ -49,6 +75,7 @@ export class NotificationRepository {
         title,
         description,
         type,
+        type_id,
       })
       .where("id", "=", notification_id)
       .execute();
@@ -57,10 +84,11 @@ export class NotificationRepository {
   async addNotification(opts: {
     title: string;
     description: string;
-    type: string;
+    type: NotificationTypes;
+    type_id?: number;
     user_id: number;
   }) {
-    const { title, description, type, user_id } = opts;
+    const { title, description, type, user_id, type_id } = opts;
 
     return await this.db
       .insertInto("ms_notifications")
@@ -69,6 +97,7 @@ export class NotificationRepository {
         title,
         description,
         type,
+        type_id,
         read: false,
       })
       .returning("id")

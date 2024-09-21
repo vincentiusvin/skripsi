@@ -8,6 +8,7 @@ import { clearDB } from "../../test/setup-test.js";
 import { MockedEmailService } from "../email/MockedEmailService.js";
 import { UserRepository } from "../user/UserRepository.js";
 import { UserService } from "../user/UserService.js";
+import { NotificationTypes } from "./NotificationMisc.js";
 import { NotificationRepository } from "./NotificationRepository.js";
 import { NotificationService } from "./NotificationService.js";
 
@@ -74,12 +75,12 @@ describe("notification service", () => {
     const in_data: {
       title: string;
       description: string;
-      type: string;
+      type: NotificationTypes;
       user_id: number;
     } = {
       title: "Notif baru",
       description: "halo",
-      type: "testing",
+      type: "GeneralChat",
       user_id: in_user.id,
     };
 

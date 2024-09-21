@@ -1,6 +1,7 @@
 import { NotFoundError } from "../../helpers/error.js";
 import { IEmailService } from "../email/EmailService.js";
 import { UserService } from "../user/UserService.js";
+import { NotificationTypes } from "./NotificationMisc.js";
 import { NotificationRepository } from "./NotificationRepository.js";
 
 export class NotificationService {
@@ -22,8 +23,9 @@ export class NotificationService {
     opts: {
       title: string;
       description: string;
-      type: string;
       user_id: number;
+      type: NotificationTypes; // informasi resource untuk notification ini
+      type_id?: number; // opsional - id resource tersebut
     },
     send_mail?: boolean,
   ) {

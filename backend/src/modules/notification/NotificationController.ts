@@ -3,6 +3,7 @@ import { RequestHandler } from "express";
 import { Controller, Route } from "../../helpers/controller.js";
 import { RH } from "../../helpers/types.js";
 import { validateLogged } from "../../helpers/validate.js";
+import { NotificationTypes } from "./NotificationMisc.js";
 import { NotificationService } from "./NotificationService.js";
 
 export class NotificationController extends Controller {
@@ -40,7 +41,8 @@ export class NotificationController extends Controller {
       title: string;
       created_at: Date;
       description: string;
-      type: string;
+      type: NotificationTypes;
+      type_id: number | null;
       id: number;
     }[];
   }> = async (req, res) => {
@@ -67,7 +69,8 @@ export class NotificationController extends Controller {
       title: string;
       created_at: Date;
       description: string;
-      type: string;
+      type: NotificationTypes;
+      type_id: number | null;
       id: number;
     };
   }> = async (req, res) => {

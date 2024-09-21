@@ -92,6 +92,7 @@ export interface MsNotifications {
   read: Generated<boolean>;
   title: string;
   type: string;
+  type_id: number | null;
   user_id: number;
 }
 
