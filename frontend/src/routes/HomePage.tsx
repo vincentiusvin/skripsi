@@ -16,6 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import { DateCalendar } from "@mui/x-date-pickers";
 import StyledLink from "../components/StyledLink.tsx";
 import { useOrgDetailGet, useOrgsDetailMembersGet, useOrgsGet } from "../queries/org_hooks.ts";
 import {
@@ -240,10 +241,56 @@ function OrgDashboard(props: { user_id: number }) {
   );
 }
 
+function TaskDashboard(props: { user_id: number }) {
+  const { user_id } = props;
+  return (
+    <Card>
+      <CardContent>
+        <Typography variant="h6">Tugas Anda</Typography>
+        <Typography variant="h4" fontWeight={"bold"} mb={4}>
+          {0} tugas
+        </Typography>
+        <Grid container>
+          <Grid
+            size={{
+              xs: 12,
+              lg: 9,
+            }}
+          >
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Nama Tugas</TableCell>
+                    <TableCell>Kategori</TableCell>
+                    <TableCell>Tanggal Mulai</TableCell>
+                    <TableCell>Tanggal Selesai</TableCell>
+                  </TableRow>
+                </TableHead>
+              </Table>
+            </TableContainer>
+          </Grid>
+          <Grid
+            size={{
+              xs: 12,
+              lg: 3,
+            }}
+          >
+            <DateCalendar />
+          </Grid>
+        </Grid>
+      </CardContent>
+    </Card>
+  );
+}
+
 function AuthenticatedHomePage(props: { user_id: number }) {
   const { user_id } = props;
   return (
     <Grid container spacing={4}>
+      <Grid size={12}>
+        <TaskDashboard user_id={user_id} />
+      </Grid>
       <Grid
         size={{
           md: 6,
