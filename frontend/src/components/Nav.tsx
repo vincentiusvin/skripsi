@@ -88,14 +88,14 @@ function NotificationDialog(props: { user_id: number }) {
                     variant="h6"
                     fontWeight={"bold"}
                     sx={{
-                      wordBreak: "break-all",
+                      wordBreak: "break-word",
                     }}
                   >
                     {x.title}
                   </Typography>
                   <Typography
                     sx={{
-                      wordBreak: "break-all",
+                      wordBreak: "break-word",
                     }}
                   >
                     {x.description}

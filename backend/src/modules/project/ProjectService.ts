@@ -1,4 +1,5 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { NotificationService } from "../notification/NotificationService.js";
 import { OrgService } from "../organization/OrgService.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 import { ProjectRepository } from "./ProjectRepository.js";
@@ -6,13 +7,66 @@ import { ProjectRepository } from "./ProjectRepository.js";
 export class ProjectService {
   private project_repo: ProjectRepository;
   private org_service: OrgService;
-  constructor(repo: ProjectRepository, org_service: OrgService) {
+  private notification_service: NotificationService;
+  constructor(
+    repo: ProjectRepository,
+    org_service: OrgService,
+    notification_service: NotificationService,
+  ) {
     this.project_repo = repo;
     this.org_service = org_service;
+    this.notification_service = notification_service;
   }
 
   getMemberRole(project_id: number, user_id: number) {
     return this.project_repo.getMemberRole(project_id, user_id);
+  }
+
+  async sendAcceptanceNotification(user_id: number, project_id: number) {
+    const project = await this.getProjectByID(project_id);
+    if (!project) {
+      return;
+    }
+    return this.notification_service.addNotification({
+      title: `Penerimaan Developer di ${project.project_name}`,
+      user_id,
+      description: `Anda telah diterima sebagai "Developer" di "${project.project_name}" dan dapat mulai berkontribusi.`,
+      type: "ProjectManage",
+      type_id: project_id,
+    });
+  }
+
+  async sendInvitationNotification(user_id: number, project_id: number) {
+    const project = await this.getProjectByID(project_id);
+    if (!project) {
+      return;
+    }
+    return this.notification_service.addNotification({
+      title: `Undangan Developer di ${project.project_name}`,
+      user_id,
+      description: `Anda diundang untuk menjadi "Developer" di "${project.project_name}".
+Anda dapat menerima tawaran ini dan berkontribusi di projek tersebut.`,
+      type: "ProjectManage",
+      type_id: project_id,
+    });
+  }
+
+  async sendDevRequestNotification(dev_id: number, project_id: number) {
+    const project = await this.getProjectByID(project_id);
+    if (!project) {
+      return;
+    }
+    const members = project.project_members.filter((x) => x.role === "Admin");
+    for (const org_user_id of members) {
+      return this.notification_service.addNotification({
+        title: `Lamaran Developer di ${project.project_name}`,
+        user_id: org_user_id.user_id,
+        description: `Terdapat pengguna yang ingin menjadi "Developer" di organisasi "${project.project_name}" yang anda kelola.
+Anda dapat menerima atau menolak permintaan tersebut.`,
+        type: "ProjectManage",
+        type_id: project_id,
+      });
+    }
   }
 
   /**
@@ -48,7 +102,9 @@ export class ProjectService {
         if (user_org_role === "Admin") {
           return this.project_repo.assignMember(project_id, user_id, "Admin");
         } else {
-          return this.project_repo.assignMember(project_id, user_id, "Pending");
+          const result = this.project_repo.assignMember(project_id, user_id, "Pending");
+          await this.sendDevRequestNotification(user_id, project_id);
+          return result;
         }
       }
       if (target_role === "Dev" && target_user_role === "Invited") {
@@ -58,10 +114,14 @@ export class ProjectService {
 
     if (sender_role === "Admin") {
       if (target_role === "Dev" && target_user_role === "Pending") {
-        return this.project_repo.assignMember(project_id, user_id, "Dev");
+        const result = await this.project_repo.assignMember(project_id, user_id, "Dev");
+        await this.sendAcceptanceNotification(user_id, project_id);
+        return result;
       }
       if (target_role === "Invited" && target_user_role === "Not Involved") {
-        return this.project_repo.assignMember(project_id, user_id, "Invited");
+        const result = await this.project_repo.assignMember(project_id, user_id, "Invited");
+        await this.sendInvitationNotification(user_id, project_id);
+        return result;
       }
     }
 
