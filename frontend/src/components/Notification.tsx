@@ -21,8 +21,17 @@ import StyledLink from "./StyledLink.tsx";
 type NotificationData = NonNullable<ReturnType<typeof useNotificationsGet>["data"]>[number];
 
 function resolveNotificationLink(type: NotificationData["type"], type_id: number | null) {
-  if (type === "ProjectManage" && type_id != null) {
+  const isProjectType =
+    type === "ProjectChat" || type === "ProjectManage" || type === "ProjectTask";
+
+  if (isProjectType && type_id != null) {
     return `/projects/${type_id}`;
+  }
+  if (type === "GeneralChat") {
+    return `/chatroom`;
+  }
+  if (type === "OrgManage") {
+    return `/orgs/${type_id}`;
   }
 }
 
