@@ -316,7 +316,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
           }}
         >
           <StyledLink to={`/projects/${x.project_id}`}>
-            <Card variant="elevation">
+            <Card>
               <CardActionArea>
                 <CardContent>
                   <Stack direction={"row"} alignItems={"center"} spacing={2}>
@@ -431,7 +431,7 @@ function OrgsDetailUnauthenticated() {
           }}
         >
           <StyledLink to={`/projects/${x.project_id}`}>
-            <Card variant="elevation">
+            <Card>
               <CardActionArea>
                 <CardContent>
                   <Stack direction={"row"} alignItems={"center"} spacing={2}>

@@ -1,6 +1,6 @@
 import { createTheme } from "@mui/material";
 
-function themeFactory(): Parameters<typeof createTheme>[0] {
+function themeFactory(mode: "dark" | "light"): Parameters<typeof createTheme>[0] {
   return {
     shape: {
       borderRadius: 8,
@@ -12,7 +12,21 @@ function themeFactory(): Parameters<typeof createTheme>[0] {
       MuiPaper: {
         defaultProps: {
           elevation: 0,
-          variant: "outlined",
+        },
+      },
+      MuiCard: {
+        defaultProps: {
+          elevation: 0,
+        },
+      },
+      MuiAppBar: {
+        defaultProps: {
+          elevation: 0,
+        },
+        styleOverrides: {
+          root: ({ theme }) => ({
+            backgroundColor: theme.palette.background.default,
+          }),
         },
       },
       MuiIconButton: {
@@ -20,9 +34,10 @@ function themeFactory(): Parameters<typeof createTheme>[0] {
           root: ({ theme }) => ({
             borderRadius: theme.shape.borderRadius,
             border: "1px solid ",
-            borderColor: theme.palette.primary.dark,
+            borderColor: mode === "dark" ? theme.palette.primary.dark : theme.palette.primary.light,
             "&:hover": {
-              borderColor: theme.palette.primary.light,
+              borderColor:
+                mode === "dark" ? theme.palette.primary.light : theme.palette.primary.main,
             },
             color: (theme.vars || theme).palette.primary.main,
           }),
@@ -39,7 +54,7 @@ export const darkTheme = createTheme({
       main: "#B1A6FF",
     },
   },
-  ...themeFactory(),
+  ...themeFactory("dark"),
 });
 
 export const lightTheme = createTheme({
@@ -52,6 +67,5 @@ export const lightTheme = createTheme({
       paper: "hsl(220, 35%, 97%)",
     },
   },
-
-  ...themeFactory(),
+  ...themeFactory("light"),
 });

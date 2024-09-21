@@ -33,7 +33,7 @@ function OrgsListPage() {
             }}
           >
             <StyledLink to={`/orgs/${x.org_id}`}>
-              <Card variant="elevation">
+              <Card>
                 <CardActionArea>
                   {x.org_image && <CardMedia component="img" height={300} src={x.org_image} />}
                   <CardContent>

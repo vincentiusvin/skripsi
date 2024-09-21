@@ -47,7 +47,7 @@ function ProjectCard(props: { project: API["ProjectsGet"]["ResBody"][number] }) 
 
   return (
     <StyledLink to={`/projects/${project.project_id}`}>
-      <Card variant="elevation">
+      <Card>
         <CardActionArea>
           <CardHeader
             title={
