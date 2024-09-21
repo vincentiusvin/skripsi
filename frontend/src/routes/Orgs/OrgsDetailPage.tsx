@@ -219,16 +219,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
                   <ListItemIcon>
                     <Edit />
                   </ListItemIcon>
-                  <ListItemText>
-                    <Typography
-                      sx={{
-                        textDecoration: "none",
-                        color: "primary",
-                      }}
-                    >
-                      Edit
-                    </Typography>
-                  </ListItemText>
+                  <ListItemText>Edit</ListItemText>
                 </MenuItem>
               </StyledLink>
               <MenuItem onClick={() => deleteOrg()}>
