@@ -1,10 +1,37 @@
 type EmailCredentials = {
   private_key: string;
   public_key: string;
+  domain: string;
 };
 
-export class EmailService {
+export interface IEmailService {
+  send_email: (obj: {
+    sender: string;
+    target: string;
+    subject: string;
+    html_content: string;
+    text_content: string;
+  }) => Promise<void>;
+}
+
+export class EmailService implements IEmailService {
+  static fromEnv() {
+    const public_key = process.env.BACKEND_MAIL_PUBLIC;
+    const private_key = process.env.BACKEND_MAIL_PRIVATE;
+    const domain = process.env.BACKEND_MAIL_DOMAIN;
+
+    if (public_key == undefined || private_key == undefined || domain == undefined) {
+      throw new Error("Cannot configure email credentials for unmocked test!");
+    }
+    return new EmailService({
+      private_key,
+      public_key,
+      domain,
+    });
+  }
+
   private email_credentials: EmailCredentials;
+
   constructor(email_credentials: EmailCredentials) {
     this.email_credentials = email_credentials;
   }
@@ -21,7 +48,7 @@ export class EmailService {
       Messages: [
         {
           From: {
-            Email: sender,
+            Email: sender + "@" + this.email_credentials.domain,
           },
           To: [
             {

@@ -1,8 +1,13 @@
 import { expect } from "chai";
+import { Kysely } from "kysely";
 import { before, beforeEach, describe } from "mocha";
 import { Application } from "../../app.js";
+import { DB } from "../../db/db_types.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
+import { MockedEmailService } from "../email/MockedEmailService.js";
+import { UserRepository } from "../user/UserRepository.js";
+import { UserService } from "../user/UserService.js";
 import { NotificationRepository } from "./NotificationRepository.js";
 import { NotificationService } from "./NotificationService.js";
 
@@ -61,7 +66,7 @@ describe("notification service", () => {
   beforeEach(async () => {
     await clearDB(app);
     caseData = await baseCase(app);
-    service = new NotificationService(new NotificationRepository(app.db));
+    service = getMockedEmailNotificationService(app.db);
   });
 
   it("should be able to add notifications", async () => {
@@ -113,4 +118,11 @@ function putNotifications(notification_id: number, read: boolean, cookie: string
     credentials: "include",
     method: "put",
   });
+}
+
+function getMockedEmailNotificationService(db: Kysely<DB>) {
+  const notif_repo = new NotificationRepository(db);
+  const user_repo = new UserRepository(db);
+  const user_service = new UserService(user_repo);
+  return new NotificationService(notif_repo, new MockedEmailService(), user_service);
 }

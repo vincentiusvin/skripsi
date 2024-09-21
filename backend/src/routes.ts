@@ -7,6 +7,7 @@ import { ChatService } from "./modules/chatroom/ChatroomService.js";
 import { ContributionController } from "./modules/contribution/ContributionController.js";
 import { ContributionRepository } from "./modules/contribution/ContributionRepository.js";
 import { ContributionService } from "./modules/contribution/ContributionService.js";
+import { EmailService } from "./modules/email/EmailService.js";
 import { FriendController } from "./modules/friend/FriendController.js";
 import { FriendRepository } from "./modules/friend/FriendRepository.js";
 import { FriendService } from "./modules/friend/FriendService.js";
@@ -44,7 +45,12 @@ export function registerControllers(app: Application) {
   const user_service = new UserService(user_repo);
   const friend_service = new FriendService(friend_repo);
   const contribution_service = new ContributionService(contribution_repo);
-  const notification_service = new NotificationService(notification_repo);
+  const email_service = EmailService.fromEnv();
+  const notification_service = new NotificationService(
+    notification_repo,
+    email_service,
+    user_service,
+  );
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),
