@@ -1,6 +1,26 @@
-import { DarkMode, LightMode, Login, Logout } from "@mui/icons-material";
+import {
+  AccountBalance,
+  Chat,
+  DarkMode,
+  Home,
+  LightMode,
+  Login,
+  Logout,
+  Work,
+} from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Avatar, Box, Button, Menu, MenuItem, Stack, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  IconButton,
+  ListItemAvatar,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 import { Link } from "wouter";
 import { useAppTheme } from "../helpers/theme.ts";
@@ -32,21 +52,25 @@ function Nav() {
       name: "Home",
       link: "/",
       disabled: false,
+      icon: <Home />,
     },
     {
       name: "Orgs",
       link: "/orgs",
       disabled: false,
+      icon: <AccountBalance />,
     },
     {
       name: "Projects",
       link: "/projects",
       disabled: false,
+      icon: <Work />,
     },
     {
       name: "Chatroom",
       link: "/chatroom",
       disabled: !data?.logged,
+      icon: <Chat />,
     },
   ];
 
@@ -88,16 +112,9 @@ function Nav() {
           },
         }}
       >
-        <Button
-          onClick={(e) => setDrawerAnchor(e.currentTarget)}
-          variant="outlined"
-          sx={{
-            minWidth: 0,
-            width: 0,
-          }}
-        >
+        <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
           <MenuIcon />
-        </Button>
+        </IconButton>
         <Menu
           open={drawerAnchor != undefined}
           onClose={() => setDrawerAnchor(undefined)}
@@ -106,15 +123,8 @@ function Nav() {
           {navButtons.map((x) => (
             <Link to={x.link} key={x.name}>
               <MenuItem disabled={x.disabled}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    textDecoration: "none",
-                    color: "primary",
-                  }}
-                >
-                  {x.name}
-                </Typography>
+                <ListItemAvatar>{x.icon}</ListItemAvatar>
+                <ListItemText primary={x.name}></ListItemText>
               </MenuItem>
             </Link>
           ))}
@@ -138,21 +148,17 @@ function Nav() {
                 <UserImage user_id={data.user_id} />
               </Button>
             </Link>
-            <Button
+            <IconButton
               sx={{
                 display: {
                   xs: "inline-flex",
                   md: "none",
                 },
-                minWidth: 0,
-                width: 0,
               }}
-              color="primary"
-              variant="outlined"
               onClick={() => logout()}
             >
               <Logout />
-            </Button>
+            </IconButton>
             <Button
               sx={{
                 display: {
@@ -180,27 +186,13 @@ function Nav() {
           </Link>
         )}
         {theme === "dark" ? (
-          <Button
-            onClick={() => setTheme("light")}
-            variant="outlined"
-            sx={{
-              minWidth: 0,
-              width: 0,
-            }}
-          >
+          <IconButton onClick={() => setTheme("light")}>
             <LightMode />
-          </Button>
+          </IconButton>
         ) : (
-          <Button
-            onClick={() => setTheme("dark")}
-            variant="outlined"
-            sx={{
-              minWidth: 0,
-              width: 0,
-            }}
-          >
+          <IconButton onClick={() => setTheme("dark")}>
             <DarkMode />
-          </Button>
+          </IconButton>
         )}
       </Stack>
     </Stack>

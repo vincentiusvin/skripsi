@@ -1,6 +1,6 @@
 import { ThemeProvider } from "@emotion/react";
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, CssBaseline, Divider, IconButton, createTheme } from "@mui/material";
+import { Box, CssBaseline, Divider, IconButton } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -25,30 +25,7 @@ import ProjectListPage from "./routes/Projects/ProjectsListPage";
 import UserAccountPageEdit from "./routes/User/UserEditPage.tsx";
 import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
 import ChatroomPage from "./routes/UserChatroom.tsx";
-
-const darkTheme = createTheme({
-  palette: {
-    mode: "dark",
-    primary: {
-      main: "#B1A6FF",
-    },
-  },
-  typography: {
-    fontFamily: "Poppins",
-  },
-});
-
-const lightTheme = createTheme({
-  palette: {
-    mode: "light",
-    primary: {
-      main: "#B1A6FF",
-    },
-  },
-  typography: {
-    fontFamily: "Poppins",
-  },
-});
+import { darkTheme, lightTheme } from "./theme.ts";
 
 function App() {
   const [theme, setTheme] = useState<"light" | "dark">("light");

@@ -173,7 +173,6 @@ function UserAccountPageEdit() {
                 sx={{
                   px: 4,
                   py: 2,
-                  backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
                 }}
               >
                 <TextField
@@ -242,7 +241,6 @@ function UserAccountPageEdit() {
                 sx={{
                   px: 4,
                   py: 2,
-                  backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
                 }}
               >
                 <TextField

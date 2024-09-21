@@ -89,7 +89,6 @@ function Message(props: {
             <Stack direction={"column"} alignItems={"flex-end"}>
               <Paper
                 sx={{
-                  backgroundColor: "primary.dark",
                   paddingY: 1,
                   paddingX: 2,
                 }}
@@ -128,7 +127,6 @@ function Message(props: {
           <Typography fontWeight={"bold"}>{user_data?.user_name}</Typography>
           <Paper
             sx={{
-              backgroundColor: "primary.dark",
               paddingY: 1,
               paddingX: 2,
             }}

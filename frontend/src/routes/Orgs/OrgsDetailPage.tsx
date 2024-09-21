@@ -246,7 +246,6 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
           sx={{
             p: 2,
             margin: "auto",
-            backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
           }}
         >
           <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
@@ -382,7 +381,6 @@ function OrgsDetailUnauthenticated() {
           sx={{
             p: 2,
             margin: "auto",
-            backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
           }}
         >
           <Typography variant="h4" fontWeight="bold" textAlign={"center"}>

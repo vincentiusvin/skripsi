@@ -57,7 +57,6 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
             sx={{
               px: 4,
               py: 2,
-              backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
             }}
           >
             <Typography variant="h4" fontWeight={"bold"}>
@@ -95,7 +94,6 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
             sx={{
               px: 4,
               py: 2,
-              backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
             }}
           >
             <Typography variant="h6" fontWeight={"bold"} textAlign={"center"}>
