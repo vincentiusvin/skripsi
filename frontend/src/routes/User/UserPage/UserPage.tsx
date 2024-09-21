@@ -2,7 +2,8 @@ import { Edit } from "@mui/icons-material";
 import { Button, Skeleton, Tab, Tabs } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useState } from "react";
-import { Link, useLocation, useParams } from "wouter";
+import { useLocation, useParams } from "wouter";
+import StyledLink from "../../../components/StyledLink.tsx";
 import { APIError } from "../../../helpers/fetch.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
@@ -74,11 +75,11 @@ function UserAccountPage() {
         }}
       >
         {isViewingSelf && (
-          <Link to={`${id}/edit`}>
+          <StyledLink to={`${id}/edit`}>
             <Button variant="contained" fullWidth endIcon={<Edit />}>
               Edit Profil
             </Button>
-          </Link>
+          </StyledLink>
         )}
       </Grid>
       <Grid size={12}>

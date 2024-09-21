@@ -10,18 +10,18 @@ import {
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { Link } from "wouter";
+import StyledLink from "../../components/StyledLink.tsx";
 import { useOrgsGet } from "../../queries/org_hooks";
 
 function OrgsListPage() {
   const { data } = useOrgsGet();
   return (
-    (<Box mt={4}>
-      <Link to={"/orgs/add"}>
+    <Box mt={4}>
+      <StyledLink to={"/orgs/add"}>
         <Button startIcon={<Add />} variant="contained" fullWidth>
           Add Organization
         </Button>
-      </Link>
+      </StyledLink>
       <Grid container spacing={2} mt={2}>
         {data?.map((x) => (
           <Grid
@@ -29,9 +29,10 @@ function OrgsListPage() {
             size={{
               xs: 12,
               sm: 6,
-              md: 3
-            }}>
-            <Link to={`/orgs/${x.org_id}`}>
+              md: 3,
+            }}
+          >
+            <StyledLink to={`/orgs/${x.org_id}`}>
               <Card variant="elevation">
                 <CardActionArea>
                   {x.org_image && <CardMedia component="img" height={300} src={x.org_image} />}
@@ -47,11 +48,11 @@ function OrgsListPage() {
                   </CardContent>
                 </CardActionArea>
               </Card>
-            </Link>
+            </StyledLink>
           </Grid>
         ))}
       </Grid>
-    </Box>)
+    </Box>
   );
 }
 

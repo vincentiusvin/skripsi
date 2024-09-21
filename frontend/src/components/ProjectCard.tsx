@@ -1,8 +1,8 @@
 import { Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { ReactNode } from "react";
-import { Link } from "wouter";
 import { useProjectsDetailGet } from "../queries/project_hooks.ts";
+import StyledLink from "./StyledLink.tsx";
 
 function ProjectCard(props: { project_id: number; subtitle?: ReactNode; sidebar?: ReactNode }) {
   const { project_id, sidebar, subtitle } = props;
@@ -28,11 +28,11 @@ function ProjectCard(props: { project_id: number; subtitle?: ReactNode; sidebar?
           }}
         >
           <Stack>
-            <Link to={`/projects/${project_id}`}>
+            <StyledLink to={`/projects/${project_id}`}>
               <Typography variant="h6" color="primary">
                 {project_data.project_name}
               </Typography>
-            </Link>
+            </StyledLink>
             <Typography variant="body2" color={"GrayText"}>
               {subtitle}
             </Typography>
@@ -53,11 +53,11 @@ function ProjectCard(props: { project_id: number; subtitle?: ReactNode; sidebar?
       <Grid container width={140} spacing={4} alignItems={"center"}>
         <Grid size={12}>
           <Stack>
-            <Link to={`/orgs/${project_id}`}>
+            <StyledLink to={`/orgs/${project_id}`}>
               <Typography variant="h6" color="primary">
                 {project_data.project_name}
               </Typography>
-            </Link>
+            </StyledLink>
             <Typography variant="body2" color={"GrayText"}>
               {subtitle}
             </Typography>

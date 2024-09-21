@@ -22,10 +22,10 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { Link } from "wouter";
 import { useAppTheme } from "../helpers/theme.ts";
 import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks";
 import { useUsersDetailGet } from "../queries/user_hooks";
+import StyledLink from "./StyledLink.tsx";
 
 function UserImage(props: { user_id: number }) {
   const { user_id } = props;
@@ -85,7 +85,6 @@ function Nav() {
         md: 4,
         xs: 2,
       }}
-      color={"primary.main"}
       alignItems={"center"}
       justifyContent={"space-between"}
     >
@@ -100,9 +99,9 @@ function Nav() {
         }}
       >
         {navButtons.map((x) => (
-          <Link to={x.link} asChild key={x.name}>
+          <StyledLink to={x.link} asChild key={x.name}>
             <Button disabled={x.disabled}>{x.name}</Button>
-          </Link>
+          </StyledLink>
         ))}
       </Stack>
       <Box
@@ -121,12 +120,12 @@ function Nav() {
           anchorEl={drawerAnchor}
         >
           {navButtons.map((x) => (
-            <Link to={x.link} key={x.name}>
+            <StyledLink to={x.link} key={x.name}>
               <MenuItem disabled={x.disabled}>
                 <ListItemAvatar>{x.icon}</ListItemAvatar>
                 <ListItemText primary={x.name}></ListItemText>
               </MenuItem>
-            </Link>
+            </StyledLink>
           ))}
         </Menu>
       </Box>
@@ -143,11 +142,11 @@ function Nav() {
             >
               <Typography>Hello, {data.user_name}</Typography>
             </Box>
-            <Link to={`/users/${data.user_id}`}>
+            <StyledLink to={`/users/${data.user_id}`}>
               <Button>
                 <UserImage user_id={data.user_id} />
               </Button>
-            </Link>
+            </StyledLink>
             <IconButton
               sx={{
                 display: {
@@ -174,7 +173,7 @@ function Nav() {
             </Button>
           </>
         ) : (
-          <Link to={"/auth"}>
+          <StyledLink to={"/auth"}>
             <Button
               variant="outlined"
               color="primary"
@@ -183,7 +182,7 @@ function Nav() {
             >
               Log In
             </Button>
-          </Link>
+          </StyledLink>
         )}
         {theme === "dark" ? (
           <IconButton onClick={() => setTheme("light")}>

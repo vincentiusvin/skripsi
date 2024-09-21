@@ -22,7 +22,8 @@ import {
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Link, useLocation, useParams } from "wouter";
+import { useLocation, useParams } from "wouter";
+import StyledLink from "../../components/StyledLink.tsx";
 import UserCard from "../../components/UserCard.tsx";
 import { APIError } from "../../helpers/fetch";
 import {
@@ -213,7 +214,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
               onClose={() => setDrawerAnchor(undefined)}
               anchorEl={drawerAnchor}
             >
-              <Link to={`/orgs/${org_id}/edit`}>
+              <StyledLink to={`/orgs/${org_id}/edit`}>
                 <MenuItem>
                   <ListItemIcon>
                     <Edit />
@@ -229,7 +230,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
                     </Typography>
                   </ListItemText>
                 </MenuItem>
-              </Link>
+              </StyledLink>
               <MenuItem onClick={() => deleteOrg()}>
                 <ListItemIcon>
                   <Delete />
@@ -307,11 +308,11 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
         }}
       >
         {isAdmin ? (
-          <Link to={`/orgs/${org_id}/projects/add`}>
+          <StyledLink to={`/orgs/${org_id}/projects/add`}>
             <Button endIcon={<Add />} variant="contained" fullWidth>
               Add Projects
             </Button>
-          </Link>
+          </StyledLink>
         ) : null}
       </Grid>
       {projectData.map((x, i) => (
@@ -323,7 +324,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
             lg: 4,
           }}
         >
-          <Link to={`/projects/${x.project_id}`}>
+          <StyledLink to={`/projects/${x.project_id}`}>
             <Card variant="elevation">
               <CardActionArea>
                 <CardContent>
@@ -338,7 +339,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
                 </CardContent>
               </CardActionArea>
             </Card>
-          </Link>
+          </StyledLink>
         </Grid>
       ))}
     </Grid>
@@ -438,7 +439,7 @@ function OrgsDetailUnauthenticated() {
             lg: 4,
           }}
         >
-          <Link to={`/projects/${x.project_id}`}>
+          <StyledLink to={`/projects/${x.project_id}`}>
             <Card variant="elevation">
               <CardActionArea>
                 <CardContent>
@@ -453,7 +454,7 @@ function OrgsDetailUnauthenticated() {
                 </CardContent>
               </CardActionArea>
             </Card>
-          </Link>
+          </StyledLink>
         </Grid>
       ))}
     </Grid>

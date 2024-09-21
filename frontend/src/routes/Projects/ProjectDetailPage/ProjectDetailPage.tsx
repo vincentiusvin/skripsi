@@ -16,7 +16,8 @@ import {
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Link, useLocation, useParams } from "wouter";
+import { useLocation, useParams } from "wouter";
+import StyledLink from "../../../components/StyledLink.tsx";
 import { APIError } from "../../../helpers/fetch.ts";
 import {
   useProjectsDetailDelete,
@@ -146,7 +147,7 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
                 onClose={() => setDrawerAnchor(undefined)}
                 anchorEl={drawerAnchor}
               >
-                <Link to={`/projects/${project_id}/edit`}>
+                <StyledLink to={`/projects/${project_id}/edit`}>
                   <MenuItem>
                     <ListItemIcon>
                       <Edit />
@@ -162,7 +163,7 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
                       </Typography>
                     </ListItemText>
                   </MenuItem>
-                </Link>
+                </StyledLink>
                 <MenuItem onClick={() => deleteProject()}>
                   <ListItemIcon>
                     <Delete />
