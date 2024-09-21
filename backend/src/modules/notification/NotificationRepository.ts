@@ -12,7 +12,8 @@ export class NotificationRepository {
     const { user_id, read } = opts;
     let query = this.db
       .selectFrom("ms_notifications")
-      .select(["title", "type", "type_id", "description", "user_id", "created_at", "read", "id"]);
+      .select(["title", "type", "type_id", "description", "user_id", "created_at", "read", "id"])
+      .orderBy("created_at desc");
 
     if (user_id != undefined) {
       query = query.where("user_id", "=", user_id);

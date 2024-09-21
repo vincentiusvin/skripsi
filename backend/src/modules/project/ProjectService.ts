@@ -30,7 +30,7 @@ export class ProjectService {
     return this.notification_service.addNotification({
       title: `Penerimaan Developer di ${project.project_name}`,
       user_id,
-      description: `Anda telah diterima sebagai "Developer" di "${project.project_name}" dan dapat mulai berkontribusi.`,
+      description: `Anda telah diterima sebagai "Developer" di projek "${project.project_name}" dan dapat mulai berkontribusi.`,
       type: "ProjectManage",
       type_id: project_id,
     });
@@ -44,7 +44,7 @@ export class ProjectService {
     return this.notification_service.addNotification({
       title: `Undangan Developer di ${project.project_name}`,
       user_id,
-      description: `Anda diundang untuk menjadi "Developer" di "${project.project_name}".
+      description: `Anda diundang untuk menjadi "Developer" di projek "${project.project_name}".
 Anda dapat menerima tawaran ini dan berkontribusi di projek tersebut.`,
       type: "ProjectManage",
       type_id: project_id,
@@ -61,7 +61,7 @@ Anda dapat menerima tawaran ini dan berkontribusi di projek tersebut.`,
       return this.notification_service.addNotification({
         title: `Lamaran Developer di ${project.project_name}`,
         user_id: org_user_id.user_id,
-        description: `Terdapat pengguna yang ingin menjadi "Developer" di organisasi "${project.project_name}" yang anda kelola.
+        description: `Terdapat pengguna yang ingin menjadi "Developer" di projek "${project.project_name}" yang anda kelola.
 Anda dapat menerima atau menolak permintaan tersebut.`,
         type: "ProjectManage",
         type_id: project_id,
