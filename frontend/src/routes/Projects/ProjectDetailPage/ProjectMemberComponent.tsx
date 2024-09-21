@@ -48,36 +48,42 @@ function ProjectMember(props: {
     },
   });
 
+  const sidebar = [];
+
+  if (putOption) {
+    sidebar.push(
+      <Button
+        key={1}
+        variant="outlined"
+        onClick={() => {
+          putMember({
+            role: putOption.role,
+          });
+        }}
+      >
+        {putOption.text}
+      </Button>,
+    );
+  }
+  if (deleteOption) {
+    sidebar.push(
+      <Button
+        key={1}
+        variant="outlined"
+        onClick={() => {
+          deleteMember();
+        }}
+      >
+        {deleteOption.text}
+      </Button>,
+    );
+  }
+
   return (
     <UserCard
       user_id={user_id}
       subtitle={member_data?.role}
-      sidebar={
-        <>
-          {putOption && (
-            <Button
-              variant="outlined"
-              onClick={() => {
-                putMember({
-                  role: putOption.role,
-                });
-              }}
-            >
-              {putOption.text}
-            </Button>
-          )}
-          {deleteOption && (
-            <Button
-              variant="outlined"
-              onClick={() => {
-                deleteMember();
-              }}
-            >
-              {deleteOption.text}
-            </Button>
-          )}
-        </>
-      }
+      sidebar={sidebar.length ? sidebar : undefined}
     />
   );
 }

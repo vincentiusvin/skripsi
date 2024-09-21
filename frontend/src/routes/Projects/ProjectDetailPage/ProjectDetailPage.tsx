@@ -146,32 +146,32 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
               onClose={() => setDrawerAnchor(undefined)}
               anchorEl={drawerAnchor}
             >
-              {role === "Admin" ? (
-                <>
-                  <StyledLink to={`/projects/${project_id}/edit`}>
-                    <MenuItem>
+              {role === "Admin"
+                ? [
+                    <StyledLink to={`/projects/${project_id}/edit`} key={1}>
+                      <MenuItem>
+                        <ListItemIcon>
+                          <Edit />
+                        </ListItemIcon>
+                        <ListItemText>
+                          <Typography
+                            sx={{
+                              textDecoration: "none",
+                            }}
+                          >
+                            Edit
+                          </Typography>
+                        </ListItemText>
+                      </MenuItem>
+                    </StyledLink>,
+                    <MenuItem onClick={() => deleteProject()} key={2}>
                       <ListItemIcon>
-                        <Edit />
+                        <Delete />
                       </ListItemIcon>
-                      <ListItemText>
-                        <Typography
-                          sx={{
-                            textDecoration: "none",
-                          }}
-                        >
-                          Edit
-                        </Typography>
-                      </ListItemText>
-                    </MenuItem>
-                  </StyledLink>
-                  <MenuItem onClick={() => deleteProject()}>
-                    <ListItemIcon>
-                      <Delete />
-                    </ListItemIcon>
-                    <ListItemText>Hapus</ListItemText>
-                  </MenuItem>
-                </>
-              ) : null}
+                      <ListItemText>Hapus</ListItemText>
+                    </MenuItem>,
+                  ]
+                : null}
               <MenuItem onClick={() => leaveProject()}>
                 <ListItemIcon>
                   <Logout />

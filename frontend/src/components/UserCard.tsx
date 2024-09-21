@@ -1,5 +1,13 @@
-import { Avatar, Skeleton, Stack, Typography } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import {
+  Avatar,
+  Card,
+  CardActionArea,
+  CardActions,
+  Paper,
+  Skeleton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { ReactNode } from "react";
 import { useUsersDetailGet } from "../queries/user_hooks.ts";
 import StyledLink from "./StyledLink.tsx";
@@ -10,29 +18,30 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
 
   if (!user_data) {
     return (
-      <Stack direction="row" spacing={4} alignItems="center" height="100%" width={"100%"}>
-        <Avatar
-          sx={{
-            width: 36,
-            height: 36,
-          }}
-          src={undefined}
-        ></Avatar>
-        <Skeleton width={"100%"}></Skeleton>
-      </Stack>
+      <Paper>
+        <Stack direction="row" spacing={4} alignItems="center" height="100%" width={"100%"}>
+          <Avatar
+            sx={{
+              width: 36,
+              height: 36,
+            }}
+            src={undefined}
+          ></Avatar>
+          <Skeleton width={"100%"}></Skeleton>
+        </Stack>
+      </Paper>
     );
   }
 
   return (
-    <Grid container alignItems={"center"} rowGap={2} height={"100%"} width={"100%"}>
-      <Grid
-        size={{
-          xs: 12,
-          lg: sidebar ? 6 : 12,
+    <Card>
+      <CardActionArea
+        sx={{
+          padding: 2,
         }}
       >
-        <Stack direction={"row"} spacing={4} alignItems={"center"}>
-          <StyledLink to={`/users/${user_id}`}>
+        <StyledLink to={`/users/${user_id}`}>
+          <Stack direction={"row"} spacing={4} alignItems={"center"}>
             <Avatar
               sx={{
                 width: 36,
@@ -40,9 +49,7 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
               }}
               src={user_data.user_image ?? undefined}
             ></Avatar>
-          </StyledLink>
-          <Stack>
-            <StyledLink to={`/users/${user_id}`}>
+            <Stack>
               <Typography
                 variant="h6"
                 sx={{
@@ -51,24 +58,23 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
               >
                 {user_data.user_name}
               </Typography>
-            </StyledLink>
-            <Typography variant="body2" color={"GrayText"}>
-              {subtitle}
-            </Typography>
+              <Typography variant="body2" color={"GrayText"}>
+                {subtitle}
+              </Typography>
+            </Stack>
           </Stack>
-        </Stack>
-      </Grid>
+        </StyledLink>
+      </CardActionArea>
       {sidebar ? (
-        <Grid
-          size={{
-            xs: 12,
-            lg: 6,
+        <CardActions
+          sx={{
+            paddingX: 2,
           }}
         >
-          <Stack spacing={2}>{sidebar}</Stack>
-        </Grid>
+          {sidebar}
+        </CardActions>
       ) : null}
-    </Grid>
+    </Card>
   );
 }
 
