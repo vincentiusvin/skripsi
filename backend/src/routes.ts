@@ -29,6 +29,7 @@ import { UserRepository } from "./modules/user/UserRepository.js";
 import { UserService } from "./modules/user/UserService.js";
 
 export function registerControllers(app: Application) {
+  const notification_repo = new NotificationRepository(app.db);
   const org_repo = new OrgRepository(app.db);
   const chat_repo = new ChatRepository(app.db);
   const task_repo = new TaskRepository(app.db);
@@ -36,21 +37,20 @@ export function registerControllers(app: Application) {
   const user_repo = new UserRepository(app.db);
   const friend_repo = new FriendRepository(app.db);
   const contribution_repo = new ContributionRepository(app.db);
-  const notification_repo = new NotificationRepository(app.db);
 
-  const org_service = new OrgService(org_repo);
-  const task_service = new TaskService(task_repo);
-  const project_service = new ProjectService(project_repo, org_service);
-  const chat_service = new ChatService(chat_repo, project_service);
   const user_service = new UserService(user_repo);
-  const friend_service = new FriendService(friend_repo);
-  const contribution_service = new ContributionService(contribution_repo);
   const email_service = EmailService.fromEnv();
   const notification_service = new NotificationService(
     notification_repo,
     email_service,
     user_service,
   );
+  const org_service = new OrgService(org_repo);
+  const task_service = new TaskService(task_repo);
+  const project_service = new ProjectService(project_repo, org_service);
+  const chat_service = new ChatService(chat_repo, project_service);
+  const friend_service = new FriendService(friend_repo);
+  const contribution_service = new ContributionService(contribution_repo);
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),
