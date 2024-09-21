@@ -51,6 +51,10 @@ export class ChatService {
     });
   }
 
+  async getMessage(message_id: number) {
+    return await this.repo.getMessage(message_id);
+  }
+
   async getChatroomByID(chatroom_id: number) {
     return await this.repo.getChatroomByID(chatroom_id);
   }

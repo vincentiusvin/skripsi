@@ -3,7 +3,7 @@ import { RequestHandler } from "express";
 import { Server } from "socket.io";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
-import { AuthError, ClientError } from "../../helpers/error.js";
+import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { RH } from "../../helpers/types.js";
 import { validateLogged } from "../../helpers/validate.js";
 import { ChatService } from "./ChatroomService.js";
@@ -286,6 +286,15 @@ export class ChatController extends Controller {
     const val = await this.chat_service.isAllowed(chatroom_id, user_id);
     if (!val) {
       throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
+    }
+
+    const old_message = await this.chat_service.getMessage(message_id);
+    if (!old_message) {
+      throw new NotFoundError("Pesan tidak ditemukan!");
+    }
+
+    if (old_message.user_id !== user_id) {
+      throw new AuthError("Anda tidak memiliki akses untuk mengubah pesan ini!");
     }
 
     const ret = await this.chat_service.updateMessage(message_id, { message });

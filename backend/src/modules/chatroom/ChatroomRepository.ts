@@ -81,6 +81,14 @@ export class ChatRepository {
       .executeTakeFirst();
   }
 
+  async getMessage(message_id: number) {
+    return await this.db
+      .selectFrom("ms_messages")
+      .select(["id", "message", "user_id", "created_at", "is_edited"])
+      .where("id", "=", message_id)
+      .executeTakeFirst();
+  }
+
   async getChatroomByID(chatroom_id: number) {
     return await this.db
       .selectFrom("ms_chatrooms")
