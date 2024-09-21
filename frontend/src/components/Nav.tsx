@@ -10,6 +10,7 @@ import {
 } from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
+  AppBar,
   Avatar,
   Box,
   Button,
@@ -19,6 +20,7 @@ import {
   Menu,
   MenuItem,
   Stack,
+  Toolbar,
   Typography,
 } from "@mui/material";
 import { useState } from "react";
@@ -77,59 +79,58 @@ function Nav() {
   const [theme, setTheme] = useAppTheme();
 
   return (
-    <Stack
-      direction={"row"}
-      spacing={2}
-      paddingY={2}
-      paddingX={{
-        md: 4,
-        xs: 2,
-      }}
-      alignItems={"center"}
-      justifyContent={"space-between"}
-    >
-      <Stack
-        direction={"row"}
-        spacing={5}
+    <AppBar position="static">
+      <Toolbar
         sx={{
-          display: {
-            xs: "none",
-            md: "flex",
+          gap: 2,
+          paddingY: 2,
+          paddingX: {
+            md: 4,
+            xs: 2,
           },
         }}
       >
-        {navButtons.map((x) => (
-          <StyledLink to={x.link} asChild key={x.name}>
-            <Button disabled={x.disabled}>{x.name}</Button>
-          </StyledLink>
-        ))}
-      </Stack>
-      <Box
-        sx={{
-          display: {
-            md: "none",
-          },
-        }}
-      >
-        <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
-          <MenuIcon />
-        </IconButton>
-        <Menu
-          open={drawerAnchor != undefined}
-          onClose={() => setDrawerAnchor(undefined)}
-          anchorEl={drawerAnchor}
+        <Stack
+          direction={"row"}
+          sx={{
+            display: {
+              xs: "none",
+              md: "flex",
+            },
+          }}
         >
           {navButtons.map((x) => (
-            <StyledLink to={x.link} key={x.name}>
-              <MenuItem disabled={x.disabled}>
-                <ListItemAvatar>{x.icon}</ListItemAvatar>
-                <ListItemText primary={x.name}></ListItemText>
-              </MenuItem>
+            <StyledLink to={x.link} asChild key={x.name}>
+              <Button disabled={x.disabled}>{x.name}</Button>
             </StyledLink>
           ))}
-        </Menu>
-      </Box>
-      <Stack direction={"row"} spacing={2} alignItems={"center"} justifyContent={"space-between"}>
+        </Stack>
+        <Box
+          sx={{
+            display: {
+              md: "none",
+            },
+          }}
+        >
+          <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
+            <MenuIcon />
+          </IconButton>
+          <Menu
+            open={drawerAnchor != undefined}
+            onClose={() => setDrawerAnchor(undefined)}
+            anchorEl={drawerAnchor}
+          >
+            {navButtons.map((x) => (
+              <StyledLink to={x.link} key={x.name}>
+                <MenuItem disabled={x.disabled}>
+                  <ListItemAvatar>{x.icon}</ListItemAvatar>
+                  <ListItemText primary={x.name}></ListItemText>
+                </MenuItem>
+              </StyledLink>
+            ))}
+          </Menu>
+        </Box>
+        <Box flexGrow={1}></Box>
         {data?.logged ? (
           <>
             <Box
@@ -174,12 +175,7 @@ function Nav() {
           </>
         ) : (
           <StyledLink to={"/auth"}>
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<Login />}
-              onClick={() => logout()}
-            >
+            <Button variant="outlined" startIcon={<Login />} onClick={() => logout()}>
               Log In
             </Button>
           </StyledLink>
@@ -193,8 +189,8 @@ function Nav() {
             <DarkMode />
           </IconButton>
         )}
-      </Stack>
-    </Stack>
+      </Toolbar>
+    </AppBar>
   );
 }
 
