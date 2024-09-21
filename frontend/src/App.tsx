@@ -1,5 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, CssBaseline, Divider, IconButton } from "@mui/material";
+import { Box, CssBaseline, IconButton } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -10,6 +10,7 @@ import { useState } from "react";
 import { Route, Switch } from "wouter";
 import "./App.css";
 import Nav from "./components/Nav";
+import ProgressLine from "./components/ProgressLine.tsx";
 import { queryClient } from "./helpers/queryclient";
 import { ThemeContext } from "./helpers/theme.ts";
 import AuthPage from "./routes/AuthPage";
@@ -49,7 +50,7 @@ function App() {
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <CssBaseline />
               <Nav />
-              <Divider />
+              <ProgressLine />
               <Box
                 paddingX={{
                   md: 4,

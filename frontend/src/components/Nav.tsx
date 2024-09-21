@@ -187,7 +187,10 @@ function Nav() {
     <AppBar position="static" variant="elevation" elevation={0}>
       <Toolbar
         sx={{
-          gap: 2,
+          gap: {
+            xs: 1,
+            sm: 2,
+          },
           paddingY: 2,
           paddingX: {
             md: 4,
