@@ -1,7 +1,7 @@
 import { Button, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { API } from "../../../../../backend/src/routes.ts";
-import UserCard from "../../../components/UserCard.tsx";
+import UserCard from "../../../components/Cards/UserCard.tsx";
 import {
   useProjectsDetailMembersDelete,
   useProjectsDetailMembersGet,

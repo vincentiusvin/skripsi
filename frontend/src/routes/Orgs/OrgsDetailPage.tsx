@@ -23,8 +23,8 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
+import UserCard from "../../components/Cards/UserCard.tsx";
 import StyledLink from "../../components/StyledLink.tsx";
-import UserCard from "../../components/UserCard.tsx";
 import { APIError } from "../../helpers/fetch";
 import {
   useOrgDetailGet,

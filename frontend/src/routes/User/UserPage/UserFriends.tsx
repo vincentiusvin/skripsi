@@ -1,7 +1,7 @@
 import { Button, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
-import UserCard from "../../../components/UserCard.tsx";
+import UserCard from "../../../components/Cards/UserCard.tsx";
 import {
   useFriendsDelete,
   useFriendsDetailGet,

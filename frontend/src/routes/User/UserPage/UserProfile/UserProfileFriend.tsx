@@ -1,7 +1,7 @@
 import { People } from "@mui/icons-material";
 import { Button, Dialog, DialogContent, DialogTitle, Paper, Skeleton, Stack } from "@mui/material";
 import { useState } from "react";
-import UserCard from "../../../../components/UserCard.tsx";
+import UserCard from "../../../../components/Cards/UserCard.tsx";
 import { useFriendsGet } from "../../../../queries/friend_hooks.ts";
 
 function UserFriendList(props: { user_id: number }) {
