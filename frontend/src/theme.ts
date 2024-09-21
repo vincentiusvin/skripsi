@@ -11,11 +11,7 @@ function themeFactory(mode: "dark" | "light"): Parameters<typeof createTheme>[0]
     components: {
       MuiPaper: {
         defaultProps: {
-          elevation: 0,
-        },
-      },
-      MuiCard: {
-        defaultProps: {
+          variant: "outlined",
           elevation: 0,
         },
       },
@@ -53,6 +49,9 @@ export const darkTheme = createTheme({
     primary: {
       main: "#B1A6FF",
     },
+    background: {
+      paper: "hsl(240, 5%, 10%)",
+    },
   },
   ...themeFactory("dark"),
 });
@@ -64,6 +63,7 @@ export const lightTheme = createTheme({
       main: "#B1A6FF",
     },
     background: {
+      default: "hsl(0, 0%, 99%)",
       paper: "hsl(220, 35%, 97%)",
     },
   },

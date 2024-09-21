@@ -79,7 +79,7 @@ function Nav() {
   const [theme, setTheme] = useAppTheme();
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" variant="elevation" elevation={0}>
       <Toolbar
         sx={{
           gap: 2,
