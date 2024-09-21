@@ -1,8 +1,8 @@
 import { Avatar, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { ReactNode } from "react";
-import { Link } from "wouter";
 import { useUsersDetailGet } from "../queries/user_hooks.ts";
+import StyledLink from "./StyledLink.tsx";
 
 function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: ReactNode }) {
   const { user_id, sidebar, subtitle } = props;
@@ -32,7 +32,7 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
         }}
       >
         <Stack direction={"row"} spacing={4} alignItems={"center"}>
-          <Link to={`/users/${user_id}`}>
+          <StyledLink to={`/users/${user_id}`}>
             <Avatar
               sx={{
                 width: 36,
@@ -40,19 +40,18 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
               }}
               src={user_data.user_image ?? undefined}
             ></Avatar>
-          </Link>
+          </StyledLink>
           <Stack>
-            <Link to={`/users/${user_id}`}>
+            <StyledLink to={`/users/${user_id}`}>
               <Typography
                 variant="h6"
-                color="primary"
                 sx={{
                   wordBreak: "break-word",
                 }}
               >
                 {user_data.user_name}
               </Typography>
-            </Link>
+            </StyledLink>
             <Typography variant="body2" color={"GrayText"}>
               {subtitle}
             </Typography>

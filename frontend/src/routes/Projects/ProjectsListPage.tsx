@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useDebounce } from "use-debounce";
-import { Link } from "wouter";
 import { API } from "../../../../backend/src/routes.ts";
+import StyledLink from "../../components/StyledLink.tsx";
 import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
 import { useOrgDetailGet } from "../../queries/org_hooks.ts";
 import { useProjectsDetailMembersGet, useProjectsGet } from "../../queries/project_hooks";
@@ -46,8 +46,8 @@ function ProjectCard(props: { project: API["ProjectsGet"]["ResBody"][number] }) 
   const { data: session_data } = useSessionGet();
 
   return (
-    <Link to={`/projects/${project.project_id}`}>
-      <Card variant="elevation">
+    <StyledLink to={`/projects/${project.project_id}`}>
+      <Card>
         <CardActionArea>
           <CardHeader
             title={
@@ -67,7 +67,7 @@ function ProjectCard(props: { project: API["ProjectsGet"]["ResBody"][number] }) 
           </CardContent>
         </CardActionArea>
       </Card>
-    </Link>
+    </StyledLink>
   );
 }
 

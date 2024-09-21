@@ -1,8 +1,8 @@
 import { Avatar, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { ReactNode } from "react";
-import { Link } from "wouter";
 import { useOrgDetailGet } from "../queries/org_hooks.ts";
+import StyledLink from "./StyledLink.tsx";
 
 function OrgCard(props: { org_id: number; subtitle?: ReactNode; sidebar?: ReactNode }) {
   const { org_id, sidebar, subtitle } = props;
@@ -30,9 +30,9 @@ function OrgCard(props: { org_id: number; subtitle?: ReactNode; sidebar?: ReactN
             lg: 2,
           }}
         >
-          <Link to={`/orgs/${org_id}`}>
+          <StyledLink to={`/orgs/${org_id}`}>
             <Avatar src={org_data.org_image ?? undefined}></Avatar>
-          </Link>
+          </StyledLink>
         </Grid>
         <Grid
           size={{
@@ -41,11 +41,11 @@ function OrgCard(props: { org_id: number; subtitle?: ReactNode; sidebar?: ReactN
           }}
         >
           <Stack>
-            <Link to={`/orgs/${org_id}`}>
+            <StyledLink to={`/orgs/${org_id}`}>
               <Typography variant="h6" color="primary">
                 {org_data.org_name}
               </Typography>
-            </Link>
+            </StyledLink>
             <Typography variant="body2" color={"primary"}>
               {subtitle}
             </Typography>
@@ -65,17 +65,17 @@ function OrgCard(props: { org_id: number; subtitle?: ReactNode; sidebar?: ReactN
     return (
       <Grid container width={140} spacing={4} alignItems={"center"}>
         <Grid size={4}>
-          <Link to={`/orgs/${org_id}`}>
+          <StyledLink to={`/orgs/${org_id}`}>
             <Avatar src={org_data.org_image ?? undefined}></Avatar>
-          </Link>
+          </StyledLink>
         </Grid>
         <Grid size={8}>
           <Stack>
-            <Link to={`/orgs/${org_id}`}>
+            <StyledLink to={`/orgs/${org_id}`}>
               <Typography variant="h6" color="primary">
                 {org_data.org_name}
               </Typography>
-            </Link>
+            </StyledLink>
             <Typography variant="body2" color={"GrayText"}>
               {subtitle}
             </Typography>

@@ -1,11 +1,33 @@
-import { DarkMode, LightMode, Login, Logout } from "@mui/icons-material";
+import {
+  AccountBalance,
+  Chat,
+  DarkMode,
+  Home,
+  LightMode,
+  Login,
+  Logout,
+  Work,
+} from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Avatar, Box, Button, Menu, MenuItem, Stack, Typography } from "@mui/material";
+import {
+  AppBar,
+  Avatar,
+  Box,
+  Button,
+  IconButton,
+  ListItemAvatar,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Stack,
+  Toolbar,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
-import { Link } from "wouter";
 import { useAppTheme } from "../helpers/theme.ts";
 import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks";
 import { useUsersDetailGet } from "../queries/user_hooks";
+import StyledLink from "./StyledLink.tsx";
 
 function UserImage(props: { user_id: number }) {
   const { user_id } = props;
@@ -32,95 +54,83 @@ function Nav() {
       name: "Home",
       link: "/",
       disabled: false,
+      icon: <Home />,
     },
     {
       name: "Orgs",
       link: "/orgs",
       disabled: false,
+      icon: <AccountBalance />,
     },
     {
       name: "Projects",
       link: "/projects",
       disabled: false,
+      icon: <Work />,
     },
     {
       name: "Chatroom",
       link: "/chatroom",
       disabled: !data?.logged,
+      icon: <Chat />,
     },
   ];
 
   const [theme, setTheme] = useAppTheme();
 
   return (
-    <Stack
-      direction={"row"}
-      spacing={2}
-      paddingY={2}
-      paddingX={{
-        md: 4,
-        xs: 2,
-      }}
-      color={"primary.main"}
-      alignItems={"center"}
-      justifyContent={"space-between"}
-    >
-      <Stack
-        direction={"row"}
-        spacing={5}
+    <AppBar position="static" variant="elevation" elevation={0}>
+      <Toolbar
         sx={{
-          display: {
-            xs: "none",
-            md: "flex",
+          gap: 2,
+          paddingY: 2,
+          paddingX: {
+            md: 4,
+            xs: 2,
           },
         }}
       >
-        {navButtons.map((x) => (
-          <Link to={x.link} asChild key={x.name}>
-            <Button disabled={x.disabled}>{x.name}</Button>
-          </Link>
-        ))}
-      </Stack>
-      <Box
-        sx={{
-          display: {
-            md: "none",
-          },
-        }}
-      >
-        <Button
-          onClick={(e) => setDrawerAnchor(e.currentTarget)}
-          variant="outlined"
+        <Stack
+          direction={"row"}
           sx={{
-            minWidth: 0,
-            width: 0,
+            display: {
+              xs: "none",
+              md: "flex",
+            },
           }}
         >
-          <MenuIcon />
-        </Button>
-        <Menu
-          open={drawerAnchor != undefined}
-          onClose={() => setDrawerAnchor(undefined)}
-          anchorEl={drawerAnchor}
-        >
           {navButtons.map((x) => (
-            <Link to={x.link} key={x.name}>
-              <MenuItem disabled={x.disabled}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    textDecoration: "none",
-                    color: "primary",
-                  }}
-                >
-                  {x.name}
-                </Typography>
-              </MenuItem>
-            </Link>
+            <StyledLink to={x.link} asChild key={x.name}>
+              <Button disabled={x.disabled}>{x.name}</Button>
+            </StyledLink>
           ))}
-        </Menu>
-      </Box>
-      <Stack direction={"row"} spacing={2} alignItems={"center"} justifyContent={"space-between"}>
+        </Stack>
+        <Box
+          sx={{
+            display: {
+              md: "none",
+            },
+          }}
+        >
+          <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
+            <MenuIcon />
+          </IconButton>
+          <Menu
+            open={drawerAnchor != undefined}
+            onClose={() => setDrawerAnchor(undefined)}
+            anchorEl={drawerAnchor}
+          >
+            {navButtons.map((x) => (
+              <StyledLink to={x.link} key={x.name}>
+                <MenuItem disabled={x.disabled}>
+                  <ListItemAvatar>{x.icon}</ListItemAvatar>
+                  <ListItemText primary={x.name}></ListItemText>
+                </MenuItem>
+              </StyledLink>
+            ))}
+          </Menu>
+        </Box>
+        <Box flexGrow={1}></Box>
         {data?.logged ? (
           <>
             <Box
@@ -133,26 +143,22 @@ function Nav() {
             >
               <Typography>Hello, {data.user_name}</Typography>
             </Box>
-            <Link to={`/users/${data.user_id}`}>
+            <StyledLink to={`/users/${data.user_id}`}>
               <Button>
                 <UserImage user_id={data.user_id} />
               </Button>
-            </Link>
-            <Button
+            </StyledLink>
+            <IconButton
               sx={{
                 display: {
                   xs: "inline-flex",
                   md: "none",
                 },
-                minWidth: 0,
-                width: 0,
               }}
-              color="primary"
-              variant="outlined"
               onClick={() => logout()}
             >
               <Logout />
-            </Button>
+            </IconButton>
             <Button
               sx={{
                 display: {
@@ -168,42 +174,23 @@ function Nav() {
             </Button>
           </>
         ) : (
-          <Link to={"/auth"}>
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<Login />}
-              onClick={() => logout()}
-            >
+          <StyledLink to={"/auth"}>
+            <Button variant="outlined" startIcon={<Login />} onClick={() => logout()}>
               Log In
             </Button>
-          </Link>
+          </StyledLink>
         )}
         {theme === "dark" ? (
-          <Button
-            onClick={() => setTheme("light")}
-            variant="outlined"
-            sx={{
-              minWidth: 0,
-              width: 0,
-            }}
-          >
+          <IconButton onClick={() => setTheme("light")}>
             <LightMode />
-          </Button>
+          </IconButton>
         ) : (
-          <Button
-            onClick={() => setTheme("dark")}
-            variant="outlined"
-            sx={{
-              minWidth: 0,
-              width: 0,
-            }}
-          >
+          <IconButton onClick={() => setTheme("dark")}>
             <DarkMode />
-          </Button>
+          </IconButton>
         )}
-      </Stack>
-    </Stack>
+      </Toolbar>
+    </AppBar>
   );
 }
 

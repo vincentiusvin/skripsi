@@ -22,7 +22,8 @@ import {
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Link, useLocation, useParams } from "wouter";
+import { useLocation, useParams } from "wouter";
+import StyledLink from "../../components/StyledLink.tsx";
 import UserCard from "../../components/UserCard.tsx";
 import { APIError } from "../../helpers/fetch";
 import {
@@ -213,23 +214,14 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
               onClose={() => setDrawerAnchor(undefined)}
               anchorEl={drawerAnchor}
             >
-              <Link to={`/orgs/${org_id}/edit`}>
+              <StyledLink to={`/orgs/${org_id}/edit`}>
                 <MenuItem>
                   <ListItemIcon>
                     <Edit />
                   </ListItemIcon>
-                  <ListItemText>
-                    <Typography
-                      sx={{
-                        textDecoration: "none",
-                        color: "primary",
-                      }}
-                    >
-                      Edit
-                    </Typography>
-                  </ListItemText>
+                  <ListItemText>Edit</ListItemText>
                 </MenuItem>
-              </Link>
+              </StyledLink>
               <MenuItem onClick={() => deleteOrg()}>
                 <ListItemIcon>
                   <Delete />
@@ -246,7 +238,6 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
           sx={{
             p: 2,
             margin: "auto",
-            backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
           }}
         >
           <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
@@ -308,11 +299,11 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
         }}
       >
         {isAdmin ? (
-          <Link to={`/orgs/${org_id}/projects/add`}>
+          <StyledLink to={`/orgs/${org_id}/projects/add`}>
             <Button endIcon={<Add />} variant="contained" fullWidth>
               Add Projects
             </Button>
-          </Link>
+          </StyledLink>
         ) : null}
       </Grid>
       {projectData.map((x, i) => (
@@ -324,8 +315,8 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
             lg: 4,
           }}
         >
-          <Link to={`/projects/${x.project_id}`}>
-            <Card variant="elevation">
+          <StyledLink to={`/projects/${x.project_id}`}>
+            <Card>
               <CardActionArea>
                 <CardContent>
                   <Stack direction={"row"} alignItems={"center"} spacing={2}>
@@ -339,7 +330,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
                 </CardContent>
               </CardActionArea>
             </Card>
-          </Link>
+          </StyledLink>
         </Grid>
       ))}
     </Grid>
@@ -382,7 +373,6 @@ function OrgsDetailUnauthenticated() {
           sx={{
             p: 2,
             margin: "auto",
-            backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
           }}
         >
           <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
@@ -440,8 +430,8 @@ function OrgsDetailUnauthenticated() {
             lg: 4,
           }}
         >
-          <Link to={`/projects/${x.project_id}`}>
-            <Card variant="elevation">
+          <StyledLink to={`/projects/${x.project_id}`}>
+            <Card>
               <CardActionArea>
                 <CardContent>
                   <Stack direction={"row"} alignItems={"center"} spacing={2}>
@@ -455,7 +445,7 @@ function OrgsDetailUnauthenticated() {
                 </CardContent>
               </CardActionArea>
             </Card>
-          </Link>
+          </StyledLink>
         </Grid>
       ))}
     </Grid>

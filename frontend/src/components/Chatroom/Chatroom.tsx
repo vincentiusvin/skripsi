@@ -18,6 +18,7 @@ import {
 } from "../../queries/chat_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../queries/user_hooks.ts";
+import StyledLink from "../StyledLink.tsx";
 
 function Message(props: {
   message: {
@@ -89,7 +90,6 @@ function Message(props: {
             <Stack direction={"column"} alignItems={"flex-end"}>
               <Paper
                 sx={{
-                  backgroundColor: "primary.dark",
                   paddingY: 1,
                   paddingX: 2,
                 }}
@@ -123,12 +123,13 @@ function Message(props: {
   } else {
     return (
       <Stack direction={"row"} spacing={2} alignItems={"center"}>
-        <Avatar src={user_data?.user_image ?? ""}></Avatar>
+        <StyledLink to={`/users/${user_data?.user_id}`}>
+          <Avatar src={user_data?.user_image ?? ""}></Avatar>
+        </StyledLink>
         <Stack direction={"column"} alignItems={"flex-start"}>
           <Typography fontWeight={"bold"}>{user_data?.user_name}</Typography>
           <Paper
             sx={{
-              backgroundColor: "primary.dark",
               paddingY: 1,
               paddingX: 2,
             }}
