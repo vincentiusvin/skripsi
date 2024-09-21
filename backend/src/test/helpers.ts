@@ -121,7 +121,7 @@ export async function baseCase(app: Application) {
         password: hashSync(orig_password, 10),
       },
       {
-        name: "notif acc",
+        name: "notif user",
         password: hashSync(orig_password, 10),
       },
     ])
@@ -301,7 +301,7 @@ export async function baseCase(app: Application) {
     .values({
       title: "Testing",
       description: "test desc",
-      type: "testing",
+      type: "OrgManage",
       user_id: notif_user.id,
     })
     .returning(["id", "title", "description", "type", "user_id"])

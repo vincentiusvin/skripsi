@@ -6,6 +6,7 @@ import {
   LightMode,
   Login,
   Logout,
+  Notifications,
   Work,
 } from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -14,17 +15,24 @@ import {
   Avatar,
   Box,
   Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   IconButton,
   ListItemAvatar,
   ListItemText,
   Menu,
   MenuItem,
+  Paper,
+  Skeleton,
   Stack,
   Toolbar,
   Typography,
 } from "@mui/material";
+import dayjs from "dayjs";
 import { useState } from "react";
 import { useAppTheme } from "../helpers/theme.ts";
+import { useNotificationsGet } from "../queries/notification_hooks.ts";
 import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks";
 import { useUsersDetailGet } from "../queries/user_hooks";
 import StyledLink from "./StyledLink.tsx";
@@ -42,6 +50,68 @@ function UserImage(props: { user_id: number }) {
         height: 36,
       }}
     />
+  );
+}
+
+function NotificationDialog(props: { user_id: number }) {
+  const { user_id } = props;
+  const { data: notification } = useNotificationsGet({
+    user_id,
+  });
+  const [openNotification, setOpenNotification] = useState(false);
+  return (
+    <>
+      <IconButton onClick={() => setOpenNotification(true)}>
+        <Notifications />
+      </IconButton>
+      <Dialog open={openNotification} onClose={() => setOpenNotification(false)}>
+        <DialogTitle>Notifikasi</DialogTitle>
+        <DialogContent
+          sx={{
+            minWidth: {
+              sm: 320,
+              md: 480,
+            },
+          }}
+        >
+          {notification != undefined ? (
+            <Stack direction={"column"} spacing={2}>
+              {notification.map((x) => (
+                <Paper
+                  key={x.id}
+                  sx={{
+                    paddingX: 4,
+                    paddingY: 2,
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    fontWeight={"bold"}
+                    sx={{
+                      wordBreak: "break-all",
+                    }}
+                  >
+                    {x.title}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      wordBreak: "break-all",
+                    }}
+                  >
+                    {x.description}
+                  </Typography>
+                  <Typography variant="caption">
+                    {dayjs(x.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+                  </Typography>
+                </Paper>
+              ))}
+            </Stack>
+          ) : (
+            <Skeleton />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -148,6 +218,7 @@ function Nav() {
                 <UserImage user_id={data.user_id} />
               </Button>
             </StyledLink>
+            {data?.logged ? <NotificationDialog user_id={data.user_id} /> : null}
             <IconButton
               sx={{
                 display: {
