@@ -25,8 +25,9 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useAppTheme } from "../helpers/theme.ts";
-import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks";
-import { useUsersDetailGet } from "../queries/user_hooks";
+import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks.ts";
+import { useUsersDetailGet } from "../queries/user_hooks.ts";
+import NotificationDialog from "./Notification.tsx";
 import StyledLink from "./StyledLink.tsx";
 
 function UserImage(props: { user_id: number }) {
@@ -45,7 +46,7 @@ function UserImage(props: { user_id: number }) {
   );
 }
 
-function Nav() {
+function Navigation() {
   const { data } = useSessionGet();
   const { mutate: logout } = useSessionDelete();
   const [drawerAnchor, setDrawerAnchor] = useState<HTMLElement | undefined>();
@@ -82,7 +83,10 @@ function Nav() {
     <AppBar position="static" variant="elevation" elevation={0}>
       <Toolbar
         sx={{
-          gap: 2,
+          gap: {
+            xs: 1,
+            sm: 2,
+          },
           paddingY: 2,
           paddingX: {
             md: 4,
@@ -148,6 +152,7 @@ function Nav() {
                 <UserImage user_id={data.user_id} />
               </Button>
             </StyledLink>
+            {data?.logged ? <NotificationDialog user_id={data.user_id} /> : null}
             <IconButton
               sx={{
                 display: {
@@ -194,4 +199,4 @@ function Nav() {
   );
 }
 
-export default Nav;
+export default Navigation;

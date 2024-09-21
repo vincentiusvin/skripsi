@@ -137,47 +137,49 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
             lg: 3,
           }}
         >
-          {role === "Admin" ? (
-            <>
-              <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
-                <MoreVert />
-              </IconButton>
-              <Menu
-                open={drawerAnchor != undefined}
-                onClose={() => setDrawerAnchor(undefined)}
-                anchorEl={drawerAnchor}
-              >
-                <StyledLink to={`/projects/${project_id}/edit`}>
-                  <MenuItem>
-                    <ListItemIcon>
-                      <Edit />
-                    </ListItemIcon>
-                    <ListItemText>
-                      <Typography
-                        sx={{
-                          textDecoration: "none",
-                        }}
-                      >
-                        Edit
-                      </Typography>
-                    </ListItemText>
-                  </MenuItem>
-                </StyledLink>
-                <MenuItem onClick={() => deleteProject()}>
-                  <ListItemIcon>
-                    <Delete />
-                  </ListItemIcon>
-                  <ListItemText>Hapus</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={() => leaveProject()}>
-                  <ListItemIcon>
-                    <Logout />
-                  </ListItemIcon>
-                  <ListItemText>Keluar</ListItemText>
-                </MenuItem>
-              </Menu>
-            </>
-          ) : null}
+          <>
+            <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
+              <MoreVert />
+            </IconButton>
+            <Menu
+              open={drawerAnchor != undefined}
+              onClose={() => setDrawerAnchor(undefined)}
+              anchorEl={drawerAnchor}
+            >
+              {role === "Admin"
+                ? [
+                    <StyledLink to={`/projects/${project_id}/edit`} key={1}>
+                      <MenuItem>
+                        <ListItemIcon>
+                          <Edit />
+                        </ListItemIcon>
+                        <ListItemText>
+                          <Typography
+                            sx={{
+                              textDecoration: "none",
+                            }}
+                          >
+                            Edit
+                          </Typography>
+                        </ListItemText>
+                      </MenuItem>
+                    </StyledLink>,
+                    <MenuItem onClick={() => deleteProject()} key={2}>
+                      <ListItemIcon>
+                        <Delete />
+                      </ListItemIcon>
+                      <ListItemText>Hapus</ListItemText>
+                    </MenuItem>,
+                  ]
+                : null}
+              <MenuItem onClick={() => leaveProject()}>
+                <ListItemIcon>
+                  <Logout />
+                </ListItemIcon>
+                <ListItemText>Keluar</ListItemText>
+              </MenuItem>
+            </Menu>
+          </>
         </Grid>
       </Grid>
       <Box minHeight={"100vh"}>

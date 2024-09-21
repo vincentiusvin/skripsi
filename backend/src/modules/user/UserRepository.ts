@@ -46,7 +46,6 @@ export class UserRepository {
       .select([
         "ms_users.id as user_id",
         "ms_users.name as user_name",
-        "ms_users.password as user_password",
         "ms_users.email as user_email",
         "ms_users.education_level as user_education_level",
         "ms_users.school as user_school",
@@ -62,7 +61,6 @@ export class UserRepository {
       .selectFrom("ms_users")
       .select([
         "ms_users.id as user_id",
-        "ms_users.password as user_password",
         "ms_users.email as user_email",
         "ms_users.education_level as user_education_level",
         "ms_users.school as user_school",

@@ -100,7 +100,6 @@ export class UserController extends Controller {
     ResBody: {
       user_id: number;
       user_name: string;
-      user_password: string;
       user_email: string | null;
       user_education_level: string | null;
       user_school: string | null;

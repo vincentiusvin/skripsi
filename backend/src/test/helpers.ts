@@ -84,7 +84,7 @@ export async function baseCase(app: Application) {
     .returning(["id", "name"])
     .executeTakeFirstOrThrow();
 
-  const orig_password = "secret password";
+  const orig_password = "halo";
   const user_ids = await app.db
     .insertInto("ms_users")
     .values([
@@ -120,6 +120,10 @@ export async function baseCase(app: Application) {
         name: "friend acc",
         password: hashSync(orig_password, 10),
       },
+      {
+        name: "notif user",
+        password: hashSync(orig_password, 10),
+      },
     ])
     .returning(["id", "name"])
     .execute();
@@ -132,6 +136,7 @@ export async function baseCase(app: Application) {
   const friend_send_user = { ...user_ids[5], password: orig_password };
   const friend_recv_user = { ...user_ids[6], password: orig_password };
   const friend_acc_user = { ...user_ids[7], password: orig_password };
+  const notif_user = { ...user_ids[8], password: orig_password };
 
   await app.db
     .insertInto("orgs_users")
@@ -291,6 +296,17 @@ export async function baseCase(app: Application) {
     .returning(["id", "name", "description", "project_id", "status"])
     .execute();
 
+  const notifications = await app.db
+    .insertInto("ms_notifications")
+    .values({
+      title: "Testing",
+      description: "test desc",
+      type: "OrgManage",
+      user_id: notif_user.id,
+    })
+    .returning(["id", "title", "description", "type", "user_id"])
+    .execute();
+
   return {
     org,
     project,
@@ -310,6 +326,8 @@ export async function baseCase(app: Application) {
     chat,
     message,
     contributions,
+    notifications,
+    notif_user,
   };
 }
 
