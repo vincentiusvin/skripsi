@@ -25,6 +25,14 @@ function themeFactory(mode: "dark" | "light"): Parameters<typeof createTheme>[0]
           }),
         },
       },
+      MuiLink: {
+        styleOverrides: {
+          root: {
+            textDecoration: "none",
+            color: "inherit",
+          },
+        },
+      },
       MuiIconButton: {
         styleOverrides: {
           root: ({ theme }) => ({

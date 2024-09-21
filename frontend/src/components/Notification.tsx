@@ -3,11 +3,12 @@ import {
   Badge,
   Box,
   Button,
+  Card,
+  CardActionArea,
   Dialog,
   DialogContent,
   DialogTitle,
   IconButton,
-  Paper,
   Skeleton,
   Stack,
   Typography,
@@ -15,21 +16,43 @@ import {
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useNotificationsGet, useNotificationsPut } from "../queries/notification_hooks.ts";
+import StyledLink from "./StyledLink.tsx";
 
-function NotificationEntry(props: {
-  notification_data: NonNullable<ReturnType<typeof useNotificationsGet>["data"]>[number];
-}) {
-  const { notification_data } = props;
+type NotificationData = NonNullable<ReturnType<typeof useNotificationsGet>["data"]>[number];
+
+function resolveNotificationLink(type: NotificationData["type"], type_id: number | null) {
+  if (type === "ProjectManage" && type_id != null) {
+    return `/projects/${type_id}`;
+  }
+}
+
+function NotificationEntry(props: { notification_data: NotificationData; onClick?: () => void }) {
+  const { notification_data, onClick } = props;
   const { mutate } = useNotificationsPut({
     notification_id: notification_data.id,
   });
 
-  return (
-    <Paper
-      key={notification_data.id}
+  const link = resolveNotificationLink(notification_data.type, notification_data.type_id);
+
+  const notificationContent = (
+    <CardActionArea
       sx={{
         paddingX: 4,
         paddingY: 2,
+      }}
+      disabled={link == undefined}
+      onClick={() => {
+        if (link == undefined) {
+          return;
+        }
+        if (notification_data.read == false) {
+          mutate({
+            read: true,
+          });
+        }
+        if (onClick) {
+          onClick();
+        }
       }}
     >
       <Typography
@@ -48,7 +71,24 @@ function NotificationEntry(props: {
       >
         {notification_data.description}
       </Typography>
-      <Stack direction={"row"} alignItems={"center"}>
+    </CardActionArea>
+  );
+
+  return (
+    <Card key={notification_data.id}>
+      {link != undefined ? (
+        <StyledLink to={link}>{notificationContent}</StyledLink>
+      ) : (
+        notificationContent
+      )}
+      <Stack
+        direction={"row"}
+        alignItems={"center"}
+        sx={{
+          paddingX: 4,
+          paddingY: 1,
+        }}
+      >
         <Typography variant="caption">
           {dayjs(notification_data.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
         </Typography>
@@ -63,7 +103,7 @@ function NotificationEntry(props: {
           </Button>
         )}
       </Stack>
-    </Paper>
+    </Card>
   );
 }
 
@@ -100,7 +140,11 @@ function NotificationDialog(props: { user_id: number }) {
           {notification != undefined ? (
             <Stack direction={"column"} spacing={2}>
               {notification.map((x) => (
-                <NotificationEntry key={x.id} notification_data={x} />
+                <NotificationEntry
+                  key={x.id}
+                  notification_data={x}
+                  onClick={() => setOpenNotification(false)}
+                />
               ))}
             </Stack>
           ) : (
