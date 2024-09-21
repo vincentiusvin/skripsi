@@ -20,7 +20,10 @@ function themeFactory(): Parameters<typeof createTheme>[0] {
           root: ({ theme }) => ({
             borderRadius: theme.shape.borderRadius,
             border: "1px solid ",
-            borderColor: "primary",
+            borderColor: theme.palette.primary.dark,
+            "&:hover": {
+              borderColor: theme.palette.primary.light,
+            },
             color: (theme.vars || theme).palette.primary.main,
           }),
         },
