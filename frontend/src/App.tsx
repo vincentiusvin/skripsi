@@ -9,7 +9,7 @@ import { SnackbarProvider, closeSnackbar } from "notistack";
 import { useState } from "react";
 import { Route, Switch } from "wouter";
 import "./App.css";
-import Nav from "./components/Nav";
+import Navigation from "./components/Navigation.tsx";
 import ProgressLine from "./components/ProgressLine.tsx";
 import { queryClient } from "./helpers/queryclient";
 import { ThemeContext } from "./helpers/theme.ts";
@@ -49,7 +49,7 @@ function App() {
             <ReactQueryDevtools />
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <CssBaseline />
-              <Nav />
+              <Navigation />
               <ProgressLine />
               <Box
                 paddingX={{
