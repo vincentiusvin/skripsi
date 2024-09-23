@@ -146,16 +146,17 @@ export class TaskController extends Controller {
           }),
         },
       }),
-      BucketsDetailTasksGet: new Route({
-        handler: this.getBucketsDetailTasks,
+      TasksGet: new Route({
+        handler: this.getTasks,
         method: "get",
-        path: "/api/buckets/:bucket_id/tasks",
+        path: "/api/tasks",
         schema: {
-          Params: z.object({
+          ReqQuery: z.object({
             bucket_id: z
               .string()
               .min(1)
-              .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" })
+              .optional(),
           }),
         },
       }),
@@ -283,9 +284,9 @@ export class TaskController extends Controller {
     res.status(201).json(result);
   };
 
-  private getBucketsDetailTasks: RH<{
-    Params: {
-      bucket_id: string;
+  private getTasks: RH<{
+    ReqQuery: {
+      bucket_id?: string;
     };
     ResBody: {
       id: number;
@@ -298,8 +299,10 @@ export class TaskController extends Controller {
       }[];
     }[];
   }> = async (req, res) => {
-    const { bucket_id } = req.params;
-    const result = await this.task_service.getTaskByBucket(Number(bucket_id));
+    const { bucket_id } = req.query;
+    const result = await this.task_service.getTaskByBucket({
+      bucket_id: bucket_id != undefined ? Number(bucket_id) : undefined,
+    });
     res.status(200).json(result);
   };
 

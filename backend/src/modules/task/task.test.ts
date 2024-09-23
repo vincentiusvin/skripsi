@@ -3,7 +3,7 @@ import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("task api", () => {
+describe.only("task api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -49,7 +49,7 @@ describe("task api", () => {
       },
       cookie,
     );
-    const read_req = await getTasks(in_bucket.id, cookie);
+    const read_req = await getTasks({ bucket_id: in_bucket.id }, cookie);
     const result = await read_req.json();
     const found = result.find((x) => x.id === in_task.id);
 
@@ -77,7 +77,7 @@ describe("task api", () => {
         },
         cookie,
       );
-      const read_req = await getTasks(in_bucket.id, cookie);
+      const read_req = await getTasks({ bucket_id: in_bucket.id }, cookie);
       const result = await read_req.json();
       const task_index = result.findIndex((x) => x.id === in_task.id);
       const before_index = result.findIndex((x) => x.id === in_before.id);
@@ -102,7 +102,7 @@ describe("task api", () => {
       cookie,
     );
     await send_req.json();
-    const read_req = await getTasks(in_bucket.id, cookie);
+    const read_req = await getTasks({ bucket_id: in_bucket.id }, cookie);
     const result = await read_req.json();
     const found = result.find((x) => x.name === in_name);
 
@@ -127,7 +127,7 @@ describe("task api", () => {
       cookie,
     );
     await send_req.json();
-    const read_req = await getTasks(in_bucket.id, cookie);
+    const read_req = await getTasks({ bucket_id: in_bucket.id }, cookie);
     const result = await read_req.json();
     const found = result.find((x) => x.name === in_name);
 
@@ -187,11 +187,12 @@ describe("task api", () => {
   });
 });
 
-function getTasks(bucket_id: number, cookie: string) {
-  return new APIContext("BucketsDetailTasksGet").fetch(`/api/buckets/${bucket_id}/tasks`, {
+function getTasks(opts: { bucket_id?: number }, cookie: string) {
+  return new APIContext("TasksGet").fetch(`/api/tasks/`, {
     headers: {
       cookie: cookie,
     },
+    query: { bucket_id: opts.bucket_id?.toString() },
     credentials: "include",
     method: "get",
   });

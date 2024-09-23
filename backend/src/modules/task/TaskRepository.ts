@@ -74,8 +74,9 @@ export class TaskRepository {
     return result;
   }
 
-  async findTasksByBucket(bucket_id: number) {
-    const result = await this.db
+  async findTasksByBucket(opts: { bucket_id?: number }) {
+    const { bucket_id } = opts;
+    let query = this.db
       .selectFrom("ms_tasks")
       .select((eb) => [
         "ms_tasks.id",
@@ -87,11 +88,13 @@ export class TaskRepository {
         "ms_tasks.end_at",
         taskWithUsers(eb).as("users"),
       ])
-      .where("ms_tasks.bucket_id", "=", bucket_id)
-      .orderBy(["order asc", "id asc"])
-      .execute();
+      .orderBy(["order asc", "id asc"]);
 
-    return result;
+    if (bucket_id != undefined) {
+      query = query.where("ms_tasks.bucket_id", "=", bucket_id);
+    }
+
+    return await query.execute();
   }
 
   async getMaxOrder(bucket_id: number) {
