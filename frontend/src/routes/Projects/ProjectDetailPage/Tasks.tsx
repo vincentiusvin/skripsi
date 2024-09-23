@@ -81,7 +81,6 @@ function Task(props: { id: string; isDragged?: boolean }) {
   return (
     <Card
       style={style}
-      {...attributes}
       ref={draggableRef}
       sx={{
         opacity: isDragged ? 0.5 : 1,
@@ -91,7 +90,7 @@ function Task(props: { id: string; isDragged?: boolean }) {
         action={
           <>
             <EditTaskDialog task_id={task_id} />
-            <IconButton {...listeners}>
+            <IconButton {...attributes} {...listeners}>
               <DragIndicator />
             </IconButton>
           </>
