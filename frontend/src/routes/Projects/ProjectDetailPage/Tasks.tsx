@@ -54,12 +54,12 @@ function extractID(str: string): number | undefined {
   return id != undefined ? Number(id) : undefined;
 }
 
-function Task(props: { id: string; isDragged?: boolean }) {
+function DraggableTask(props: { id: string; isDragged?: boolean }) {
   const { id, isDragged } = props;
-  const task_id = extractID(id)!;
   const {
     attributes,
     listeners,
+    setActivatorNodeRef: activatorRef,
     setNodeRef: draggableRef,
     transform,
     transition,
@@ -67,12 +67,42 @@ function Task(props: { id: string; isDragged?: boolean }) {
     id,
   });
 
-  const { data: task } = useTasksDetailGet({ task_id });
-
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  const task_id = extractID(id);
+  if (task_id == undefined) {
+    return <Skeleton />;
+  }
+
+  return (
+    <Task
+      task_id={task_id}
+      isDragged={isDragged}
+      handleProps={{
+        ref: activatorRef,
+        ...listeners,
+      }}
+      fullProps={{
+        ref: draggableRef,
+        ...attributes,
+        style,
+      }}
+    />
+  );
+}
+
+function Task(props: {
+  task_id: number;
+  isDragged?: boolean;
+  fullProps?: object;
+  handleProps?: object;
+}) {
+  const { task_id, isDragged, fullProps, handleProps } = props;
+
+  const { data: task } = useTasksDetailGet({ task_id });
 
   if (task == undefined) {
     return <Skeleton />;
@@ -80,8 +110,7 @@ function Task(props: { id: string; isDragged?: boolean }) {
 
   return (
     <Card
-      style={style}
-      ref={draggableRef}
+      {...fullProps}
       sx={{
         opacity: isDragged ? 0.5 : 1,
       }}
@@ -90,7 +119,12 @@ function Task(props: { id: string; isDragged?: boolean }) {
         action={
           <>
             <EditTaskDialog task_id={task_id} />
-            <IconButton {...attributes} {...listeners}>
+            <IconButton
+              {...handleProps}
+              sx={{
+                touchAction: "none",
+              }}
+            >
               <DragIndicator />
             </IconButton>
           </>
@@ -570,14 +604,20 @@ function Kanban(props: { project_id: number }) {
               >
                 <Stack spacing={5} width={"250px"} height={1}>
                   {tasks?.map((task) => (
-                    <Task key={task.id} id={task.id} isDragged={task.id === activeDragID}></Task>
+                    <DraggableTask
+                      key={task.id}
+                      id={task.id}
+                      isDragged={task.id === activeDragID}
+                    ></DraggableTask>
                   ))}
                 </Stack>
               </Column>
             </Box>
           ))}
           <DragOverlay>
-            {activelyDragged != undefined ? <Task id={activelyDragged.id}></Task> : null}
+            {activelyDragged != undefined ? (
+              <Task task_id={extractID(activelyDragged.id)!}></Task>
+            ) : null}
           </DragOverlay>
           <Box>
             <Stack direction={"row"} alignItems={"top"}>
