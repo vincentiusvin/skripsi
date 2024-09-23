@@ -54,6 +54,7 @@ export class TaskController extends Controller {
           ReqBody: z.object({
             bucket_id: z.number({ message: "ID kelompok tugas tidak valid!" }).optional(),
             before_id: z.number({ message: "Lokasi tugas tidak valid!" }).optional(),
+            users: z.array(z.number(), { message: "Pengguna invalid!" }).optional(),
             name: z
               .string({ message: "Nama tidak valid!" })
               .min(1, "Nama tidak boleh kosong!")
@@ -126,6 +127,7 @@ export class TaskController extends Controller {
           ReqBody: z.object({
             name: z.string({ message: "Nama tidak valid!" }).min(1, "Nama tidak boleh kosong!"),
             bucket_id: z.number({ message: "Kelompok tugas tidak boleh kosong!" }),
+            users: z.array(z.number(), { message: "Pengguna invalid!" }).optional(),
             description: z
               .string({ message: "Deskripsi tidak valid!" })
               .min(1, "Deskripsi tidak boleh kosong!")
@@ -198,6 +200,7 @@ export class TaskController extends Controller {
       before_id?: number;
       name?: string;
       description?: string;
+      users?: number[];
       start_at?: string;
       end_at?: string;
     };
@@ -215,7 +218,7 @@ export class TaskController extends Controller {
     };
   }> = async (req, res) => {
     const { task_id: task_id_raw } = req.params;
-    const { bucket_id, name, description, start_at, end_at, before_id } = req.body;
+    const { users, bucket_id, name, description, start_at, end_at, before_id } = req.body;
 
     const task_id = Number(task_id_raw);
     await this.task_service.updateTask(task_id, {
@@ -224,6 +227,7 @@ export class TaskController extends Controller {
       description,
       end_at,
       name,
+      users,
       start_at,
     });
 
@@ -253,15 +257,17 @@ export class TaskController extends Controller {
       name: string;
       description?: string;
       bucket_id: number;
+      users?: number[];
       end_at?: string;
       start_at?: string;
     };
   }> = async (req, res) => {
-    const { bucket_id, name, description, end_at, start_at } = req.body;
+    const { bucket_id, users, name, description, end_at, start_at } = req.body;
 
     const task_id = await this.task_service.addTask({
       bucket_id,
       name,
+      users,
       description,
       end_at,
       start_at,
