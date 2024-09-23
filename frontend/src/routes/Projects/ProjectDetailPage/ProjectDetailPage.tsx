@@ -223,7 +223,7 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
   }
 
   return (
-    <Grid container mt={2} rowSpacing={2}>
+    <Grid container rowSpacing={2}>
       <Grid
         size={{
           xs: 12,
@@ -298,7 +298,7 @@ function UnauthenticatedView(props: { project_id: number }) {
 
   return (
     <>
-      <Grid container mt={2} rowSpacing={2}>
+      <Grid container rowSpacing={2}>
         <Grid size={12}>
           <Typography
             variant="h4"

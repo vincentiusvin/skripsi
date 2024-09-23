@@ -16,7 +16,7 @@ import { useOrgsGet } from "../../queries/org_hooks";
 function OrgsListPage() {
   const { data } = useOrgsGet();
   return (
-    <Box mt={4}>
+    <Box>
       <StyledLink to={"/orgs/add"}>
         <Button startIcon={<Add />} variant="contained" fullWidth>
           Add Organization

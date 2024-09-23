@@ -47,7 +47,7 @@ function ProjectsAddPage() {
   const { data: categories } = useProjectsCategoriesGet();
 
   return (
-    (<Grid container spacing={2} mt={2}>
+    <Grid container spacing={2}>
       <Grid size={12}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           Tambah Project
@@ -90,7 +90,7 @@ function ProjectsAddPage() {
           Simpan
         </Button>
       </Grid>
-    </Grid>)
+    </Grid>
   );
 }
 
