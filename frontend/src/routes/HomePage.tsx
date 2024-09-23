@@ -1,4 +1,5 @@
 import {
+  Badge,
   Box,
   Button,
   Card,
@@ -16,7 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { DateCalendar } from "@mui/x-date-pickers";
+import { DateCalendar, PickersDay } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import StyledLink from "../components/StyledLink.tsx";
 import { useOrgDetailGet, useOrgsDetailMembersGet, useOrgsGet } from "../queries/org_hooks.ts";
@@ -335,7 +336,30 @@ function TaskDashboard(props: { user_id: number }) {
               lg: 3,
             }}
           >
-            <DateCalendar />
+            <DateCalendar
+              slots={{
+                day: (args) => {
+                  const taskDay = tasks.filter((task) => {
+                    if (task.end_at == undefined) {
+                      return false;
+                    }
+                    if (args.day.isSame(task.end_at, "day")) {
+                      return true;
+                    }
+                  });
+
+                  return (
+                    <Badge
+                      color={"primary"}
+                      badgeContent={taskDay.length > 0 ? taskDay.length : undefined}
+                      overlap="circular"
+                    >
+                      <PickersDay {...args} />
+                    </Badge>
+                  );
+                },
+              }}
+            />
           </Grid>
         </Grid>
       </CardContent>
