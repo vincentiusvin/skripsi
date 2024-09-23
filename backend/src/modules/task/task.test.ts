@@ -3,7 +3,7 @@ import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe.only("task api", () => {
+describe("task api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -94,9 +94,9 @@ describe.only("task api", () => {
     const in_description = "Cool";
 
     const send_req = await addTask(
-      in_bucket.id,
       {
         name: in_name,
+        bucket_id: in_bucket.id,
         description: in_description,
       },
       cookie,
@@ -119,9 +119,9 @@ describe.only("task api", () => {
     const in_description = "Cool";
 
     const send_req = await addTask(
-      in_bucket.id,
       {
         name: in_name,
+        bucket_id: in_bucket.id,
         description: in_description,
       },
       cookie,
@@ -199,16 +199,16 @@ function getTasks(opts: { bucket_id?: number }, cookie: string) {
 }
 
 function addTask(
-  bucket_id: number,
   data: {
     name: string;
+    bucket_id: number;
     description?: string | undefined;
     end_at?: string | undefined;
     start_at?: string | undefined;
   },
   cookie: string,
 ) {
-  return new APIContext("BucketsDetailTasksPost").fetch(`/api/buckets/${bucket_id}/tasks`, {
+  return new APIContext("TasksPost").fetch(`/api/tasks`, {
     headers: {
       cookie: cookie,
     },

@@ -75,15 +75,12 @@ export function useFormattedTasks(opts: { project_id: number }) {
   });
 }
 
-export function useBucketsDetailTasksPost(opts: { onSuccess: () => void; bucket_id: number }) {
-  const { bucket_id, onSuccess } = opts;
+export function useTasksPost(opts: { onSuccess: () => void }) {
+  const { onSuccess } = opts;
   return useMutation({
-    mutationFn: new APIContext("BucketsDetailTasksPost").bodyFetch(
-      `/api/buckets/${bucket_id}/tasks`,
-      {
-        method: "POST",
-      },
-    ),
+    mutationFn: new APIContext("TasksPost").bodyFetch(`/api/tasks`, {
+      method: "POST",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all() });
       if (onSuccess) {
