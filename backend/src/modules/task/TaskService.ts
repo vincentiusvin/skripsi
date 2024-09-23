@@ -95,12 +95,12 @@ export class TaskService {
     });
   }
 
-  async getTaskByBucket(bucket_id: number) {
-    return this.repo.findTasksByBucket(bucket_id);
+  async getTaskByBucket(opts: { bucket_id?: number }) {
+    return this.repo.getTasks(opts);
   }
 
-  getBuckets(project_id: number) {
-    return this.repo.getProjectBuckets(project_id);
+  getBuckets(opts: { project_id?: number }) {
+    return this.repo.getBuckets(opts);
   }
 
   addBucket(project_id: number, name: string) {

@@ -41,12 +41,12 @@ import {
   useBucketsDetailDelete,
   useBucketsDetailGet,
   useBucketsDetailPut,
-  useBucketsDetailTasksPost,
+  useBucketsPost,
   useFormattedTasks,
-  useProjectsDetailBucketsPost,
   useTasksDetailDelete,
   useTasksDetailGet,
   useTasksDetailPut,
+  useTasksPost,
 } from "../../../queries/task_hooks.ts";
 
 function extractID(str: string): number | undefined {
@@ -218,8 +218,7 @@ function AddNewTaskDialog(props: { bucket_id: number }) {
   const [taskStartAt, setTaskStartAt] = useState<null | Dayjs>(null);
   const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>(null);
 
-  const { mutate: addTask } = useBucketsDetailTasksPost({
-    bucket_id,
+  const { mutate: addTask } = useTasksPost({
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Task created!</Typography>,
@@ -251,6 +250,7 @@ function AddNewTaskDialog(props: { bucket_id: number }) {
             <Button
               onClick={() => {
                 addTask({
+                  bucket_id,
                   name: taskName,
                   description: taskDescription ?? undefined,
                   start_at: taskStartAt?.toISOString(),
@@ -386,8 +386,7 @@ type TempTasks = {
 
 function Kanban(props: { project_id: number }) {
   const { project_id } = props;
-  const { mutate: addBucket } = useProjectsDetailBucketsPost({
-    project_id: project_id,
+  const { mutate: addBucket } = useBucketsPost({
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Task created!</Typography>,
@@ -588,7 +587,7 @@ function Kanban(props: { project_id: number }) {
                 value={newBucketName}
                 onChange={(e) => setNewBucketName(e.target.value)}
               ></TextField>
-              <Button onClick={() => addBucket({ name: newBucketName })}>
+              <Button onClick={() => addBucket({ name: newBucketName, project_id })}>
                 <Add />
               </Button>
             </Stack>

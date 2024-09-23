@@ -49,7 +49,7 @@ describe("task api", () => {
       },
       cookie,
     );
-    const read_req = await getTasks(in_bucket.id, cookie);
+    const read_req = await getTasks({ bucket_id: in_bucket.id }, cookie);
     const result = await read_req.json();
     const found = result.find((x) => x.id === in_task.id);
 
@@ -77,7 +77,7 @@ describe("task api", () => {
         },
         cookie,
       );
-      const read_req = await getTasks(in_bucket.id, cookie);
+      const read_req = await getTasks({ bucket_id: in_bucket.id }, cookie);
       const result = await read_req.json();
       const task_index = result.findIndex((x) => x.id === in_task.id);
       const before_index = result.findIndex((x) => x.id === in_before.id);
@@ -94,15 +94,15 @@ describe("task api", () => {
     const in_description = "Cool";
 
     const send_req = await addTask(
-      in_bucket.id,
       {
         name: in_name,
+        bucket_id: in_bucket.id,
         description: in_description,
       },
       cookie,
     );
     await send_req.json();
-    const read_req = await getTasks(in_bucket.id, cookie);
+    const read_req = await getTasks({ bucket_id: in_bucket.id }, cookie);
     const result = await read_req.json();
     const found = result.find((x) => x.name === in_name);
 
@@ -119,15 +119,15 @@ describe("task api", () => {
     const in_description = "Cool";
 
     const send_req = await addTask(
-      in_bucket.id,
       {
         name: in_name,
+        bucket_id: in_bucket.id,
         description: in_description,
       },
       cookie,
     );
     await send_req.json();
-    const read_req = await getTasks(in_bucket.id, cookie);
+    const read_req = await getTasks({ bucket_id: in_bucket.id }, cookie);
     const result = await read_req.json();
     const found = result.find((x) => x.name === in_name);
 
@@ -187,27 +187,28 @@ describe("task api", () => {
   });
 });
 
-function getTasks(bucket_id: number, cookie: string) {
-  return new APIContext("BucketsDetailTasksGet").fetch(`/api/buckets/${bucket_id}/tasks`, {
+function getTasks(opts: { bucket_id?: number }, cookie: string) {
+  return new APIContext("TasksGet").fetch(`/api/tasks/`, {
     headers: {
       cookie: cookie,
     },
+    query: { bucket_id: opts.bucket_id?.toString() },
     credentials: "include",
     method: "get",
   });
 }
 
 function addTask(
-  bucket_id: number,
   data: {
     name: string;
+    bucket_id: number;
     description?: string | undefined;
     end_at?: string | undefined;
     start_at?: string | undefined;
   },
   cookie: string,
 ) {
-  return new APIContext("BucketsDetailTasksPost").fetch(`/api/buckets/${bucket_id}/tasks`, {
+  return new APIContext("TasksPost").fetch(`/api/tasks`, {
     headers: {
       cookie: cookie,
     },
@@ -260,22 +261,26 @@ function updateTask(
 }
 
 function addBucket(project_id: number, bucket_name: string, cookie: string) {
-  return new APIContext("ProjectsDetailBucketsPost").fetch(`/api/projects/${project_id}/buckets`, {
+  return new APIContext("BucketsPost").fetch(`/api/buckets`, {
     headers: {
       cookie: cookie,
     },
     credentials: "include",
     method: "post",
     body: {
+      project_id,
       name: bucket_name,
     },
   });
 }
 
 function getBuckets(project_id: number, cookie: string) {
-  return new APIContext("ProjectsDetailBucketsGet").fetch(`/api/projects/${project_id}/buckets`, {
+  return new APIContext("BucketsGet").fetch(`/api/buckets`, {
     headers: {
       cookie: cookie,
+    },
+    query: {
+      project_id: project_id?.toString(),
     },
     credentials: "include",
     method: "get",
