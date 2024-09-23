@@ -96,7 +96,7 @@ export class TaskService {
   }
 
   async getTaskByBucket(opts: { bucket_id?: number }) {
-    return this.repo.findTasksByBucket(opts);
+    return this.repo.getTasks(opts);
   }
 
   getBuckets(opts: { project_id?: number }) {

@@ -74,7 +74,7 @@ export class TaskRepository {
     return result;
   }
 
-  async findTasksByBucket(opts: { bucket_id?: number }) {
+  async getTasks(opts: { bucket_id?: number }) {
     const { bucket_id } = opts;
     let query = this.db
       .selectFrom("ms_tasks")
