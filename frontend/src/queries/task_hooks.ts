@@ -19,14 +19,15 @@ const taskKeys = {
   detail: (task_id: number) => [...taskKeys.details(), task_id] as const,
 };
 
-export function useTasksGet(opts: { bucket_id?: number }) {
-  const { bucket_id } = opts;
+export function useTasksGet(opts: { bucket_id?: number; user_id?: number }) {
+  const { bucket_id, user_id } = opts;
   return useQuery({
     queryKey: taskKeys.list({ bucket_id }),
     queryFn: () =>
       new APIContext("TasksGet").fetch(`/api/tasks`, {
         query: {
           bucket_id: bucket_id?.toString(),
+          user_id: user_id?.toString(),
         },
       }),
   });

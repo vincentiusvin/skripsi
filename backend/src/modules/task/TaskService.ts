@@ -95,7 +95,7 @@ export class TaskService {
     });
   }
 
-  async getTaskByBucket(opts: { bucket_id?: number }) {
+  async getTasks(opts: { bucket_id?: number; user_id?: number }) {
     return this.repo.getTasks(opts);
   }
 

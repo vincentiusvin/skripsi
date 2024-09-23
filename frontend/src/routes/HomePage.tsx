@@ -25,6 +25,7 @@ import {
   useProjectsGet,
 } from "../queries/project_hooks.ts";
 import { useSessionGet } from "../queries/sesssion_hooks.ts";
+import { useTasksGet } from "../queries/task_hooks.ts";
 
 function ProjectRow(props: { user_id: number; project_id: number }) {
   const { user_id, project_id } = props;
@@ -243,12 +244,20 @@ function OrgDashboard(props: { user_id: number }) {
 
 function TaskDashboard(props: { user_id: number }) {
   const { user_id } = props;
+  const { data: tasks } = useTasksGet({
+    user_id,
+  });
+
+  if (!tasks) {
+    return <Skeleton />;
+  }
+
   return (
     <Card>
       <CardContent>
         <Typography variant="h6">Tugas Anda</Typography>
         <Typography variant="h4" fontWeight={"bold"} mb={4}>
-          {0} tugas
+          {tasks.length} tugas
         </Typography>
         <Grid container>
           <Grid

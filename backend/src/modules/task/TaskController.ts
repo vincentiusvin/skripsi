@@ -152,6 +152,11 @@ export class TaskController extends Controller {
               .min(1)
               .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" })
               .optional(),
+            user_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" })
+              .optional(),
           }),
         },
       }),
@@ -276,6 +281,7 @@ export class TaskController extends Controller {
   private getTasks: RH<{
     ReqQuery: {
       bucket_id?: string;
+      user_id?: string;
     };
     ResBody: {
       id: number;
@@ -288,9 +294,10 @@ export class TaskController extends Controller {
       }[];
     }[];
   }> = async (req, res) => {
-    const { bucket_id } = req.query;
-    const result = await this.task_service.getTaskByBucket({
+    const { bucket_id, user_id } = req.query;
+    const result = await this.task_service.getTasks({
       bucket_id: bucket_id != undefined ? Number(bucket_id) : undefined,
+      user_id: user_id != undefined ? Number(user_id) : undefined,
     });
     res.status(200).json(result);
   };

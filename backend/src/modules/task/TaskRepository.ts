@@ -74,8 +74,8 @@ export class TaskRepository {
     return result;
   }
 
-  async getTasks(opts: { bucket_id?: number }) {
-    const { bucket_id } = opts;
+  async getTasks(opts: { bucket_id?: number; user_id?: number }) {
+    const { bucket_id, user_id } = opts;
     let query = this.db
       .selectFrom("ms_tasks")
       .select((eb) => [
@@ -92,6 +92,19 @@ export class TaskRepository {
 
     if (bucket_id != undefined) {
       query = query.where("ms_tasks.bucket_id", "=", bucket_id);
+    }
+
+    if (user_id != undefined) {
+      query = query.where((eb) =>
+        eb(
+          "ms_tasks.id",
+          "in",
+          eb
+            .selectFrom("tasks_users")
+            .select("tasks_users.task_id")
+            .where("tasks_users.user_id", "=", user_id),
+        ),
+      );
     }
 
     return await query.execute();
