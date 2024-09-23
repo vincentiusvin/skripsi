@@ -99,8 +99,8 @@ export class TaskService {
     return this.repo.findTasksByBucket(opts);
   }
 
-  getBuckets(project_id: number) {
-    return this.repo.getProjectBuckets(project_id);
+  getBuckets(opts: { project_id?: number }) {
+    return this.repo.getBuckets(opts);
   }
 
   addBucket(project_id: number, name: string) {

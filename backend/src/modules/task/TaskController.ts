@@ -155,16 +155,17 @@ export class TaskController extends Controller {
           }),
         },
       }),
-      ProjectsDetailBucketsGet: new Route({
-        handler: this.getProjectsDetailBuckets,
+      BucketsGet: new Route({
+        handler: this.getBuckets,
         method: "get",
-        path: "/api/projects/:project_id/buckets",
+        path: "/api/buckets",
         schema: {
-          Params: z.object({
+          ReqQuery: z.object({
             project_id: z
               .string()
               .min(1)
-              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" })
+              .optional(),
           }),
         },
       }),
@@ -298,9 +299,9 @@ export class TaskController extends Controller {
     res.status(200).json(result);
   };
 
-  private getProjectsDetailBuckets: RH<{
-    Params: {
-      project_id: string;
+  private getBuckets: RH<{
+    ReqQuery: {
+      project_id?: string;
     };
     ResBody: {
       name: string;
@@ -308,9 +309,11 @@ export class TaskController extends Controller {
       project_id: number;
     }[];
   }> = async (req, res) => {
-    const { project_id } = req.params;
+    const { project_id } = req.query;
 
-    const result = await this.task_service.getBuckets(Number(project_id));
+    const result = await this.task_service.getBuckets({
+      project_id: project_id != undefined ? Number(project_id) : undefined,
+    });
     res.status(200).json(result);
   };
 

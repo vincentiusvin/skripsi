@@ -40,18 +40,22 @@ export function useTasksDetailGet(opts: { task_id: number }) {
   });
 }
 
-export function useProjectsDetailBucketsGet(opts: { project_id: number }) {
+export function useBucketsGet(opts: { project_id: number }) {
   const { project_id } = opts;
   return useQuery({
     queryKey: bucketKeys.list(project_id),
     queryFn: () =>
-      new APIContext("ProjectsDetailBucketsGet").fetch(`/api/projects/${project_id}/buckets`),
+      new APIContext("BucketsGet").fetch(`/api/buckets`, {
+        query: {
+          project_id: project_id?.toString(),
+        },
+      }),
   });
 }
 
 export function useFormattedTasks(opts: { project_id: number }) {
   const { project_id } = opts;
-  const { data: buckets } = useProjectsDetailBucketsGet({ project_id });
+  const { data: buckets } = useBucketsGet({ project_id });
 
   return useQueries({
     queries:

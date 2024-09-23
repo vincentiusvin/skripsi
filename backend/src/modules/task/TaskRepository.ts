@@ -171,13 +171,18 @@ export class TaskRepository {
       .execute();
   }
 
-  async getProjectBuckets(project_id: number) {
-    return await this.db
+  async getBuckets(opts: { project_id?: number }) {
+    const { project_id } = opts;
+    let query = this.db
       .selectFrom("ms_task_buckets")
       .select(["name", "id", "project_id"])
-      .where("ms_task_buckets.project_id", "=", project_id)
-      .orderBy("ms_task_buckets.id asc")
-      .execute();
+      .orderBy("ms_task_buckets.id asc");
+
+    if (project_id != undefined) {
+      query = query.where("ms_task_buckets.project_id", "=", project_id);
+    }
+
+    return query.execute();
   }
 
   async addBucket(project_id: number, name: string) {

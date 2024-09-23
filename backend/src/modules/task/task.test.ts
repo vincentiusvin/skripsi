@@ -274,9 +274,12 @@ function addBucket(project_id: number, bucket_name: string, cookie: string) {
 }
 
 function getBuckets(project_id: number, cookie: string) {
-  return new APIContext("ProjectsDetailBucketsGet").fetch(`/api/projects/${project_id}/buckets`, {
+  return new APIContext("BucketsGet").fetch(`/api/buckets`, {
     headers: {
       cookie: cookie,
+    },
+    query: {
+      project_id: project_id?.toString(),
     },
     credentials: "include",
     method: "get",
