@@ -261,9 +261,9 @@ function TaskDashboard(props: { user_id: number }) {
               <Table>
                 <TableHead>
                   <TableRow>
+                    <TableCell>Proyek</TableCell>
                     <TableCell>Nama Tugas</TableCell>
                     <TableCell>Kategori</TableCell>
-                    <TableCell>Tanggal Mulai</TableCell>
                     <TableCell>Tanggal Selesai</TableCell>
                   </TableRow>
                 </TableHead>
