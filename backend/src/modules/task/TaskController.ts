@@ -169,20 +169,16 @@ export class TaskController extends Controller {
           }),
         },
       }),
-      ProjectsDetailBucketsPost: new Route({
-        handler: this.postProjectsDetailBuckets,
+      BucketsPost: new Route({
+        handler: this.postBuckets,
         method: "post",
-        path: "/api/projects/:project_id/buckets",
+        path: "/api/buckets",
         schema: {
           ReqBody: z.object({
             name: z.string({ message: "Nama invalid!" }).min(1, "Nama tidak boleh kosong!"),
+            project_id: z.number({ message: "ID projek tidak boleh kosong!" }),
           }),
-          Params: z.object({
-            project_id: z
-              .string()
-              .min(1)
-              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
-          }),
+          Params: z.object({}),
         },
       }),
     };
@@ -317,21 +313,18 @@ export class TaskController extends Controller {
     res.status(200).json(result);
   };
 
-  private postProjectsDetailBuckets: RH<{
-    Params: {
-      project_id: string;
-    };
+  private postBuckets: RH<{
     ReqBody: {
       name: string;
+      project_id: number;
     };
     ResBody: {
       msg: string;
     };
   }> = async (req, res) => {
-    const { project_id } = req.params;
-    const { name } = req.body;
+    const { name, project_id } = req.body;
 
-    await this.task_service.addBucket(Number(project_id), name);
+    await this.task_service.addBucket(project_id, name);
 
     res.status(201).json({
       msg: "Bucket created!",

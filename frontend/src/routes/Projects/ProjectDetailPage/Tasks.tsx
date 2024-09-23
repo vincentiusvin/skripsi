@@ -41,8 +41,8 @@ import {
   useBucketsDetailDelete,
   useBucketsDetailGet,
   useBucketsDetailPut,
+  useBucketsPost,
   useFormattedTasks,
-  useProjectsDetailBucketsPost,
   useTasksDetailDelete,
   useTasksDetailGet,
   useTasksDetailPut,
@@ -386,8 +386,7 @@ type TempTasks = {
 
 function Kanban(props: { project_id: number }) {
   const { project_id } = props;
-  const { mutate: addBucket } = useProjectsDetailBucketsPost({
-    project_id: project_id,
+  const { mutate: addBucket } = useBucketsPost({
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Task created!</Typography>,
@@ -588,7 +587,7 @@ function Kanban(props: { project_id: number }) {
                 value={newBucketName}
                 onChange={(e) => setNewBucketName(e.target.value)}
               ></TextField>
-              <Button onClick={() => addBucket({ name: newBucketName })}>
+              <Button onClick={() => addBucket({ name: newBucketName, project_id })}>
                 <Add />
               </Button>
             </Stack>

@@ -261,13 +261,14 @@ function updateTask(
 }
 
 function addBucket(project_id: number, bucket_name: string, cookie: string) {
-  return new APIContext("ProjectsDetailBucketsPost").fetch(`/api/projects/${project_id}/buckets`, {
+  return new APIContext("BucketsPost").fetch(`/api/buckets`, {
     headers: {
       cookie: cookie,
     },
     credentials: "include",
     method: "post",
     body: {
+      project_id,
       name: bucket_name,
     },
   });

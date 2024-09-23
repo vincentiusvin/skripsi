@@ -129,15 +129,12 @@ export function useTasksDetailDelete(opts: { onSuccess?: () => void; task_id: nu
   });
 }
 
-export function useProjectsDetailBucketsPost(opts: { project_id: number; onSuccess: () => void }) {
-  const { project_id, onSuccess } = opts;
+export function useBucketsPost(opts: { onSuccess: () => void }) {
+  const { onSuccess } = opts;
   return useMutation({
-    mutationFn: new APIContext("ProjectsDetailBucketsPost").bodyFetch(
-      `/api/projects/${project_id}/buckets`,
-      {
-        method: "POST",
-      },
-    ),
+    mutationFn: new APIContext("BucketsPost").bodyFetch(`/api/buckets`, {
+      method: "POST",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bucketKeys.all() });
       if (onSuccess) {
