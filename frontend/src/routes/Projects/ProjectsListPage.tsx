@@ -89,7 +89,7 @@ function ProjectListPage() {
   });
 
   return (
-    <Grid container spacing={2} mt={2}>
+    <Grid container spacing={2}>
       <Grid
         size={{
           xs: 0,

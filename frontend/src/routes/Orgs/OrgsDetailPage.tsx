@@ -194,7 +194,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
   const isInvited = role_data && role_data.role === "Invited";
 
   return (
-    <Grid container mt={2} rowGap={2}>
+    <Grid container rowGap={2}>
       <Grid size={12}>
         {isInvited ? <RespondInvite org_id={org_id} user_id={user_id} /> : null}
       </Grid>
@@ -362,7 +362,7 @@ function OrgsDetailUnauthenticated() {
   }
 
   return (
-    <Grid container mt={2} rowGap={2}>
+    <Grid container rowGap={2}>
       <Grid size={12}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           {data.org_name}

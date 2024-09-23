@@ -69,7 +69,7 @@ function OrgsEditPage() {
   }
 
   return (
-    <Grid container spacing={2} mt={2}>
+    <Grid container spacing={2}>
       <Grid size={12}>
         <Typography
           variant="h4"

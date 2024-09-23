@@ -58,6 +58,7 @@ function App() {
                 }}
                 flexGrow={1}
                 pb={4}
+                mt={2}
               >
                 <Switch>
                   <Route path={"/"} component={HomePage} />

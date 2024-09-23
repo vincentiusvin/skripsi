@@ -2,6 +2,7 @@ import { useMutation, useQueries, useQuery } from "@tanstack/react-query";
 import { API } from "../../../backend/src/routes.ts";
 import { APIContext } from "../helpers/fetch.ts";
 import { queryClient } from "../helpers/queryclient.tsx";
+import { useProjectsDetailGet } from "./project_hooks.ts";
 
 const bucketKeys = {
   all: () => ["buckets"] as const,
@@ -19,14 +20,15 @@ const taskKeys = {
   detail: (task_id: number) => [...taskKeys.details(), task_id] as const,
 };
 
-export function useTasksGet(opts: { bucket_id?: number }) {
-  const { bucket_id } = opts;
+export function useTasksGet(opts: { bucket_id?: number; user_id?: number }) {
+  const { bucket_id, user_id } = opts;
   return useQuery({
     queryKey: taskKeys.list({ bucket_id }),
     queryFn: () =>
       new APIContext("TasksGet").fetch(`/api/tasks`, {
         query: {
           bucket_id: bucket_id?.toString(),
+          user_id: user_id?.toString(),
         },
       }),
   });
@@ -144,9 +146,10 @@ export function useBucketsPost(opts: { onSuccess: () => void }) {
   });
 }
 
-export function useBucketsDetailGet(opts: { bucket_id: number }) {
-  const { bucket_id } = opts;
+export function useBucketsDetailGet(opts: { bucket_id: number; enabled?: boolean }) {
+  const { enabled, bucket_id } = opts;
   return useQuery({
+    enabled,
     queryKey: bucketKeys.detail(bucket_id),
     queryFn: () => new APIContext("BucketsDetailGet").fetch(`/api/buckets/${bucket_id}`),
   });
@@ -175,4 +178,28 @@ export function useBucketsDetailDelete(opts: { bucket_id: number }) {
       queryClient.invalidateQueries({ queryKey: bucketKeys.all() });
     },
   });
+}
+
+export function useTasksToProject(opts: { task_id: number }) {
+  const { task_id } = opts;
+  const task = useTasksDetailGet({
+    task_id,
+  });
+  const bucket = useBucketsDetailGet({
+    bucket_id: task.data?.bucket_id ?? 0,
+    enabled: task.data != undefined,
+  });
+  const project = useProjectsDetailGet({
+    project_id: bucket.data?.project_id ?? 0,
+    enabled: bucket.data != undefined,
+  });
+
+  return {
+    data: {
+      task,
+      bucket,
+      project,
+    },
+    isFetching: [task, bucket, project].some((x) => x.isFetching),
+  };
 }

@@ -133,7 +133,7 @@ function UserAccountPageEdit() {
             </ImageDropzone>
           </DialogContent>
         </Dialog>
-        <Grid container mt={2} rowGap={2}>
+        <Grid container rowGap={2}>
           <Grid
             size={{
               xs: 12,

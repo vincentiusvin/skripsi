@@ -20,10 +20,12 @@ const projectKeys = {
 
 export function useProjectsDetailGet(opts: {
   project_id: number;
+  enabled?: boolean;
   retry?: (failurecount: number, error: unknown) => boolean;
 }) {
-  const { project_id, retry } = opts;
+  const { enabled, project_id, retry } = opts;
   return useQuery({
+    enabled,
     queryKey: projectKeys.detail(project_id),
     queryFn: () => new APIContext("ProjectsDetailGet").fetch(`/api/projects/${project_id}`),
     retry: retry,

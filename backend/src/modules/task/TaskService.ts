@@ -34,6 +34,7 @@ export class TaskService {
       before_id?: number; // sisipin tasknya sebelum id ini.
       name?: string;
       description?: string;
+      users?: number[];
       start_at?: string;
       end_at?: string;
     },
@@ -83,6 +84,7 @@ export class TaskService {
     bucket_id: number;
     name: string;
     description?: string;
+    users?: number[];
     end_at?: string;
     start_at?: string;
   }) {
@@ -95,7 +97,7 @@ export class TaskService {
     });
   }
 
-  async getTaskByBucket(opts: { bucket_id?: number }) {
+  async getTasks(opts: { bucket_id?: number; user_id?: number }) {
     return this.repo.getTasks(opts);
   }
 

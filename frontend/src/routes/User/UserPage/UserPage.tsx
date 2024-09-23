@@ -37,7 +37,7 @@ function UserAccountPage() {
   }
 
   return (
-    <Grid container rowGap={2} mt={2}>
+    <Grid container rowGap={2}>
       <Grid
         size={{
           xs: 12,
