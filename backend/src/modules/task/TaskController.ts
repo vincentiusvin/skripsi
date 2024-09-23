@@ -285,6 +285,7 @@ export class TaskController extends Controller {
     };
     ResBody: {
       id: number;
+      bucket_id: number;
       name: string;
       description: string | null;
       end_at: Date | null;
@@ -345,6 +346,7 @@ export class TaskController extends Controller {
     ResBody: {
       id: number;
       name: string;
+      bucket_id: number;
       description: string | null;
       end_at: Date | null;
       start_at: Date | null;

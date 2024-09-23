@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { DateCalendar } from "@mui/x-date-pickers";
+import dayjs from "dayjs";
 import StyledLink from "../components/StyledLink.tsx";
 import { useOrgDetailGet, useOrgsDetailMembersGet, useOrgsGet } from "../queries/org_hooks.ts";
 import {
@@ -25,7 +26,7 @@ import {
   useProjectsGet,
 } from "../queries/project_hooks.ts";
 import { useSessionGet } from "../queries/sesssion_hooks.ts";
-import { useTasksGet } from "../queries/task_hooks.ts";
+import { useTasksGet, useTasksToProject } from "../queries/task_hooks.ts";
 
 function ProjectRow(props: { user_id: number; project_id: number }) {
   const { user_id, project_id } = props;
@@ -242,6 +243,49 @@ function OrgDashboard(props: { user_id: number }) {
   );
 }
 
+function TaskRow(props: { task_id: number }) {
+  const { task_id } = props;
+  const { data: task_complete } = useTasksToProject({ task_id });
+  const { task, project, bucket } = task_complete;
+
+  if (!task.data || !project.data || !bucket.data) {
+    return (
+      <TableRow>
+        <TableCell>
+          <Skeleton />
+        </TableCell>
+        <TableCell>
+          <Skeleton />
+        </TableCell>
+        <TableCell>
+          <Skeleton />
+        </TableCell>
+        <TableCell>
+          <Skeleton />
+        </TableCell>
+      </TableRow>
+    );
+  }
+
+  return (
+    <TableRow>
+      <TableCell>{project.data.project_name}</TableCell>
+      <TableCell>{task.data.name}</TableCell>
+      <TableCell>{bucket.data.name}</TableCell>
+      <TableCell>
+        {task.data.end_at != undefined
+          ? dayjs(task.data.end_at).format("ddd[,] D[/]M[/]YY HH:mm")
+          : "Tidak ada"}
+      </TableCell>
+      <TableCell>
+        <StyledLink to={`/projects/${project.data.project_id}`}>
+          <Button>Buka</Button>
+        </StyledLink>
+      </TableCell>
+    </TableRow>
+  );
+}
+
 function TaskDashboard(props: { user_id: number }) {
   const { user_id } = props;
   const { data: tasks } = useTasksGet({
@@ -274,8 +318,14 @@ function TaskDashboard(props: { user_id: number }) {
                     <TableCell>Nama Tugas</TableCell>
                     <TableCell>Kategori</TableCell>
                     <TableCell>Tanggal Selesai</TableCell>
+                    <TableCell>Link</TableCell>
                   </TableRow>
                 </TableHead>
+                <TableBody>
+                  {tasks.map((x) => (
+                    <TaskRow task_id={x.id} key={x.id} />
+                  ))}
+                </TableBody>
               </Table>
             </TableContainer>
           </Grid>
