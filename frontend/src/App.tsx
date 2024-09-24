@@ -28,8 +28,24 @@ import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
 import ChatroomPage from "./routes/UserChatroom.tsx";
 import { darkTheme, lightTheme } from "./theme.ts";
 
+function useColorMode() {
+  const savedTheme = localStorage.getItem("mode");
+  let defaultMode: "light" | "dark" = "light";
+  if (savedTheme == "light" || savedTheme == "dark") {
+    defaultMode = savedTheme;
+  }
+  const [theme, setThemeState] = useState<"light" | "dark">(defaultMode);
+
+  function setTheme(x: "light" | "dark") {
+    setThemeState(x);
+    localStorage.setItem("mode", x);
+  }
+
+  return [theme, setTheme] as const;
+}
+
 function App() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useColorMode();
   return (
     <ThemeContext.Provider value={[theme, setTheme]}>
       <ThemeProvider theme={theme === "dark" ? darkTheme : lightTheme}>

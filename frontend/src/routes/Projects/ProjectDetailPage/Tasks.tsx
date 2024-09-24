@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Add, DragIndicator, MoreVert } from "@mui/icons-material";
+import { Add, DragIndicator, ManageAccounts, MoreVert } from "@mui/icons-material";
 import {
   Box,
   BoxProps,
@@ -37,6 +37,8 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { ReactNode, useEffect, useState } from "react";
+import UserSelectDialog from "../../../components/UserSelect.tsx";
+import { useProjectsDetailGet } from "../../../queries/project_hooks.ts";
 import {
   useBucketsDetailDelete,
   useBucketsDetailGet,
@@ -54,12 +56,12 @@ function extractID(str: string): number | undefined {
   return id != undefined ? Number(id) : undefined;
 }
 
-function Task(props: { id: string; isDragged?: boolean }) {
-  const { id, isDragged } = props;
-  const task_id = extractID(id)!;
+function DraggableTask(props: { id: string; project_id: number; isDragged?: boolean }) {
+  const { project_id, id, isDragged } = props;
   const {
     attributes,
     listeners,
+    setActivatorNodeRef: activatorRef,
     setNodeRef: draggableRef,
     transform,
     transition,
@@ -67,12 +69,44 @@ function Task(props: { id: string; isDragged?: boolean }) {
     id,
   });
 
-  const { data: task } = useTasksDetailGet({ task_id });
-
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  const task_id = extractID(id);
+  if (task_id == undefined) {
+    return <Skeleton />;
+  }
+
+  return (
+    <Task
+      project_id={project_id}
+      task_id={task_id}
+      isDragged={isDragged}
+      handleProps={{
+        ref: activatorRef,
+        ...listeners,
+      }}
+      fullProps={{
+        ref: draggableRef,
+        ...attributes,
+        style,
+      }}
+    />
+  );
+}
+
+function Task(props: {
+  task_id: number;
+  project_id: number;
+  isDragged?: boolean;
+  fullProps?: object;
+  handleProps?: object;
+}) {
+  const { project_id, task_id, isDragged, fullProps, handleProps } = props;
+
+  const { data: task } = useTasksDetailGet({ task_id });
 
   if (task == undefined) {
     return <Skeleton />;
@@ -80,9 +114,7 @@ function Task(props: { id: string; isDragged?: boolean }) {
 
   return (
     <Card
-      style={style}
-      {...attributes}
-      ref={draggableRef}
+      {...fullProps}
       sx={{
         opacity: isDragged ? 0.5 : 1,
       }}
@@ -90,20 +122,22 @@ function Task(props: { id: string; isDragged?: boolean }) {
       <CardHeader
         action={
           <>
-            <EditTaskDialog task_id={task_id} />
-            <IconButton {...listeners}>
+            <EditTaskDialog task_id={task_id} project_id={project_id} />
+            <IconButton
+              {...handleProps}
+              sx={{
+                touchAction: "none",
+              }}
+            >
               <DragIndicator />
             </IconButton>
           </>
         }
+        sx={{
+          wordBreak: "break-word",
+        }}
         title={
-          <Typography
-            variant="h5"
-            fontWeight={"bold"}
-            sx={{
-              wordBreak: "break-word",
-            }}
-          >
+          <Typography variant="h5" fontWeight={"bold"}>
             {task.name}
           </Typography>
         }
@@ -207,8 +241,8 @@ function EditBucketDialog(props: { bucket_id: number }) {
   );
 }
 
-function AddNewTaskDialog(props: { bucket_id: number }) {
-  const { bucket_id } = props;
+function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
+  const { bucket_id, project_id } = props;
 
   // undef: gak ada yang dipilih
   // number: lagi ngedit bucket itu
@@ -217,6 +251,8 @@ function AddNewTaskDialog(props: { bucket_id: number }) {
   const [taskDescription, setTaskDescription] = useState<null | string>(null);
   const [taskStartAt, setTaskStartAt] = useState<null | Dayjs>(null);
   const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>(null);
+  const [taskAssign, setTaskAssign] = useState<number[] | undefined>();
+  const [openManageUsers, setManageUsers] = useState(false);
 
   const { mutate: addTask } = useTasksPost({
     onSuccess: () => {
@@ -227,6 +263,13 @@ function AddNewTaskDialog(props: { bucket_id: number }) {
       setSelectedBucketEdit(null);
     },
   });
+  const { data: project_data } = useProjectsDetailGet({
+    project_id,
+  });
+
+  const project_members = project_data?.project_members
+    .filter((x) => x.role === "Admin" || x.role === "Dev")
+    .map((x) => x.user_id);
 
   return (
     <>
@@ -235,16 +278,43 @@ function AddNewTaskDialog(props: { bucket_id: number }) {
       </IconButton>
       {selectedBucketEdit != null && (
         <Dialog open={selectedBucketEdit != null} onClose={() => setSelectedBucketEdit(null)}>
-          <DialogTitle>Add new task</DialogTitle>
+          <DialogTitle>Tambah tugas baru</DialogTitle>
           <DialogContent>
-            <TextField fullWidth onChange={(e) => setTaskName(e.target.value)} label="Task name" />
-            <TextField
-              fullWidth
-              onChange={(e) => setTaskDescription(e.target.value)}
-              label="Task description"
-            />
-            <DatePicker onAccept={(x) => setTaskStartAt(x)} label="Start At"></DatePicker>
-            <DatePicker onAccept={(x) => setTaskEndAt(x)} label="End At"></DatePicker>
+            <Stack spacing={2} my={2}>
+              <TextField
+                fullWidth
+                onChange={(e) => setTaskName(e.target.value)}
+                label="Task name"
+              />
+              <TextField
+                fullWidth
+                onChange={(e) => setTaskDescription(e.target.value)}
+                label="Task description"
+              />
+              <DatePicker onAccept={(x) => setTaskStartAt(x)} label="Start At"></DatePicker>
+              <DatePicker onAccept={(x) => setTaskEndAt(x)} label="End At"></DatePicker>
+              <Button
+                startIcon={<ManageAccounts />}
+                onClick={() => setManageUsers(true)}
+                variant="outlined"
+              >
+                Atur Penanggung Jawab
+              </Button>
+              {project_members != undefined ? (
+                <UserSelectDialog
+                  current_users={[]}
+                  allowed_users={project_members}
+                  open={openManageUsers}
+                  onClose={() => {
+                    setManageUsers(false);
+                  }}
+                  onSave={(x) => {
+                    setTaskAssign(x);
+                    setManageUsers(false);
+                  }}
+                />
+              ) : null}
+            </Stack>
           </DialogContent>
           <DialogActions>
             <Button
@@ -255,10 +325,11 @@ function AddNewTaskDialog(props: { bucket_id: number }) {
                   description: taskDescription ?? undefined,
                   start_at: taskStartAt?.toISOString(),
                   end_at: taskEndAt?.toISOString(),
+                  users: taskAssign,
                 });
               }}
             >
-              Create Task
+              Tambah
             </Button>
           </DialogActions>
         </Dialog>
@@ -267,8 +338,8 @@ function AddNewTaskDialog(props: { bucket_id: number }) {
   );
 }
 
-function EditTaskDialog(props: { task_id: number }) {
-  const { task_id } = props;
+function EditTaskDialog(props: { task_id: number; project_id: number }) {
+  const { task_id, project_id } = props;
 
   // undef: gak ada yang dipilih
   // number: lagi ngedit bucket itu
@@ -277,6 +348,11 @@ function EditTaskDialog(props: { task_id: number }) {
   const [taskDescription, setTaskDescription] = useState<null | string>();
   const [taskStartAt, setTaskStartAt] = useState<null | Dayjs>();
   const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>();
+  const [taskAssign, setTaskAssign] = useState<undefined | number[]>();
+  const [openManageUsers, setManageUsers] = useState(false);
+  const { data: project_data } = useProjectsDetailGet({
+    project_id,
+  });
 
   const { data: task } = useTasksDetailGet({ task_id });
 
@@ -301,6 +377,10 @@ function EditTaskDialog(props: { task_id: number }) {
     },
   });
 
+  const project_members = project_data?.project_members
+    .filter((x) => x.role === "Admin" || x.role === "Dev")
+    .map((x) => x.user_id);
+
   return (
     <>
       <IconButton
@@ -314,28 +394,51 @@ function EditTaskDialog(props: { task_id: number }) {
         <Dialog open={dialogOpen != null} onClose={() => setDialogOpen(false)}>
           <DialogTitle>Edit task</DialogTitle>
           <DialogContent>
-            <TextField
-              fullWidth
-              onChange={(e) => setTaskName(e.target.value)}
-              label="Task name"
-              defaultValue={task.name}
-            />
-            <TextField
-              fullWidth
-              onChange={(e) => setTaskDescription(e.target.value)}
-              label="Task description"
-              defaultValue={task.description}
-            />
-            <DatePicker
-              defaultValue={task.start_at != null ? dayjs(task.start_at) : undefined}
-              onAccept={(x) => setTaskStartAt(x)}
-              label="Start At"
-            ></DatePicker>
-            <DatePicker
-              defaultValue={task.end_at != null ? dayjs(task.start_at) : undefined}
-              onAccept={(x) => setTaskEndAt(x)}
-              label="End At"
-            ></DatePicker>
+            <Stack spacing={2} my={2}>
+              <TextField
+                fullWidth
+                onChange={(e) => setTaskName(e.target.value)}
+                label="Task name"
+                defaultValue={task.name}
+              />
+              <TextField
+                fullWidth
+                onChange={(e) => setTaskDescription(e.target.value)}
+                label="Task description"
+                defaultValue={task.description}
+              />
+              <DatePicker
+                defaultValue={task.start_at != null ? dayjs(task.start_at) : undefined}
+                onAccept={(x) => setTaskStartAt(x)}
+                label="Start At"
+              ></DatePicker>
+              <DatePicker
+                defaultValue={task.end_at != null ? dayjs(task.start_at) : undefined}
+                onAccept={(x) => setTaskEndAt(x)}
+                label="End At"
+              ></DatePicker>
+              <Button
+                startIcon={<ManageAccounts />}
+                onClick={() => setManageUsers(true)}
+                variant="outlined"
+              >
+                Atur Penanggung Jawab
+              </Button>
+              {project_members != undefined ? (
+                <UserSelectDialog
+                  current_users={task.users.map((x) => x.user_id)}
+                  allowed_users={project_members}
+                  open={openManageUsers}
+                  onClose={() => {
+                    setManageUsers(false);
+                  }}
+                  onSave={(x) => {
+                    setTaskAssign(x);
+                    setManageUsers(false);
+                  }}
+                />
+              ) : null}
+            </Stack>
           </DialogContent>
           <DialogActions>
             <Button
@@ -343,7 +446,7 @@ function EditTaskDialog(props: { task_id: number }) {
                 deleteTask();
               }}
             >
-              Delete Task
+              Hapus
             </Button>
             <Button
               onClick={() => {
@@ -353,10 +456,11 @@ function EditTaskDialog(props: { task_id: number }) {
                   description: taskDescription ?? undefined,
                   start_at: taskStartAt?.toISOString(),
                   end_at: taskEndAt?.toISOString(),
+                  users: taskAssign,
                 });
               }}
             >
-              Edit Task
+              Simpan
             </Button>
           </DialogActions>
         </Dialog>
@@ -552,7 +656,7 @@ function Kanban(props: { project_id: number }) {
           {tempTasksData.map(({ bucket, tasks }, i) => (
             <Box key={bucket.id}>
               <EditBucketDialog bucket_id={extractID(bucket.id)!} />
-              <AddNewTaskDialog bucket_id={extractID(bucket.id)!} />
+              <AddNewTaskDialog bucket_id={extractID(bucket.id)!} project_id={project_id} />
               <Column
                 position={"relative"}
                 sx={{
@@ -571,14 +675,21 @@ function Kanban(props: { project_id: number }) {
               >
                 <Stack spacing={5} width={"250px"} height={1}>
                   {tasks?.map((task) => (
-                    <Task key={task.id} id={task.id} isDragged={task.id === activeDragID}></Task>
+                    <DraggableTask
+                      key={task.id}
+                      id={task.id}
+                      project_id={project_id}
+                      isDragged={task.id === activeDragID}
+                    ></DraggableTask>
                   ))}
                 </Stack>
               </Column>
             </Box>
           ))}
           <DragOverlay>
-            {activelyDragged != undefined ? <Task id={activelyDragged.id}></Task> : null}
+            {activelyDragged != undefined ? (
+              <Task project_id={project_id} task_id={extractID(activelyDragged.id)!}></Task>
+            ) : null}
           </DragOverlay>
           <Box>
             <Stack direction={"row"} alignItems={"top"}>

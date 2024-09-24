@@ -219,7 +219,7 @@ export class ProjectController extends Controller {
       project_desc: string;
       project_members: {
         user_id: number;
-        role: string;
+        role: ProjectRoles;
       }[];
       project_categories: {
         category_name: string;
@@ -251,7 +251,7 @@ export class ProjectController extends Controller {
       project_desc: string;
       project_members: {
         user_id: number;
-        role: string;
+        role: ProjectRoles;
       }[];
       project_categories: {
         category_name: string;
@@ -302,7 +302,7 @@ export class ProjectController extends Controller {
       project_desc: string;
       project_members: {
         user_id: number;
-        role: string;
+        role: ProjectRoles;
       }[];
       project_categories: {
         category_name: string;
@@ -336,7 +336,7 @@ export class ProjectController extends Controller {
       project_desc: string;
       project_members: {
         user_id: number;
-        role: string;
+        role: ProjectRoles;
       }[];
       project_categories: {
         category_name: string;
