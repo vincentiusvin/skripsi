@@ -216,15 +216,17 @@ export class TaskRepository {
 
       if (users != undefined) {
         await trx.deleteFrom("tasks_users").where("task_id", "=", task_id).execute();
-        await trx
-          .insertInto("tasks_users")
-          .values(
-            users.map((user_id) => ({
-              task_id,
-              user_id,
-            })),
-          )
-          .execute();
+        if (users.length) {
+          await trx
+            .insertInto("tasks_users")
+            .values(
+              users.map((user_id) => ({
+                task_id,
+                user_id,
+              })),
+            )
+            .execute();
+        }
       }
     });
   }
