@@ -39,7 +39,7 @@ export class TaskService {
       end_at?: string;
     },
   ) {
-    const { bucket_id, name, description, start_at, end_at, before_id } = data;
+    const { users, bucket_id, name, description, start_at, end_at, before_id } = data;
 
     let target_bucket: number;
     const old_data = await this.repo.findTaskByID(task_id);
@@ -74,6 +74,7 @@ export class TaskService {
       bucket_id,
       description,
       end_at,
+      users,
       name,
       order: updateOrder,
       start_at,

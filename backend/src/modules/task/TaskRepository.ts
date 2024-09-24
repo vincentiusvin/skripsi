@@ -192,30 +192,39 @@ export class TaskRepository {
   ) {
     const { bucket_id, name, users, description, start_at, end_at, order } = data;
     await this.db.transaction().execute(async (trx) => {
-      trx
-        .updateTable("ms_tasks")
-        .set({
-          bucket_id,
-          description,
-          end_at,
-          name,
-          order,
-          start_at,
-        })
-        .where("ms_tasks.id", "=", task_id)
-        .execute();
+      if (
+        bucket_id != undefined ||
+        description != undefined ||
+        end_at != undefined ||
+        name != undefined ||
+        order != undefined ||
+        start_at != undefined
+      ) {
+        trx
+          .updateTable("ms_tasks")
+          .set({
+            bucket_id,
+            description,
+            end_at,
+            name,
+            order,
+            start_at,
+          })
+          .where("ms_tasks.id", "=", task_id)
+          .execute();
+      }
 
       if (users != undefined) {
-        await trx.deleteFrom("tasks_users").execute();
-        for (const user_id of users) {
-          await trx
-            .insertInto("tasks_users")
-            .values({
+        await trx.deleteFrom("tasks_users").where("task_id", "=", task_id).execute();
+        await trx
+          .insertInto("tasks_users")
+          .values(
+            users.map((user_id) => ({
               task_id,
               user_id,
-            })
-            .execute();
-        }
+            })),
+          )
+          .execute();
       }
     });
   }

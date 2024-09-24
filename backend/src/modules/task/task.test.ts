@@ -3,7 +3,7 @@ import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("task api", () => {
+describe.only("task api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -34,15 +34,18 @@ describe("task api", () => {
 
   it("should be able to update task", async () => {
     const in_user = caseData.plain_user;
+    const in_assignees = [caseData.plain_user, caseData.dev_user];
     const in_task = caseData.task[0];
     const in_name = "Not cool Task";
     const in_description = "Cool";
     const in_bucket = caseData.bucket_empty;
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const asignees_id = in_assignees.map((x) => x.id);
     const send_req = await updateTask(
       in_task.id,
       {
+        users: asignees_id,
         bucket_id: in_bucket.id,
         name: in_name,
         description: in_description,
@@ -57,6 +60,7 @@ describe("task api", () => {
     expect(found).to.not.eq(undefined);
     expect(found?.description).to.eq(in_description);
     expect(found?.name).to.eq(in_name);
+    expect(found?.users.map((x) => x.user_id).sort()).to.deep.eq(asignees_id.sort());
   });
 
   for (const [idx1, idx2] of [
@@ -246,6 +250,7 @@ function updateTask(
     name?: string;
     description?: string;
     start_at?: string;
+    users?: number[];
     end_at?: string;
   },
   cookie: string,
