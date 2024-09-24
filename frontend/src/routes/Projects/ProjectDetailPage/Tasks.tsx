@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Add, DragIndicator, MoreVert } from "@mui/icons-material";
+import { Add, DragIndicator, ManageAccounts, MoreVert } from "@mui/icons-material";
 import {
   Box,
   BoxProps,
@@ -37,6 +37,8 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { ReactNode, useEffect, useState } from "react";
+import UserSelectDialog from "../../../components/UserSelect.tsx";
+import { useProjectsDetailGet } from "../../../queries/project_hooks.ts";
 import {
   useBucketsDetailDelete,
   useBucketsDetailGet,
@@ -54,8 +56,8 @@ function extractID(str: string): number | undefined {
   return id != undefined ? Number(id) : undefined;
 }
 
-function DraggableTask(props: { id: string; isDragged?: boolean }) {
-  const { id, isDragged } = props;
+function DraggableTask(props: { id: string; project_id: number; isDragged?: boolean }) {
+  const { project_id, id, isDragged } = props;
   const {
     attributes,
     listeners,
@@ -79,6 +81,7 @@ function DraggableTask(props: { id: string; isDragged?: boolean }) {
 
   return (
     <Task
+      project_id={project_id}
       task_id={task_id}
       isDragged={isDragged}
       handleProps={{
@@ -96,11 +99,12 @@ function DraggableTask(props: { id: string; isDragged?: boolean }) {
 
 function Task(props: {
   task_id: number;
+  project_id: number;
   isDragged?: boolean;
   fullProps?: object;
   handleProps?: object;
 }) {
-  const { task_id, isDragged, fullProps, handleProps } = props;
+  const { project_id, task_id, isDragged, fullProps, handleProps } = props;
 
   const { data: task } = useTasksDetailGet({ task_id });
 
@@ -118,7 +122,7 @@ function Task(props: {
       <CardHeader
         action={
           <>
-            <EditTaskDialog task_id={task_id} />
+            <EditTaskDialog task_id={task_id} project_id={project_id} />
             <IconButton
               {...handleProps}
               sx={{
@@ -129,14 +133,11 @@ function Task(props: {
             </IconButton>
           </>
         }
+        sx={{
+          wordBreak: "break-word",
+        }}
         title={
-          <Typography
-            variant="h5"
-            fontWeight={"bold"}
-            sx={{
-              wordBreak: "break-word",
-            }}
-          >
+          <Typography variant="h5" fontWeight={"bold"}>
             {task.name}
           </Typography>
         }
@@ -300,8 +301,8 @@ function AddNewTaskDialog(props: { bucket_id: number }) {
   );
 }
 
-function EditTaskDialog(props: { task_id: number }) {
-  const { task_id } = props;
+function EditTaskDialog(props: { task_id: number; project_id: number }) {
+  const { task_id, project_id } = props;
 
   // undef: gak ada yang dipilih
   // number: lagi ngedit bucket itu
@@ -310,6 +311,11 @@ function EditTaskDialog(props: { task_id: number }) {
   const [taskDescription, setTaskDescription] = useState<null | string>();
   const [taskStartAt, setTaskStartAt] = useState<null | Dayjs>();
   const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>();
+  const [taskAssign, setTaskAssign] = useState<undefined | number[]>();
+  const [openManageUsers, setManageUsers] = useState(false);
+  const { data: project_data } = useProjectsDetailGet({
+    project_id,
+  });
 
   const { data: task } = useTasksDetailGet({ task_id });
 
@@ -333,6 +339,10 @@ function EditTaskDialog(props: { task_id: number }) {
       setDialogOpen(false);
     },
   });
+
+  const project_members = project_data?.project_members
+    .filter((x) => x.role === "Admin" || x.role === "Dev")
+    .map((x) => x.user_id);
 
   return (
     <>
@@ -369,6 +379,23 @@ function EditTaskDialog(props: { task_id: number }) {
               onAccept={(x) => setTaskEndAt(x)}
               label="End At"
             ></DatePicker>
+            <IconButton onClick={() => setManageUsers(true)}>
+              <ManageAccounts />
+            </IconButton>
+            {project_members != undefined ? (
+              <UserSelectDialog
+                current_users={task.users.map((x) => x.user_id)}
+                allowed_users={project_members}
+                open={openManageUsers}
+                onClose={() => {
+                  setManageUsers(false);
+                }}
+                onSave={(x) => {
+                  setTaskAssign(x);
+                  setManageUsers(false);
+                }}
+              />
+            ) : null}
           </DialogContent>
           <DialogActions>
             <Button
@@ -386,6 +413,7 @@ function EditTaskDialog(props: { task_id: number }) {
                   description: taskDescription ?? undefined,
                   start_at: taskStartAt?.toISOString(),
                   end_at: taskEndAt?.toISOString(),
+                  users: taskAssign,
                 });
               }}
             >
@@ -607,6 +635,7 @@ function Kanban(props: { project_id: number }) {
                     <DraggableTask
                       key={task.id}
                       id={task.id}
+                      project_id={project_id}
                       isDragged={task.id === activeDragID}
                     ></DraggableTask>
                   ))}
@@ -616,7 +645,7 @@ function Kanban(props: { project_id: number }) {
           ))}
           <DragOverlay>
             {activelyDragged != undefined ? (
-              <Task task_id={extractID(activelyDragged.id)!}></Task>
+              <Task project_id={project_id} task_id={extractID(activelyDragged.id)!}></Task>
             ) : null}
           </DragOverlay>
           <Box>
