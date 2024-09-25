@@ -6,6 +6,7 @@ import {
   Language,
   ManageAccounts,
   Message,
+  People,
   Work,
 } from "@mui/icons-material";
 import {
@@ -198,6 +199,11 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         link: `/projects`,
         name: `Cari Proyek`,
         avatar: <Work />,
+      },
+      {
+        link: `/friends`,
+        name: `Cari Teman`,
+        avatar: <People />,
       },
       {
         link: `/chatroom`,

@@ -33,11 +33,10 @@ function themeFactory(mode: "dark" | "light"): Parameters<typeof createTheme>[0]
           },
         },
       },
-      MuiSelect: {
+      MuiListItemButton: {
         styleOverrides: {
-          select: {
-            paddingTop: 8,
-            paddingBottom: 8,
+          root: {
+            borderRadius: 8,
           },
         },
       },
