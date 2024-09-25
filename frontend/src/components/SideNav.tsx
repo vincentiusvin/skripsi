@@ -1,41 +1,58 @@
-import { CorporateFare, Language, Work } from "@mui/icons-material";
+import {
+  AccountBalance,
+  CorporateFare,
+  Home,
+  Language,
+  ManageAccounts,
+  Work,
+} from "@mui/icons-material";
 import {
   Avatar,
   Drawer,
+  List,
   ListItem,
   ListItemAvatar,
+  ListItemIcon,
   ListItemText,
   ListSubheader,
   MenuItem,
   Select,
   Stack,
 } from "@mui/material";
-import { ReactNode } from "react";
-import { useRoute } from "wouter";
+import { ReactNode, useState } from "react";
 import { useOrgsGet } from "../queries/org_hooks.ts";
 import { useProjectsGet } from "../queries/project_hooks.ts";
 import { useSessionGet } from "../queries/sesssion_hooks.ts";
 import StyledLink from "./StyledLink.tsx";
 
-type RouteRepresentation = "browse" | `project-${number}` | `orgs-${number}`;
+type SidenavContext = "browse" | `project-${number}` | `orgs-${number}`;
 
-function useRouteMatcher(): RouteRepresentation {
-  const [projectMatch, projectParams] = useRoute("/projects/:project_id");
-  const [orgMatch, orgParams] = useRoute("/orgs/:org_id");
-
-  if (projectMatch) {
-    return `project-${Number(projectParams.project_id)}`;
+function parseSidenavContext(x: SidenavContext) {
+  if (x === "browse") {
+    return {
+      type: "browse",
+    } as const;
+  } else if (x.startsWith("project-")) {
+    const project_id = Number(x.split("-")[1]);
+    return {
+      type: "project",
+      id: project_id,
+    } as const;
+  } else if (x.startsWith("orgs-")) {
+    const org_id = Number(x.split("-")[1]);
+    return {
+      type: "orgs",
+      id: org_id,
+    } as const;
   }
-  if (orgMatch) {
-    return `orgs-${Number(orgParams.org_id)}`;
-  }
-
-  return "browse";
 }
 
-function UserSideNavContent(props: { user_id: number }) {
-  const { user_id } = props;
-  const route = useRouteMatcher();
+function UserSideNavSelector(props: {
+  user_id: number;
+  value: SidenavContext;
+  onChange: (x: SidenavContext) => void;
+}) {
+  const { user_id, value, onChange } = props;
 
   const { data: projects } = useProjectsGet({
     user_id,
@@ -49,20 +66,18 @@ function UserSideNavContent(props: { user_id: number }) {
     title: string;
     icon: ReactNode;
     entries: {
-      link: string;
       value: string;
       primary: string;
       secondary: string | null;
     }[];
   }[] = [
     {
-      title: "Browse",
+      title: "Jelajah",
       icon: <Language />,
       entries: [
         {
-          link: "/",
           value: "browse",
-          primary: "Beranda",
+          primary: "Jelajah",
           secondary: null,
         },
       ],
@@ -91,7 +106,6 @@ function UserSideNavContent(props: { user_id: number }) {
       icon: <Work />,
       entries: filtered_projects.map((x) => {
         return {
-          link: `/projects/${x.project_id}`,
           value: `project-${x.project_id}`,
           primary: x.project_name,
           secondary: x.role!,
@@ -122,7 +136,6 @@ function UserSideNavContent(props: { user_id: number }) {
       icon: <CorporateFare />,
       entries: filtered_orgs.map((x) => {
         return {
-          link: `/orgs/${x.org_id}`,
           value: `orgs-${x.org_id}`,
           primary: x.org_name,
           secondary: x.role!,
@@ -134,23 +147,24 @@ function UserSideNavContent(props: { user_id: number }) {
   return (
     <Select
       label="Dashboard"
-      value={route}
       sx={{
-        minWidth: 200,
+        minWidth: 240,
+      }}
+      value={value}
+      onChange={(x) => {
+        onChange(x.target.value as SidenavContext);
       }}
     >
       {options.map((cat) => [
         <ListSubheader key={cat.title}>{cat.title}</ListSubheader>,
         cat.entries.map((entry) => (
           <MenuItem key={entry.primary} value={entry.value} dense>
-            <StyledLink to={entry.link}>
-              <ListItem component={"div"} dense>
-                <ListItemAvatar>
-                  <Avatar>{cat.icon}</Avatar>
-                </ListItemAvatar>
-                <ListItemText primary={entry.primary} secondary={entry.secondary} />
-              </ListItem>
-            </StyledLink>
+            <ListItem component={"div"} dense>
+              <ListItemAvatar>
+                <Avatar>{cat.icon}</Avatar>
+              </ListItemAvatar>
+              <ListItemText primary={entry.primary} secondary={entry.secondary} />
+            </ListItem>
           </MenuItem>
         )),
       ])}
@@ -158,13 +172,108 @@ function UserSideNavContent(props: { user_id: number }) {
   );
 }
 
-function SideNav() {
-  const { data: session } = useSessionGet();
+function ContextualDashboard(props: { context: SidenavContext }) {
+  const { context } = props;
+  const parsedContext = parseSidenavContext(context);
+
+  let links: {
+    link: string;
+    name: string;
+    avatar: ReactNode;
+  }[] = [];
+
+  if (!parsedContext || parsedContext.type === "browse") {
+    links = [
+      {
+        link: `/`,
+        name: `Beranda`,
+        avatar: <Home />,
+      },
+    ];
+  } else if (parsedContext.type === "project") {
+    const project_id = parsedContext.id;
+    links = [
+      {
+        link: `/projects/${project_id}`,
+        name: `Beranda`,
+        avatar: <Home />,
+      },
+      {
+        link: `/projects/${project_id}`,
+        name: `Kontributor`,
+        avatar: <ManageAccounts />,
+      },
+      {
+        link: `/projects/${project_id}`,
+        name: `Tugas`,
+        avatar: <Work />,
+      },
+      {
+        link: `/projects/${project_id}`,
+        name: `Kontribusi`,
+        avatar: <Work />,
+      },
+      {
+        link: `/projects/${project_id}/edit`,
+        name: `Edit Proyek`,
+        avatar: <AccountBalance />,
+      },
+    ];
+  } else if (parsedContext.type === "orgs") {
+    const org_id = parsedContext.id;
+    links = [
+      {
+        link: `/orgs/${org_id}`,
+        name: `Beranda`,
+        avatar: <Home />,
+      },
+      {
+        link: `/orgs/${org_id}`,
+        name: `Pengurus`,
+        avatar: <ManageAccounts />,
+      },
+      {
+        link: `/orgs/${org_id}`,
+        name: `Atur Proyek`,
+        avatar: <Work />,
+      },
+      {
+        link: `/orgs/${org_id}/edit`,
+        name: `Edit Organisasi`,
+        avatar: <AccountBalance />,
+      },
+    ];
+  }
 
   return (
-    <Drawer open={false} variant="permanent">
+    <List dense>
+      {links.map((x) => (
+        <StyledLink to={x.link} key={x.name}>
+          <ListItem dense>
+            <ListItemIcon>{x.avatar}</ListItemIcon>
+            <ListItemText>{x.name}</ListItemText>
+          </ListItem>
+        </StyledLink>
+      ))}
+    </List>
+  );
+}
+
+function SideNav() {
+  const { data: session } = useSessionGet();
+  const [activeDashboard, setActiveDashboard] = useState<SidenavContext>("browse");
+
+  return (
+    <Drawer variant="permanent">
       <Stack direction={"column"} gap={2} marginY={4} paddingX={2}>
-        {session?.logged ? <UserSideNavContent user_id={session.user_id} /> : null}
+        {session?.logged ? (
+          <UserSideNavSelector
+            user_id={session.user_id}
+            value={activeDashboard}
+            onChange={(x) => setActiveDashboard(x)}
+          />
+        ) : null}
+        <ContextualDashboard context={activeDashboard} />
       </Stack>
     </Drawer>
   );

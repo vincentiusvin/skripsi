@@ -119,7 +119,7 @@ function OrgRow(props: { user_id: number; org_id: number }) {
   );
 }
 
-function ProjectDashboard(props: { user_id: number }) {
+function ProjectInfoCard(props: { user_id: number }) {
   const { user_id } = props;
   const { data: projects } = useProjectsGet({
     user_id,
@@ -183,7 +183,7 @@ function ProjectDashboard(props: { user_id: number }) {
   );
 }
 
-function OrgDashboard(props: { user_id: number }) {
+function OrgInfoCard(props: { user_id: number }) {
   const { user_id } = props;
   const { data: orgs } = useOrgsGet({
     user_id,
@@ -287,7 +287,7 @@ function TaskRow(props: { task_id: number }) {
   );
 }
 
-function TaskDashboard(props: { user_id: number }) {
+function TaskInfoCard(props: { user_id: number }) {
   const { user_id } = props;
   const { data: tasks } = useTasksGet({
     user_id,
@@ -372,7 +372,7 @@ function AuthenticatedHomePage(props: { user_id: number }) {
   return (
     <Grid container spacing={4}>
       <Grid size={12}>
-        <TaskDashboard user_id={user_id} />
+        <TaskInfoCard user_id={user_id} />
       </Grid>
       <Grid
         size={{
@@ -380,7 +380,7 @@ function AuthenticatedHomePage(props: { user_id: number }) {
           xs: 12,
         }}
       >
-        <ProjectDashboard user_id={user_id} />
+        <ProjectInfoCard user_id={user_id} />
       </Grid>
       <Grid
         size={{
@@ -388,7 +388,7 @@ function AuthenticatedHomePage(props: { user_id: number }) {
           xs: 12,
         }}
       >
-        <OrgDashboard user_id={user_id} />
+        <OrgInfoCard user_id={user_id} />
       </Grid>
     </Grid>
   );
