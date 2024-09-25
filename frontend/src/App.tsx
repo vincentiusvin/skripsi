@@ -56,7 +56,16 @@ function App() {
           }}
           autoHideDuration={5000}
           action={(key) => (
-            <IconButton onClick={() => closeSnackbar(key)}>
+            <IconButton
+              sx={{
+                color: "inherit",
+                borderColor: "inherit",
+                "&:hover": {
+                  borderColor: "inherit",
+                },
+              }}
+              onClick={() => closeSnackbar(key)}
+            >
               <CloseIcon />
             </IconButton>
           )}
