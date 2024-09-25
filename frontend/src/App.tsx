@@ -11,6 +11,7 @@ import { Route, Switch } from "wouter";
 import "./App.css";
 import Navigation from "./components/Navigation.tsx";
 import ProgressLine from "./components/ProgressLine.tsx";
+import SideNav from "./components/SideNav.tsx";
 import { queryClient } from "./helpers/queryclient";
 import { ThemeContext } from "./helpers/theme.ts";
 import AuthPage from "./routes/AuthPage";
@@ -85,6 +86,7 @@ function App() {
                 pb={4}
                 mt={2}
               >
+                <SideNav />
                 <Switch>
                   <Route path={"/"} component={HomePage} />
                   <Route path={"/auth"} component={AuthPage} />
