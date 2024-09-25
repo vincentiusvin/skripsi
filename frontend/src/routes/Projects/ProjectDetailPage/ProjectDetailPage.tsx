@@ -27,11 +27,9 @@ import {
   useProjectsDetailMembersPut,
 } from "../../../queries/project_hooks.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
-import { ChatroomWrapper } from "./ProjectChatroom.tsx";
 import ProjectInfo from "./ProjectInfo.tsx";
 import ProjectManage from "./ProjectManage.tsx";
 import { MemberRoles } from "./ProjectMemberComponent.tsx";
-import Kanban from "./Tasks.tsx";
 
 function InvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
   const { project_id, user_id, role } = props;
@@ -183,10 +181,8 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
         </Grid>
       </Grid>
       <Box minHeight={"100vh"}>
-        {activeTab === "disc" && <ChatroomWrapper project_id={project_id} user_id={user_id} />}
         {activeTab === "info" && <ProjectInfo project_id={project_id} />}
         {activeTab === "manage" && <ProjectManage project_id={project_id} />}
-        {activeTab === "tasks" && <Kanban project_id={project_id} />}
       </Box>
     </Stack>
   );

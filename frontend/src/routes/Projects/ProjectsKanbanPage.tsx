@@ -37,8 +37,10 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { ReactNode, useEffect, useState } from "react";
-import UserSelectDialog from "../../../components/UserSelect.tsx";
-import { useProjectsDetailGet } from "../../../queries/project_hooks.ts";
+import { useLocation, useParams } from "wouter";
+import UserSelectDialog from "../../components/UserSelect.tsx";
+import { APIError } from "../../helpers/fetch.ts";
+import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import {
   useBucketsDetailDelete,
   useBucketsDetailGet,
@@ -49,7 +51,7 @@ import {
   useTasksDetailGet,
   useTasksDetailPut,
   useTasksPost,
-} from "../../../queries/task_hooks.ts";
+} from "../../queries/task_hooks.ts";
 
 function extractID(str: string): number | undefined {
   const id = str.split("-")[1];
@@ -708,5 +710,30 @@ function Kanban(props: { project_id: number }) {
     </Stack>
   );
 }
+function ProjectKanbanPage() {
+  const { project_id: id } = useParams();
+  const [, setLocation] = useLocation();
 
-export default Kanban;
+  if (id === undefined) {
+    setLocation("/projects");
+  }
+  const project_id = Number(id);
+
+  const { data: project } = useProjectsDetailGet({
+    project_id,
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+        setLocation("/projects");
+        return false;
+      }
+      return true;
+    },
+  });
+  if (!project) {
+    return <Skeleton />;
+  }
+
+  return <Kanban project_id={project_id} />;
+}
+
+export default ProjectKanbanPage;

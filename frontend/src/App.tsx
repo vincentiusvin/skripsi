@@ -21,7 +21,9 @@ import OrgsEditPage from "./routes/Orgs/OrgsEditPage";
 import OrgsListPage from "./routes/Orgs/OrgsListPage";
 import ProjectDetailPage from "./routes/Projects/ProjectDetailPage/ProjectDetailPage";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
+import ProjectsChatroomPage from "./routes/Projects/ProjectsChatroomPage.tsx";
 import ProjectsEditPage from "./routes/Projects/ProjectsEditPage.tsx";
+import ProjectsKanbanPage from "./routes/Projects/ProjectsKanbanPage.tsx";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
 import UserAccountPageEdit from "./routes/User/UserEditPage.tsx";
 import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
@@ -90,6 +92,8 @@ function App() {
                     <Route path={"/projects"} component={ProjectListPage} />
                     <Route path={"/projects/:id"} component={ProjectDetailPage} />
                     <Route path={"/projects/:project_id/edit"} component={ProjectsEditPage} />
+                    <Route path={"/projects/:project_id/tasks"} component={ProjectsKanbanPage} />
+                    <Route path={"/projects/:project_id/chat"} component={ProjectsChatroomPage} />
                     <Route path={"/users/:id"} component={UserAccountPage} />
                     <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
                   </Switch>

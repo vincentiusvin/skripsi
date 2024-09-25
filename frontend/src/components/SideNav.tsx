@@ -1,5 +1,6 @@
 import {
   AccountBalance,
+  Chat,
   CorporateFare,
   Home,
   Language,
@@ -212,12 +213,17 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <Home />,
       },
       {
+        link: `/projects/${project_id}/chat`,
+        name: `Diskusi`,
+        avatar: <Chat />,
+      },
+      {
         link: `/projects/${project_id}`,
         name: `Anggota`,
         avatar: <ManageAccounts />,
       },
       {
-        link: `/projects/${project_id}`,
+        link: `/projects/${project_id}/tasks`,
         name: `Tugas`,
         avatar: <Work />,
       },
