@@ -9,9 +9,11 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { Fragment, useState } from "react";
-import { useProjectsDetailGet } from "../../../queries/project_hooks.ts";
-import { useUsersGet } from "../../../queries/user_hooks.ts";
-import ProjectMember from "./ProjectMemberComponent.tsx";
+import { useLocation, useParams } from "wouter";
+import { APIError } from "../../helpers/fetch.ts";
+import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
+import { useUsersGet } from "../../queries/user_hooks.ts";
+import ProjectMember from "./ProjectDetailPage/ProjectMemberComponent.tsx";
 
 function InviteMembersDialog(props: { project_id: number }) {
   const { project_id } = props;
@@ -130,4 +132,30 @@ function ProjectManage(props: { project_id: number }) {
   );
 }
 
-export default ProjectManage;
+function ProjectsManagePage() {
+  const { project_id: id } = useParams();
+  const [, setLocation] = useLocation();
+
+  if (id === undefined) {
+    setLocation("/projects");
+  }
+  const project_id = Number(id);
+
+  const { data: project } = useProjectsDetailGet({
+    project_id,
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+        setLocation("/projects");
+        return false;
+      }
+      return true;
+    },
+  });
+  if (!project) {
+    return <Skeleton />;
+  }
+
+  return <ProjectManage project_id={project_id} />;
+}
+
+export default ProjectsManagePage;

@@ -20,11 +20,13 @@ import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage";
 import OrgsEditPage from "./routes/Orgs/OrgsEditPage";
 import OrgsListPage from "./routes/Orgs/OrgsListPage";
 import ProjectDetailPage from "./routes/Projects/ProjectDetailPage/ProjectDetailPage";
+import ProjectInfoPage from "./routes/Projects/ProjectInfoPage.tsx";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectsChatroomPage from "./routes/Projects/ProjectsChatroomPage.tsx";
 import ProjectsEditPage from "./routes/Projects/ProjectsEditPage.tsx";
 import ProjectsKanbanPage from "./routes/Projects/ProjectsKanbanPage.tsx";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
+import ProjectsManagePage from "./routes/Projects/ProjectsManagePage.tsx";
 import UserAccountPageEdit from "./routes/User/UserEditPage.tsx";
 import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
 import ChatroomPage from "./routes/UserChatroom.tsx";
@@ -90,7 +92,9 @@ function App() {
                     <Route path={"/orgs/:id/edit"} component={OrgsEditPage} />
                     <Route path={"/chatroom"} component={ChatroomPage} />
                     <Route path={"/projects"} component={ProjectListPage} />
-                    <Route path={"/projects/:id"} component={ProjectDetailPage} />
+                    <Route path={"/projects/:id/old"} component={ProjectDetailPage} />
+                    <Route path={"/projects/:project_id"} component={ProjectInfoPage} />
+                    <Route path={"/projects/:project_id/manage"} component={ProjectsManagePage} />
                     <Route path={"/projects/:project_id/edit"} component={ProjectsEditPage} />
                     <Route path={"/projects/:project_id/tasks"} component={ProjectsKanbanPage} />
                     <Route path={"/projects/:project_id/chat"} component={ProjectsChatroomPage} />

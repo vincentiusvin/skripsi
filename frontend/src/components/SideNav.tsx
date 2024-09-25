@@ -15,6 +15,7 @@ import {
   List,
   ListItem,
   ListItemAvatar,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   ListSubheader,
@@ -218,7 +219,7 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <Chat />,
       },
       {
-        link: `/projects/${project_id}`,
+        link: `/projects/${project_id}/manage`,
         name: `Anggota`,
         avatar: <ManageAccounts />,
       },
@@ -228,7 +229,7 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <Work />,
       },
       {
-        link: `/projects/${project_id}`,
+        link: `/projects/${project_id}/contribs`,
         name: `Kontribusi`,
         avatar: <Work />,
       },
@@ -269,8 +270,10 @@ function ContextualDashboard(props: { context: SidenavContext }) {
       {links.map((x) => (
         <StyledLink to={x.link} key={x.name}>
           <ListItem dense>
-            <ListItemIcon>{x.avatar}</ListItemIcon>
-            <ListItemText>{x.name}</ListItemText>
+            <ListItemButton>
+              <ListItemIcon>{x.avatar}</ListItemIcon>
+              <ListItemText>{x.name}</ListItemText>
+            </ListItemButton>
           </ListItem>
         </StyledLink>
       ))}

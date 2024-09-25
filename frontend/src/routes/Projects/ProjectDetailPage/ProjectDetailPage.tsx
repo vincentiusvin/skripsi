@@ -27,8 +27,6 @@ import {
   useProjectsDetailMembersPut,
 } from "../../../queries/project_hooks.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
-import ProjectInfo from "./ProjectInfo.tsx";
-import ProjectManage from "./ProjectManage.tsx";
 import { MemberRoles } from "./ProjectMemberComponent.tsx";
 
 function InvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
@@ -180,10 +178,7 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
           </>
         </Grid>
       </Grid>
-      <Box minHeight={"100vh"}>
-        {activeTab === "info" && <ProjectInfo project_id={project_id} />}
-        {activeTab === "manage" && <ProjectManage project_id={project_id} />}
-      </Box>
+      <Box minHeight={"100vh"}></Box>
     </Stack>
   );
 }
@@ -266,9 +261,6 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
           {role === "Invited" ? "Accept" : role === "Pending" ? "Applied" : "Apply"}
         </Button>
       </Grid>
-      <Grid size={12}>
-        <ProjectInfo project_id={project_id} />
-      </Grid>
     </Grid>
   );
 }
@@ -306,9 +298,6 @@ function UnauthenticatedView(props: { project_id: number }) {
           >
             {project.project_name}
           </Typography>
-        </Grid>
-        <Grid size={12}>
-          <ProjectInfo project_id={project_id} />
         </Grid>
       </Grid>
     </>
