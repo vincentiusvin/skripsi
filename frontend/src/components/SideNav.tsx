@@ -8,6 +8,7 @@ import {
 } from "@mui/icons-material";
 import {
   Avatar,
+  Box,
   Drawer,
   List,
   ListItem,
@@ -17,7 +18,6 @@ import {
   ListSubheader,
   MenuItem,
   Select,
-  Stack,
 } from "@mui/material";
 import { ReactNode, useState } from "react";
 import { useOrgsGet } from "../queries/org_hooks.ts";
@@ -146,10 +146,8 @@ function UserSideNavSelector(props: {
 
   return (
     <Select
+      fullWidth
       label="Dashboard"
-      sx={{
-        minWidth: 240,
-      }}
       value={value}
       onChange={(x) => {
         onChange(x.target.value as SidenavContext);
@@ -264,8 +262,22 @@ function SideNav() {
   const [activeDashboard, setActiveDashboard] = useState<SidenavContext>("browse");
 
   return (
-    <Drawer variant="permanent">
-      <Stack direction={"column"} gap={2} marginY={4} paddingX={2}>
+    <Drawer
+      variant="permanent"
+      anchor="left"
+      sx={{
+        width: 240,
+      }}
+    >
+      <Box
+        sx={{
+          width: 240,
+          overflow: "auto",
+          marginY: 4,
+          marginTop: 12,
+          paddingX: 2,
+        }}
+      >
         {session?.logged ? (
           <UserSideNavSelector
             user_id={session.user_id}
@@ -274,7 +286,7 @@ function SideNav() {
           />
         ) : null}
         <ContextualDashboard context={activeDashboard} />
-      </Stack>
+      </Box>
     </Drawer>
   );
 }

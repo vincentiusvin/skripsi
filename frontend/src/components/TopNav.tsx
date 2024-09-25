@@ -28,6 +28,7 @@ import { useAppTheme } from "../helpers/theme.ts";
 import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../queries/user_hooks.ts";
 import NotificationDialog from "./Notification.tsx";
+import ProgressLine from "./ProgressLine.tsx";
 import StyledLink from "./StyledLink.tsx";
 
 function UserImage(props: { user_id: number }) {
@@ -80,7 +81,14 @@ function Navigation() {
   const [theme, setTheme] = useAppTheme();
 
   return (
-    <AppBar position="static" variant="elevation" elevation={0}>
+    <AppBar
+      position="sticky"
+      variant="elevation"
+      elevation={0}
+      sx={{
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+      }}
+    >
       <Toolbar
         sx={{
           gap: {
@@ -195,6 +203,7 @@ function Navigation() {
           </IconButton>
         )}
       </Toolbar>
+      <ProgressLine />
     </AppBar>
   );
 }

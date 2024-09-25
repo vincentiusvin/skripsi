@@ -1,5 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, CssBaseline, IconButton } from "@mui/material";
+import { Box, CssBaseline, IconButton, Stack } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -9,9 +9,8 @@ import { SnackbarProvider, closeSnackbar } from "notistack";
 import { useState } from "react";
 import { Route, Switch } from "wouter";
 import "./App.css";
-import Navigation from "./components/Navigation.tsx";
-import ProgressLine from "./components/ProgressLine.tsx";
 import SideNav from "./components/SideNav.tsx";
+import Navigation from "./components/TopNav.tsx";
 import { queryClient } from "./helpers/queryclient";
 import { ThemeContext } from "./helpers/theme.ts";
 import AuthPage from "./routes/AuthPage";
@@ -76,33 +75,26 @@ function App() {
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <CssBaseline />
               <Navigation />
-              <ProgressLine />
-              <Box
-                paddingX={{
-                  md: 4,
-                  xs: 2,
-                }}
-                flexGrow={1}
-                pb={4}
-                mt={2}
-              >
+              <Stack direction={"row"} flexGrow={1} mt={2}>
                 <SideNav />
-                <Switch>
-                  <Route path={"/"} component={HomePage} />
-                  <Route path={"/auth"} component={AuthPage} />
-                  <Route path={"/orgs"} component={OrgsListPage} />
-                  <Route path={"/orgs/add"} component={OrgsAddPage} />
-                  <Route path={"/orgs/:org_id"} component={OrgsDetailPage} />
-                  <Route path={"/orgs/:org_id/projects/add"} component={ProjectsAddPage} />
-                  <Route path={"/orgs/:id/edit"} component={OrgsEditPage} />
-                  <Route path={"/chatroom"} component={ChatroomPage} />
-                  <Route path={"/projects"} component={ProjectListPage} />
-                  <Route path={"/projects/:id"} component={ProjectDetailPage} />
-                  <Route path={"/projects/:project_id/edit"} component={ProjectsEditPage} />
-                  <Route path={"/users/:id"} component={UserAccountPage} />
-                  <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
-                </Switch>
-              </Box>
+                <Box flexGrow={1} marginX={2}>
+                  <Switch>
+                    <Route path={"/"} component={HomePage} />
+                    <Route path={"/auth"} component={AuthPage} />
+                    <Route path={"/orgs"} component={OrgsListPage} />
+                    <Route path={"/orgs/add"} component={OrgsAddPage} />
+                    <Route path={"/orgs/:org_id"} component={OrgsDetailPage} />
+                    <Route path={"/orgs/:org_id/projects/add"} component={ProjectsAddPage} />
+                    <Route path={"/orgs/:id/edit"} component={OrgsEditPage} />
+                    <Route path={"/chatroom"} component={ChatroomPage} />
+                    <Route path={"/projects"} component={ProjectListPage} />
+                    <Route path={"/projects/:id"} component={ProjectDetailPage} />
+                    <Route path={"/projects/:project_id/edit"} component={ProjectsEditPage} />
+                    <Route path={"/users/:id"} component={UserAccountPage} />
+                    <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
+                  </Switch>
+                </Box>
+              </Stack>
             </LocalizationProvider>
           </QueryClientProvider>
         </SnackbarProvider>
