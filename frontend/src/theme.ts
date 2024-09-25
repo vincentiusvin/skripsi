@@ -33,6 +33,21 @@ function themeFactory(mode: "dark" | "light"): Parameters<typeof createTheme>[0]
           },
         },
       },
+      MuiSelect: {
+        styleOverrides: {
+          select: {
+            paddingTop: 8,
+            paddingBottom: 8,
+          },
+        },
+      },
+      MuiListItem: {
+        styleOverrides: {
+          dense: {
+            paddingLeft: 2,
+          },
+        },
+      },
       MuiIconButton: {
         styleOverrides: {
           root: ({ theme }) => ({

@@ -4,6 +4,7 @@ import {
   Home,
   Language,
   ManageAccounts,
+  Message,
   Work,
 } from "@mui/icons-material";
 import {
@@ -147,7 +148,6 @@ function UserSideNavSelector(props: {
   return (
     <Select
       fullWidth
-      label="Dashboard"
       value={value}
       onChange={(x) => {
         onChange(x.target.value as SidenavContext);
@@ -187,6 +187,21 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         name: `Beranda`,
         avatar: <Home />,
       },
+      {
+        link: `/orgs`,
+        name: `Cari Organisasi`,
+        avatar: <CorporateFare />,
+      },
+      {
+        link: `/projects`,
+        name: `Cari Proyek`,
+        avatar: <Work />,
+      },
+      {
+        link: `/chatroom`,
+        name: `Pesan`,
+        avatar: <Message />,
+      },
     ];
   } else if (parsedContext.type === "project") {
     const project_id = parsedContext.id;
@@ -198,7 +213,7 @@ function ContextualDashboard(props: { context: SidenavContext }) {
       },
       {
         link: `/projects/${project_id}`,
-        name: `Kontributor`,
+        name: `Anggota`,
         avatar: <ManageAccounts />,
       },
       {
