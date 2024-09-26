@@ -265,8 +265,8 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <ManageAccounts />,
       },
       {
-        link: `/orgs/${org_id}`,
-        name: `Kelola Proyek`,
+        link: `/orgs/${org_id}/projects/add`,
+        name: `Buat Proyek Baru`,
         avatar: <Work />,
       },
       {
