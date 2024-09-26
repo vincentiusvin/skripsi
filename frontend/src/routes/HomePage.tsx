@@ -279,7 +279,7 @@ function TaskRow(props: { task_id: number }) {
           : "Tidak ada"}
       </TableCell>
       <TableCell>
-        <StyledLink to={`/projects/${project.data.project_id}`}>
+        <StyledLink to={`/projects/${project.data.project_id}/tasks`}>
           <Button>Buka</Button>
         </StyledLink>
       </TableCell>
@@ -297,12 +297,22 @@ function TaskInfoCard(props: { user_id: number }) {
     return <Skeleton />;
   }
 
+  const sortedTasks = tasks.sort((a, b) => {
+    const a_val = a.end_at ? new Date(a.end_at).valueOf() : Infinity;
+    const b_val = b.end_at ? new Date(b.end_at).valueOf() : Infinity;
+
+    if (a_val === b_val) {
+      return a.id - b.id;
+    }
+    return a_val - b_val;
+  });
+
   return (
     <Card>
       <CardContent>
         <Typography variant="h6">Tugas Anda</Typography>
         <Typography variant="h4" fontWeight={"bold"} mb={4}>
-          {tasks.length} tugas
+          {sortedTasks.length} tugas
         </Typography>
         <Grid container>
           <Grid
@@ -323,7 +333,7 @@ function TaskInfoCard(props: { user_id: number }) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {tasks.map((x) => (
+                  {sortedTasks.map((x) => (
                     <TaskRow task_id={x.id} key={x.id} />
                   ))}
                 </TableBody>
@@ -339,7 +349,7 @@ function TaskInfoCard(props: { user_id: number }) {
             <DateCalendar
               slots={{
                 day: (args) => {
-                  const taskDay = tasks.filter((task) => {
+                  const taskDay = sortedTasks.filter((task) => {
                     if (task.end_at == undefined) {
                       return false;
                     }
