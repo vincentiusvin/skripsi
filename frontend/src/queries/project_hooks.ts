@@ -48,16 +48,21 @@ export function useProjectsGet(opts?: { org_id?: number; user_id?: number; keywo
   });
 }
 
-export function useProjectsDetailMembersGet(opts: { project_id: number; user_id: number }) {
-  const { project_id, user_id } = opts;
+export function useProjectsDetailMembersGet(opts: {
+  project_id: number;
+  user_id: number;
+  enabled?: boolean;
+  retry?: (failurecount: number, error: unknown) => boolean;
+}) {
+  const { retry, project_id, user_id, enabled } = opts;
   return useQuery({
     queryKey: projectKeys.detailMembers(project_id, user_id),
     queryFn: () =>
       new APIContext("ProjectsDetailMembersGet").fetch(
         `/api/projects/${project_id}/users/${user_id}`,
       ),
-    enabled: project_id !== undefined && user_id !== undefined,
-    retry: false,
+    enabled,
+    retry,
     meta: {
       skip_error: true,
     },

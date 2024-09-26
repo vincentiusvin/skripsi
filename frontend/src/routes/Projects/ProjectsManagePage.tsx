@@ -5,6 +5,7 @@ import { useLocation, useParams } from "wouter";
 import StyledLink from "../../components/StyledLink.tsx";
 import { APIError } from "../../helpers/fetch.ts";
 import { useProjectsDetailDelete, useProjectsDetailGet } from "../../queries/project_hooks.ts";
+import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
 
 function ProjectsManage(props: { project_id: number }) {
   const { project_id } = props;
@@ -58,7 +59,11 @@ function ProjectsManagePage() {
     return <Skeleton />;
   }
 
-  return <ProjectsManage project_id={project_id} />;
+  return (
+    <AuthorizeProjects allowedRoles={["Admin"]}>
+      <ProjectsManage project_id={project_id} />
+    </AuthorizeProjects>
+  );
 }
 
 export default ProjectsManagePage;

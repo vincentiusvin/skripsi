@@ -37,9 +37,8 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { ReactNode, useEffect, useState } from "react";
-import { useLocation, useParams } from "wouter";
+import { useParams } from "wouter";
 import UserSelectDialog from "../../components/UserSelect.tsx";
-import { APIError } from "../../helpers/fetch.ts";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import {
   useBucketsDetailDelete,
@@ -52,6 +51,7 @@ import {
   useTasksDetailPut,
   useTasksPost,
 } from "../../queries/task_hooks.ts";
+import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
 
 function extractID(str: string): number | undefined {
   const id = str.split("-")[1];
@@ -712,28 +712,13 @@ function Kanban(props: { project_id: number }) {
 }
 function ProjectKanbanPage() {
   const { project_id: id } = useParams();
-  const [, setLocation] = useLocation();
-
-  if (id === undefined) {
-    setLocation("/projects");
-  }
   const project_id = Number(id);
 
-  const { data: project } = useProjectsDetailGet({
-    project_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
-  });
-  if (!project) {
-    return <Skeleton />;
-  }
-
-  return <Kanban project_id={project_id} />;
+  return (
+    <AuthorizeProjects allowedRoles={["Admin", "Dev"]}>
+      <Kanban project_id={project_id} />
+    </AuthorizeProjects>
+  );
 }
 
 export default ProjectKanbanPage;

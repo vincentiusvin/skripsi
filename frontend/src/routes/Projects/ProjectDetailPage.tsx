@@ -2,16 +2,16 @@ import { Check } from "@mui/icons-material";
 import { Box, Button, Chip, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
-import { useLocation, useParams } from "wouter";
+import { useParams } from "wouter";
 import OrgCard from "../../components/Cards/OrgCard.tsx";
-import { APIError } from "../../helpers/fetch.ts";
 import {
   useProjectsDetailGet,
   useProjectsDetailMembersGet,
   useProjectsDetailMembersPut,
 } from "../../queries/project_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
-import ProjectMember, { MemberRoles } from "./ProjectMemberComponent.tsx";
+import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
+import ProjectMember, { MemberRoles } from "./components/ProjectMember.tsx";
 
 function ProjectInfo(props: { project_id: number }) {
   const { project_id } = props;
@@ -79,16 +79,8 @@ function InvolvedView(props: { project_id: number; user_id: number; role: Member
 function UninvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
   const { project_id, user_id, role } = props;
 
-  const [, setLocation] = useLocation();
   const { data: project } = useProjectsDetailGet({
     project_id: project_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
   });
 
   const { mutate: addMember } = useProjectsDetailMembersPut({
@@ -135,16 +127,8 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
 function UnauthenticatedView(props: { project_id: number }) {
   const { project_id } = props;
 
-  const [, setLocation] = useLocation();
   const { data: project } = useProjectsDetailGet({
     project_id: project_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
   });
 
   if (!project) {
@@ -191,35 +175,19 @@ function ProjectTryAuth(props: { project_id: number; user_id: number }) {
 
 function ProjectDetailPage() {
   const { project_id: id } = useParams();
-  const [, setLocation] = useLocation();
-
-  if (id === undefined) {
-    setLocation("/projects");
-  }
   const project_id = Number(id);
 
   const { data: user_data } = useSessionGet();
 
-  const { data: project } = useProjectsDetailGet({
-    project_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
-  });
-
-  if (!project) {
-    return <Skeleton />;
-  }
-
-  if (user_data && user_data.logged) {
-    return <ProjectTryAuth project_id={project_id} user_id={user_data.user_id} />;
-  } else {
-    return <UnauthenticatedView project_id={project_id} />;
-  }
+  return (
+    <AuthorizeProjects allowedRoles={["Not Involved"]}>
+      {user_data && user_data.logged ? (
+        <ProjectTryAuth project_id={project_id} user_id={user_data.user_id} />
+      ) : (
+        <UnauthenticatedView project_id={project_id} />
+      )}
+    </AuthorizeProjects>
+  );
 }
 
 export default ProjectDetailPage;

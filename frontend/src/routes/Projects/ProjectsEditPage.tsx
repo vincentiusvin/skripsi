@@ -14,12 +14,12 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
-import { APIError } from "../../helpers/fetch.ts";
 import {
   useProjectsCategoriesGet,
   useProjectsDetailGet,
   useProjectsDetailPut,
 } from "../../queries/project_hooks";
+import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
 
 function ProjectsEdit(props: { project_id: number }) {
   const { project_id } = props;
@@ -112,28 +112,13 @@ function ProjectsEdit(props: { project_id: number }) {
 
 function ProjectsEditPage() {
   const { project_id: id } = useParams();
-  const [, setLocation] = useLocation();
-
-  if (id === undefined) {
-    setLocation("/projects");
-  }
   const project_id = Number(id);
 
-  const { data: project } = useProjectsDetailGet({
-    project_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
-  });
-  if (!project) {
-    return <Skeleton />;
-  }
-
-  return <ProjectsEdit project_id={project_id} />;
+  return (
+    <AuthorizeProjects allowedRoles={["Admin"]}>
+      <ProjectsEdit project_id={project_id} />
+    </AuthorizeProjects>
+  );
 }
 
 export default ProjectsEditPage;

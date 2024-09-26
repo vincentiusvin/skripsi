@@ -21,17 +21,16 @@ import {
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { useLocation, useParams } from "wouter";
+import { useParams } from "wouter";
 import ChatroomComponent from "../../components/Chatroom/Chatroom.tsx";
 import { ChangeNameDialog, DeleteRoom } from "../../components/Chatroom/ChatroomMisc.tsx";
-import { APIError } from "../../helpers/fetch.ts";
 import {
   useChatSocket,
   useProjectsDetailChatroomsGet,
   useProjectsDetailChatroomsPost,
 } from "../../queries/chat_hooks.ts";
-import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
+import AuthorizeProjects, { RedirectBack } from "./components/AuthorizeProjects.tsx";
 
 function ChatroomWrapper(props: { user_id: number; project_id: number }) {
   const { project_id, user_id } = props;
@@ -184,30 +183,23 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
 
 function ProjectsChatroomPage() {
   const { project_id: id } = useParams();
-  const [, setLocation] = useLocation();
-
-  if (id === undefined) {
-    setLocation("/projects");
-  }
   const project_id = Number(id);
 
   const { data: user_data } = useSessionGet();
 
-  const { data: project } = useProjectsDetailGet({
-    project_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
-  });
-  if (!project || !user_data || !user_data.logged) {
+  if (!user_data) {
     return <Skeleton />;
   }
 
-  return <ChatroomWrapper project_id={project_id} user_id={user_data.user_id} />;
+  if (!user_data.logged) {
+    return <RedirectBack />;
+  }
+
+  return (
+    <AuthorizeProjects allowedRoles={["Admin", "Dev"]}>
+      <ChatroomWrapper project_id={project_id} user_id={user_data.user_id} />
+    </AuthorizeProjects>
+  );
 }
 
 export default ProjectsChatroomPage;

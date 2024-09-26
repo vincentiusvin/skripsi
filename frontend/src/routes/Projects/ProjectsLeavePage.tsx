@@ -1,12 +1,9 @@
 import { Box, Button, Skeleton, Stack, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import { useLocation, useParams } from "wouter";
-import { APIError } from "../../helpers/fetch.ts";
-import {
-  useProjectsDetailGet,
-  useProjectsDetailMembersDelete,
-} from "../../queries/project_hooks.ts";
+import { useParams } from "wouter";
+import { useProjectsDetailMembersDelete } from "../../queries/project_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
+import AuthorizeProjects, { RedirectBack } from "./components/AuthorizeProjects.tsx";
 
 function ProjectLeave(props: { project_id: number; user_id: number }) {
   const { project_id, user_id } = props;
@@ -47,29 +44,22 @@ function ProjectLeave(props: { project_id: number; user_id: number }) {
 
 function ProjectsLeavePage() {
   const { project_id: id } = useParams();
-  const [, setLocation] = useLocation();
-
-  if (id === undefined) {
-    setLocation("/projects");
-  }
   const project_id = Number(id);
   const { data: sessionData } = useSessionGet();
 
-  const { data: project } = useProjectsDetailGet({
-    project_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
-  });
-  if (!project || !sessionData || !sessionData.logged) {
+  if (!sessionData) {
     return <Skeleton />;
   }
 
-  return <ProjectLeave user_id={sessionData.user_id} project_id={project_id} />;
+  if (!sessionData.logged) {
+    return <RedirectBack />;
+  }
+
+  return (
+    <AuthorizeProjects allowedRoles={["Admin", "Dev"]}>
+      <ProjectLeave user_id={sessionData.user_id} project_id={project_id} />
+    </AuthorizeProjects>
+  );
 }
 
 export default ProjectsLeavePage;

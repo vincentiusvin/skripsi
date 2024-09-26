@@ -13,7 +13,8 @@ import { useLocation, useParams } from "wouter";
 import { APIError } from "../../helpers/fetch.ts";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
-import ProjectMember from "./ProjectMemberComponent.tsx";
+import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
+import ProjectMember from "./components/ProjectMember.tsx";
 
 function InviteMembersDialog(props: { project_id: number }) {
   const { project_id } = props;
@@ -155,7 +156,11 @@ function ProjectsPeoplePage() {
     return <Skeleton />;
   }
 
-  return <ProjectPeople project_id={project_id} />;
+  return (
+    <AuthorizeProjects allowedRoles={["Admin"]}>
+      <ProjectPeople project_id={project_id} />
+    </AuthorizeProjects>
+  );
 }
 
 export default ProjectsPeoplePage;
