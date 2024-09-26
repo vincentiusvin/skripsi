@@ -274,6 +274,11 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         name: `Atur Organisasi`,
         avatar: <Settings />,
       },
+      {
+        link: `/orgs/${org_id}/leave`,
+        name: `Keluar`,
+        avatar: <Logout />,
+      },
     ];
   }
 

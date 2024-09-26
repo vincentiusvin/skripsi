@@ -203,10 +203,10 @@ function ProjectLoggedIn(props: { project_id: number; user_id: number }) {
 
   if (role === "Invited") {
     return (
-      <Box>
+      <>
         <InvitedDialog project_id={project_id} user_id={user_id} />
         <ProjectInfo project_id={project_id} />
-      </Box>
+      </>
     );
   }
 }
