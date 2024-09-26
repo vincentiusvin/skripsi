@@ -9,9 +9,11 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { Fragment, useState } from "react";
-import { useProjectsDetailGet } from "../../../queries/project_hooks.ts";
-import { useUsersGet } from "../../../queries/user_hooks.ts";
-import ProjectMember from "./ProjectMemberComponent.tsx";
+import { useParams } from "wouter";
+import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
+import { useUsersGet } from "../../queries/user_hooks.ts";
+import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
+import ProjectMember from "./components/ProjectMember.tsx";
 
 function InviteMembersDialog(props: { project_id: number }) {
   const { project_id } = props;
@@ -48,7 +50,7 @@ function InviteMembersDialog(props: { project_id: number }) {
   );
 }
 
-function ProjectManage(props: { project_id: number }) {
+function ProjectPeople(props: { project_id: number }) {
   const { project_id } = props;
   const { data: project } = useProjectsDetailGet({ project_id });
 
@@ -130,4 +132,15 @@ function ProjectManage(props: { project_id: number }) {
   );
 }
 
-export default ProjectManage;
+function ProjectsPeoplePage() {
+  const { project_id: id } = useParams();
+  const project_id = Number(id);
+
+  return (
+    <AuthorizeProjects allowedRoles={["Admin"]}>
+      <ProjectPeople project_id={project_id} />
+    </AuthorizeProjects>
+  );
+}
+
+export default ProjectsPeoplePage;

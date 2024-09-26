@@ -119,7 +119,7 @@ function OrgRow(props: { user_id: number; org_id: number }) {
   );
 }
 
-function ProjectDashboard(props: { user_id: number }) {
+function ProjectInfoCard(props: { user_id: number }) {
   const { user_id } = props;
   const { data: projects } = useProjectsGet({
     user_id,
@@ -183,7 +183,7 @@ function ProjectDashboard(props: { user_id: number }) {
   );
 }
 
-function OrgDashboard(props: { user_id: number }) {
+function OrgInfoCard(props: { user_id: number }) {
   const { user_id } = props;
   const { data: orgs } = useOrgsGet({
     user_id,
@@ -279,7 +279,7 @@ function TaskRow(props: { task_id: number }) {
           : "Tidak ada"}
       </TableCell>
       <TableCell>
-        <StyledLink to={`/projects/${project.data.project_id}`}>
+        <StyledLink to={`/projects/${project.data.project_id}/tasks`}>
           <Button>Buka</Button>
         </StyledLink>
       </TableCell>
@@ -287,7 +287,7 @@ function TaskRow(props: { task_id: number }) {
   );
 }
 
-function TaskDashboard(props: { user_id: number }) {
+function TaskInfoCard(props: { user_id: number }) {
   const { user_id } = props;
   const { data: tasks } = useTasksGet({
     user_id,
@@ -297,12 +297,22 @@ function TaskDashboard(props: { user_id: number }) {
     return <Skeleton />;
   }
 
+  const sortedTasks = tasks.sort((a, b) => {
+    const a_val = a.end_at ? new Date(a.end_at).valueOf() : Infinity;
+    const b_val = b.end_at ? new Date(b.end_at).valueOf() : Infinity;
+
+    if (a_val === b_val) {
+      return a.id - b.id;
+    }
+    return a_val - b_val;
+  });
+
   return (
     <Card>
       <CardContent>
         <Typography variant="h6">Tugas Anda</Typography>
         <Typography variant="h4" fontWeight={"bold"} mb={4}>
-          {tasks.length} tugas
+          {sortedTasks.length} tugas
         </Typography>
         <Grid container>
           <Grid
@@ -323,7 +333,7 @@ function TaskDashboard(props: { user_id: number }) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {tasks.map((x) => (
+                  {sortedTasks.map((x) => (
                     <TaskRow task_id={x.id} key={x.id} />
                   ))}
                 </TableBody>
@@ -339,7 +349,7 @@ function TaskDashboard(props: { user_id: number }) {
             <DateCalendar
               slots={{
                 day: (args) => {
-                  const taskDay = tasks.filter((task) => {
+                  const taskDay = sortedTasks.filter((task) => {
                     if (task.end_at == undefined) {
                       return false;
                     }
@@ -372,7 +382,7 @@ function AuthenticatedHomePage(props: { user_id: number }) {
   return (
     <Grid container spacing={4}>
       <Grid size={12}>
-        <TaskDashboard user_id={user_id} />
+        <TaskInfoCard user_id={user_id} />
       </Grid>
       <Grid
         size={{
@@ -380,7 +390,7 @@ function AuthenticatedHomePage(props: { user_id: number }) {
           xs: 12,
         }}
       >
-        <ProjectDashboard user_id={user_id} />
+        <ProjectInfoCard user_id={user_id} />
       </Grid>
       <Grid
         size={{
@@ -388,7 +398,7 @@ function AuthenticatedHomePage(props: { user_id: number }) {
           xs: 12,
         }}
       >
-        <OrgDashboard user_id={user_id} />
+        <OrgInfoCard user_id={user_id} />
       </Grid>
     </Grid>
   );

@@ -146,8 +146,6 @@ function OrgsAddPage() {
           <FormControl>
             <InputLabel id="demo-simple-select-label">Category</InputLabel>
             <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
               value={orgCategory}
               onChange={(e) => setOrgCategory(Number(e.target.value))}
               label="Category"

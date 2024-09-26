@@ -37,8 +37,9 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { ReactNode, useEffect, useState } from "react";
-import UserSelectDialog from "../../../components/UserSelect.tsx";
-import { useProjectsDetailGet } from "../../../queries/project_hooks.ts";
+import { useParams } from "wouter";
+import UserSelectDialog from "../../components/UserSelect.tsx";
+import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import {
   useBucketsDetailDelete,
   useBucketsDetailGet,
@@ -49,7 +50,8 @@ import {
   useTasksDetailGet,
   useTasksDetailPut,
   useTasksPost,
-} from "../../../queries/task_hooks.ts";
+} from "../../queries/task_hooks.ts";
+import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
 
 function extractID(str: string): number | undefined {
   const id = str.split("-")[1];
@@ -708,5 +710,15 @@ function Kanban(props: { project_id: number }) {
     </Stack>
   );
 }
+function ProjectKanbanPage() {
+  const { project_id: id } = useParams();
+  const project_id = Number(id);
 
-export default Kanban;
+  return (
+    <AuthorizeProjects allowedRoles={["Admin", "Dev"]}>
+      <Kanban project_id={project_id} />
+    </AuthorizeProjects>
+  );
+}
+
+export default ProjectKanbanPage;

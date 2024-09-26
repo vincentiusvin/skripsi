@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight, MoreVert } from "@mui/icons-material";
 import {
   Alert,
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -9,6 +10,7 @@ import {
   IconButton,
   Menu,
   Paper,
+  Skeleton,
   Snackbar,
   Stack,
   Tab,
@@ -19,15 +21,18 @@ import {
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import ChatroomComponent from "../../../components/Chatroom/Chatroom.tsx";
-import { ChangeNameDialog, DeleteRoom } from "../../../components/Chatroom/ChatroomMisc.tsx";
+import { useParams } from "wouter";
+import ChatroomComponent from "../../components/Chatroom/Chatroom.tsx";
+import { ChangeNameDialog, DeleteRoom } from "../../components/Chatroom/ChatroomMisc.tsx";
 import {
   useChatSocket,
   useProjectsDetailChatroomsGet,
   useProjectsDetailChatroomsPost,
-} from "../../../queries/chat_hooks.ts";
+} from "../../queries/chat_hooks.ts";
+import { useSessionGet } from "../../queries/sesssion_hooks.ts";
+import AuthorizeProjects, { RedirectBack } from "./components/AuthorizeProjects.tsx";
 
-export function ChatroomWrapper(props: { user_id: number; project_id: number }) {
+function ChatroomWrapper(props: { user_id: number; project_id: number }) {
   const { project_id, user_id } = props;
   const [connected, setConnected] = useState(false);
   const [activeRoom, setActiveRoom] = useState<number | false>(false);
@@ -62,7 +67,7 @@ export function ChatroomWrapper(props: { user_id: number; project_id: number }) 
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | undefined>();
 
   return (
-    <>
+    <Box height={"100%"}>
       <Snackbar open={!connected}>
         <Alert severity="error">
           <Typography>You are not connected!</Typography>
@@ -172,6 +177,29 @@ export function ChatroomWrapper(props: { user_id: number; project_id: number }) 
           )}
         </Grid>
       </Grid>
-    </>
+    </Box>
   );
 }
+
+function ProjectsChatroomPage() {
+  const { project_id: id } = useParams();
+  const project_id = Number(id);
+
+  const { data: user_data } = useSessionGet();
+
+  if (!user_data) {
+    return <Skeleton />;
+  }
+
+  if (!user_data.logged) {
+    return <RedirectBack />;
+  }
+
+  return (
+    <AuthorizeProjects allowedRoles={["Admin", "Dev"]}>
+      <ChatroomWrapper project_id={project_id} user_id={user_data.user_id} />
+    </AuthorizeProjects>
+  );
+}
+
+export default ProjectsChatroomPage;
