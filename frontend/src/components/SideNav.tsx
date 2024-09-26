@@ -260,7 +260,7 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <Home />,
       },
       {
-        link: `/orgs/${org_id}`,
+        link: `/orgs/${org_id}/people`,
         name: `Pengurus`,
         avatar: <ManageAccounts />,
       },

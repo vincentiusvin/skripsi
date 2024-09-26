@@ -1,4 +1,4 @@
-import { Add, Delete, Edit, MoreVert, People } from "@mui/icons-material";
+import { Add } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -6,107 +6,24 @@ import {
   CardActionArea,
   CardContent,
   Chip,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
   Paper,
   Skeleton,
   Stack,
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { enqueueSnackbar } from "notistack";
-import { useState } from "react";
 import { useLocation, useParams } from "wouter";
-import UserCard from "../../components/Cards/UserCard.tsx";
 import StyledLink from "../../components/StyledLink.tsx";
 import { APIError } from "../../helpers/fetch";
 import {
   useOrgDetailGet,
-  useOrgsDelete,
   useOrgsDetailMembersDelete,
   useOrgsDetailMembersGet,
   useOrgsDetailMembersPut,
 } from "../../queries/org_hooks";
 import { useProjectsGet } from "../../queries/project_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
-import { useUsersGet } from "../../queries/user_hooks.ts";
-
-function MemberCard(props: { org_id: number; user_id: number; invite?: boolean }) {
-  const { user_id, org_id, invite } = props;
-  const { data: role_data } = useOrgsDetailMembersGet({
-    user_id,
-    org_id,
-  });
-
-  const { mutate: putMember } = useOrgsDetailMembersPut({
-    org_id: org_id,
-    user_id: user_id,
-    onSuccess: (x) => {
-      enqueueSnackbar({
-        variant: "success",
-        message: <Typography>User berhasil ditambahkan sebagai {x.role}!</Typography>,
-      });
-    },
-  });
-
-  if (!invite) {
-    return <UserCard user_id={user_id} subtitle={role_data?.role} />;
-  } else {
-    return (
-      <UserCard
-        user_id={user_id}
-        subtitle={role_data?.role}
-        sidebar={
-          <Button
-            onClick={() => {
-              putMember({
-                role: "Invited",
-              });
-            }}
-          >
-            Add
-          </Button>
-        }
-      />
-    );
-  }
-}
-
-function InviteUserDialog(props: { org_id: number }) {
-  const { org_id } = props;
-  const { data: users } = useUsersGet();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  return (
-    <>
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>Add members</DialogTitle>
-        <DialogContent>
-          {users ? (
-            <Stack gap={2}>
-              {users.map((x) => (
-                <MemberCard org_id={org_id} user_id={x.user_id} key={x.user_id} invite />
-              ))}
-            </Stack>
-          ) : (
-            <Skeleton />
-          )}
-        </DialogContent>
-      </Dialog>
-      <MenuItem onClick={() => setDialogOpen(true)}>
-        <ListItemIcon>
-          <People />
-        </ListItemIcon>
-        <ListItemText>Tambah Pengurus</ListItemText>
-      </MenuItem>
-    </>
-  );
-}
+import OrgMember from "./components/OrgMember.tsx";
 
 function RespondInvite(props: { user_id: number; org_id: number }) {
   const { user_id, org_id } = props;
@@ -173,19 +90,6 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
     org_id: org_id,
   });
 
-  const { mutate: deleteOrg } = useOrgsDelete({
-    id: org_id,
-    onSuccess: () => {
-      enqueueSnackbar({
-        message: <Typography>Edit successful!</Typography>,
-        autoHideDuration: 5000,
-        variant: "success",
-      });
-    },
-  });
-
-  const [drawerAnchor, setDrawerAnchor] = useState<HTMLElement | undefined>();
-
   if (!data || !projectData) {
     return <Skeleton />;
   }
@@ -202,36 +106,6 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
         <Typography variant="h4" fontWeight={"bold"} align="center">
           {data.org_name}
         </Typography>
-      </Grid>
-      <Grid alignItems={"center"} justifyContent={"end"} display="flex" size={1}>
-        {isAdmin ? (
-          <>
-            <IconButton onClick={(e) => setDrawerAnchor(e.currentTarget)}>
-              <MoreVert />
-            </IconButton>
-            <Menu
-              open={drawerAnchor != undefined}
-              onClose={() => setDrawerAnchor(undefined)}
-              anchorEl={drawerAnchor}
-            >
-              <StyledLink to={`/orgs/${org_id}/edit`}>
-                <MenuItem>
-                  <ListItemIcon>
-                    <Edit />
-                  </ListItemIcon>
-                  <ListItemText>Edit</ListItemText>
-                </MenuItem>
-              </StyledLink>
-              <MenuItem onClick={() => deleteOrg()}>
-                <ListItemIcon>
-                  <Delete />
-                </ListItemIcon>
-                <ListItemText>Hapus</ListItemText>
-              </MenuItem>
-              <InviteUserDialog org_id={org_id} />
-            </Menu>
-          </>
-        ) : null}
       </Grid>
       <Grid size={12}>
         <Paper
@@ -267,7 +141,7 @@ function OrgsDetailAuthenticated(props: { user_id: number }) {
                     md: 3,
                   }}
                 >
-                  <MemberCard user_id={x.user_id} org_id={org_id} />
+                  <OrgMember user_id={x.user_id} org_id={org_id} />
                 </Grid>
               ))}
           </Grid>
@@ -402,7 +276,7 @@ function OrgsDetailUnauthenticated() {
                     md: 3,
                   }}
                 >
-                  <MemberCard user_id={x.user_id} org_id={org_id} />
+                  <OrgMember user_id={x.user_id} org_id={org_id} />
                 </Grid>
               ))}
           </Grid>
