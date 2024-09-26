@@ -14,18 +14,18 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
+import { APIError } from "../../helpers/fetch.ts";
 import {
   useProjectsCategoriesGet,
   useProjectsDetailGet,
   useProjectsDetailPut,
 } from "../../queries/project_hooks";
 
-function ProjectsEditPage() {
+function ProjectsEdit(props: { project_id: number }) {
+  const { project_id } = props;
   const [projectName, setProjectName] = useState<string | undefined>();
   const [projectDesc, setProjectDesc] = useState<string | undefined>();
   const [projectCategory, setProjectCategory] = useState<number[] | undefined>();
-  const { project_id: project_id_raw } = useParams();
-  const project_id = Number(project_id_raw);
 
   const [, setLocation] = useLocation();
 
@@ -108,6 +108,32 @@ function ProjectsEditPage() {
       </Grid>
     </Grid>
   );
+}
+
+function ProjectsEditPage() {
+  const { project_id: id } = useParams();
+  const [, setLocation] = useLocation();
+
+  if (id === undefined) {
+    setLocation("/projects");
+  }
+  const project_id = Number(id);
+
+  const { data: project } = useProjectsDetailGet({
+    project_id,
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
+        setLocation("/projects");
+        return false;
+      }
+      return true;
+    },
+  });
+  if (!project) {
+    return <Skeleton />;
+  }
+
+  return <ProjectsEdit project_id={project_id} />;
 }
 
 export default ProjectsEditPage;

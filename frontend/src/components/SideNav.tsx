@@ -4,9 +4,11 @@ import {
   CorporateFare,
   Home,
   Language,
+  Logout,
   ManageAccounts,
   Message,
   People,
+  Settings,
   Work,
 } from "@mui/icons-material";
 import {
@@ -225,7 +227,7 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <Chat />,
       },
       {
-        link: `/projects/${project_id}/manage`,
+        link: `/projects/${project_id}/people`,
         name: `Anggota`,
         avatar: <ManageAccounts />,
       },
@@ -240,9 +242,14 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <Work />,
       },
       {
-        link: `/projects/${project_id}/edit`,
-        name: `Edit Proyek`,
-        avatar: <AccountBalance />,
+        link: `/projects/${project_id}/manage`,
+        name: `Atur Proyek`,
+        avatar: <Settings />,
+      },
+      {
+        link: `/projects/${project_id}/leave`,
+        name: `Keluar`,
+        avatar: <Logout />,
       },
     ];
   } else if (parsedContext.type === "orgs") {

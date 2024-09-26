@@ -1,26 +1,12 @@
-import { Check, Delete, Logout } from "@mui/icons-material";
-import {
-  Box,
-  Button,
-  Chip,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-  Skeleton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Check } from "@mui/icons-material";
+import { Box, Button, Chip, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
-import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import OrgCard from "../../components/Cards/OrgCard.tsx";
 import { APIError } from "../../helpers/fetch.ts";
 import {
-  useProjectsDetailDelete,
   useProjectsDetailGet,
-  useProjectsDetailMembersDelete,
   useProjectsDetailMembersGet,
   useProjectsDetailMembersPut,
 } from "../../queries/project_hooks.ts";
@@ -85,73 +71,9 @@ function ProjectInfo(props: { project_id: number }) {
 }
 
 function InvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
-  const { project_id, user_id, role } = props;
+  const { project_id } = props;
 
-  const [, setLocation] = useLocation();
-  const { data: project } = useProjectsDetailGet({
-    project_id: project_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
-  });
-
-  const { mutate: leaveProject } = useProjectsDetailMembersDelete({
-    project_id: project_id,
-    user_id: user_id,
-    onSuccess: () => {
-      enqueueSnackbar({
-        variant: "success",
-        message: <Typography>Berhasil meninggalkan projek!</Typography>,
-      });
-    },
-  });
-
-  const { mutate: deleteProject } = useProjectsDetailDelete({
-    project_id: project_id,
-    onSuccess: () => {
-      enqueueSnackbar({
-        variant: "success",
-        message: <Typography>Berhasil menghapus projek!</Typography>,
-      });
-    },
-  });
-
-  const [drawerAnchor, setDrawerAnchor] = useState<HTMLElement | undefined>();
-
-  if (!project) {
-    return <Skeleton />;
-  }
-
-  return (
-    <Stack height={"100%"}>
-      <Button onClick={(e) => setDrawerAnchor(e.currentTarget)}>Kelola</Button>
-      <Menu
-        open={drawerAnchor != undefined}
-        onClose={() => setDrawerAnchor(undefined)}
-        anchorEl={drawerAnchor}
-      >
-        {role === "Admin" ? (
-          <MenuItem onClick={() => deleteProject()}>
-            <ListItemIcon>
-              <Delete />
-            </ListItemIcon>
-            <ListItemText>Hapus</ListItemText>
-          </MenuItem>
-        ) : null}
-        <MenuItem onClick={() => leaveProject()}>
-          <ListItemIcon>
-            <Logout />
-          </ListItemIcon>
-          <ListItemText>Keluar</ListItemText>
-        </MenuItem>
-      </Menu>
-      <ProjectInfo project_id={project_id} />
-    </Stack>
-  );
+  return <ProjectInfo project_id={project_id} />;
 }
 
 function UninvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
