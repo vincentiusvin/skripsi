@@ -13,7 +13,7 @@ import { useLocation, useParams } from "wouter";
 import { APIError } from "../../helpers/fetch.ts";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
-import ProjectMember from "./ProjectDetailPage/ProjectMemberComponent.tsx";
+import ProjectMember from "./ProjectMemberComponent.tsx";
 
 function InviteMembersDialog(props: { project_id: number }) {
   const { project_id } = props;

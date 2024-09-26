@@ -1,12 +1,12 @@
 import { Button, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import { API } from "../../../../../backend/src/routes.ts";
-import UserCard from "../../../components/Cards/UserCard.tsx";
+import { API } from "../../../../backend/src/routes.ts";
+import UserCard from "../../components/Cards/UserCard.tsx";
 import {
   useProjectsDetailMembersDelete,
   useProjectsDetailMembersGet,
   useProjectsDetailMembersPut,
-} from "../../../queries/project_hooks.ts";
+} from "../../queries/project_hooks.ts";
 
 export type MemberRoles = API["ProjectsDetailMembersGet"]["ResBody"]["role"] | "Not Involved";
 
