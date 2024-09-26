@@ -1,12 +1,9 @@
 import { Skeleton } from "@mui/material";
 import { ReactNode } from "react";
 import { Redirect, useParams } from "wouter";
-import { ProjectRoles } from "../../../../../backend/src/modules/project/ProjectMisc.ts";
+import { OrgRoles } from "../../../../../backend/src/modules/organization/OrgMisc.ts";
 import { APIError } from "../../../helpers/fetch.ts";
-import {
-  useProjectsDetailGet,
-  useProjectsDetailMembersGet,
-} from "../../../queries/project_hooks.ts";
+import { useOrgDetailGet, useOrgsDetailMembersGet } from "../../../queries/org_hooks.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 
 export function RedirectBack() {
@@ -18,13 +15,13 @@ export function RedirectBack() {
  */
 function CheckRole(props: {
   children: ReactNode;
-  allowedRoles: ProjectRoles[];
+  allowedRoles: OrgRoles[];
   user_id: number;
-  project_id: number;
+  org_id: number;
 }) {
-  const { project_id, user_id, allowedRoles, children } = props;
-  const { data: role } = useProjectsDetailMembersGet({
-    project_id,
+  const { org_id, user_id, allowedRoles, children } = props;
+  const { data: role } = useOrgsDetailMembersGet({
+    org_id,
     user_id,
   });
   if (role == undefined) {
@@ -40,17 +37,13 @@ function CheckRole(props: {
 /**
  * Cek projek ini beneran ada atau nggak.
  */
-function CheckProject(props: {
-  children: ReactNode;
-  allowedRoles: ProjectRoles[];
-  project_id: number;
-}) {
-  const { children, allowedRoles, project_id } = props;
+function CheckOrgs(props: { children: ReactNode; allowedRoles: OrgRoles[]; org_id: number }) {
+  const { children, allowedRoles, org_id } = props;
   const isPublic = !!allowedRoles.find((x) => x === "Not Involved");
 
   const { data: session } = useSessionGet();
-  const { data: project, isError } = useProjectsDetailGet({
-    project_id,
+  const { data: project, isError } = useOrgDetailGet({
+    id: org_id,
     retry: (failureCount, error) => {
       if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
         return false;
@@ -80,14 +73,14 @@ function CheckProject(props: {
 /**
  * Cek user boleh buka projek ini atau nggak.
  */
-function AuthorizeProjects(props: { children: ReactNode; allowedRoles: ProjectRoles[] }) {
-  const { project_id: id } = useParams();
-  const project_id = Number(id);
-  if (isNaN(project_id)) {
+function AuthorizeOrgs(props: { children: ReactNode; allowedRoles: OrgRoles[] }) {
+  const { org_id: id } = useParams();
+  const org_id = Number(id);
+  if (isNaN(org_id)) {
     return <RedirectBack />;
   }
 
-  return <CheckProject project_id={project_id} {...props} />;
+  return <CheckOrgs org_id={org_id} {...props} />;
 }
 
-export default AuthorizeProjects;
+export default AuthorizeOrgs;
