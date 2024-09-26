@@ -1,11 +1,25 @@
 import { Check } from "@mui/icons-material";
-import { Box, Button, Chip, Skeleton, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Skeleton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
+import { useState } from "react";
 import { useParams } from "wouter";
 import OrgCard from "../../components/Cards/OrgCard.tsx";
 import {
   useProjectsDetailGet,
+  useProjectsDetailMembersDelete,
   useProjectsDetailMembersGet,
   useProjectsDetailMembersPut,
 } from "../../queries/project_hooks.ts";
@@ -70,18 +84,65 @@ function ProjectInfo(props: { project_id: number }) {
   );
 }
 
-function InvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
-  const { project_id } = props;
+function InvitedDialog(props: { project_id: number; user_id: number }) {
+  const { project_id, user_id } = props;
+  const [open, setOpen] = useState(true);
 
-  return <ProjectInfo project_id={project_id} />;
+  const { mutate: putMember } = useProjectsDetailMembersPut({
+    project_id: project_id,
+    user_id: user_id,
+    onSuccess: (x) => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>User berhasil ditambahkan sebagai {x.role}!</Typography>,
+      });
+    },
+  });
+
+  const { mutate: deleteMember } = useProjectsDetailMembersDelete({
+    project_id: project_id,
+    user_id: user_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>User berhasil dihapus!</Typography>,
+      });
+    },
+  });
+
+  return (
+    <Dialog open={open} onClose={() => setOpen(false)}>
+      <DialogTitle>Terima Undangan?</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Anda diundang oleh pengurus proyek ini untuk ikut berpartisipasi. Anda dapat menerima atau
+          menolak undangan ini.
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={() => {
+            deleteMember();
+          }}
+        >
+          Tolak
+        </Button>
+        <Button
+          onClick={() => {
+            putMember({
+              role: "Dev",
+            });
+          }}
+        >
+          Terima
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 }
 
-function UninvolvedView(props: { project_id: number; user_id: number; role: MemberRoles }) {
+function ApplyButton(props: { project_id: number; user_id: number; role: MemberRoles }) {
   const { project_id, user_id, role } = props;
-
-  const { data: project } = useProjectsDetailGet({
-    project_id: project_id,
-  });
 
   const { mutate: addMember } = useProjectsDetailMembersPut({
     project_id: project_id,
@@ -94,68 +155,30 @@ function UninvolvedView(props: { project_id: number; user_id: number; role: Memb
     },
   });
 
-  if (!project) {
-    return <Skeleton />;
+  if (role !== "Not Involved" && role !== "Pending") {
+    return null;
   }
 
   return (
-    <Stack>
-      <Button
-        endIcon={<Check />}
-        variant="contained"
-        disabled={role === "Admin" || role === "Dev"}
-        fullWidth
-        onClick={() => {
-          if (role === "Not Involved") {
-            addMember({
-              role: "Pending",
-            });
-          } else if (role === "Invited") {
-            addMember({
-              role: "Dev",
-            });
-          }
-        }}
-      >
-        {role === "Invited" ? "Accept" : role === "Pending" ? "Applied" : "Apply"}
-      </Button>
-      <ProjectInfo project_id={project_id} />
-    </Stack>
+    <Button
+      endIcon={<Check />}
+      variant="contained"
+      disabled={role === "Pending"}
+      fullWidth
+      onClick={() => {
+        if (role === "Not Involved") {
+          addMember({
+            role: "Pending",
+          });
+        }
+      }}
+    >
+      {role === "Pending" ? "Applied" : "Apply"}
+    </Button>
   );
 }
 
-function UnauthenticatedView(props: { project_id: number }) {
-  const { project_id } = props;
-
-  const { data: project } = useProjectsDetailGet({
-    project_id: project_id,
-  });
-
-  if (!project) {
-    return <Skeleton />;
-  }
-
-  return (
-    <>
-      <Grid container rowSpacing={2}>
-        <Grid size={12}>
-          <Typography
-            variant="h4"
-            fontWeight={"bold"}
-            align="center"
-            sx={{
-              wordBreak: "break-word",
-            }}
-          >
-            {project.project_name}
-          </Typography>
-        </Grid>
-      </Grid>
-    </>
-  );
-}
-
-function ProjectTryAuth(props: { project_id: number; user_id: number }) {
+function ProjectLoggedIn(props: { project_id: number; user_id: number }) {
   const { project_id, user_id } = props;
   const { data: membership } = useProjectsDetailMembersGet({
     project_id: project_id,
@@ -167,9 +190,24 @@ function ProjectTryAuth(props: { project_id: number; user_id: number }) {
   }
 
   if (role === "Admin" || role === "Dev") {
-    return <InvolvedView project_id={project_id} user_id={user_id} role={role} />;
-  } else {
-    return <UninvolvedView project_id={project_id} user_id={user_id} role={role} />;
+    return <ProjectInfo project_id={project_id} />;
+  }
+  if (role === "Not Involved" || role === "Pending") {
+    return (
+      <Box>
+        <ApplyButton user_id={user_id} project_id={project_id} role={role} />
+        <ProjectInfo project_id={project_id} />
+      </Box>
+    );
+  }
+
+  if (role === "Invited") {
+    return (
+      <Box>
+        <InvitedDialog project_id={project_id} user_id={user_id} />
+        <ProjectInfo project_id={project_id} />
+      </Box>
+    );
   }
 }
 
@@ -182,9 +220,9 @@ function ProjectDetailPage() {
   return (
     <AuthorizeProjects allowedRoles={["Not Involved"]}>
       {user_data && user_data.logged ? (
-        <ProjectTryAuth project_id={project_id} user_id={user_data.user_id} />
+        <ProjectLoggedIn project_id={project_id} user_id={user_data.user_id} />
       ) : (
-        <UnauthenticatedView project_id={project_id} />
+        <ProjectInfo project_id={project_id} />
       )}
     </AuthorizeProjects>
   );
