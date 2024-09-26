@@ -1,11 +1,11 @@
-import { Link as MuiLink } from "@mui/material";
-import { Link as WouterLink, LinkProps as WouterLinkProps } from "wouter";
+import { LinkProps, Link as MuiLink } from "@mui/material";
+import { Link as WouterLink } from "wouter";
 
-function StyledLink(props: WouterLinkProps) {
-  const { children, ...rest } = props;
+function StyledLink(props: { to: string } & LinkProps) {
+  const { children, to, ...rest } = props;
   return (
-    <WouterLink {...rest} asChild>
-      <MuiLink>{children}</MuiLink>
+    <WouterLink to={to} asChild>
+      <MuiLink {...rest}>{children}</MuiLink>
     </WouterLink>
   );
 }

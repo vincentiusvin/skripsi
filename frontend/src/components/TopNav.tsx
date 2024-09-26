@@ -112,7 +112,7 @@ function Navigation() {
           }}
         >
           {navButtons.map((x) => (
-            <StyledLink to={x.link} asChild key={x.name}>
+            <StyledLink to={x.link} key={x.name}>
               <Button disabled={x.disabled}>{x.name}</Button>
             </StyledLink>
           ))}
