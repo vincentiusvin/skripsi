@@ -7,7 +7,7 @@ import { useOrgDetailGet, useOrgsDetailMembersGet } from "../../../queries/org_h
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 
 export function RedirectBack() {
-  return <Redirect to="/projects" />;
+  return <Redirect to="/orgs" />;
 }
 
 /**
