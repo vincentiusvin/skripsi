@@ -1,5 +1,4 @@
 import {
-  AccountBalance,
   Chat,
   CorporateFare,
   Home,
@@ -267,13 +266,13 @@ function ContextualDashboard(props: { context: SidenavContext }) {
       },
       {
         link: `/orgs/${org_id}`,
-        name: `Atur Proyek`,
+        name: `Kelola Proyek`,
         avatar: <Work />,
       },
       {
-        link: `/orgs/${org_id}/edit`,
-        name: `Edit Organisasi`,
-        avatar: <AccountBalance />,
+        link: `/orgs/${org_id}/manage`,
+        name: `Atur Organisasi`,
+        avatar: <Settings />,
       },
     ];
   }

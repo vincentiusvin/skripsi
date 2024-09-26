@@ -3,14 +3,14 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useParams } from "wouter";
 import StyledLink from "../../components/StyledLink.tsx";
-import { useProjectsDetailDelete } from "../../queries/project_hooks.ts";
-import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
+import { useOrgsDelete } from "../../queries/org_hooks.ts";
+import AuthorizeOrgs from "./components/AuthorizeOrgs.tsx";
 
-function ProjectsManage(props: { project_id: number }) {
-  const { project_id } = props;
+function OrgManage(props: { org_id: number }) {
+  const { org_id } = props;
 
-  const { mutate: deleteProject } = useProjectsDetailDelete({
-    project_id: project_id,
+  const { mutate: deleteOrg } = useOrgsDelete({
+    id: org_id,
     onSuccess: () => {
       enqueueSnackbar({
         variant: "success",
@@ -29,11 +29,11 @@ function ProjectsManage(props: { project_id: number }) {
         margin={"auto"}
         textAlign={"center"}
       >
-        <Typography variant="h5">Edit Proyek</Typography>
+        <Typography variant="h5">Edit Organisasi</Typography>
         <Typography variant="body1">
-          Anda dapat mengubah nama dan deskripsi proyek disini
+          Anda dapat mengubah gambar, nama dan deskripsi organisasi disini
         </Typography>
-        <StyledLink to={`/projects/${project_id}/edit`}>
+        <StyledLink to={`/orgs/${org_id}/edit`}>
           <Button
             variant="contained"
             fullWidth
@@ -41,7 +41,7 @@ function ProjectsManage(props: { project_id: number }) {
               mt: 4,
             }}
           >
-            Edit Proyek
+            Edit Organisasi
           </Button>
         </StyledLink>
       </Grid>
@@ -53,15 +53,15 @@ function ProjectsManage(props: { project_id: number }) {
         margin="auto"
         textAlign={"center"}
       >
-        <Typography variant="h5">Hapus Proyek</Typography>
+        <Typography variant="h5">Hapus Organisasi</Typography>
         <Typography variant="body1">
-          Proyek akan dihapus. Tindakan ini tidak dapat diurungkan
+          Organisasi akan dihapus. Tindakan ini tidak dapat diurungkan
         </Typography>
         <Button
           variant="contained"
           color="error"
           fullWidth
-          onClick={() => deleteProject()}
+          onClick={() => deleteOrg()}
           sx={{
             margin: "auto",
             mt: 4,
@@ -74,15 +74,15 @@ function ProjectsManage(props: { project_id: number }) {
   );
 }
 
-function ProjectsManagePage() {
-  const { project_id: id } = useParams();
-  const project_id = Number(id);
+function OrgsManagePage() {
+  const { org_id: id } = useParams();
+  const org_id = Number(id);
 
   return (
-    <AuthorizeProjects allowedRoles={["Admin"]}>
-      <ProjectsManage project_id={project_id} />
-    </AuthorizeProjects>
+    <AuthorizeOrgs allowedRoles={["Admin"]}>
+      <OrgManage org_id={org_id} />
+    </AuthorizeOrgs>
   );
 }
 
-export default ProjectsManagePage;
+export default OrgsManagePage;

@@ -49,7 +49,7 @@ function OrgsEdit(props: { org_id: number }) {
         autoHideDuration: 5000,
         variant: "success",
       });
-      setLocation("/orgs");
+      setLocation(`/orgs/${org_id}`);
     },
   });
 

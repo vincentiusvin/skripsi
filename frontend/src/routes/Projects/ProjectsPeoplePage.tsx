@@ -9,8 +9,7 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { Fragment, useState } from "react";
-import { useLocation, useParams } from "wouter";
-import { APIError } from "../../helpers/fetch.ts";
+import { useParams } from "wouter";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
 import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
@@ -135,26 +134,7 @@ function ProjectPeople(props: { project_id: number }) {
 
 function ProjectsPeoplePage() {
   const { project_id: id } = useParams();
-  const [, setLocation] = useLocation();
-
-  if (id === undefined) {
-    setLocation("/projects");
-  }
   const project_id = Number(id);
-
-  const { data: project } = useProjectsDetailGet({
-    project_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 404) || failureCount > 3) {
-        setLocation("/projects");
-        return false;
-      }
-      return true;
-    },
-  });
-  if (!project) {
-    return <Skeleton />;
-  }
 
   return (
     <AuthorizeProjects allowedRoles={["Admin"]}>

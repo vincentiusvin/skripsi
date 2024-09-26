@@ -19,6 +19,7 @@ import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
 import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage";
 import OrgsEditPage from "./routes/Orgs/OrgsEditPage";
 import OrgsListPage from "./routes/Orgs/OrgsListPage";
+import OrgsManagePage from "./routes/Orgs/OrgsManagePage.tsx";
 import ProjectInfoPage from "./routes/Projects/ProjectDetailPage.tsx";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectsChatroomPage from "./routes/Projects/ProjectsChatroomPage.tsx";
@@ -90,6 +91,7 @@ function App() {
                     <Route path={"/orgs/add"} component={OrgsAddPage} />
                     <Route path={"/orgs/:org_id"} component={OrgsDetailPage} />
                     <Route path={"/orgs/:org_id/projects/add"} component={ProjectsAddPage} />
+                    <Route path={"/orgs/:org_id/manage"} component={OrgsManagePage} />
                     <Route path={"/orgs/:org_id/edit"} component={OrgsEditPage} />
                     <Route path={"/chatroom"} component={ChatroomPage} />
                     <Route path={"/projects"} component={ProjectListPage} />
