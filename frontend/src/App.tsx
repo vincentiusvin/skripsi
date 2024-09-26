@@ -54,6 +54,7 @@ function useColorMode() {
 
 function App() {
   const [theme, setTheme] = useColorMode();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   return (
     <ThemeContext.Provider value={[theme, setTheme]}>
       <ThemeProvider theme={theme === "dark" ? darkTheme : lightTheme}>
@@ -82,9 +83,28 @@ function App() {
             <ReactQueryDevtools />
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <CssBaseline />
-              <Navigation />
+              <Navigation drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
               <Stack direction={"row"} flexGrow={1} mt={2}>
-                <SideNav />
+                <Box
+                  sx={{
+                    display: {
+                      xs: "none",
+                      md: "block",
+                    },
+                  }}
+                >
+                  <SideNav />
+                </Box>
+                <Box
+                  sx={{
+                    display: {
+                      md: "none",
+                      xs: "block",
+                    },
+                  }}
+                >
+                  <SideNav responsive open={drawerOpen} />
+                </Box>
                 <Box flexGrow={1} marginX={2}>
                   <Switch>
                     <Route path={"/"} component={HomePage} />

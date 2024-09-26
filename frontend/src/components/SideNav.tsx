@@ -298,13 +298,15 @@ function ContextualDashboard(props: { context: SidenavContext }) {
   );
 }
 
-function SideNav() {
+function SideNav(props: { responsive?: boolean; open?: boolean }) {
   const { data: session } = useSessionGet();
   const [activeDashboard, setActiveDashboard] = useState<SidenavContext>("browse");
+  const { responsive, open } = props;
 
   return (
     <Drawer
-      variant="permanent"
+      open={open}
+      variant={responsive ? "temporary" : "permanent"}
       anchor="left"
       sx={{
         width: 240,

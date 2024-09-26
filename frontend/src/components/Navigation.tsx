@@ -24,21 +24,14 @@ function UserImage(props: { user_id: number }) {
   );
 }
 
-function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) => void }) {
-  const { drawerOpen, setDrawerOpen } = props;
+function Navigation() {
   const { data } = useSessionGet();
   const { mutate: logout } = useSessionDelete();
+
   const [theme, setTheme] = useAppTheme();
 
   return (
-    <AppBar
-      position="sticky"
-      variant="elevation"
-      elevation={0}
-      sx={{
-        zIndex: (theme) => theme.zIndex.drawer + 1,
-      }}
-    >
+    <AppBar position="sticky" variant="elevation" elevation={0}>
       <Toolbar
         sx={{
           gap: {
@@ -59,7 +52,7 @@ function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) =>
             },
           }}
         >
-          <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
+          <IconButton>
             <MenuIcon />
           </IconButton>
         </Box>
@@ -81,7 +74,7 @@ function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) =>
                 <UserImage user_id={data.user_id} />
               </Button>
             </StyledLink>
-            {data?.logged ? <NotificationDialog user_id={data.user_id} /> : null}
+            <NotificationDialog user_id={data.user_id} />
             <IconButton
               sx={{
                 display: {
