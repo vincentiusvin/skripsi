@@ -3,7 +3,7 @@ import { Application } from "../../app.js";
 import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe.only("task api", () => {
+describe("task api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -88,6 +88,29 @@ describe.only("task api", () => {
 
       expect(send_req.status).to.eq(200);
       expect(task_index).to.be.lessThan(before_index);
+    });
+  }
+
+  for (const idx of [0, 1]) {
+    it("should be able to move task to the end if no before_id is specified", async () => {
+      const in_user = caseData.plain_user;
+      const in_task = caseData.task[idx];
+      const in_bucket = caseData.bucket_fill;
+
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const send_req = await updateTask(
+        in_task.id,
+        {
+          bucket_id: in_bucket.id,
+        },
+        cookie,
+      );
+      const read_req = await getTasks({ bucket_id: in_bucket.id }, cookie);
+      const result = await read_req.json();
+      const task_index = result.findIndex((x) => x.id === in_task.id);
+
+      expect(send_req.status).to.eq(200);
+      expect(task_index).to.be.eq(result.length - 1);
     });
   }
 

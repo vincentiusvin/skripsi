@@ -61,7 +61,7 @@ export class TaskService {
       }
       updateOrder = insert_before_this.order;
       await this.repo.bumpOrderBiggerThan(target_bucket, updateOrder);
-    } else if (target_bucket != old_data.bucket_id) {
+    } else {
       const data_after = await this.repo.getMaxOrder(target_bucket);
       if (data_after == undefined) {
         updateOrder = 1;
