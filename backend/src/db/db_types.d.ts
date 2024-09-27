@@ -139,6 +139,7 @@ export interface MsUsers {
   email: string | null;
   id: Generated<number>;
   image: string | null;
+  is_admin: Generated<boolean>;
   name: string;
   password: string;
   school: string | null;
