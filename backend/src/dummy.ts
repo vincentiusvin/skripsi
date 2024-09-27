@@ -1,5 +1,5 @@
 import { Application } from "./app.js";
-import { baseCase } from "./test/helpers.js";
+import { baseCase } from "./test/fixture_data.js";
 
 async function dummy() {
   const app = Application.getApplication();
