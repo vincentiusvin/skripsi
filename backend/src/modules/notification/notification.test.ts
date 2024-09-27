@@ -22,7 +22,7 @@ describe("notification api", () => {
 
   beforeEach(async () => {
     await clearDB(app);
-    caseData = await baseCase(app);
+    caseData = await baseCase(app.db);
   });
 
   it("should be able to get notifications", async () => {
@@ -67,7 +67,7 @@ describe("notification service", () => {
 
   beforeEach(async () => {
     await clearDB(app);
-    caseData = await baseCase(app);
+    caseData = await baseCase(app.db);
     service = getMockedEmailNotificationService(app.db);
   });
 

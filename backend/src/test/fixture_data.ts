@@ -1,8 +1,9 @@
 import { hashSync } from "bcryptjs";
-import { Application } from "../app.js";
+import { Kysely } from "kysely";
+import { DB } from "../db/db_types.js";
 
-export async function baseCase(app: Application) {
-  const org = await app.db
+export async function baseCase(db: Kysely<DB>) {
+  const org = await db
     .insertInto("ms_orgs")
     .values({
       name: "testing org",
@@ -14,7 +15,7 @@ export async function baseCase(app: Application) {
     .executeTakeFirstOrThrow();
 
   const orig_password = "halo";
-  const user_ids = await app.db
+  const user_ids = await db
     .insertInto("ms_users")
     .values([
       {
@@ -67,7 +68,7 @@ export async function baseCase(app: Application) {
   const friend_acc_user = { ...user_ids[7], password: orig_password };
   const notif_user = { ...user_ids[8], password: orig_password };
 
-  await app.db
+  await db
     .insertInto("orgs_users")
     .values([
       {
@@ -83,7 +84,7 @@ export async function baseCase(app: Application) {
     ])
     .execute();
 
-  const project = await app.db
+  const project = await db
     .insertInto("ms_projects")
     .values({
       description: "very awesome project",
@@ -93,7 +94,7 @@ export async function baseCase(app: Application) {
     .returning(["id", "name"])
     .executeTakeFirstOrThrow();
 
-  await app.db
+  await db
     .insertInto("projects_users")
     .values([
       {
@@ -109,7 +110,7 @@ export async function baseCase(app: Application) {
     ])
     .execute();
 
-  const bucket = await app.db
+  const bucket = await db
     .insertInto("ms_task_buckets")
     .values([
       {
@@ -124,7 +125,7 @@ export async function baseCase(app: Application) {
     .returning(["ms_task_buckets.id", "ms_task_buckets.name"])
     .execute();
 
-  const task = await app.db
+  const task = await db
     .insertInto("ms_tasks")
     .values([
       {
@@ -141,7 +142,7 @@ export async function baseCase(app: Application) {
     .returning(["ms_tasks.id", "ms_tasks.name"])
     .execute();
 
-  const chat = await app.db
+  const chat = await db
     .insertInto("ms_chatrooms")
     .values({
       name: "Chatroom Base Case",
@@ -149,7 +150,7 @@ export async function baseCase(app: Application) {
     .returning(["ms_chatrooms.id", "ms_chatrooms.name"])
     .executeTakeFirstOrThrow();
 
-  await app.db
+  await db
     .insertInto("chatrooms_users")
     .values({
       chatroom_id: chat.id,
@@ -157,7 +158,7 @@ export async function baseCase(app: Application) {
     })
     .execute();
 
-  const message = await app.db
+  const message = await db
     .insertInto("ms_messages")
     .values({
       chatroom_id: chat.id,
@@ -172,7 +173,7 @@ export async function baseCase(app: Application) {
     ])
     .executeTakeFirstOrThrow();
 
-  await app.db
+  await db
     .insertInto("ms_friends")
     .values([
       {
@@ -188,7 +189,7 @@ export async function baseCase(app: Application) {
     ])
     .execute();
 
-  const org_categories = await app.db
+  const org_categories = await db
     .insertInto("ms_category_orgs")
     .values([
       {
@@ -201,7 +202,7 @@ export async function baseCase(app: Application) {
     .returning(["id", "name"])
     .execute();
 
-  const project_categories = await app.db
+  const project_categories = await db
     .insertInto("ms_category_projects")
     .values([
       {
@@ -214,7 +215,7 @@ export async function baseCase(app: Application) {
     .returning(["id", "name"])
     .execute();
 
-  const contributions = await app.db
+  const contributions = await db
     .insertInto("ms_contributions")
     .values({
       name: "bla",
@@ -225,7 +226,7 @@ export async function baseCase(app: Application) {
     .returning(["id", "name", "description", "project_id", "status"])
     .execute();
 
-  const notifications = await app.db
+  const notifications = await db
     .insertInto("ms_notifications")
     .values({
       title: "Testing",

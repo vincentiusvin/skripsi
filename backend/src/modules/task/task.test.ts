@@ -13,7 +13,7 @@ describe("task api", () => {
 
   beforeEach(async () => {
     await clearDB(app);
-    caseData = await baseCase(app);
+    caseData = await baseCase(app.db);
   });
 
   it("should be able to add and get buckets", async () => {

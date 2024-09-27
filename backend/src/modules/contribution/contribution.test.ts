@@ -14,7 +14,7 @@ describe("contribution api", () => {
 
   beforeEach(async () => {
     await clearDB(app);
-    caseData = await baseCase(app);
+    caseData = await baseCase(app.db);
   });
   it("should get all contributions", async () => {
     const in_from = caseData.plain_user;

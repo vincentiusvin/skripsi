@@ -14,7 +14,7 @@ describe("friend api", () => {
 
   beforeEach(async () => {
     await clearDB(app);
-    caseData = await baseCase(app);
+    caseData = await baseCase(app.db);
   });
 
   it("shouldn't be able to duplicate friends", async () => {
