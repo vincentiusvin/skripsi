@@ -21,7 +21,7 @@ export class EmailService implements IEmailService {
     const domain = process.env.BACKEND_MAIL_DOMAIN;
 
     if (public_key == undefined || private_key == undefined || domain == undefined) {
-      throw new Error("Cannot configure email credentials for unmocked test!");
+      throw new Error("Cannot find backend email credentials!");
     }
     return new EmailService({
       private_key,
