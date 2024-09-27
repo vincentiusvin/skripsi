@@ -103,7 +103,7 @@ function App() {
                     },
                   }}
                 >
-                  <SideNav responsive open={drawerOpen} />
+                  <SideNav responsive open={drawerOpen} setDrawerOpen={setDrawerOpen} />
                 </Box>
                 <Box flexGrow={1} marginX={2}>
                   <Switch>
