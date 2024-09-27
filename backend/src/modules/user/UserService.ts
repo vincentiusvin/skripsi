@@ -8,8 +8,12 @@ export class UserService {
     this.user_repo = user_repo;
   }
 
-  getUserByID(id: number) {
-    return this.user_repo.findUserByID(id);
+  async findUserByEmail(email: string) {
+    return await this.user_repo.findUserByEmail(email);
+  }
+
+  async findUserByName(email: string) {
+    return await this.user_repo.findUserByName(email);
   }
 
   async addUser(user_name: string, user_password: string) {
@@ -22,15 +26,12 @@ export class UserService {
     return await this.user_repo.addUser(user_name, hashed_password);
   }
 
-  async getUsers() {
-    return this.user_repo.getUsers();
-  }
-  async getUserAccountDetail(id: number) {
-    return await this.user_repo.getAccountDetails(id);
+  async getUserDetail(user_id: number) {
+    return await this.user_repo.getUserDetail(user_id);
   }
 
-  async getUserAccountByEmail(email: string) {
-    return await this.user_repo.getUserAccountByEmail(email);
+  async getUsers() {
+    return await this.user_repo.getUsers();
   }
 
   async updateAccountDetail(
@@ -51,7 +52,7 @@ export class UserService {
       hashed_password = hashSync(user_password, 10);
     }
     if (user_email) {
-      const same_email = await this.getUserAccountByEmail(user_email);
+      const same_email = await this.findUserByEmail(user_email);
       if (same_email != undefined) {
         throw new ClientError("Sudah ada user dengan email yang sama !");
       }

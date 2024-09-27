@@ -1,6 +1,19 @@
 import { Kysely } from "kysely";
 import { DB } from "../../db/db_types.js";
 
+const defaultUserFields = [
+  "ms_users.id as user_id",
+  "ms_users.name as user_name",
+  "ms_users.email as user_email",
+  "ms_users.education_level as user_education_level",
+  "ms_users.school as user_school",
+  "ms_users.about_me as user_about_me",
+  "ms_users.image as user_image",
+  "ms_users.is_admin as user_is_admin",
+] as const;
+
+const reducedFields = ["ms_users.id as user_id", "ms_users.name as user_name"] as const;
+
 export class UserRepository {
   private db: Kysely<DB>;
   constructor(db: Kysely<DB>) {
@@ -10,24 +23,21 @@ export class UserRepository {
   async findUserByName(user_name: string) {
     return await this.db
       .selectFrom("ms_users")
-      .select(["ms_users.id as user_id", "ms_users.name as user_name"])
+      .select(reducedFields)
       .where("ms_users.name", "=", user_name)
       .executeTakeFirst();
   }
 
-  async getUsers() {
+  async findUserByEmail(email: string) {
     return await this.db
       .selectFrom("ms_users")
-      .select(["ms_users.id as user_id", "ms_users.name as user_name"])
-      .execute();
+      .select(defaultUserFields)
+      .where("ms_users.email", "=", email)
+      .executeTakeFirst();
   }
 
-  async findUserByID(user_id: number) {
-    return await this.db
-      .selectFrom("ms_users")
-      .select(["ms_users.id as user_id", "ms_users.name as user_name"])
-      .where("ms_users.id", "=", user_id)
-      .executeTakeFirst();
+  async getUsers() {
+    return await this.db.selectFrom("ms_users").select(defaultUserFields).execute();
   }
 
   async addUser(user_name: string, hashed_password: string) {
@@ -40,33 +50,12 @@ export class UserRepository {
       .returning("ms_users.id")
       .executeTakeFirst();
   }
-  async getAccountDetails(id: number) {
-    return await this.db
-      .selectFrom("ms_users")
-      .select([
-        "ms_users.id as user_id",
-        "ms_users.name as user_name",
-        "ms_users.email as user_email",
-        "ms_users.education_level as user_education_level",
-        "ms_users.school as user_school",
-        "ms_users.about_me as user_about_me",
-        "ms_users.image as user_image",
-      ])
-      .where("ms_users.id", "=", id)
-      .executeTakeFirst();
-  }
 
-  async getUserAccountByEmail(email: string) {
+  async getUserDetail(id: number) {
     return await this.db
       .selectFrom("ms_users")
-      .select([
-        "ms_users.id as user_id",
-        "ms_users.email as user_email",
-        "ms_users.education_level as user_education_level",
-        "ms_users.school as user_school",
-        "ms_users.about_me as user_about_me",
-      ])
-      .where("ms_users.email", "=", email)
+      .select(defaultUserFields)
+      .where("ms_users.id", "=", id)
       .executeTakeFirst();
   }
 

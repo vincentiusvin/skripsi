@@ -5,7 +5,7 @@ import { DB } from "../db/db_types.js";
 export async function up(db: Kysely<DB>): Promise<void> {
   const admin_password = process.env.ADMIN_PASSWORD;
   if (admin_password == undefined) {
-    throw new Error("Password admin tidak di set!");
+    throw new Error("Admin password not set!");
   }
 
   await db.schema

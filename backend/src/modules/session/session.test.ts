@@ -21,6 +21,17 @@ describe("session api", () => {
     expect(success_login.status).to.eq(200);
   });
 
+  it("should be able to login as admin", async () => {
+    const in_username = "Admin";
+    const in_password = process.env.ADMIN_PASSWORD;
+    if (!in_password) {
+      throw new Error("Admin password not set!");
+    }
+
+    const success_login = await login(in_username, in_password);
+    expect(success_login.status).to.eq(200);
+  });
+
   it("should reject wrong password", async () => {
     const in_user = caseData.plain_user;
     const failed_login = await login(in_user.name, in_user.password + "abc");

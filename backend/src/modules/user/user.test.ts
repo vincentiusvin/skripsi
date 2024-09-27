@@ -101,14 +101,14 @@ function putUser(
     user_image?: string | undefined;
   },
 ) {
-  return new APIContext("UserAccountUpdate").fetch(`/api/users/${user_id}`, {
+  return new APIContext("UsersDetailPut").fetch(`/api/users/${user_id}`, {
     method: "PUT",
     body: body,
   });
 }
 
 function getUserDetail(user_id: number) {
-  return new APIContext("UserAccountGet").fetch(`/api/users/${user_id}`, {
+  return new APIContext("UsersDetailGet").fetch(`/api/users/${user_id}`, {
     method: "GET",
   });
 }

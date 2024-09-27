@@ -31,7 +31,7 @@ export class NotificationService {
   ) {
     const { title, description, user_id } = opts;
 
-    const user = await this.user_service.getUserAccountDetail(user_id);
+    const user = await this.user_service.getUserDetail(user_id);
     if (!user) {
       throw new NotFoundError("Gagal menemukan pengguna tersebut!");
     }
