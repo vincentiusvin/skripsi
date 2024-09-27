@@ -15,44 +15,45 @@ export async function baseCase(db: Kysely<DB>) {
     .executeTakeFirstOrThrow();
 
   const orig_password = "halo";
+  const hashed = hashSync(orig_password, 10);
   const user_ids = await db
     .insertInto("ms_users")
     .values([
       {
         name: "org user",
-        password: hashSync(orig_password, 10),
+        password: hashed,
       },
       {
         name: "external user",
-        password: hashSync(orig_password, 10),
+        password: hashed,
       },
       {
         name: "chat user",
-        password: hashSync(orig_password, 10),
+        password: hashed,
       },
       {
         name: "project dev",
-        password: hashSync(orig_password, 10),
+        password: hashed,
       },
       {
         name: "project admin",
-        password: hashSync(orig_password, 10),
+        password: hashed,
       },
       {
         name: "friend send",
-        password: hashSync(orig_password, 10),
+        password: hashed,
       },
       {
         name: "friend pending",
-        password: hashSync(orig_password, 10),
+        password: hashed,
       },
       {
         name: "friend acc",
-        password: hashSync(orig_password, 10),
+        password: hashed,
       },
       {
         name: "notif user",
-        password: hashSync(orig_password, 10),
+        password: hashed,
       },
     ])
     .returning(["id", "name"])
