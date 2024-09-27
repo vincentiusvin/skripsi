@@ -130,8 +130,16 @@ function ProjectInfoCard(props: { user_id: number }) {
   }
 
   return (
-    <Card>
-      <CardContent>
+    <Card
+      sx={{
+        overflow: "auto",
+      }}
+    >
+      <CardContent
+        sx={{
+          minWidth: "fit-content",
+        }}
+      >
         <Stack
           direction={"column"}
           sx={{
@@ -194,8 +202,16 @@ function OrgInfoCard(props: { user_id: number }) {
   }
 
   return (
-    <Card>
-      <CardContent>
+    <Card
+      sx={{
+        overflow: "auto",
+      }}
+    >
+      <CardContent
+        sx={{
+          minWidth: "fit-content",
+        }}
+      >
         <Stack
           direction={"column"}
           sx={{
@@ -308,8 +324,16 @@ function TaskInfoCard(props: { user_id: number }) {
   });
 
   return (
-    <Card>
-      <CardContent>
+    <Card
+      sx={{
+        overflow: "auto",
+      }}
+    >
+      <CardContent
+        sx={{
+          minWidth: "fit-content",
+        }}
+      >
         <Typography variant="h6">Tugas Anda</Typography>
         <Typography variant="h4" fontWeight={"bold"} mb={4}>
           {sortedTasks.length} tugas

@@ -105,7 +105,7 @@ function App() {
                 >
                   <SideNav responsive open={drawerOpen} setDrawerOpen={setDrawerOpen} />
                 </Box>
-                <Box flexGrow={1} marginX={2}>
+                <Box flexGrow={1} paddingX={2} width={"100%"}>
                   <Switch>
                     <Route path={"/"} component={HomePage} />
                     <Route path={"/auth"} component={AuthPage} />
