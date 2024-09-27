@@ -2,6 +2,7 @@ server {
     listen       80;
     listen  [::]:80;
     server_name  localhost;
+    gzip_static on;
 
     location / {
         root   /usr/share/nginx/html;
