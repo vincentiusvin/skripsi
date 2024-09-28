@@ -1,6 +1,9 @@
 import { Application } from "./app.js";
 import { Route } from "./helpers/controller.js";
 import { ExtractRH, UnionToIntersection } from "./helpers/types";
+import { ArticleController } from "./modules/article/ArticleController.js";
+import { ArticleRepository } from "./modules/article/ArticleRepository.js";
+import { ArticleService } from "./modules/article/ArticleService.js";
 import { ChatController } from "./modules/chatroom/ChatroomController.js";
 import { ChatRepository } from "./modules/chatroom/ChatroomRepository.js";
 import { ChatService } from "./modules/chatroom/ChatroomService.js";
@@ -32,6 +35,7 @@ export function registerControllers(app: Application) {
   const user_repo = new UserRepository(app.db);
   const friend_repo = new FriendRepository(app.db);
   const contribution_repo = new ContributionRepository(app.db);
+  const article_repo = new ArticleRepository(app.db);
 
   const org_service = new OrgService(org_repo);
   const task_service = new TaskService(task_repo);
@@ -40,6 +44,7 @@ export function registerControllers(app: Application) {
   const user_service = new UserService(user_repo);
   const friend_service = new FriendService(friend_repo);
   const contribution_service = new ContributionService(contribution_repo);
+  const article_service = new ArticleService(article_repo);
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),
@@ -50,6 +55,7 @@ export function registerControllers(app: Application) {
     new TaskController(app.express_server, task_service),
     new FriendController(app.express_server, friend_service),
     new ContributionController(app.express_server, contribution_service),
+    new ArticleController(app.express_server, article_service),
   ] as const;
 
   controllers.forEach((x) => x.register());

@@ -36,6 +36,20 @@ export interface ChatroomsUsers {
   user_id: number;
 }
 
+export interface MsArticles {
+  content: string;
+  created_at: Generated<Timestamp>;
+  description: string;
+  id: Generated<number>;
+  name: string;
+}
+
+export interface MsArticlesLikes {
+  article_id: number;
+  created_at: Generated<Timestamp>;
+  user_id: number;
+}
+
 export interface MsCategoryOrgs {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
@@ -53,6 +67,14 @@ export interface MsChatrooms {
   id: Generated<number>;
   name: string;
   project_id: number | null;
+}
+
+export interface MsComments {
+  article_id: number;
+  comment: string;
+  comment_id: Generated<number>;
+  created_at: Generated<Timestamp>;
+  user_id: number;
 }
 
 export interface MsContributions {
@@ -163,9 +185,12 @@ export interface DB {
   categories_orgs: CategoriesOrgs;
   categories_projects: CategoriesProjects;
   chatrooms_users: ChatroomsUsers;
+  ms_articles: MsArticles;
+  ms_articles_likes: MsArticlesLikes;
   ms_category_orgs: MsCategoryOrgs;
   ms_category_projects: MsCategoryProjects;
   ms_chatrooms: MsChatrooms;
+  ms_comments: MsComments;
   ms_contributions: MsContributions;
   ms_contributions_users: MsContributionsUsers;
   ms_friends: MsFriends;
