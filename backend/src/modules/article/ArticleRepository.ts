@@ -14,6 +14,7 @@ export class ArticleRepository {
         "ms_articles.id as article_id",
         "ms_articles.name as article_name",
         "ms_articles.description as article_description",
+        "ms_articles.user_id",
       ])
       .execute();
     return res;
@@ -27,6 +28,7 @@ export class ArticleRepository {
         "ms_articles.content as articles_content",
         "ms_articles.id as id",
         "ms_articles.description as articles_description",
+        "ms_articles.user_id",
       ])
       .where("ms_articles.id", "=", articles_id)
       .executeTakeFirst();
@@ -54,5 +56,58 @@ export class ArticleRepository {
       .select(sql`COUNT(*)`.as(`articles_count`))
       .where("ms_articles_likes.article_id", "=", articles_id)
       .executeTakeFirst();
+  }
+
+  async addArticle(obj: {
+    articles_name: string;
+    articles_description: string;
+    articles_content: string;
+    articles_user_id: number;
+  }) {
+    const { articles_name, articles_description, articles_content, articles_user_id } = obj;
+    return await this.db.transaction().execute(async (trx) => {
+      const article = await trx
+        .insertInto("ms_articles")
+        .values({
+          name: articles_name,
+          description: articles_description,
+          content: articles_content,
+          user_id: articles_user_id,
+        })
+        .returning(["ms_articles.id"])
+        .executeTakeFirst();
+      if (!article) {
+        throw new Error("Data not inserted");
+      }
+      return article;
+    });
+  }
+
+  async updateArticle(
+    article_id: number,
+    obj: {
+      articles_name: string;
+      articles_description: string;
+      articles_content: string;
+    },
+  ) {
+    const { articles_name, articles_description, articles_content } = obj;
+    return await this.db.transaction().execute(async (trx) => {
+      if (
+        articles_name != undefined ||
+        articles_description != undefined ||
+        articles_content != undefined
+      ) {
+        await trx
+          .updateTable("ms_articles")
+          .set({
+            name: articles_name,
+            description: articles_description,
+            content: articles_content,
+          })
+          .where("ms_articles.id", "=", article_id)
+          .executeTakeFirst();
+      }
+    });
   }
 }

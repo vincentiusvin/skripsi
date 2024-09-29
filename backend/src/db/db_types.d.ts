@@ -42,6 +42,7 @@ export interface MsArticles {
   description: string;
   id: Generated<number>;
   name: string;
+  user_id: number;
 }
 
 export interface MsArticlesLikes {

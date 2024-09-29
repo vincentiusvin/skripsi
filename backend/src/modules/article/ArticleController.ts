@@ -60,6 +60,44 @@ export class ArticleController extends Controller {
           }),
         },
       }),
+      articleAdd: new Route({
+        handler: this.articleAdd,
+        method: "post",
+        path: "/api/articles",
+        schema: {
+          ReqBody: z.object({
+            articles_name: z.string().min(1, "Nama artikel tidak boleh kosong!"),
+            articles_description: z.string().min(1, "Deskripsi artikel tidak boleh kosong"),
+            articles_content: z.string().min(1, "Content artikel tidak boleh kosong!"),
+            articles_user_id: z.number().min(1, "user_id invalid!"),
+          }),
+        },
+      }),
+      articlePut: new Route({
+        handler: this.articleUpdate,
+        method: "put",
+        path: "/api/articles/:id",
+        schema: {
+          Params: z.object({
+            article_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID Artikel tidak valid" }),
+          }),
+          ReqBody: z.object({
+            articles_name: z.string({ message: "Nama invalid" }).min(1, "Nama tidak boleh kosong!"),
+            articles_description: z
+              .string({ message: "deskripsi invalid!" })
+              .min(1, "Deskripsi tidak boleh kosong!"),
+            articles_content: z
+              .string({ message: "Konten invalid!" })
+              .min(1, "Konten tidak boleh kosong!"),
+            articles_user_id: z
+              .number({ message: "user id invalid!" })
+              .min(1, "user id tidak boleh kosong"),
+          }),
+        },
+      }),
     };
   }
 
@@ -68,6 +106,7 @@ export class ArticleController extends Controller {
       article_name: string;
       article_description: string;
       article_id: number;
+      user_id: number;
     }[];
   }> = async (req, res) => {
     const result = await this.article_service.getArticles();
@@ -80,6 +119,7 @@ export class ArticleController extends Controller {
       articles_content: string;
       id: number;
       articles_description: string;
+      user_id: number;
     };
   }> = async (req, res) => {
     const id = Number(req.params.id);
@@ -114,6 +154,57 @@ export class ArticleController extends Controller {
     } else {
       result = await this.article_service.getArticlesByLikes(id);
     }
+    res.status(200).json(result);
+  };
+  private articleAdd: RH<{
+    ResBody: {
+      articles_name: string;
+      articles_description: string;
+      articles_content: string;
+      user_id: number;
+      id: number;
+    };
+    ReqBody: {
+      articles_name: string;
+      articles_description: string;
+      articles_content: string;
+      articles_user_id: number;
+    };
+  }> = async (req, res) => {
+    const { articles_name, articles_description, articles_content, articles_user_id } = req.body;
+    const result = await this.article_service.addArticle({
+      articles_name,
+      articles_description,
+      articles_content,
+      articles_user_id,
+    });
+    const resultFinal = await this.article_service.getArticlesById(result.id);
+    res.status(201).json(resultFinal);
+  };
+  private articleUpdate: RH<{
+    ResBody: {
+      articles_name: string;
+      articles_description: string;
+      articles_content: string;
+      user_id: number;
+      id: number;
+    };
+    ReqBody: {
+      articles_name: string;
+      articles_description: string;
+      articles_content: string;
+      articles_user_id: number;
+    };
+    Params: {
+      article_id: string;
+    };
+  }> = async (req, res) => {
+    const article_id = Number(req.params.article_id);
+    const obj = req.body;
+    const editor_user = req.session.user_id!;
+
+    await this.article_service.updateArticle(article_id, obj, editor_user);
+    const result = await this.article_service.getArticlesById(article_id);
     res.status(200).json(result);
   };
 }
