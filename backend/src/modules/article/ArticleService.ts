@@ -14,6 +14,10 @@ export class ArticleService {
     return this.article_repo.getArticlesById(article_id);
   }
 
+  getArticlesComment(article_id: number) {
+    return this.article_repo.getArticlesComment(article_id);
+  }
+
   getArticlesByLikes(article_id: number) {
     return this.article_repo.getArticleLikesById(article_id);
   }

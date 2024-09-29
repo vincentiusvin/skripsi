@@ -1,5 +1,4 @@
 import { Kysely, sql } from "kysely";
-import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types";
 
 export class ArticleRepository {
@@ -23,19 +22,22 @@ export class ArticleRepository {
   async getArticlesById(articles_id: number) {
     return await this.db
       .selectFrom("ms_articles")
-      .select((eb) => [
+      .select([
         "ms_articles.name as articles_name",
         "ms_articles.content as articles_content",
         "ms_articles.id as id",
-        jsonArrayFrom(
-          eb
-            .selectFrom("ms_comments")
-            .select(["ms_comments.comment", "ms_comments.user_id"])
-            .whereRef("ms_comments.article_id", "=", "ms_articles.id"),
-        ).as("articles_comments"),
+        "ms_articles.description as articles_description",
       ])
       .where("ms_articles.id", "=", articles_id)
       .executeTakeFirst();
+  }
+
+  async getArticlesComment(articles_id: number) {
+    return await this.db
+      .selectFrom("ms_comments")
+      .select(["ms_comments.comment", "ms_comments.user_id"])
+      .where("ms_comments.article_id", "=", articles_id)
+      .execute();
   }
 
   async getArticleLikesById(articles_id: number) {

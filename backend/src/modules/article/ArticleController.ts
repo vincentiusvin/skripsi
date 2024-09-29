@@ -31,6 +31,19 @@ export class ArticleController extends Controller {
           }),
         },
       }),
+      articleGetComment: new Route({
+        handler: this.articleGetComment,
+        method: "get",
+        path: "/api/articles/:id/comments",
+        schema: {
+          Params: z.object({
+            id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID artikel tidak boleh kosong!" }),
+          }),
+        },
+      }),
       articleGetLikesId: new Route({
         handler: this.articleGetLikesById,
         method: "get",
@@ -66,14 +79,22 @@ export class ArticleController extends Controller {
       articles_name: string;
       articles_content: string;
       id: number;
-      articles_comments: {
-        comment: string;
-        user_id: number;
-      }[];
+      articles_description: string;
     };
   }> = async (req, res) => {
     const id = Number(req.params.id);
     const result = await this.article_service.getArticlesById(id);
+    res.status(200).json(result);
+  };
+  private articleGetComment: RH<{
+    Params: { id: string };
+    ResBody: {
+      comment: string;
+      user_id: number;
+    }[];
+  }> = async (req, res) => {
+    const id = Number(req.params.id);
+    const result = await this.article_service.getArticlesComment(id);
     res.status(200).json(result);
   };
   private articleGetLikesById: RH<{
