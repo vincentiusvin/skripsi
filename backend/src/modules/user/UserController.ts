@@ -153,16 +153,21 @@ export class UserController extends Controller {
       user_image,
     } = req.body;
     const user_id = Number(req.params.id);
+    const sender_id = Number(req.session.user_id);
 
-    await this.user_service.updateAccountDetail(user_id, {
-      user_name,
-      user_email,
-      user_education_level,
-      user_school,
-      user_about_me,
-      user_image,
-      user_password,
-    });
+    await this.user_service.updateAccountDetail(
+      user_id,
+      {
+        user_name,
+        user_email,
+        user_education_level,
+        user_school,
+        user_about_me,
+        user_image,
+        user_password,
+      },
+      sender_id,
+    );
     const updated = await this.user_service.getUserDetail(user_id);
     res.status(200).json(updated);
   };
