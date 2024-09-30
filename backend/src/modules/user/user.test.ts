@@ -57,9 +57,14 @@ describe("users api", () => {
     const in_user = caseData.plain_user;
     const in_name = "new name from update";
 
-    const update_req = await putUser(in_user.id, {
-      user_name: in_name,
-    });
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const update_req = await putUser(
+      in_user.id,
+      {
+        user_name: in_name,
+      },
+      cookie,
+    );
 
     const read_req = await getUserDetail(in_user.id);
     const result = await read_req.json();
@@ -73,9 +78,14 @@ describe("users api", () => {
     const in_user = caseData.plain_user;
     const in_pass = "new pass from update";
 
-    const update_req = await putUser(in_user.id, {
-      user_password: in_pass,
-    });
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const update_req = await putUser(
+      in_user.id,
+      {
+        user_password: in_pass,
+      },
+      cookie,
+    );
 
     const success_login = await getLoginCookie(in_user.name, in_pass);
 
@@ -101,10 +111,14 @@ function putUser(
     user_about_me?: string | undefined;
     user_image?: string | undefined;
   },
+  cookie: string,
 ) {
   return new APIContext("UsersDetailPut").fetch(`/api/users/${user_id}`, {
     method: "PUT",
     body: body,
+    headers: {
+      cookie: cookie,
+    },
   });
 }
 

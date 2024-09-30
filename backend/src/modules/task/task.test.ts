@@ -18,7 +18,7 @@ describe("task api", () => {
 
   it("should be able to add and get buckets", async () => {
     const in_project = caseData.project;
-    const in_user = caseData.plain_user;
+    const in_user = caseData.dev_user;
     const in_name = "Hello";
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
@@ -34,8 +34,8 @@ describe("task api", () => {
   });
 
   it("should be able to update task", async () => {
-    const in_user = caseData.plain_user;
-    const in_assignees = [caseData.plain_user, caseData.dev_user];
+    const in_user = caseData.dev_user;
+    const in_assignees = [caseData.project_admin_user, caseData.dev_user];
     const in_task = caseData.task[0];
     const in_name = "Not cool Task";
     const in_description = "Cool";
@@ -69,7 +69,7 @@ describe("task api", () => {
     [1, 0],
   ]) {
     it("should be able to sort task", async () => {
-      const in_user = caseData.plain_user;
+      const in_user = caseData.dev_user;
       const in_before = caseData.task[idx1];
       const in_task = caseData.task[idx2];
       const in_bucket = caseData.bucket_fill;
@@ -94,7 +94,7 @@ describe("task api", () => {
 
   for (const idx of [0, 1]) {
     it("should be able to move task to the end if no before_id is specified", async () => {
-      const in_user = caseData.plain_user;
+      const in_user = caseData.dev_user;
       const in_task = caseData.task[idx];
       const in_bucket = caseData.bucket_fill;
 
@@ -116,11 +116,12 @@ describe("task api", () => {
   }
 
   it("should be able to write and read", async () => {
-    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
+    const in_user = caseData.dev_user;
     const in_bucket = caseData.bucket_fill;
     const in_name = "New Task";
     const in_description = "Cool";
 
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await addTask(
       {
         name: in_name,
@@ -141,11 +142,12 @@ describe("task api", () => {
   });
 
   it("should be able to write and read to empty buckets", async () => {
-    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
+    const in_user = caseData.dev_user;
     const in_bucket = caseData.bucket_empty;
     const in_name = "New Task";
     const in_description = "Cool";
 
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await addTask(
       {
         name: in_name,
@@ -166,9 +168,10 @@ describe("task api", () => {
   });
 
   it("should be able to delete task and get by detail", async () => {
-    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
+    const in_user = caseData.dev_user;
     const in_task = caseData.task[0];
 
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await deleteTask(in_task.id, cookie);
     await send_req.json();
     const read_req = await getTaskDetail(in_task.id, cookie);
@@ -179,10 +182,11 @@ describe("task api", () => {
   });
 
   it("should be able to update bucket and get by detail", async () => {
-    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
+    const in_user = caseData.dev_user;
     const in_bucket = caseData.bucket_empty;
     const in_name = "nama baru bucket";
 
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await updateBucket(
       in_bucket.id,
       {
@@ -201,9 +205,10 @@ describe("task api", () => {
   });
 
   it("should be able to delete bucket and get by detail", async () => {
-    const cookie = await getLoginCookie(caseData.plain_user.name, caseData.plain_user.password);
     const in_bucket = caseData.bucket_empty;
+    const in_user = caseData.dev_user;
 
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await deleteBucket(in_bucket.id, cookie);
 
     await send_req.json();
