@@ -1,11 +1,19 @@
 import { hashSync } from "bcryptjs";
-import { ClientError } from "../../helpers/error.js";
+import { ClientError, NotFoundError } from "../../helpers/error.js";
 import { UserRepository } from "./UserRepository.js";
 
 export class UserService {
   private user_repo: UserRepository;
   constructor(user_repo: UserRepository) {
     this.user_repo = user_repo;
+  }
+
+  async isAdminUser(user_id: number): Promise<boolean> {
+    const user = await this.user_repo.getUserDetail(user_id);
+    if (!user) {
+      throw new NotFoundError("Pengguna tidak ditemukan!");
+    }
+    return user.user_is_admin;
   }
 
   async findUserByEmail(email: string) {
