@@ -1,14 +1,10 @@
 import { Application } from "./app.js";
-import { baseCase } from "./test/helpers.js";
-import { clearDB } from "./test/setup-test.js";
+import { baseCase } from "./test/fixture_data.js";
 
 async function dummy() {
   const app = Application.getApplication();
-  console.log("Clearing db...");
-  await clearDB(app);
-  console.log("DB cleared!");
   console.log("Inserting dummy data...");
-  await baseCase(app);
+  await baseCase(app.db);
   console.log("Dummy data inserted!");
   process.exit(0);
 }

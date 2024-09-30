@@ -3,6 +3,13 @@ import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
 import { ProjectRoles, parseRole } from "./ProjectMisc.js";
 
+const defaultProjectFields = [
+  "ms_projects.id as project_id",
+  "ms_projects.name as project_name",
+  "ms_projects.org_id",
+  "ms_projects.description as project_desc",
+] as const;
+
 function projectWithMembers(eb: ExpressionBuilder<DB, "ms_projects">) {
   return jsonArrayFrom(
     eb
@@ -108,10 +115,7 @@ export class ProjectRepository {
     let projects = this.db
       .selectFrom("ms_projects")
       .select((eb) => [
-        "ms_projects.id as project_id",
-        "ms_projects.name as project_name",
-        "ms_projects.org_id",
-        "ms_projects.description as project_desc",
+        ...defaultProjectFields,
         projectWithMembers(eb).as("project_members"),
         projectWithCategories(eb).as("project_categories"),
       ]);
@@ -144,10 +148,7 @@ export class ProjectRepository {
     return await this.db
       .selectFrom("ms_projects")
       .select((eb) => [
-        "ms_projects.id as project_id",
-        "ms_projects.name as project_name",
-        "ms_projects.org_id",
-        "ms_projects.description as project_desc",
+        ...defaultProjectFields,
         projectWithMembers(eb).as("project_members"),
         projectWithCategories(eb).as("project_categories"),
       ])

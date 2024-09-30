@@ -41,7 +41,7 @@ export function useUsersDetailGet(opts: {
   const { user_id, retry } = opts;
   return useQuery({
     queryKey: userKeys.detail(user_id),
-    queryFn: () => new APIContext("UserAccountGet").fetch(`/api/users/${user_id}`),
+    queryFn: () => new APIContext("UsersDetailGet").fetch(`/api/users/${user_id}`),
     retry: retry,
   });
 }
@@ -49,7 +49,7 @@ export function useUsersDetailGet(opts: {
 export function useUsersDetailUpdate(opts: { user_id: number; onSuccess?: () => void }) {
   const { user_id, onSuccess } = opts;
   return useMutation({
-    mutationFn: new APIContext("UserAccountUpdate").bodyFetch(`/api/users/${user_id}`, {
+    mutationFn: new APIContext("UsersDetailPut").bodyFetch(`/api/users/${user_id}`, {
       method: "PUT",
     }),
     onSuccess: () => {

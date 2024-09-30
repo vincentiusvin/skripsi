@@ -2,6 +2,17 @@ import { Kysely } from "kysely";
 import { DB } from "../../db/db_types.js";
 import { NotificationTypes, parseNotificationType } from "./NotificationMisc.js";
 
+const defaultNotificationFields = [
+  "title",
+  "type",
+  "type_id",
+  "description",
+  "user_id",
+  "created_at",
+  "read",
+  "id",
+] as const;
+
 export class NotificationRepository {
   private db: Kysely<DB>;
   constructor(db: Kysely<DB>) {
@@ -12,7 +23,7 @@ export class NotificationRepository {
     const { user_id, read } = opts;
     let query = this.db
       .selectFrom("ms_notifications")
-      .select(["title", "type", "type_id", "description", "user_id", "created_at", "read", "id"])
+      .select(defaultNotificationFields)
       .orderBy("created_at desc");
 
     if (user_id != undefined) {
@@ -33,7 +44,7 @@ export class NotificationRepository {
   async getNotification(notification_id: number) {
     const result = await this.db
       .selectFrom("ms_notifications")
-      .select(["title", "type", "type_id", "description", "user_id", "created_at", "read", "id"])
+      .select(defaultNotificationFields)
       .where("ms_notifications.id", "=", notification_id)
       .executeTakeFirst();
 

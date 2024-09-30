@@ -1,4 +1,4 @@
-import { NotFoundError } from "../../helpers/error.js";
+import { AuthError, NotFoundError } from "../../helpers/error.js";
 import { IEmailService } from "../email/EmailService.js";
 import { UserService } from "../user/UserService.js";
 import { NotificationTypes } from "./NotificationMisc.js";
@@ -31,7 +31,7 @@ export class NotificationService {
   ) {
     const { title, description, user_id } = opts;
 
-    const user = await this.user_service.getUserAccountDetail(user_id);
+    const user = await this.user_service.getUserDetail(user_id);
     if (!user) {
       throw new NotFoundError("Gagal menemukan pengguna tersebut!");
     }
@@ -51,7 +51,24 @@ export class NotificationService {
     return result;
   }
 
-  async updateNotification(notification_id: number, read: boolean) {
+  async isAllowedToModify(notification_id: number, sender_id: number) {
+    const notif = await this.notificiation_repo.getNotification(notification_id);
+    if (!notif) {
+      throw new NotFoundError("Notifikasi gagal ditemukan!");
+    }
+    if (sender_id == notif.user_id) {
+      return true;
+    }
+    const is_admin = await this.user_service.isAdminUser(sender_id);
+    return is_admin;
+  }
+
+  async updateNotification(notification_id: number, read: boolean, sender_id: number) {
+    const is_allowed = await this.isAllowedToModify(notification_id, sender_id);
+    if (!is_allowed) {
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
+    }
+
     return await this.notificiation_repo.updateNotification(notification_id, {
       read,
     });

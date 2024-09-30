@@ -55,7 +55,7 @@ export class TaskRepository {
     return result;
   }
 
-  async findTaskByID(task_id: number) {
+  async getTaskByID(task_id: number) {
     const result = await this.db
       .selectFrom("ms_tasks")
       .select((eb) => [

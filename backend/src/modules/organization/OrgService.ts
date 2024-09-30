@@ -1,14 +1,22 @@
 import { AuthError, ClientError } from "../../helpers/error.js";
 import { NotificationService } from "../notification/NotificationService.js";
+import { UserService } from "../user/UserService.js";
 import { OrgRoles } from "./OrgMisc.js";
 import { OrgRepository } from "./OrgRepository.js";
 
 export class OrgService {
   private org_repo: OrgRepository;
   private notification_service: NotificationService;
-  constructor(repo: OrgRepository, notification_service: NotificationService) {
+  private user_service: UserService;
+
+  constructor(
+    repo: OrgRepository,
+    notification_service: NotificationService,
+    user_service: UserService,
+  ) {
     this.org_repo = repo;
     this.notification_service = notification_service;
+    this.user_service = user_service;
   }
 
   async getOrgs(filter?: { user_id?: number }) {
@@ -52,8 +60,13 @@ export class OrgService {
       org_image?: string;
       org_category?: number[];
     },
+    sender_id: number,
   ) {
     const { org_name } = obj;
+    const sender_role = await this.getMemberRole(id, sender_id);
+    if (sender_role !== "Admin") {
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+    }
     if (org_name) {
       const same_name = await this.getOrgByName(org_name);
       if (same_name != undefined) {
@@ -67,11 +80,19 @@ export class OrgService {
     return await this.org_repo.getCategories();
   }
 
-  async deleteOrg(id: number) {
+  async deleteOrg(id: number, sender_id: number) {
+    const sender_role = await this.getMemberRole(id, sender_id);
+    if (sender_role !== "Admin") {
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+    }
     await this.org_repo.deleteOrg(id);
   }
 
   async getMemberRole(org_id: number, user_id: number) {
+    const is_app_admin = await this.user_service.isAdminUser(user_id);
+    if (is_app_admin) {
+      return "Admin";
+    }
     return await this.org_repo.getMemberRole(org_id, user_id);
   }
 

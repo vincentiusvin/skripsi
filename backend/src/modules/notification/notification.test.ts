@@ -3,7 +3,8 @@ import { Kysely } from "kysely";
 import { before, beforeEach, describe } from "mocha";
 import { Application } from "../../app.js";
 import { DB } from "../../db/db_types.js";
-import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
+import { baseCase } from "../../test/fixture_data.js";
+import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { MockedEmailService } from "../email/MockedEmailService.js";
 import { UserRepository } from "../user/UserRepository.js";
@@ -21,7 +22,7 @@ describe("notification api", () => {
 
   beforeEach(async () => {
     await clearDB(app);
-    caseData = await baseCase(app);
+    caseData = await baseCase(app.db);
   });
 
   it("should be able to get notifications", async () => {
@@ -66,7 +67,7 @@ describe("notification service", () => {
 
   beforeEach(async () => {
     await clearDB(app);
-    caseData = await baseCase(app);
+    caseData = await baseCase(app.db);
     service = getMockedEmailNotificationService(app.db);
   });
 

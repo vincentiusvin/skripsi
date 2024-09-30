@@ -1,5 +1,5 @@
 import { hashSync } from "bcryptjs";
-import { ClientError } from "../../helpers/error.js";
+import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { UserRepository } from "./UserRepository.js";
 
 export class UserService {
@@ -8,8 +8,28 @@ export class UserService {
     this.user_repo = user_repo;
   }
 
-  getUserByID(id: number) {
-    return this.user_repo.findUserByID(id);
+  async isAdminUser(user_id: number): Promise<boolean> {
+    const user = await this.user_repo.getUserDetail(user_id);
+    if (!user) {
+      throw new NotFoundError("Pengguna tidak ditemukan!");
+    }
+    return user.user_is_admin;
+  }
+
+  async getAdminUser(user_id: number): Promise<boolean> {
+    const user = await this.user_repo.getUserDetail(user_id);
+    if (!user) {
+      throw new NotFoundError("Pengguna tidak ditemukan!");
+    }
+    return user.user_is_admin;
+  }
+
+  async findUserByEmail(email: string) {
+    return await this.user_repo.findUserByEmail(email);
+  }
+
+  async findUserByName(email: string) {
+    return await this.user_repo.findUserByName(email);
   }
 
   async addUser(user_name: string, user_password: string) {
@@ -22,19 +42,23 @@ export class UserService {
     return await this.user_repo.addUser(user_name, hashed_password);
   }
 
-  async getUsers() {
-    return this.user_repo.getUsers();
-  }
-  async getUserAccountDetail(id: number) {
-    return await this.user_repo.getAccountDetails(id);
+  async getUserDetail(user_id: number) {
+    return await this.user_repo.getUserDetail(user_id);
   }
 
-  async getUserAccountByEmail(email: string) {
-    return await this.user_repo.getUserAccountByEmail(email);
+  async getUsers(opts?: { is_admin?: boolean }) {
+    return await this.user_repo.getUsers(opts);
+  }
+
+  async isAllowedToModify(user_id: number, sender_id: number) {
+    if (user_id == sender_id) {
+      return true;
+    }
+    return await this.isAdminUser(sender_id);
   }
 
   async updateAccountDetail(
-    id: number,
+    user_id: number,
     obj: {
       user_name?: string;
       user_email?: string;
@@ -44,19 +68,25 @@ export class UserService {
       user_image?: string;
       user_password?: string;
     },
+    sender_id: number,
   ) {
+    const isAllowed = await this.isAllowedToModify(user_id, sender_id);
+    if (!isAllowed) {
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
+    }
+
     const { user_password, user_email } = obj;
     let hashed_password: string | undefined = undefined;
     if (user_password) {
       hashed_password = hashSync(user_password, 10);
     }
     if (user_email) {
-      const same_email = await this.getUserAccountByEmail(user_email);
+      const same_email = await this.findUserByEmail(user_email);
       if (same_email != undefined) {
         throw new ClientError("Sudah ada user dengan email yang sama !");
       }
     }
-    return await this.user_repo.updateAccountDetails(id, {
+    return await this.user_repo.updateAccountDetails(user_id, {
       ...obj,
       user_password: hashed_password,
     });

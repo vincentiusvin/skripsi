@@ -3,6 +3,15 @@ import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
 import { OrgRoles, parseRole } from "./OrgMisc.js";
 
+const defaultOrgFields = [
+  "ms_orgs.id as org_id",
+  "ms_orgs.name as org_name",
+  "ms_orgs.description as org_description",
+  "ms_orgs.address as org_address",
+  "ms_orgs.phone as org_phone",
+  "ms_orgs.image as org_image",
+] as const;
+
 function orgWithCategories(eb: ExpressionBuilder<DB, "ms_orgs">) {
   return jsonArrayFrom(
     eb
@@ -39,12 +48,7 @@ export class OrgRepository {
     let query = this.db
       .selectFrom("ms_orgs")
       .select((eb) => [
-        "ms_orgs.id as org_id",
-        "ms_orgs.name as org_name",
-        "ms_orgs.description as org_description",
-        "ms_orgs.address as org_address",
-        "ms_orgs.phone as org_phone",
-        "ms_orgs.image as org_image",
+        ...defaultOrgFields,
         orgWithCategories(eb).as("org_categories"),
         orgWithUsers(eb).as("org_users"),
       ]);
@@ -69,12 +73,7 @@ export class OrgRepository {
     return await this.db
       .selectFrom("ms_orgs")
       .select((eb) => [
-        "ms_orgs.id as org_id",
-        "ms_orgs.name as org_name",
-        "ms_orgs.description as org_description",
-        "ms_orgs.address as org_address",
-        "ms_orgs.phone as org_phone",
-        "ms_orgs.image as org_image",
+        ...defaultOrgFields,
         orgWithCategories(eb).as("org_categories"),
         orgWithUsers(eb).as("org_users"),
       ])
@@ -86,12 +85,7 @@ export class OrgRepository {
     return await this.db
       .selectFrom("ms_orgs")
       .select((eb) => [
-        "ms_orgs.id as org_id",
-        "ms_orgs.name as org_name",
-        "ms_orgs.description as org_description",
-        "ms_orgs.address as org_address",
-        "ms_orgs.phone as org_phone",
-        "ms_orgs.image as org_image",
+        ...defaultOrgFields,
         orgWithCategories(eb).as("org_categories"),
         orgWithUsers(eb).as("org_users"),
       ])

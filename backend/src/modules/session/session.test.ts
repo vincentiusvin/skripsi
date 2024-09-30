@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { Application } from "../../app.js";
-import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
+import { baseCase } from "../../test/fixture_data.js";
+import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
 describe("session api", () => {
@@ -12,12 +13,23 @@ describe("session api", () => {
 
   beforeEach(async () => {
     await clearDB(app);
-    caseData = await baseCase(app);
+    caseData = await baseCase(app.db);
   });
 
   it("should be able to login as user", async () => {
     const in_user = caseData.plain_user;
     const success_login = await login(in_user.name, in_user.password);
+    expect(success_login.status).to.eq(200);
+  });
+
+  it("should be able to login as admin", async () => {
+    const in_username = "Admin";
+    const in_password = process.env.ADMIN_PASSWORD;
+    if (!in_password) {
+      throw new Error("Admin password not set!");
+    }
+
+    const success_login = await login(in_username, in_password);
     expect(success_login.status).to.eq(200);
   });
 

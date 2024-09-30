@@ -2,6 +2,13 @@ import { Kysely } from "kysely";
 import { DB } from "../../db/db_types.js";
 import { transfromFriendData } from "./FriendMisc.js";
 
+const defaultFriendFields = [
+  "ms_friends.from_user_id",
+  "ms_friends.to_user_id",
+  "ms_friends.status",
+  "ms_friends.created_at",
+] as const;
+
 export class FriendRepository {
   private db: Kysely<DB>;
   constructor(db: Kysely<DB>) {
@@ -11,7 +18,7 @@ export class FriendRepository {
   async getFriends(user_id: number) {
     const result = await this.db
       .selectFrom("ms_friends")
-      .select(["ms_friends.from_user_id", "ms_friends.to_user_id", "ms_friends.status"])
+      .select(defaultFriendFields)
       .where((eb) =>
         eb.or([
           eb("ms_friends.from_user_id", "=", user_id),
@@ -26,12 +33,7 @@ export class FriendRepository {
   async getFriendData(from_user_id: number, to_user_id: number) {
     const result = await this.db
       .selectFrom("ms_friends")
-      .select([
-        "ms_friends.from_user_id",
-        "ms_friends.to_user_id",
-        "ms_friends.status",
-        "ms_friends.created_at",
-      ])
+      .select(defaultFriendFields)
       .where((eb) =>
         eb.or([
           eb.and([

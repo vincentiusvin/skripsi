@@ -1,6 +1,7 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
 import { NotificationService } from "../notification/NotificationService.js";
 import { OrgService } from "../organization/OrgService.js";
+import { UserService } from "../user/UserService.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 import { ProjectRepository } from "./ProjectRepository.js";
 
@@ -8,18 +9,26 @@ export class ProjectService {
   private project_repo: ProjectRepository;
   private org_service: OrgService;
   private notification_service: NotificationService;
+  private user_service: UserService;
+
   constructor(
     repo: ProjectRepository,
     org_service: OrgService,
     notification_service: NotificationService,
+    user_service: UserService,
   ) {
     this.project_repo = repo;
     this.org_service = org_service;
     this.notification_service = notification_service;
+    this.user_service = user_service;
   }
 
-  getMemberRole(project_id: number, user_id: number) {
-    return this.project_repo.getMemberRole(project_id, user_id);
+  async getMemberRole(project_id: number, user_id: number) {
+    const is_app_admin = await this.user_service.isAdminUser(user_id);
+    if (is_app_admin) {
+      return "Admin";
+    }
+    return await this.project_repo.getMemberRole(project_id, user_id);
   }
 
   async sendAcceptanceNotification(user_id: number, project_id: number) {
