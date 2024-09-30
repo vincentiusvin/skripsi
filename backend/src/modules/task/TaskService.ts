@@ -36,7 +36,7 @@ export class TaskService {
     if (sender_role !== "Admin" && sender_role !== "Dev") {
       throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
     }
-    return this.task_repo.deleteTask(task_id);
+    return await this.task_repo.deleteTask(task_id);
   }
 
   async getBucketByID(bucket_id: number) {

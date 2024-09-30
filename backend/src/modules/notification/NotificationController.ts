@@ -77,8 +77,9 @@ export class NotificationController extends Controller {
     const { notification_id: notification_id_str } = req.params;
     const notification_id = Number(notification_id_str);
     const { read } = req.body;
+    const sender_id = Number(req.session.user_id);
 
-    await this.notifcation_service.updateNotification(notification_id, read);
+    await this.notifcation_service.updateNotification(notification_id, read, sender_id);
     const result = await this.notifcation_service.getNotification(notification_id);
 
     res.status(200).json(result);
