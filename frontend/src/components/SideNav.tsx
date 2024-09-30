@@ -55,16 +55,17 @@ function parseSidenavContext(x: SidenavContext) {
 function UserSideNavSelector(props: {
   user_id: number;
   value: SidenavContext;
+  showAll?: boolean;
   onChange: (x: SidenavContext) => void;
 }) {
-  const { user_id, value, onChange } = props;
+  const { user_id, value, onChange, showAll } = props;
 
   const { data: projects } = useProjectsGet({
-    user_id,
+    user_id: showAll ? undefined : user_id,
   });
 
   const { data: orgs } = useOrgsGet({
-    user_id,
+    user_id: showAll ? undefined : user_id,
   });
 
   const options: {
@@ -92,6 +93,9 @@ function UserSideNavSelector(props: {
   if (projects) {
     const filtered_projects = projects
       .filter((x) => {
+        if (showAll) {
+          return true;
+        }
         const role = x.project_members.find((x) => x.user_id === user_id)?.role;
         if (!role) {
           return false;
@@ -122,6 +126,9 @@ function UserSideNavSelector(props: {
   if (orgs) {
     const filtered_orgs = orgs
       .filter((x) => {
+        if (showAll) {
+          return true;
+        }
         const role = x.org_users.find((x) => x.user_id === user_id)?.user_role;
         if (!role) {
           return false;
@@ -334,6 +341,7 @@ function SideNav(props: {
           <UserSideNavSelector
             user_id={session.user_id}
             value={activeDashboard}
+            showAll={session.is_admin}
             onChange={(x) => setActiveDashboard(x)}
           />
         ) : null}

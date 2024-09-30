@@ -35,14 +35,16 @@ export class SessionController extends Controller {
 
   // Get logged in user
   private getSession: RH<{
-    ResBody: { user_name: string; logged: true; user_id: number } | { logged: false };
+    ResBody:
+      | { user_name: string; logged: true; user_id: number; is_admin: boolean }
+      | { logged: false };
   }> = async (req, res) => {
     const userId = req.session.user_id;
     const user =
       userId &&
       (await this.db
         .selectFrom("ms_users")
-        .select(["name as user_name", "id as user_id"])
+        .select(["name as user_name", "id as user_id", "is_admin"])
         .where("id", "=", userId)
         .executeTakeFirst());
 
@@ -51,6 +53,7 @@ export class SessionController extends Controller {
         user_name: user.user_name,
         user_id: user.user_id,
         logged: true,
+        is_admin: user.is_admin,
       });
     } else {
       res.status(200).json({
