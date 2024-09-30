@@ -18,7 +18,7 @@ export class ReportRepository {
   }
 
   async getReports() {
-    await this.db.selectFrom("ms_reports").select(defaultReportFields).execute();
+    return await this.db.selectFrom("ms_reports").select(defaultReportFields).execute();
   }
 
   async getReportByID(report_id: number) {
