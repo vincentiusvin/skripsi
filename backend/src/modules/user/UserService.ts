@@ -16,6 +16,14 @@ export class UserService {
     return user.user_is_admin;
   }
 
+  async getAdminUser(user_id: number): Promise<boolean> {
+    const user = await this.user_repo.getUserDetail(user_id);
+    if (!user) {
+      throw new NotFoundError("Pengguna tidak ditemukan!");
+    }
+    return user.user_is_admin;
+  }
+
   async findUserByEmail(email: string) {
     return await this.user_repo.findUserByEmail(email);
   }
@@ -38,8 +46,8 @@ export class UserService {
     return await this.user_repo.getUserDetail(user_id);
   }
 
-  async getUsers() {
-    return await this.user_repo.getUsers();
+  async getUsers(opts?: { is_admin?: boolean }) {
+    return await this.user_repo.getUsers(opts);
   }
 
   async isAllowedToModify(user_id: number, sender_id: number) {

@@ -31,6 +31,12 @@ export class ChatService {
     }
   }
 
+  async getAllowedListeners(chatroom_id: number) {
+    const members = await this.getMembers(chatroom_id);
+    const admins = await this.user_service.getUsers({ is_admin: true });
+    return [...members, ...admins.map((x) => x.user_id)];
+  }
+
   async isAllowed(chatroom_id: number, user_id: number) {
     const members = await this.getMembers(chatroom_id);
     const is_member = members.some((member_id) => member_id === user_id);

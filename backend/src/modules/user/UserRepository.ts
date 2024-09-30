@@ -36,8 +36,15 @@ export class UserRepository {
       .executeTakeFirst();
   }
 
-  async getUsers() {
-    return await this.db.selectFrom("ms_users").select(defaultUserFields).execute();
+  async getUsers(opts?: { is_admin?: boolean }) {
+    const { is_admin } = opts ?? {};
+    let query = this.db.selectFrom("ms_users").select(defaultUserFields);
+
+    if (is_admin) {
+      query = query.where("is_admin", "=", is_admin);
+    }
+
+    return await query.execute();
   }
 
   async addUser(user_name: string, hashed_password: string) {

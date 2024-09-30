@@ -127,7 +127,7 @@ export class ChatRepository {
   }
 
   async addUserChatroom(user_id: number, chatroom_name: string) {
-    await this.db.transaction().execute(async (trx) => {
+    return await this.db.transaction().execute(async (trx) => {
       const room_id = await trx
         .insertInto("ms_chatrooms")
         .values({
