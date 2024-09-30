@@ -114,6 +114,18 @@ export interface MsProjects {
   org_id: number;
 }
 
+export interface MsReports {
+  chatroom_id: number | null;
+  created_at: Generated<Timestamp>;
+  description: string;
+  id: Generated<number>;
+  resolution: string | null;
+  resolved_at: Timestamp | null;
+  sender_id: number;
+  status: string;
+  title: string;
+}
+
 export interface MsTaskBuckets {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
@@ -185,6 +197,7 @@ export interface DB {
   ms_notifications: MsNotifications;
   ms_orgs: MsOrgs;
   ms_projects: MsProjects;
+  ms_reports: MsReports;
   ms_task_buckets: MsTaskBuckets;
   ms_tasks: MsTasks;
   ms_users: MsUsers;
