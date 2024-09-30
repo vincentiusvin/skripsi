@@ -1,7 +1,7 @@
 import { Skeleton } from "@mui/material";
 import { ReactNode } from "react";
 import { Redirect } from "wouter";
-import { useSessionGet } from "../../queries/sesssion_hooks.ts";
+import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 
 export function RedirectBack() {
   return <Redirect to="/" />;

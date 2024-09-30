@@ -1,4 +1,4 @@
-import AuthorizeAdmin from "./AuthorizeAdmins.tsx";
+import AuthorizeAdmin from "./components/AuthorizeAdmins.tsx";
 
 function AdminPanel() {
   return null;
