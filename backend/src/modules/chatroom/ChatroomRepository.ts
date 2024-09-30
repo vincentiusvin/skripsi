@@ -163,7 +163,8 @@ export class ChatRepository {
       .executeTakeFirst();
   }
 
-  async updateChatroom(chatroom_id: number, name?: string, user_ids?: number[]) {
+  async updateChatroom(chatroom_id: number, opts: { name?: string; user_ids?: number[] }) {
+    const { name, user_ids } = opts;
     if (name) {
       await this.db
         .updateTable("ms_chatrooms")
