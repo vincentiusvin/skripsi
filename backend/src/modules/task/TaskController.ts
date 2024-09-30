@@ -219,17 +219,22 @@ export class TaskController extends Controller {
   }> = async (req, res) => {
     const { task_id: task_id_raw } = req.params;
     const { users, bucket_id, name, description, start_at, end_at, before_id } = req.body;
+    const sender_id = Number(req.session.user_id);
 
     const task_id = Number(task_id_raw);
-    await this.task_service.updateTask(task_id, {
-      before_id,
-      bucket_id,
-      description,
-      end_at,
-      name,
-      users,
-      start_at,
-    });
+    await this.task_service.updateTask(
+      task_id,
+      {
+        before_id,
+        bucket_id,
+        description,
+        end_at,
+        name,
+        users,
+        start_at,
+      },
+      sender_id,
+    );
 
     const result = await this.task_service.getTaskByID(task_id);
 
@@ -263,15 +268,19 @@ export class TaskController extends Controller {
     };
   }> = async (req, res) => {
     const { bucket_id, users, name, description, end_at, start_at } = req.body;
+    const sender_id = Number(req.session.user_id);
 
-    const task_id = await this.task_service.addTask({
-      bucket_id,
-      name,
-      users,
-      description,
-      end_at,
-      start_at,
-    });
+    const task_id = await this.task_service.addTask(
+      {
+        bucket_id,
+        name,
+        users,
+        description,
+        end_at,
+        start_at,
+      },
+      sender_id,
+    );
 
     if (!task_id) {
       throw new Error("Gagal menemukan task setelah ditambahkan!");
@@ -337,8 +346,9 @@ export class TaskController extends Controller {
     };
   }> = async (req, res) => {
     const { name, project_id } = req.body;
+    const sender_id = Number(req.session.user_id);
 
-    await this.task_service.addBucket(project_id, name);
+    await this.task_service.addBucket(project_id, name, sender_id);
 
     res.status(201).json({
       msg: "Bucket created!",
@@ -383,8 +393,9 @@ export class TaskController extends Controller {
   }> = async (req, res) => {
     const { task_id: task_id_raw } = req.params;
     const task_id = Number(task_id_raw);
+    const sender_id = Number(req.session.user_id);
 
-    await this.task_service.deleteTask(task_id);
+    await this.task_service.deleteTask(task_id, sender_id);
 
     res.status(200).json({ msg: "Tugas berhasil dihapus!" });
   };
@@ -427,10 +438,15 @@ export class TaskController extends Controller {
     const { bucket_id: bucket_id_raw } = req.params;
     const { name } = req.body;
     const bucket_id = Number(bucket_id_raw);
+    const sender_id = Number(req.session.user_id);
 
-    await this.task_service.updateBucket(bucket_id, {
-      name,
-    });
+    await this.task_service.updateBucket(
+      bucket_id,
+      {
+        name,
+      },
+      sender_id,
+    );
 
     const result = await this.task_service.getBucketByID(bucket_id);
 
