@@ -53,7 +53,7 @@ export function registerControllers(app: Application) {
     user_service,
   );
   const task_service = new TaskService(task_repo, project_service);
-  const chat_service = new ChatService(chat_repo, project_service);
+  const chat_service = new ChatService(chat_repo, project_service, user_service);
   const friend_service = new FriendService(friend_repo);
   const contribution_service = new ContributionService(contribution_repo);
 

@@ -1,5 +1,6 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
 import { ProjectService } from "../project/ProjectService.js";
+import { UserService } from "../user/UserService.js";
 import { ChatRepository } from "./ChatroomRepository.js";
 
 // Kalau chatroomnya berkaitan dengan projek, validasi pakai daftar member projek.
@@ -7,9 +8,11 @@ import { ChatRepository } from "./ChatroomRepository.js";
 export class ChatService {
   repo: ChatRepository;
   project_service: ProjectService;
-  constructor(repo: ChatRepository, project_service: ProjectService) {
+  user_service: UserService;
+  constructor(repo: ChatRepository, project_service: ProjectService, user_service: UserService) {
     this.repo = repo;
     this.project_service = project_service;
+    this.user_service = user_service;
   }
 
   async getMembers(chatroom_id: number) {
@@ -30,7 +33,12 @@ export class ChatService {
 
   async isAllowed(chatroom_id: number, user_id: number) {
     const members = await this.getMembers(chatroom_id);
-    return members.some((member_id) => member_id === user_id);
+    const is_member = members.some((member_id) => member_id === user_id);
+    if (is_member) {
+      return true;
+    }
+    const is_admin = await this.user_service.isAdminUser(user_id);
+    return is_admin;
   }
 
   async getMessages(chatroom_id: number) {
