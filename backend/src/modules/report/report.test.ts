@@ -5,7 +5,7 @@ import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ReportStatus } from "./ReportMisc.js";
 
-describe.only("report api", () => {
+describe("report api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
