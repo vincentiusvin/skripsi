@@ -244,15 +244,19 @@ export class ReportController extends Controller {
     const report_id = Number(req.params.report_id);
     const { title, description, status, resolution, resolved_at, chatroom_id } = req.body;
 
-    await this.report_service.updateReport(report_id, {
-      title,
-      description,
-      status,
-      resolution,
-      resolved_at: resolved_at != undefined ? new Date(resolved_at) : undefined,
-      chatroom_id,
+    await this.report_service.updateReport(
+      report_id,
+      {
+        title,
+        description,
+        status,
+        resolution,
+        resolved_at: resolved_at != undefined ? new Date(resolved_at) : undefined,
+        chatroom_id,
+        sender_id,
+      },
       sender_id,
-    });
+    );
 
     const result = await this.report_service.getReportByID(report_id, sender_id);
     res.status(200).json(result);

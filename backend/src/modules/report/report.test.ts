@@ -5,7 +5,7 @@ import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ReportStatus } from "./ReportMisc.js";
 
-describe("report api", () => {
+describe.only("report api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -69,20 +69,37 @@ describe("report api", () => {
     expect(result).to.deep.include(in_report);
   });
 
-  it("should be able to update report", async () => {
-    const in_user = caseData.report_user;
-    const in_report = caseData.reports[0];
-    const in_report_update = {
-      status: "Resolved",
-    } as const;
+  for (const { ok, user_key } of [
+    {
+      user_key: "report_user",
+      ok: true,
+    },
+    {
+      user_key: "plain_user",
+      ok: false,
+    },
+  ] as const) {
+    it(`${ok ? "should" : "shouldn't"} be able to update report as ${
+      ok ? "author" : "other user"
+    }`, async () => {
+      const in_user = caseData[user_key];
+      const in_report = caseData.reports[0];
+      const in_report_update = {
+        status: "Resolved",
+      } as const;
 
-    const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const read_req = await putReports(in_report.id, in_report_update, cookie);
-    const result = await read_req.json();
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const read_req = await putReports(in_report.id, in_report_update, cookie);
+      const result = await read_req.json();
 
-    expect(read_req.status).eq(200);
-    expect(result).to.deep.include(in_report_update);
-  });
+      if (ok) {
+        expect(read_req.status).eq(200);
+        expect(result).to.deep.include(in_report_update);
+      } else {
+        expect(read_req.status).eq(401);
+      }
+    });
+  }
 });
 
 function getReports(opts: { user_id?: number }, cookie: string) {

@@ -59,7 +59,14 @@ export class ReportService {
       sender_id?: number;
       chatroom_id?: number;
     },
+    sender_id: number,
   ) {
+    const data = await this.report_repo.getReportByID(report_id);
+    const is_admin = await this.user_service.isAdminUser(sender_id);
+    if (!is_admin && data?.sender_id !== sender_id) {
+      throw new AuthError("Anda hanya boleh mengedit laporan buatan anda sendiri!");
+    }
+
     return await this.report_repo.updateReport(report_id, opts);
   }
 }
