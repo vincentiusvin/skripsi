@@ -17,12 +17,19 @@ export class ReportRepository {
     this.db = db;
   }
 
-  async getReports() {
-    return await this.db.selectFrom("ms_reports").select(defaultReportFields).execute();
+  async getReports(opts: { user_id?: number }) {
+    const { user_id } = opts;
+    let query = this.db.selectFrom("ms_reports").select(defaultReportFields);
+
+    if (user_id != undefined) {
+      query = query.where("ms_reports.sender_id", "=", user_id);
+    }
+
+    return query.execute();
   }
 
   async getReportByID(report_id: number) {
-    await this.db
+    return await this.db
       .selectFrom("ms_reports")
       .select(defaultReportFields)
       .where("id", "=", report_id)
@@ -38,7 +45,7 @@ export class ReportRepository {
     resolved_at?: Date;
     chatroom_id?: number;
   }) {
-    await this.db.insertInto("ms_reports").values(opts).returning("id").execute();
+    return await this.db.insertInto("ms_reports").values(opts).returning("id").executeTakeFirst();
   }
 
   async updateReport(

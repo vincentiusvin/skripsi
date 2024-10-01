@@ -16,27 +16,99 @@ describe.only("report api", () => {
     caseData = await baseCase(app.db);
   });
 
-  it("should be able to get reports", async () => {
+  it("should be able to get reports as sender", async () => {
     const in_report = caseData.reports[0];
     const in_user = caseData.report_user;
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const read_req = await getReports(cookie);
+    const read_req = await getReports({ user_id: in_user.id }, cookie);
     const result = await read_req.json();
 
-    const found = result.find((x) => x.id === in_report.id);
     expect(read_req.status).eq(200);
+    const found = result.find((x) => x.id === in_report.id);
     expect(found).to.not.eq(undefined);
     expect(found?.title).to.eq(in_report.title);
   });
+
+  it("should be able to get report detail as sender", async () => {
+    const in_report = caseData.reports[0];
+    const in_user = caseData.report_user;
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const read_req = await getReportDetail({ report_id: in_report.id }, cookie);
+    const result = await read_req.json();
+
+    expect(read_req.status).eq(200);
+    expect(result.title).to.eq(in_report.title);
+  });
+
+  it("shouldn't be able to get all reports as non admin", async () => {
+    const in_user = caseData.report_user;
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const read_req = await getReports({}, cookie);
+    await read_req.json();
+
+    expect(read_req.status).eq(401);
+  });
+
+  it("should be able to add new report", async () => {
+    const in_user = caseData.plain_user;
+    const in_report = {
+      title: "test insert report",
+      description: "desc",
+      status: "Ok",
+    };
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const read_req = await postReports(in_report, cookie);
+    const result = await read_req.json();
+
+    expect(read_req.status).eq(201);
+    expect(result).to.deep.include(in_report);
+  });
 });
 
-function getReports(cookie: string) {
+function getReports(opts: { user_id?: number }, cookie: string) {
   return new APIContext("ReportsGet").fetch(`/api/reports/`, {
+    headers: {
+      cookie: cookie,
+    },
+    query: {
+      user_id: opts.user_id?.toString(),
+    },
+    credentials: "include",
+    method: "get",
+  });
+}
+
+function getReportDetail(opts: { report_id?: number }, cookie: string) {
+  return new APIContext("ReportsDetailGet").fetch(`/api/reports/${opts.report_id}`, {
     headers: {
       cookie: cookie,
     },
     credentials: "include",
     method: "get",
+  });
+}
+
+function postReports(
+  opts: {
+    title: string;
+    description: string;
+    status: string;
+    resolution?: string | undefined;
+    resolved_at?: string | undefined;
+    chatroom_id?: number | undefined;
+  },
+  cookie: string,
+) {
+  return new APIContext("ReportsPost").fetch(`/api/reports`, {
+    headers: {
+      cookie: cookie,
+    },
+    body: opts,
+    credentials: "include",
+    method: "post",
   });
 }
