@@ -67,6 +67,21 @@ describe.only("report api", () => {
     expect(read_req.status).eq(201);
     expect(result).to.deep.include(in_report);
   });
+
+  it("should be able to update report", async () => {
+    const in_user = caseData.report_user;
+    const in_report = caseData.reports[0];
+    const in_report_update = {
+      status: "Resolved",
+    };
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const read_req = await putReports(in_report.id, in_report_update, cookie);
+    const result = await read_req.json();
+
+    expect(read_req.status).eq(200);
+    expect(result).to.deep.include(in_report_update);
+  });
 });
 
 function getReports(opts: { user_id?: number }, cookie: string) {
@@ -110,5 +125,27 @@ function postReports(
     body: opts,
     credentials: "include",
     method: "post",
+  });
+}
+
+function putReports(
+  report_id: number,
+  opts: {
+    title?: string;
+    description?: string;
+    status?: string;
+    resolution?: string | undefined;
+    resolved_at?: string | undefined;
+    chatroom_id?: number | undefined;
+  },
+  cookie: string,
+) {
+  return new APIContext("ReportsDetailPut").fetch(`/api/reports/${report_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    body: opts,
+    credentials: "include",
+    method: "put",
   });
 }
