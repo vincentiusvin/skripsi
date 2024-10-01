@@ -69,19 +69,24 @@ describe.only("report api", () => {
     expect(result).to.deep.include(in_report);
   });
 
-  for (const { ok, user_key } of [
+  for (const { ok, user_key, name } of [
     {
       user_key: "report_user",
+      name: "author",
       ok: true,
     },
     {
       user_key: "plain_user",
+      name: "other user",
       ok: false,
     },
+    {
+      user_key: "admin_user",
+      name: "admin",
+      ok: true,
+    },
   ] as const) {
-    it(`${ok ? "should" : "shouldn't"} be able to update report as ${
-      ok ? "author" : "other user"
-    }`, async () => {
+    it(`${ok ? "should" : "shouldn't"} be able to update report as ${name}`, async () => {
       const in_user = caseData[user_key];
       const in_report = caseData.reports[0];
       const in_report_update = {

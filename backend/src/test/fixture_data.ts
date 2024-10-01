@@ -63,6 +63,13 @@ export async function baseCase(db: Kysely<DB>) {
     .returning(["id", "name"])
     .execute();
 
+  const admin_user_query = await db
+    .selectFrom("ms_users")
+    .select(["id", "name"])
+    .where("is_admin", "=", true)
+    .executeTakeFirstOrThrow();
+
+  const admin_user = { ...admin_user_query, password: process.env.ADMIN_PASSWORD! };
   const org_user = { ...user_ids[0], password: orig_password };
   const plain_user = { ...user_ids[1], password: orig_password };
   const chat_user = { ...user_ids[2], password: orig_password };
@@ -266,6 +273,7 @@ export async function baseCase(db: Kysely<DB>) {
     plain_user,
     chat_user,
     dev_user,
+    admin_user,
     project_admin_user,
     friend_acc_user,
     friend_recv_user,
