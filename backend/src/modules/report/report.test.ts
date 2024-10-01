@@ -3,8 +3,9 @@ import { Application } from "../../app.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
+import { ReportStatus } from "./ReportMisc.js";
 
-describe.only("report api", () => {
+describe("report api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -57,8 +58,8 @@ describe.only("report api", () => {
     const in_report = {
       title: "test insert report",
       description: "desc",
-      status: "Ok",
-    };
+      status: "Pending",
+    } as const;
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
     const read_req = await postReports(in_report, cookie);
@@ -73,7 +74,7 @@ describe.only("report api", () => {
     const in_report = caseData.reports[0];
     const in_report_update = {
       status: "Resolved",
-    };
+    } as const;
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
     const read_req = await putReports(in_report.id, in_report_update, cookie);
@@ -111,7 +112,7 @@ function postReports(
   opts: {
     title: string;
     description: string;
-    status: string;
+    status: ReportStatus;
     resolution?: string | undefined;
     resolved_at?: string | undefined;
     chatroom_id?: number | undefined;
@@ -133,7 +134,7 @@ function putReports(
   opts: {
     title?: string;
     description?: string;
-    status?: string;
+    status?: ReportStatus;
     resolution?: string | undefined;
     resolved_at?: string | undefined;
     chatroom_id?: number | undefined;

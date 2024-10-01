@@ -1,5 +1,6 @@
 import { AuthError } from "../../helpers/error.js";
 import { UserService } from "../user/UserService.js";
+import { ReportStatus } from "./ReportMisc.js";
 import { ReportRepository } from "./ReportRepository.js";
 
 export class ReportService {
@@ -38,7 +39,7 @@ export class ReportService {
   async addReport(opts: {
     title: string;
     description: string;
-    status: string;
+    status: ReportStatus;
     sender_id: number;
     resolution?: string;
     resolved_at?: Date;
@@ -52,7 +53,7 @@ export class ReportService {
     opts: {
       title?: string;
       description?: string;
-      status?: string;
+      status?: ReportStatus;
       resolution?: string;
       resolved_at?: Date;
       sender_id?: number;

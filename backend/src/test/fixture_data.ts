@@ -249,7 +249,7 @@ export async function baseCase(db: Kysely<DB>) {
       title: "Report Testing",
       description: "report test desc",
       sender_id: report_user.id,
-      status: "test",
+      status: "Pending",
     })
     .returning(["id", "ms_reports.status", "ms_reports.title", "ms_reports.description"])
     .execute();

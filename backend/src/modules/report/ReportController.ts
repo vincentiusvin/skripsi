@@ -1,7 +1,8 @@
 import type { Express } from "express";
-import { z } from "zod";
+import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { RH } from "../../helpers/types.js";
+import { ReportStatus, parseReportStatus } from "./ReportMisc.js";
 import { ReportService } from "./ReportService.js";
 
 export class ReportController extends Controller {
@@ -47,7 +48,8 @@ export class ReportController extends Controller {
               })
               .min(1, {
                 message: "Status tidak boleh kosong!",
-              }),
+              })
+              .transform((arg) => parseReportStatus(arg)) as ZodType<ReportStatus>,
             resolution: z
               .string({
                 message: "Resolusi tidak valid!",
@@ -103,7 +105,8 @@ export class ReportController extends Controller {
               .min(1, {
                 message: "Status tidak boleh kosong!",
               })
-              .optional(),
+              .transform((arg) => parseReportStatus(arg))
+              .optional() as ZodType<ReportStatus>,
             resolution: z
               .string({
                 message: "Resolusi tidak valid!",
@@ -135,7 +138,7 @@ export class ReportController extends Controller {
       sender_id: number;
       title: string;
       description: string;
-      status: string;
+      status: ReportStatus;
       created_at: Date;
       resolved_at: Date | null;
     }[];
@@ -159,7 +162,7 @@ export class ReportController extends Controller {
       sender_id: number;
       title: string;
       description: string;
-      status: string;
+      status: ReportStatus;
       created_at: Date;
       resolved_at: Date | null;
     };
@@ -181,14 +184,14 @@ export class ReportController extends Controller {
       sender_id: number;
       title: string;
       description: string;
-      status: string;
+      status: ReportStatus;
       created_at: Date;
       resolved_at: Date | null;
     };
     ReqBody: {
       title: string;
       description: string;
-      status: string;
+      status: ReportStatus;
       resolution?: string;
       resolved_at?: string;
       chatroom_id?: number;
@@ -221,14 +224,14 @@ export class ReportController extends Controller {
       sender_id: number;
       title: string;
       description: string;
-      status: string;
+      status: ReportStatus;
       created_at: Date;
       resolved_at: Date | null;
     };
     ReqBody: {
       title?: string;
       description?: string;
-      status?: string;
+      status?: ReportStatus;
       resolution?: string;
       resolved_at?: string;
       chatroom_id?: number;

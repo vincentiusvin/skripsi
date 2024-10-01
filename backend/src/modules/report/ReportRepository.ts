@@ -1,5 +1,6 @@
 import { Kysely } from "kysely";
 import { DB } from "../../db/db_types.js";
+import { ReportStatus, parseReportStatus } from "./ReportMisc.js";
 
 const defaultReportFields = [
   "ms_reports.id",
@@ -25,21 +26,35 @@ export class ReportRepository {
       query = query.where("ms_reports.sender_id", "=", user_id);
     }
 
-    return query.execute();
+    const result = await query.execute();
+
+    return result.map((x) => ({
+      ...x,
+      status: parseReportStatus(x.status),
+    }));
   }
 
   async getReportByID(report_id: number) {
-    return await this.db
+    const ret = await this.db
       .selectFrom("ms_reports")
       .select(defaultReportFields)
       .where("id", "=", report_id)
       .executeTakeFirst();
+
+    if (ret == undefined) {
+      return undefined;
+    }
+
+    return {
+      ...ret,
+      status: parseReportStatus(ret.status),
+    };
   }
 
   async addReport(opts: {
     title: string;
     description: string;
-    status: string;
+    status: ReportStatus;
     sender_id: number;
     resolution?: string;
     resolved_at?: Date;
@@ -53,7 +68,7 @@ export class ReportRepository {
     opts: {
       title?: string;
       description?: string;
-      status?: string;
+      status?: ReportStatus;
       resolution?: string;
       resolved_at?: Date;
       sender_id?: number;
