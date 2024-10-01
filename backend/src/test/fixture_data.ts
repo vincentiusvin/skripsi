@@ -55,10 +55,21 @@ export async function baseCase(db: Kysely<DB>) {
         name: "notif user",
         password: hashed,
       },
+      {
+        name: "report user",
+        password: hashed,
+      },
     ])
     .returning(["id", "name"])
     .execute();
 
+  const admin_user_query = await db
+    .selectFrom("ms_users")
+    .select(["id", "name"])
+    .where("is_admin", "=", true)
+    .executeTakeFirstOrThrow();
+
+  const admin_user = { ...admin_user_query, password: process.env.ADMIN_PASSWORD! };
   const org_user = { ...user_ids[0], password: orig_password };
   const plain_user = { ...user_ids[1], password: orig_password };
   const chat_user = { ...user_ids[2], password: orig_password };
@@ -68,6 +79,7 @@ export async function baseCase(db: Kysely<DB>) {
   const friend_recv_user = { ...user_ids[6], password: orig_password };
   const friend_acc_user = { ...user_ids[7], password: orig_password };
   const notif_user = { ...user_ids[8], password: orig_password };
+  const report_user = { ...user_ids[9], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -238,6 +250,17 @@ export async function baseCase(db: Kysely<DB>) {
     .returning(["id", "title", "description", "type", "user_id"])
     .execute();
 
+  const reports = await db
+    .insertInto("ms_reports")
+    .values({
+      title: "Report Testing",
+      description: "report test desc",
+      sender_id: report_user.id,
+      status: "Pending",
+    })
+    .returning(["id", "ms_reports.status", "ms_reports.title", "ms_reports.description"])
+    .execute();
+
   return {
     org,
     project,
@@ -250,6 +273,7 @@ export async function baseCase(db: Kysely<DB>) {
     plain_user,
     chat_user,
     dev_user,
+    admin_user,
     project_admin_user,
     friend_acc_user,
     friend_recv_user,
@@ -259,5 +283,7 @@ export async function baseCase(db: Kysely<DB>) {
     contributions,
     notifications,
     notif_user,
+    reports,
+    report_user,
   };
 }

@@ -20,6 +20,9 @@ import { OrgService } from "./modules/organization/OrgService.js";
 import { ProjectController } from "./modules/project/ProjectController.js";
 import { ProjectRepository } from "./modules/project/ProjectRepository.js";
 import { ProjectService } from "./modules/project/ProjectService.js";
+import { ReportController } from "./modules/report/ReportController.js";
+import { ReportRepository } from "./modules/report/ReportRepository.js";
+import { ReportService } from "./modules/report/ReportService.js";
 import { SessionController } from "./modules/session/SessionController.js";
 import { TaskController } from "./modules/task/TaskController.js";
 import { TaskRepository } from "./modules/task/TaskRepository.js";
@@ -37,6 +40,7 @@ export function registerControllers(app: Application) {
   const user_repo = new UserRepository(app.db);
   const friend_repo = new FriendRepository(app.db);
   const contribution_repo = new ContributionRepository(app.db);
+  const report_repo = new ReportRepository(app.db);
 
   const user_service = new UserService(user_repo);
   const email_service = EmailService.fromEnv();
@@ -56,6 +60,7 @@ export function registerControllers(app: Application) {
   const chat_service = new ChatService(chat_repo, project_service, user_service);
   const friend_service = new FriendService(friend_repo);
   const contribution_service = new ContributionService(contribution_repo);
+  const report_service = new ReportService(report_repo, user_service);
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),
@@ -67,6 +72,7 @@ export function registerControllers(app: Application) {
     new FriendController(app.express_server, friend_service),
     new ContributionController(app.express_server, contribution_service),
     new NotificationController(app.express_server, notification_service),
+    new ReportController(app.express_server, report_service),
   ] as const;
 
   controllers.forEach((x) => x.register());
