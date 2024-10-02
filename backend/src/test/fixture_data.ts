@@ -280,7 +280,7 @@ export async function baseCase(db: Kysely<DB>) {
     .values([
       {
         reason: "Kurang beruntung",
-        suspended_until: dayjs().add(1, "day").toDate(),
+        suspended_until: dayjs().add(100, "day").toDate(),
         user_id: banned_user.id,
       },
     ])

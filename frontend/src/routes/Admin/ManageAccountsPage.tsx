@@ -31,7 +31,7 @@ function AccountRow(props: {
   const { user } = props;
   const { data: suspension_data } = useSuspensionsGet({
     user_id: user.user_id,
-    expired_after: dayjs().startOf("day").add(1, "day"),
+    expired_after: dayjs().startOf("day"),
   });
 
   let status = <Skeleton />;
@@ -45,6 +45,19 @@ function AccountRow(props: {
       status = <Chip label="Aktif" color="success" />;
     }
   }
+  let suspended_string = "Memuat...";
+
+  if (suspension_data) {
+    if (suspension_data.length) {
+      const max_suspension = suspension_data
+        .map((x) => dayjs(x.suspended_until))
+        .reduce((x, v) => (x.isAfter(v) ? x : v));
+      suspended_string = dayjs(max_suspension).format("ddd[,] D[/]M[/]YY HH:mm");
+    } else {
+      suspended_string = "Tidak ditangguhkan";
+    }
+  }
+  const created_string = dayjs(user.user_created_at).format("ddd[,] D[/]M[/]YY HH:mm");
 
   return (
     <TableRow key={user.user_id}>
@@ -52,7 +65,8 @@ function AccountRow(props: {
         <UserLabel user_id={user.user_id} />
       </TableCell>
       <TableCell>{status}</TableCell>
-      <TableCell>{dayjs(user.user_created_at).format("ddd[,] D[/]M[/]YY HH:mm")}</TableCell>
+      <TableCell>{created_string}</TableCell>
+      <TableCell>{suspended_string}</TableCell>
     </TableRow>
   );
 }
@@ -72,6 +86,7 @@ function ManageAccounts() {
             <TableCell>Pengguna</TableCell>
             <TableCell>Status</TableCell>
             <TableCell>Aktif Sejak</TableCell>
+            <TableCell>Ditangguhkan Hingga</TableCell>
             <TableCell />
           </TableRow>
         </TableHead>
