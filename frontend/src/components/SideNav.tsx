@@ -1,6 +1,7 @@
 import {
   Chat,
   CorporateFare,
+  Flag,
   Home,
   Language,
   Logout,
@@ -8,6 +9,7 @@ import {
   Message,
   People,
   Settings,
+  Shield,
   Work,
 } from "@mui/icons-material";
 import {
@@ -28,9 +30,10 @@ import { ReactNode, useState } from "react";
 import { useOrgsGet } from "../queries/org_hooks.ts";
 import { useProjectsGet } from "../queries/project_hooks.ts";
 import { useSessionGet } from "../queries/sesssion_hooks.ts";
+import { useUsersDetailGet } from "../queries/user_hooks.ts";
 import StyledLink from "./StyledLink.tsx";
 
-type SidenavContext = "browse" | `project-${number}` | `orgs-${number}`;
+type SidenavContext = "browse" | `project-${number}` | `orgs-${number}` | "admin";
 
 function parseSidenavContext(x: SidenavContext) {
   if (x === "browse") {
@@ -49,6 +52,10 @@ function parseSidenavContext(x: SidenavContext) {
       type: "orgs",
       id: org_id,
     } as const;
+  } else if (x === "admin") {
+    return {
+      type: "admin",
+    } as const;
   }
 }
 
@@ -62,6 +69,10 @@ function UserSideNavSelector(props: {
 
   const { data: projects } = useProjectsGet({
     user_id: showAll ? undefined : user_id,
+  });
+
+  const { data: user } = useUsersDetailGet({
+    user_id,
   });
 
   const { data: orgs } = useOrgsGet({
@@ -90,6 +101,20 @@ function UserSideNavSelector(props: {
     },
   ];
 
+  if (user && user.user_is_admin) {
+    options.push({
+      title: "Admin",
+      icon: <Shield />,
+      entries: [
+        {
+          value: `admin`,
+          primary: "Administrasi",
+          secondary: null,
+        },
+      ],
+    });
+  }
+
   if (projects) {
     const filtered_projects = projects
       .filter((x) => {
@@ -110,17 +135,19 @@ function UserSideNavSelector(props: {
         role: x.project_members.find((x) => x.user_id === user_id)?.role,
       }));
 
-    options.push({
-      title: "Proyek",
-      icon: <Work />,
-      entries: filtered_projects.map((x) => {
-        return {
-          value: `project-${x.project_id}`,
-          primary: x.project_name,
-          secondary: x.role!,
-        };
-      }),
-    });
+    if (filtered_projects.length) {
+      options.push({
+        title: "Proyek",
+        icon: <Work />,
+        entries: filtered_projects.map((x) => {
+          return {
+            value: `project-${x.project_id}`,
+            primary: x.project_name,
+            secondary: x.role!,
+          };
+        }),
+      });
+    }
   }
 
   if (orgs) {
@@ -143,17 +170,19 @@ function UserSideNavSelector(props: {
         role: x.org_users.find((x) => x.user_id === user_id)?.user_role,
       }));
 
-    options.push({
-      title: "Organisasi",
-      icon: <CorporateFare />,
-      entries: filtered_orgs.map((x) => {
-        return {
-          value: `orgs-${x.org_id}`,
-          primary: x.org_name,
-          secondary: x.role!,
-        };
-      }),
-    });
+    if (filtered_orgs.length) {
+      options.push({
+        title: "Organisasi",
+        icon: <CorporateFare />,
+        entries: filtered_orgs.map((x) => {
+          return {
+            value: `orgs-${x.org_id}`,
+            primary: x.org_name,
+            secondary: x.role!,
+          };
+        }),
+      });
+    }
   }
 
   return (
@@ -285,6 +314,19 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         link: `/orgs/${org_id}/leave`,
         name: `Keluar`,
         avatar: <Logout />,
+      },
+    ];
+  } else if (parsedContext.type === "admin") {
+    links = [
+      {
+        link: `/reports`,
+        name: `Laporan`,
+        avatar: <Flag />,
+      },
+      {
+        link: `/accounts`,
+        name: `Atur Pengguna`,
+        avatar: <People />,
       },
     ];
   }

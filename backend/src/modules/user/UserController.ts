@@ -107,6 +107,7 @@ export class UserController extends Controller {
     Params: { id: string };
     ResBody: {
       user_id: number;
+      user_is_admin: boolean;
       user_name: string;
       user_email: string | null;
       user_education_level: string | null;

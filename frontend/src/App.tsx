@@ -13,7 +13,8 @@ import SideNav from "./components/SideNav.tsx";
 import Navigation from "./components/TopNav.tsx";
 import { queryClient } from "./helpers/queryclient";
 import { ThemeContext } from "./helpers/theme.ts";
-import AdminPanelPage from "./routes/Admin/AdminPanelPage.tsx";
+import ManageAccountsPage from "./routes/Admin/ManageAccountsPage.tsx";
+import ReportsPage from "./routes/Admin/ReportsPage.tsx";
 import AuthPage from "./routes/AuthPage";
 import HomePage from "./routes/HomePage";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
@@ -129,7 +130,8 @@ function App() {
                     <Route path={"/projects/:project_id/chat"} component={ProjectsChatroomPage} />
                     <Route path={"/users/:id"} component={UserAccountPage} />
                     <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
-                    <Route path={"/admin"} component={AdminPanelPage} />
+                    <Route path={"/report"} component={ReportsPage} />
+                    <Route path={"/accounts"} component={ManageAccountsPage} />
                   </Switch>
                 </Box>
               </Stack>

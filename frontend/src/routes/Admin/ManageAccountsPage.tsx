@@ -1,15 +1,15 @@
 import AuthorizeAdmin from "./components/AuthorizeAdmins.tsx";
 
-function AdminPanel() {
+function ManageAccounts() {
   return null;
 }
 
-function AdminPanelPage() {
+function ManageAccountsPage() {
   return (
     <AuthorizeAdmin>
-      <AdminPanel />
+      <ManageAccounts />
     </AuthorizeAdmin>
   );
 }
 
-export default AdminPanelPage;
+export default ManageAccountsPage;
