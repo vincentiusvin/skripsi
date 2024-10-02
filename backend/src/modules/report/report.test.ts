@@ -5,7 +5,7 @@ import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ReportStatus } from "./ReportMisc.js";
 
-describe("report api", () => {
+describe.only("report api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -69,7 +69,7 @@ describe("report api", () => {
     expect(result).to.deep.include(in_report);
   });
 
-  for (const { ok, user_key, statement, in_data } of [
+  for (const { ok, user_key, statement, in_data, check_override } of [
     {
       user_key: "report_user",
       statement: "should be able to update regular report data as author",
@@ -120,6 +120,25 @@ describe("report api", () => {
         resolution: "abc",
       },
     },
+    {
+      user_key: "report_user",
+      statement: "shouldn't be able to add report chatroom as user",
+      ok: false,
+      in_data: {
+        chatroom: true,
+      },
+    },
+    {
+      user_key: "admin_user",
+      statement: "should be able to add report chatroom as admin",
+      ok: true,
+      in_data: {
+        chatroom: true,
+      },
+      check_override: (result?: { chatroom_id: number | null }) => {
+        expect(result?.chatroom_id).to.be.a("number");
+      },
+    },
   ] as const) {
     it(statement, async () => {
       const in_user = caseData[user_key];
@@ -131,7 +150,11 @@ describe("report api", () => {
 
       if (ok) {
         expect(read_req.status).eq(200);
-        expect(result).to.deep.include(in_data);
+        if (check_override) {
+          check_override(result);
+        } else {
+          expect(result).to.deep.include(in_data);
+        }
       } else {
         expect(read_req.status).oneOf([401, 400]);
       }
@@ -190,8 +213,8 @@ function putReports(
     description?: string;
     status?: ReportStatus;
     resolution?: string | undefined;
+    chatroom?: boolean;
     resolved_at?: string | undefined;
-    chatroom_id?: number | undefined;
   },
   cookie: string,
 ) {

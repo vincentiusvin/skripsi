@@ -60,7 +60,7 @@ export function registerControllers(app: Application) {
   const chat_service = new ChatService(chat_repo, project_service, user_service);
   const friend_service = new FriendService(friend_repo);
   const contribution_service = new ContributionService(contribution_repo);
-  const report_service = new ReportService(report_repo, user_service);
+  const report_service = new ReportService(report_repo, user_service, chat_service);
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),

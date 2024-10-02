@@ -11,6 +11,7 @@ const defaultReportFields = [
   "ms_reports.created_at",
   "ms_reports.resolved_at",
   "ms_reports.resolution",
+  "ms_reports.chatroom_id",
 ] as const;
 
 export class ReportRepository {

@@ -42,11 +42,6 @@ export class ReportController extends Controller {
               .min(1, {
                 message: "Deskripsi tidak boleh kosong!",
               }),
-            chatroom_id: z
-              .number({
-                message: "ID ruangan tidak valid!",
-              })
-              .optional(),
           }),
         },
         method: "post",
@@ -95,11 +90,7 @@ export class ReportController extends Controller {
                 message: "Catatan tidak boleh kosong!",
               })
               .optional(),
-            chatroom_id: z
-              .number({
-                message: "ID ruangan tidak valid!",
-              })
-              .optional(),
+            chatroom: z.boolean().optional(),
           }),
         },
         method: "put",
@@ -112,6 +103,7 @@ export class ReportController extends Controller {
     ResBody: {
       id: number;
       sender_id: number;
+      chatroom_id: number | null;
       title: string;
       description: string;
       status: ReportStatus;
@@ -138,6 +130,7 @@ export class ReportController extends Controller {
       id: number;
       sender_id: number;
       title: string;
+      chatroom_id: number | null;
       description: string;
       status: ReportStatus;
       created_at: Date;
@@ -161,6 +154,7 @@ export class ReportController extends Controller {
       id: number;
       sender_id: number;
       title: string;
+      chatroom_id: number | null;
       description: string;
       status: ReportStatus;
       created_at: Date;
@@ -195,6 +189,7 @@ export class ReportController extends Controller {
     ResBody: {
       id: number;
       sender_id: number;
+      chatroom_id: number | null;
       title: string;
       description: string;
       status: ReportStatus;
@@ -207,7 +202,7 @@ export class ReportController extends Controller {
       description?: string;
       status?: ReportStatus;
       resolution?: string;
-      chatroom_id?: number;
+      chatroom?: boolean;
     };
     Params: {
       report_id: string;
@@ -215,7 +210,7 @@ export class ReportController extends Controller {
   }> = async (req, res) => {
     const sender_id = Number(req.session.user_id!);
     const report_id = Number(req.params.report_id);
-    const { title, description, status, resolution, chatroom_id } = req.body;
+    const { title, description, status, resolution, chatroom } = req.body;
 
     await this.report_service.updateReport(
       report_id,
@@ -224,7 +219,7 @@ export class ReportController extends Controller {
         description,
         status,
         resolution,
-        chatroom_id,
+        chatroom,
       },
       sender_id,
     );
