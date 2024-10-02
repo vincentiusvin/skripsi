@@ -1,4 +1,5 @@
 import { hashSync } from "bcryptjs";
+import dayjs from "dayjs";
 import { Kysely } from "kysely";
 import { DB } from "../db/db_types.js";
 
@@ -279,7 +280,7 @@ export async function baseCase(db: Kysely<DB>) {
     .values([
       {
         reason: "Kurang beruntung",
-        suspended_until: new Date(),
+        suspended_until: dayjs().add(1, "day").toDate(),
         user_id: banned_user.id,
       },
     ])

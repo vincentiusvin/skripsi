@@ -1,6 +1,5 @@
 import { Edit, KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import {
-  Avatar,
   Box,
   Button,
   Chip,
@@ -24,8 +23,8 @@ import { enqueueSnackbar } from "notistack";
 import { stringify } from "qs";
 import { useState } from "react";
 import StyledLink from "../../components/StyledLink.tsx";
+import UserLabel from "../../components/UserLabel.tsx";
 import { useReportsGet, useReportsPut } from "../../queries/report_hooks.ts";
-import { useUsersDetailGet } from "../../queries/user_hooks.ts";
 import AuthorizeAdmin from "./components/AuthorizeAdmins.tsx";
 
 const statusColor = {
@@ -33,23 +32,6 @@ const statusColor = {
   Rejected: "error",
   Resolved: "success",
 } as const;
-
-function UserAvatar(props: { user_id: number }) {
-  const { user_id } = props;
-  const { data: user } = useUsersDetailGet({ user_id });
-  if (!user) {
-    return <Skeleton />;
-  }
-
-  return (
-    <StyledLink to={`/users/${user.user_id}`}>
-      <Stack direction={"row"} textOverflow={"ellipsis"} alignItems={"center"} spacing={2}>
-        <Avatar src={user.user_image ?? undefined} />
-        <Typography>{user.user_name}</Typography>
-      </Stack>
-    </StyledLink>
-  );
-}
 
 function ResolveReport(props: {
   report_id: number;
@@ -192,7 +174,7 @@ function ReportRow(props: {
       <TableRow>
         <TableCell>{report.title}</TableCell>
         <TableCell>
-          <UserAvatar user_id={report.sender_id} />
+          <UserLabel user_id={report.sender_id} />
         </TableCell>
         <TableCell>
           <Chip label={report.status} color={statusColor[report.status]} />

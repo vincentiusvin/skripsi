@@ -1,18 +1,38 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import dayjs from "dayjs";
 import { APIContext } from "../helpers/fetch.ts";
 import { queryClient } from "../helpers/queryclient.tsx";
 
 const suspensionKeys = {
   all: () => ["suspensions"] as const,
   lists: () => [...suspensionKeys.all(), "list"] as const,
+  list: (opts: { user_id?: number; expired_after?: string; expired_before?: string }) =>
+    [...suspensionKeys.all(), "list", opts] as const,
   details: () => [...suspensionKeys.all(), "detail"] as const,
   detail: (suspension_id: number) => [...suspensionKeys.details(), suspension_id] as const,
 };
 
-export function useSuspensionsGet() {
+export function useSuspensionsGet(opts: {
+  user_id?: number;
+  expired_after?: dayjs.Dayjs;
+  expired_before?: dayjs.Dayjs;
+}) {
+  const { user_id, expired_after, expired_before } = opts;
+
   return useQuery({
-    queryKey: suspensionKeys.lists(),
-    queryFn: () => new APIContext("SuspensionsGet").fetch("/api/suspensions"),
+    queryKey: suspensionKeys.list({
+      user_id,
+      expired_after: expired_after?.toISOString(),
+      expired_before: expired_before?.toISOString(),
+    }),
+    queryFn: () =>
+      new APIContext("SuspensionsGet").fetch("/api/suspensions", {
+        query: {
+          user_id: user_id?.toString(),
+          expired_after: expired_after?.toISOString(),
+          expired_before: expired_before?.toISOString(),
+        },
+      }),
   });
 }
 
