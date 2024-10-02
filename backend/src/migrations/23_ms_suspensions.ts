@@ -8,7 +8,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       build.references("ms_users.id").notNull().onDelete("cascade").onUpdate("cascade"),
     )
     .addColumn("reason", "text", (col) => col.notNull())
-    .addColumn("resolved_at", "timestamp", (col) => col.notNull())
+    .addColumn("suspended_until", "timestamp", (col) => col.notNull())
     .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
     .execute();
 }

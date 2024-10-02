@@ -130,7 +130,7 @@ export interface MsSuspensions {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
   reason: string;
-  resolved_at: Timestamp;
+  suspended_until: Timestamp;
   user_id: number;
 }
 

@@ -59,6 +59,10 @@ export async function baseCase(db: Kysely<DB>) {
         name: "report user",
         password: hashed,
       },
+      {
+        name: "banned user",
+        password: hashed,
+      },
     ])
     .returning(["id", "name"])
     .execute();
@@ -80,6 +84,7 @@ export async function baseCase(db: Kysely<DB>) {
   const friend_acc_user = { ...user_ids[7], password: orig_password };
   const notif_user = { ...user_ids[8], password: orig_password };
   const report_user = { ...user_ids[9], password: orig_password };
+  const banned_user = { ...user_ids[10], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -269,6 +274,18 @@ export async function baseCase(db: Kysely<DB>) {
     .returning(["id", "ms_reports.status", "ms_reports.title", "ms_reports.description"])
     .execute();
 
+  const bans = await db
+    .insertInto("ms_suspensions")
+    .values([
+      {
+        reason: "Kurang beruntung",
+        suspended_until: new Date(),
+        user_id: banned_user.id,
+      },
+    ])
+    .returning(["id", "ms_suspensions.reason", "ms_suspensions.suspended_until"])
+    .execute();
+
   return {
     org,
     project,
@@ -293,5 +310,7 @@ export async function baseCase(db: Kysely<DB>) {
     notif_user,
     reports,
     report_user,
+    bans,
+    banned_user,
   };
 }
