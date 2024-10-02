@@ -319,12 +319,12 @@ function ContextualDashboard(props: { context: SidenavContext }) {
   } else if (parsedContext.type === "admin") {
     links = [
       {
-        link: `/reports`,
+        link: `/manage-reports`,
         name: `Laporan`,
         avatar: <Flag />,
       },
       {
-        link: `/accounts`,
+        link: `/manage-accounts`,
         name: `Atur Pengguna`,
         avatar: <People />,
       },

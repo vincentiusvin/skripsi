@@ -130,8 +130,8 @@ function App() {
                     <Route path={"/projects/:project_id/chat"} component={ProjectsChatroomPage} />
                     <Route path={"/users/:id"} component={UserAccountPage} />
                     <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
-                    <Route path={"/reports"} component={HandleReportsPage} />
-                    <Route path={"/accounts"} component={ManageAccountsPage} />
+                    <Route path={"/manage-reports"} component={HandleReportsPage} />
+                    <Route path={"/manage-accounts"} component={ManageAccountsPage} />
                   </Switch>
                 </Box>
               </Stack>
