@@ -58,10 +58,10 @@ export class SuspensionRepository {
     if (user_id != undefined) {
       query = query.where("user_id", "=", user_id);
     }
-    if (expired_after) {
+    if (expired_after != undefined) {
       query = query.where("ms_suspensions.suspended_until", ">", expired_after);
     }
-    if (expired_before) {
+    if (expired_before != undefined) {
       query = query.where("ms_suspensions.suspended_until", "<", expired_before);
     }
 
