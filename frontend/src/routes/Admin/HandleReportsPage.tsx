@@ -50,15 +50,23 @@ function UserAvatar(props: { user_id: number }) {
   );
 }
 
-function ResolveReport(props: { report_id: number; old_value: string; onSubmit?: () => void }) {
-  const { report_id, old_value, onSubmit } = props;
+function ResolveReport(props: {
+  report_id: number;
+  old_value?: string;
+  onSubmit?: () => void;
+  showReset?: boolean;
+}) {
+  const { report_id, old_value, onSubmit, showReset } = props;
   const { mutate: update } = useReportsPut({
     report_id: report_id,
     onSuccess: () => {
       enqueueSnackbar({
         variant: "success",
-        message: <Typography>Laporan berhasil diresolusi!</Typography>,
+        message: <Typography>Laporan berhasil diselesaikan!</Typography>,
       });
+      if (onSubmit) {
+        onSubmit();
+      }
     },
   });
 
@@ -84,9 +92,6 @@ function ResolveReport(props: { report_id: number; old_value: string; onSubmit?:
               resolution,
               status: "Resolved",
             });
-            if (onSubmit) {
-              onSubmit();
-            }
           }}
         >
           Terima
@@ -99,13 +104,23 @@ function ResolveReport(props: { report_id: number; old_value: string; onSubmit?:
               resolution,
               status: "Rejected",
             });
-            if (onSubmit) {
-              onSubmit();
-            }
           }}
         >
           Tolak
         </Button>
+        {showReset ? (
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={() => {
+              update({
+                status: "Pending",
+              });
+            }}
+          >
+            Reset
+          </Button>
+        ) : null}
       </Stack>
     </Box>
   );
@@ -139,6 +154,11 @@ function ReportRow(props: {
         </TableCell>
         <TableCell>{dayjs(report.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}</TableCell>
         <TableCell>
+          {report.resolved_at
+            ? dayjs(report.resolved_at).format("ddd[,] D[/]M[/]YY HH:mm")
+            : "Belum selesai"}
+        </TableCell>
+        <TableCell>
           {open ? (
             <IconButton size="small" onClick={() => setOpen(false)}>
               <KeyboardArrowUp />
@@ -164,7 +184,7 @@ function ReportRow(props: {
                 <Typography variant="body1">{report.description}</Typography>
               </Box>
               <Box>
-                <Stack direction={"row"} spacing={2} alignItems={"center"}>
+                <Stack direction={"row"} spacing={2} alignItems={"center"} marginBottom={1}>
                   <Typography variant="h5">Resolusi</Typography>
                   {report.status !== "Pending" ? (
                     <IconButton size="small" onClick={() => setIsEditing(!isEditing)}>
@@ -174,17 +194,20 @@ function ReportRow(props: {
                 </Stack>
                 <Divider
                   sx={{
-                    marginBottom: 2,
+                    marginBottom: 1,
                   }}
                 />
                 {report.status === "Pending" || isEditing ? (
                   <ResolveReport
+                    showReset={report.status !== "Pending"}
                     report_id={report.id}
-                    old_value={report.resolution || ""}
+                    old_value={report.resolution ?? undefined}
                     onSubmit={() => setIsEditing(false)}
                   />
                 ) : (
-                  <Typography variant="body1">{report.resolution}</Typography>
+                  <Box>
+                    <Typography variant="body1">{report.resolution}</Typography>
+                  </Box>
                 )}
               </Box>
             </Stack>
@@ -210,7 +233,8 @@ function HandleReports() {
             <TableCell>Nama Laporan</TableCell>
             <TableCell>Dibuat Oleh</TableCell>
             <TableCell>Status</TableCell>
-            <TableCell>Tanggal</TableCell>
+            <TableCell>Tanggal Diterima</TableCell>
+            <TableCell>Tanggal Selesai</TableCell>
             <TableCell />
           </TableRow>
         </TableHead>

@@ -70,13 +70,15 @@ export class ReportRepository {
       title?: string;
       description?: string;
       status?: ReportStatus;
-      resolution?: string;
-      resolved_at?: Date;
+      resolution?: string | null;
+      resolved_at?: Date | null;
       sender_id?: number;
       chatroom_id?: number;
     },
   ) {
-    await this.db.updateTable("ms_reports").set(opts).where("id", "=", report_id).execute();
+    if (Object.values(opts).some((x) => x != undefined)) {
+      await this.db.updateTable("ms_reports").set(opts).where("id", "=", report_id).execute();
+    }
   }
 
   async deleteReport(report_id: number) {

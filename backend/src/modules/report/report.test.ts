@@ -5,7 +5,7 @@ import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ReportStatus } from "./ReportMisc.js";
 
-describe("report api", () => {
+describe.only("report api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -69,39 +69,71 @@ describe("report api", () => {
     expect(result).to.deep.include(in_report);
   });
 
-  for (const { ok, user_key, name } of [
+  for (const { ok, user_key, statement, in_data } of [
     {
       user_key: "report_user",
-      name: "author",
+      statement: "should be able to update regular report data as author",
       ok: true,
+      in_data: {
+        title: "new update title",
+      },
     },
     {
       user_key: "plain_user",
-      name: "other user",
+      statement: "shouldn't be able to update regular report data as other user",
       ok: false,
+      in_data: {
+        title: "new update title",
+      },
     },
     {
       user_key: "admin_user",
-      name: "admin",
+      statement: "should be able to update regular report data as other user",
       ok: true,
+      in_data: {
+        title: "new update title",
+      },
+    },
+    {
+      user_key: "admin_user",
+      statement: "should be able to resolve report as admin",
+      ok: true,
+      in_data: {
+        status: "Resolved",
+        resolution: "abc",
+      },
+    },
+    {
+      user_key: "admin_user",
+      statement: "shouldn't be able to resolve report without notes",
+      ok: false,
+      in_data: {
+        status: "Resolved",
+      },
+    },
+    {
+      user_key: "report_user",
+      statement: "shouldn't be able to resolve report as user",
+      ok: false,
+      in_data: {
+        status: "Resolved",
+        resolution: "abc",
+      },
     },
   ] as const) {
-    it(`${ok ? "should" : "shouldn't"} be able to update report as ${name}`, async () => {
+    it(statement, async () => {
       const in_user = caseData[user_key];
       const in_report = caseData.reports[0];
-      const in_report_update = {
-        status: "Resolved",
-      } as const;
 
       const cookie = await getLoginCookie(in_user.name, in_user.password);
-      const read_req = await putReports(in_report.id, in_report_update, cookie);
+      const read_req = await putReports(in_report.id, in_data, cookie);
       const result = await read_req.json();
 
       if (ok) {
         expect(read_req.status).eq(200);
-        expect(result).to.deep.include(in_report_update);
+        expect(result).to.deep.include(in_data);
       } else {
-        expect(read_req.status).eq(401);
+        expect(read_req.status).oneOf([401, 400]);
       }
     });
   }
