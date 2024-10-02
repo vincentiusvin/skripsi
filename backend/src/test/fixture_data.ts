@@ -252,12 +252,20 @@ export async function baseCase(db: Kysely<DB>) {
 
   const reports = await db
     .insertInto("ms_reports")
-    .values({
-      title: "Report Testing",
-      description: "report test desc",
-      sender_id: report_user.id,
-      status: "Pending",
-    })
+    .values([
+      {
+        title: "Report Testing",
+        description: "report test desc",
+        sender_id: report_user.id,
+        status: "Pending",
+      },
+      {
+        title: "Report Testing 2",
+        description: "report test desc",
+        sender_id: report_user.id,
+        status: "Pending",
+      },
+    ])
     .returning(["id", "ms_reports.status", "ms_reports.title", "ms_reports.description"])
     .execute();
 
