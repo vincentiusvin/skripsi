@@ -28,7 +28,7 @@ function resolveNotificationLink(type: NotificationData["type"], type_id: number
     return `/projects/${type_id}`;
   }
   if (type === "GeneralChat") {
-    return `/chatroom`;
+    return `/chatrooms`;
   }
   if (type === "OrgManage") {
     return `/orgs/${type_id}`;

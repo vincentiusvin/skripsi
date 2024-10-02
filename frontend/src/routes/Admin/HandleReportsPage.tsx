@@ -21,6 +21,7 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
+import { stringify } from "qs";
 import { useState } from "react";
 import StyledLink from "../../components/StyledLink.tsx";
 import { useReportsGet, useReportsPut } from "../../queries/report_hooks.ts";
@@ -126,8 +127,52 @@ function ResolveReport(props: {
   );
 }
 
+function ChatroomReport(props: { chatroom_id?: number; report_id: number }) {
+  const { report_id, chatroom_id } = props;
+
+  const { mutate: update } = useReportsPut({
+    report_id: report_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>Ruang berhasil ditambahkan!</Typography>,
+      });
+    },
+  });
+
+  if (chatroom_id != undefined) {
+    const chatroom_params = stringify(
+      {
+        room: chatroom_id,
+      },
+      {
+        addQueryPrefix: true,
+      },
+    );
+    return (
+      <StyledLink to={`/chatrooms${chatroom_params}`}>
+        <Button variant="contained">Buka Ruang Diskusi</Button>
+      </StyledLink>
+    );
+  } else {
+    return (
+      <Button
+        variant="contained"
+        onClick={() => {
+          update({
+            chatroom: true,
+          });
+        }}
+      >
+        Tambah Ruang Diskusi
+      </Button>
+    );
+  }
+}
+
 function ReportRow(props: {
   report: {
+    chatroom_id: number | null;
     id: number;
     sender_id: number;
     title: string;
@@ -182,6 +227,18 @@ function ReportRow(props: {
                   }}
                 />
                 <Typography variant="body1">{report.description}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="h5">Diskusi</Typography>
+                <Divider
+                  sx={{
+                    marginBottom: 2,
+                  }}
+                />
+                <ChatroomReport
+                  chatroom_id={report.chatroom_id ?? undefined}
+                  report_id={report.id}
+                />
               </Box>
               <Box>
                 <Stack direction={"row"} spacing={2} alignItems={"center"} marginBottom={1}>

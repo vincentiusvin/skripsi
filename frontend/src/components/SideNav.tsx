@@ -243,7 +243,7 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <People />,
       },
       {
-        link: `/chatroom`,
+        link: `/chatrooms`,
         name: `Pesan`,
         avatar: <Message />,
       },

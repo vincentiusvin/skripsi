@@ -22,7 +22,7 @@ export class ReportRepository {
 
   async getReports(opts: { user_id?: number }) {
     const { user_id } = opts;
-    let query = this.db.selectFrom("ms_reports").select(defaultReportFields);
+    let query = this.db.selectFrom("ms_reports").select(defaultReportFields).orderBy("id asc");
 
     if (user_id != undefined) {
       query = query.where("ms_reports.sender_id", "=", user_id);

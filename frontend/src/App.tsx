@@ -119,7 +119,7 @@ function App() {
                     <Route path={"/orgs/:org_id/people"} component={OrgsPeoplePage} />
                     <Route path={"/orgs/:org_id/edit"} component={OrgsEditPage} />
                     <Route path={"/orgs/:org_id/leave"} component={OrgsLeavePage} />
-                    <Route path={"/chatroom"} component={ChatroomPage} />
+                    <Route path={"/chatrooms"} component={ChatroomPage} />
                     <Route path={"/projects"} component={ProjectListPage} />
                     <Route path={"/projects/:project_id"} component={ProjectInfoPage} />
                     <Route path={"/projects/:project_id/people"} component={ProjectsPeoplePage} />
