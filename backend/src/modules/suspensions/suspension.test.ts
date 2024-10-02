@@ -120,7 +120,7 @@ function addSuspension(
   },
   cookie: string,
 ) {
-  return new APIContext("SuspensionPost").fetch(`/api/suspensions`, {
+  return new APIContext("SuspensionsPost").fetch(`/api/suspensions`, {
     headers: {
       cookie: cookie,
     },
@@ -139,7 +139,7 @@ function updateSuspension(
   },
   cookie: string,
 ) {
-  return new APIContext("SuspensionDetailPut").fetch(`/api/suspensions/${suspension_id}`, {
+  return new APIContext("SuspensionsDetailPut").fetch(`/api/suspensions/${suspension_id}`, {
     headers: {
       cookie: cookie,
     },
@@ -150,7 +150,7 @@ function updateSuspension(
 }
 
 function getSuspensions(cookie: string) {
-  return new APIContext("SuspensionGet").fetch(`/api/suspensions`, {
+  return new APIContext("SuspensionsGet").fetch(`/api/suspensions`, {
     headers: {
       cookie: cookie,
     },
@@ -160,7 +160,7 @@ function getSuspensions(cookie: string) {
 }
 
 function getSuspensionDetail(suspension_id: number, cookie: string) {
-  return new APIContext("SuspensionDetailGet").fetch(`/api/suspensions/${suspension_id}`, {
+  return new APIContext("SuspensionsDetailGet").fetch(`/api/suspensions/${suspension_id}`, {
     headers: {
       cookie: cookie,
     },
@@ -170,7 +170,7 @@ function getSuspensionDetail(suspension_id: number, cookie: string) {
 }
 
 function deleteSuspension(suspension_id: number, cookie: string) {
-  return new APIContext("SuspensionDetailDelete").fetch(`/api/suspensions/${suspension_id}`, {
+  return new APIContext("SuspensionsDetailDelete").fetch(`/api/suspensions/${suspension_id}`, {
     headers: {
       cookie: cookie,
     },

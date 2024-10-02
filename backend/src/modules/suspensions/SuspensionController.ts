@@ -15,7 +15,7 @@ export class SuspensionController extends Controller {
 
   override init() {
     return {
-      SuspensionPost: new Route({
+      SuspensionsPost: new Route({
         handler: this.postSuspension,
         method: "post",
         path: "/api/suspensions",
@@ -32,7 +32,7 @@ export class SuspensionController extends Controller {
         },
         priors: [validateLogged as RequestHandler],
       }),
-      SuspensionDetailPut: new Route({
+      SuspensionsDetailPut: new Route({
         handler: this.putSuspensionDetail,
         method: "put",
         path: "/api/suspensions/:suspension_id",
@@ -57,7 +57,7 @@ export class SuspensionController extends Controller {
         },
         priors: [validateLogged as RequestHandler],
       }),
-      SuspensionDetailDelete: new Route({
+      SuspensionsDetailDelete: new Route({
         handler: this.deleteSuspension,
         method: "delete",
         path: "/api/suspensions/:suspension_id",
@@ -71,7 +71,7 @@ export class SuspensionController extends Controller {
         },
         priors: [validateLogged as RequestHandler],
       }),
-      SuspensionDetailGet: new Route({
+      SuspensionsDetailGet: new Route({
         handler: this.getSuspensionsDetail,
         method: "get",
         path: "/api/suspensions/:suspension_id",
@@ -85,7 +85,7 @@ export class SuspensionController extends Controller {
         },
         priors: [validateLogged as RequestHandler],
       }),
-      SuspensionGet: new Route({
+      SuspensionsGet: new Route({
         handler: this.getSuspensions,
         method: "get",
         path: "/api/suspensions",
