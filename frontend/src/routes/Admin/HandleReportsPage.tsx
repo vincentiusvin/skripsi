@@ -62,7 +62,7 @@ function ResolveReport(props: {
     onSuccess: () => {
       enqueueSnackbar({
         variant: "success",
-        message: <Typography>Laporan berhasil diselesaikan!</Typography>,
+        message: <Typography>Laporan berhasil diubah!</Typography>,
       });
       if (onSubmit) {
         onSubmit();
