@@ -92,11 +92,13 @@ export class UserController extends Controller {
     ResBody: {
       user_id: number;
       user_name: string;
+      user_is_admin: boolean;
       user_email: string | null;
       user_education_level: string | null;
       user_school: string | null;
       user_about_me: string | null;
       user_image: string | null;
+      user_created_at: Date;
     }[];
   }> = async (req, res) => {
     const result = await this.user_service.getUsers();
@@ -114,6 +116,7 @@ export class UserController extends Controller {
       user_school: string | null;
       user_about_me: string | null;
       user_image: string | null;
+      user_created_at: Date;
     };
   }> = async (req, res) => {
     const id = Number(req.params.id);
@@ -129,6 +132,7 @@ export class UserController extends Controller {
       user_education_level: string | null;
       user_school: string | null;
       user_about_me: string | null;
+      user_created_at: Date;
       user_image: string | null;
     };
     Params: {

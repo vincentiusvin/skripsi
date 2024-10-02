@@ -51,22 +51,21 @@ export class SuspensionRepository {
     }
   }
 
-  async getSuspension() {
-    return await this.db.selectFrom("ms_suspensions").select(defaultSuspensionFields).execute();
-  }
+  async getSuspension(opts: { user_id?: number; expired_before?: Date; expired_after?: Date }) {
+    const { user_id, expired_before, expired_after } = opts;
+    let query = this.db.selectFrom("ms_suspensions").select(defaultSuspensionFields);
 
-  async isUserSuspended(user_id: number) {
-    const res = await this.db
-      .selectFrom("ms_suspensions")
-      .select("id")
-      .where((eb) =>
-        eb.and([
-          eb("user_id", "=", user_id),
-          eb("ms_suspensions.suspended_until", ">=", new Date()),
-        ]),
-      )
-      .execute();
-    return res != undefined;
+    if (user_id != undefined) {
+      query = query.where("user_id", "=", user_id);
+    }
+    if (expired_after) {
+      query = query.where("ms_suspensions.suspended_until", ">", expired_after);
+    }
+    if (expired_before) {
+      query = query.where("ms_suspensions.suspended_until", "<", expired_before);
+    }
+
+    return query.execute();
   }
 
   async getSuspensionByID(suspension_id: number) {

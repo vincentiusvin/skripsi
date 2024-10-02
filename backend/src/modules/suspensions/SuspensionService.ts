@@ -45,12 +45,19 @@ export class SuspensionService {
     return await this.suspension_repo.updateSuspension(suspension_id, opts);
   }
 
-  async getSuspension(sender_id: number) {
+  async getSuspension(
+    opts: {
+      user_id?: number;
+      expired_before?: Date;
+      expired_after?: Date;
+    },
+    sender_id: number,
+  ) {
     const allowed = await this.isAllowedToManage(sender_id);
     if (!allowed) {
       throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
     }
-    return await this.suspension_repo.getSuspension();
+    return await this.suspension_repo.getSuspension(opts);
   }
 
   async getSuspensionByID(suspension_id: number, sender_id: number) {
@@ -59,9 +66,5 @@ export class SuspensionService {
       throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
     }
     return await this.suspension_repo.getSuspensionByID(suspension_id);
-  }
-
-  async isUserSuspended(user_id: number) {
-    return await this.suspension_repo.isUserSuspended(user_id);
   }
 }

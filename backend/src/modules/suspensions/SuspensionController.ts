@@ -90,6 +90,23 @@ export class SuspensionController extends Controller {
         method: "get",
         path: "/api/suspensions",
         priors: [validateLogged as RequestHandler],
+        schema: {
+          ReqQuery: z.object({
+            user_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" })
+              .optional(),
+            expired_after: z
+              .string({ message: "Tanggal mulai tidak valid!" })
+              .datetime("Tanggal mulai tidak valid!")
+              .optional(),
+            expired_before: z
+              .string({ message: "Tanggal akhir tidak valid!" })
+              .datetime("Tanggal akhir tidak valid!")
+              .optional(),
+          }),
+        },
       }),
     };
   }
@@ -139,9 +156,22 @@ export class SuspensionController extends Controller {
       suspended_until: Date;
       user_id: number;
     }[];
+    ReqQuery: {
+      user_id?: string;
+      expired_before?: string;
+      expired_after?: string;
+    };
   }> = async (req, res) => {
     const sender_id = Number(req.session.user_id);
-    const result = await this.suspension_service.getSuspension(sender_id);
+    const { user_id, expired_after, expired_before } = req.query;
+    const result = await this.suspension_service.getSuspension(
+      {
+        user_id: user_id != undefined ? Number(user_id) : undefined,
+        expired_after: expired_after != undefined ? new Date(expired_after) : undefined,
+        expired_before: expired_before != undefined ? new Date(expired_before) : undefined,
+      },
+      sender_id,
+    );
     res.status(200).json(result);
   };
 
