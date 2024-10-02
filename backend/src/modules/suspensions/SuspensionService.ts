@@ -18,7 +18,7 @@ export class SuspensionService {
     opts: { reason: string; user_id: number; suspended_until: Date },
     sender_id: number,
   ) {
-    const allowed = this.isAllowedToManage(sender_id);
+    const allowed = await this.isAllowedToManage(sender_id);
     if (!allowed) {
       throw new AuthError("Anda tidak diperbolehkan untuk mengatur suspensi!");
     }
@@ -26,7 +26,7 @@ export class SuspensionService {
   }
 
   async deleteSuspension(suspension_id: number, sender_id: number) {
-    const allowed = this.isAllowedToManage(sender_id);
+    const allowed = await this.isAllowedToManage(sender_id);
     if (!allowed) {
       throw new AuthError("Anda tidak diperbolehkan untuk mengatur suspensi!");
     }
@@ -38,7 +38,7 @@ export class SuspensionService {
     opts: { reason?: string; user_id?: number; suspended_until?: Date },
     sender_id: number,
   ) {
-    const allowed = this.isAllowedToManage(sender_id);
+    const allowed = await this.isAllowedToManage(sender_id);
     if (!allowed) {
       throw new AuthError("Anda tidak diperbolehkan untuk mengatur suspensi!");
     }
@@ -46,7 +46,7 @@ export class SuspensionService {
   }
 
   async getSuspension(sender_id: number) {
-    const allowed = this.isAllowedToManage(sender_id);
+    const allowed = await this.isAllowedToManage(sender_id);
     if (!allowed) {
       throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
     }
@@ -54,7 +54,7 @@ export class SuspensionService {
   }
 
   async getSuspensionByID(suspension_id: number, sender_id: number) {
-    const allowed = this.isAllowedToManage(sender_id);
+    const allowed = await this.isAllowedToManage(sender_id);
     if (!allowed) {
       throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
     }

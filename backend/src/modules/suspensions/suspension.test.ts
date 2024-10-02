@@ -4,7 +4,7 @@ import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("suspension api", () => {
+describe.only("suspension api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -31,6 +31,22 @@ describe("suspension api", () => {
 
     expect(send_req.status).eq(201);
     expect(result).to.deep.include(in_data);
+  });
+
+  it("should not be able to add bans as regular_user", async () => {
+    const in_admin = caseData.plain_user;
+    const in_user = caseData.plain_user;
+    const in_data = {
+      reason: "Kurang beruntung",
+      suspended_until: new Date().toISOString(),
+      user_id: in_user.id,
+    };
+
+    const cookie = await getLoginCookie(in_admin.name, in_admin.password);
+    const send_req = await addSuspension(in_data, cookie);
+    await send_req.json();
+
+    expect(send_req.status).eq(401);
   });
 
   it("should be able to read bans as admin", async () => {
