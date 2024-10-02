@@ -10,6 +10,7 @@ const defaultReportFields = [
   "ms_reports.status",
   "ms_reports.created_at",
   "ms_reports.resolved_at",
+  "ms_reports.resolution",
 ] as const;
 
 export class ReportRepository {

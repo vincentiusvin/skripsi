@@ -141,6 +141,7 @@ export class ReportController extends Controller {
       status: ReportStatus;
       created_at: Date;
       resolved_at: Date | null;
+      resolution: string | null;
     }[];
     ReqQuery: {
       user_id?: string;
@@ -165,6 +166,7 @@ export class ReportController extends Controller {
       status: ReportStatus;
       created_at: Date;
       resolved_at: Date | null;
+      resolution: string | null;
     };
     Params: {
       report_id: string;
@@ -187,6 +189,7 @@ export class ReportController extends Controller {
       status: ReportStatus;
       created_at: Date;
       resolved_at: Date | null;
+      resolution: string | null;
     };
     ReqBody: {
       title: string;
@@ -227,6 +230,7 @@ export class ReportController extends Controller {
       status: ReportStatus;
       created_at: Date;
       resolved_at: Date | null;
+      resolution: string | null;
     };
     ReqBody: {
       title?: string;
