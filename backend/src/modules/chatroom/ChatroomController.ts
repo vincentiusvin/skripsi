@@ -56,6 +56,17 @@ export class ChatController extends Controller {
       Params: z.object({
         project_id: zodStringReadableAsNumber("ID proyek tidak valid!"),
       }),
+      ResBody: z.object({
+        project_id: z.number().nullable(),
+        chatroom_id: z.number(),
+        chatroom_name: z.string(),
+        chatroom_created_at: z.date(),
+        chatroom_users: z
+          .object({
+            user_id: z.number(),
+          })
+          .array(),
+      }),
     },
     handler: async (req, res) => {
       const name = req.body.name;
@@ -90,6 +101,19 @@ export class ChatController extends Controller {
       Params: z.object({
         project_id: zodStringReadableAsNumber("ID proyek tidak valid!"),
       }),
+      ResBody: z
+        .object({
+          project_id: z.number().nullable(),
+          chatroom_id: z.number(),
+          chatroom_name: z.string(),
+          chatroom_created_at: z.date(),
+          chatroom_users: z
+            .object({
+              user_id: z.number(),
+            })
+            .array(),
+        })
+        .array(),
     },
     handler: async (req, res) => {
       const project_id = req.params.project_id;
@@ -107,6 +131,9 @@ export class ChatController extends Controller {
       }),
       ReqBody: z.object({
         name: z.string().min(1),
+      }),
+      ResBody: z.object({
+        msg: z.string(),
       }),
     },
     handler: async (req, res) => {
@@ -137,6 +164,19 @@ export class ChatController extends Controller {
       Params: z.object({
         user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
       }),
+      ResBody: z
+        .object({
+          project_id: z.number().nullable(),
+          chatroom_id: z.number(),
+          chatroom_name: z.string(),
+          chatroom_created_at: z.date(),
+          chatroom_users: z
+            .object({
+              user_id: z.number(),
+            })
+            .array(),
+        })
+        .array(),
     },
     handler: async (req, res) => {
       const user_id = req.params.user_id;
@@ -144,6 +184,7 @@ export class ChatController extends Controller {
       res.json(result);
     },
   });
+
   ChatroomsDetailGet = new Route({
     method: "get",
     path: "/api/chatrooms/:chatroom_id",
@@ -151,6 +192,17 @@ export class ChatController extends Controller {
     schema: {
       Params: z.object({
         chatroom_id: zodStringReadableAsNumber("ID chatroom tidak valid!"),
+      }),
+      ResBody: z.object({
+        project_id: z.number().nullable(),
+        chatroom_id: z.number(),
+        chatroom_name: z.string(),
+        chatroom_created_at: z.date(),
+        chatroom_users: z
+          .object({
+            user_id: z.number(),
+          })
+          .array(),
       }),
     },
     handler: async (req, res) => {
@@ -168,6 +220,7 @@ export class ChatController extends Controller {
       res.status(200).json(result);
     },
   });
+
   ChatroomsDetailPut = new Route({
     method: "put",
     path: "/api/chatrooms/:chatroom_id",
@@ -179,6 +232,9 @@ export class ChatController extends Controller {
       ReqBody: z.object({
         name: z.string({ message: "Nama invalid!" }).min(1).optional(),
         user_ids: z.array(z.number(), { message: "ID pengguna invalid!" }).optional(),
+      }),
+      ResBody: z.object({
+        msg: z.string(),
       }),
     },
     handler: async (req, res) => {
@@ -208,6 +264,9 @@ export class ChatController extends Controller {
       Params: z.object({
         chatroom_id: zodStringReadableAsNumber("ID chatroom tidak valid!"),
       }),
+      ResBody: z.object({
+        msg: z.string(),
+      }),
     },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str } = req.params;
@@ -236,6 +295,13 @@ export class ChatController extends Controller {
         message: z
           .string({ message: "Isi pesan tidak valid!" })
           .min(1, "Pesan tidak boleh kosong!"),
+      }),
+      ResBody: z.object({
+        id: z.number(),
+        message: z.string(),
+        created_at: z.date(),
+        user_id: z.number(),
+        is_edited: z.boolean(),
       }),
     },
     handler: async (req, res) => {
@@ -274,6 +340,13 @@ export class ChatController extends Controller {
           .string({ message: "Isi pesan tidak valid!" })
           .min(1, "Pesan tidak boleh kosong!"),
       }),
+      ResBody: z.object({
+        id: z.number(),
+        message: z.string(),
+        created_at: z.date(),
+        user_id: z.number(),
+        is_edited: z.boolean(),
+      }),
     },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str, message_id: message_id_str } = req.params;
@@ -306,6 +379,15 @@ export class ChatController extends Controller {
       Params: z.object({
         chatroom_id: zodStringReadableAsNumber("ID chatroom tidak valid!"),
       }),
+      ResBody: z
+        .object({
+          id: z.number(),
+          message: z.string(),
+          created_at: z.date(),
+          user_id: z.number(),
+          is_edited: z.boolean(),
+        })
+        .array(),
     },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str } = req.params;
