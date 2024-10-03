@@ -32,6 +32,9 @@ export class FriendController extends Controller {
       ReqBody: z.object({
         status: z.enum(["Accepted", "Sent", "Pending"]),
       }),
+      ResBody: z.object({
+        status: z.enum(["Accepted", "Pending", "Sent", "None"]),
+      }),
     },
     handler: async (req, res) => {
       const from_user_id = Number(req.params.from_id);
@@ -60,6 +63,9 @@ export class FriendController extends Controller {
         from_id: zodStringReadableAsNumber("ID pengguna pertama tidak valid!"),
         to_id: zodStringReadableAsNumber("ID pengguna kedua tidak valid!"),
       }),
+      ResBody: z.object({
+        status: z.enum(["Accepted", "Pending", "Sent", "None"]),
+      }),
     },
     handler: async (req, res) => {
       const from_user_id = Number(req.params.from_id);
@@ -76,6 +82,9 @@ export class FriendController extends Controller {
       Params: z.object({
         from_id: zodStringReadableAsNumber("ID pengguna pertama tidak valid!"),
         to_id: zodStringReadableAsNumber("ID pengguna kedua tidak valid!"),
+      }),
+      ResBody: z.object({
+        msg: z.string(),
       }),
     },
     handler: async (req, res) => {
@@ -97,6 +106,12 @@ export class FriendController extends Controller {
       Params: z.object({
         user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
       }),
+      ResBody: z
+        .object({
+          status: z.enum(["Accepted", "Pending", "Sent", "None"]),
+          user_id: z.number(),
+        })
+        .array(),
     },
     handler: async (req, res) => {
       const user_id = Number(req.params.user_id);

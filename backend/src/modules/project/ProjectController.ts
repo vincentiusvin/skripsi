@@ -3,7 +3,7 @@ import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
 import { zodStringReadableAsNumber } from "../../helpers/validators.js";
-import { ProjectRoles, parseRole } from "./ProjectMisc.js";
+import { ProjectRoles, parseRole, project_roles } from "./ProjectMisc.js";
 import { ProjectService } from "./ProjectService.js";
 
 export class ProjectController extends Controller {
@@ -54,6 +54,24 @@ export class ProjectController extends Controller {
           .string({ message: "Deskripsi invalid!" })
           .min(1, "Deskripsi tidak boleh kosong!"),
         category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
+      }),
+      ResBody: z.object({
+        org_id: z.number(),
+        project_id: z.number(),
+        project_name: z.string(),
+        project_desc: z.string(),
+        project_members: z
+          .object({
+            user_id: z.number(),
+            role: z.enum(project_roles),
+          })
+          .array(),
+        project_categories: z
+          .object({
+            category_name: z.string(),
+            category_id: z.number(),
+          })
+          .array(),
       }),
     },
   });

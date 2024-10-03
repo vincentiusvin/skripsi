@@ -8,7 +8,7 @@ export type APISchema<
   ZReqQuery extends ZodTypeAny = ZodTypeAny,
 > = {
   Params?: ZParams;
-  ResBody?: ZResBody;
+  ResBody: ZResBody;
   ReqBody?: ZReqBody;
   ReqQuery?: ZReqQuery;
 };
