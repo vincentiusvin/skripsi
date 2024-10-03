@@ -1,8 +1,13 @@
-import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
+import { Add, KeyboardArrowDown, KeyboardArrowUp, Save } from "@mui/icons-material";
 import {
   Box,
+  Button,
   Chip,
   Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   IconButton,
   Paper,
@@ -14,14 +19,80 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
+import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import UserLabel from "../../components/UserLabel.tsx";
-import { useSuspensionsGet } from "../../queries/suspension_hooks.ts";
+import { useSuspensionsGet, useSuspensionsPost } from "../../queries/suspension_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
 import AuthorizeAdmin from "./components/AuthorizeAdmins.tsx";
+
+function AddSuspension(props: { user_id: number; user_name: string }) {
+  const { user_id, user_name } = props;
+  const [open, setOpen] = useState(false);
+  const [banName, setBanName] = useState("");
+  const [endDate, setEndDate] = useState<dayjs.Dayjs | null>(null);
+  const { mutate: ban } = useSuspensionsPost({
+    onSuccess: () => {
+      enqueueSnackbar({
+        variant: "success",
+        message: "Pengguna berhasil ditangguhkan!",
+      }),
+        setOpen(false);
+    },
+  });
+
+  return (
+    <>
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle>Tambah Penangguhan - {user_name}</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} marginTop={2}>
+            <TextField
+              label="Alasan"
+              value={banName}
+              onChange={(e) => setBanName(e.target.value)}
+            />
+            <DatePicker
+              value={endDate}
+              onAccept={(x) => setEndDate(x)}
+              label="Tanggal Selesai"
+            ></DatePicker>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            startIcon={<Save />}
+            onClick={() => {
+              if (endDate == undefined) {
+                enqueueSnackbar({
+                  variant: "error",
+                  message: <Typography>Anda perlu menambahkan tanggal selesai!</Typography>,
+                });
+                return;
+              }
+              ban({
+                reason: banName,
+                suspended_until: endDate.toISOString(),
+                user_id,
+              });
+            }}
+          >
+            Simpan
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Button variant="contained" onClick={() => setOpen(true)} startIcon={<Add />}>
+        Tambah
+      </Button>
+    </>
+  );
+}
 
 function SuspensionData(props: { user_id: number }) {
   const { user_id } = props;
@@ -133,7 +204,10 @@ function AccountRow(props: {
           <Collapse in={open}>
             <Stack sx={{ paddingBottom: 2, paddingTop: 2 }} spacing={2}>
               <Box>
-                <Typography variant="h5">Daftar Penangguhan</Typography>
+                <Stack direction={"row"} spacing={4} alignItems={"center"}>
+                  <Typography variant="h5">Daftar Penangguhan</Typography>
+                  <AddSuspension user_id={user.user_id} user_name={user.user_name} />
+                </Stack>
                 <Divider
                   sx={{
                     marginBottom: 2,
