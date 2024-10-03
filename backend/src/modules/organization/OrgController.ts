@@ -3,7 +3,7 @@ import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
 import { validateLogged } from "../../helpers/validate.js";
-import { OrgRoles, parseRole } from "./OrgMisc.js";
+import { OrgRoles, org_roles, parseRole } from "./OrgMisc.js";
 import { OrgService } from "./OrgService.js";
 
 export class OrgController extends Controller {
@@ -47,6 +47,20 @@ export class OrgController extends Controller {
         org_image: z.string({ message: "Gambar invalid!" }).min(1).optional(),
         org_categories: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
       }),
+      ResBody: z.object({
+        org_id: z.number(),
+        org_name: z.string(),
+        org_description: z.string(),
+        org_address: z.string(),
+        org_phone: z.string(),
+        org_image: z.string().nullable(),
+        org_categories: z.array(
+          z.object({
+            category_name: z.string(),
+            category_id: z.number(),
+          }),
+        ),
+      }),
     },
     priors: [validateLogged],
     handler: async (req, res) => {
@@ -80,6 +94,22 @@ export class OrgController extends Controller {
       ReqQuery: z.object({
         user_id: z.number().optional(),
       }),
+      ResBody: z
+        .object({
+          org_id: z.number(),
+          org_name: z.string(),
+          org_description: z.string(),
+          org_address: z.string(),
+          org_phone: z.string(),
+          org_image: z.string().nullable(),
+          org_categories: z.array(
+            z.object({
+              category_name: z.string(),
+              category_id: z.number(),
+            }),
+          ),
+        })
+        .array(),
     },
 
     handler: async (req, res) => {
@@ -100,6 +130,20 @@ export class OrgController extends Controller {
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID tidak valid!" }),
       }),
+      ResBody: z.object({
+        org_id: z.number(),
+        org_name: z.string(),
+        org_description: z.string(),
+        org_address: z.string(),
+        org_phone: z.string(),
+        org_image: z.string().nullable(),
+        org_categories: z.array(
+          z.object({
+            category_name: z.string(),
+            category_id: z.number(),
+          }),
+        ),
+      }),
     },
     handler: async (req, res) => {
       const org_id = Number(req.params.org_id);
@@ -115,6 +159,14 @@ export class OrgController extends Controller {
   OrgsCategoriesGet = new Route({
     method: "get",
     path: "/api/org-categories",
+    schema: {
+      ResBody: z
+        .object({
+          category_id: z.number(),
+          category_name: z.string(),
+        })
+        .array(),
+    },
     handler: async (req, res) => {
       const categories = await this.org_service.getOrgCategories();
       res.status(200).json(categories);
@@ -123,6 +175,20 @@ export class OrgController extends Controller {
 
   OrgsUpdate = new Route({
     schema: {
+      ResBody: z.object({
+        org_id: z.number(),
+        org_name: z.string(),
+        org_description: z.string(),
+        org_address: z.string(),
+        org_phone: z.string(),
+        org_image: z.string().nullable(),
+        org_categories: z.array(
+          z.object({
+            category_name: z.string(),
+            category_id: z.number(),
+          }),
+        ),
+      }),
       Params: z.object({
         org_id: z
           .string()
@@ -179,6 +245,9 @@ export class OrgController extends Controller {
     method: "delete",
     path: "/api/orgs/:org_id",
     schema: {
+      ResBody: z.object({
+        msg: z.string(),
+      }),
       Params: z.object({
         org_id: z
           .string()
@@ -208,6 +277,9 @@ export class OrgController extends Controller {
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
       }),
+      ResBody: z.object({
+        role: z.enum(org_roles).or(z.literal("Not Involved")),
+      }),
     },
     handler: async (req, res) => {
       const { org_id: org_id_str, user_id: user_id_str } = req.params;
@@ -219,21 +291,12 @@ export class OrgController extends Controller {
     },
   });
   OrgsDetailMembersDetailPut = new Route({
-    handler: async (req, res) => {
-      const { org_id: org_id_str, user_id: user_id_str } = req.params;
-      const org_id = Number(org_id_str);
-      const user_id = Number(user_id_str);
-      const role = req.body.role;
-      const sender_id = Number(req.session.user_id!);
-
-      await this.org_service.assignMember(org_id, user_id, sender_id, role);
-
-      const result = await this.org_service.getMemberRole(org_id, user_id);
-      res.json({ role: result });
-    },
     method: "put",
     path: "/api/orgs/:org_id/users/:user_id",
     schema: {
+      ResBody: z.object({
+        role: z.enum(org_roles).or(z.literal("Not Involved")),
+      }),
       ReqBody: z.object({
         role: z
           .string()
@@ -251,6 +314,18 @@ export class OrgController extends Controller {
           .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
       }),
     },
+    handler: async (req, res) => {
+      const { org_id: org_id_str, user_id: user_id_str } = req.params;
+      const org_id = Number(org_id_str);
+      const user_id = Number(user_id_str);
+      const role = req.body.role;
+      const sender_id = Number(req.session.user_id!);
+
+      await this.org_service.assignMember(org_id, user_id, sender_id, role);
+
+      const result = await this.org_service.getMemberRole(org_id, user_id);
+      res.json({ role: result });
+    },
   });
   OrgsDetailMembersDetailDelete = new Route({
     method: "delete",
@@ -265,6 +340,9 @@ export class OrgController extends Controller {
           .string()
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+      }),
+      ResBody: z.object({
+        role: z.enum(org_roles).or(z.literal("Not Involved")),
       }),
     },
     handler: async (req, res) => {

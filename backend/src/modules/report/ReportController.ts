@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { zodStringReadableAsNumber } from "../../helpers/validators.js";
-import { ReportStatus, parseReportStatus } from "./ReportMisc.js";
+import { ReportStatus, parseReportStatus, report_status } from "./ReportMisc.js";
 import { ReportService } from "./ReportService.js";
 
 export class ReportController extends Controller {
@@ -28,6 +28,19 @@ export class ReportController extends Controller {
       ReqQuery: z.object({
         user_id: zodStringReadableAsNumber("Pengguna tidak valid!").optional(),
       }),
+      ResBody: z
+        .object({
+          status: z.enum(report_status),
+          id: z.number(),
+          sender_id: z.number(),
+          title: z.string(),
+          description: z.string(),
+          created_at: z.date(),
+          resolved_at: z.date().nullable(),
+          resolution: z.string().nullable(),
+          chatroom_id: z.number().nullable(),
+        })
+        .array(),
     },
     handler: async (req, res) => {
       const sender_id = Number(req.session.user_id!);
@@ -47,6 +60,17 @@ export class ReportController extends Controller {
       Params: z.object({
         report_id: zodStringReadableAsNumber("ID laporan invalid!"),
       }),
+      ResBody: z.object({
+        status: z.enum(report_status),
+        id: z.number(),
+        sender_id: z.number(),
+        title: z.string(),
+        description: z.string(),
+        created_at: z.date(),
+        resolved_at: z.date().nullable(),
+        resolution: z.string().nullable(),
+        chatroom_id: z.number().nullable(),
+      }),
     },
     handler: async (req, res) => {
       const sender_id = Number(req.session.user_id!);
@@ -61,6 +85,17 @@ export class ReportController extends Controller {
     method: "post",
     path: "/api/reports",
     schema: {
+      ResBody: z.object({
+        status: z.enum(report_status),
+        id: z.number(),
+        sender_id: z.number(),
+        title: z.string(),
+        description: z.string(),
+        created_at: z.date(),
+        resolved_at: z.date().nullable(),
+        resolution: z.string().nullable(),
+        chatroom_id: z.number().nullable(),
+      }),
       ReqBody: z.object({
         title: z
           .string({
@@ -97,26 +132,6 @@ export class ReportController extends Controller {
     },
   });
   ReportsDetailPut = new Route({
-    handler: async (req, res) => {
-      const sender_id = Number(req.session.user_id!);
-      const report_id = Number(req.params.report_id);
-      const { title, description, status, resolution, chatroom } = req.body;
-
-      await this.report_service.updateReport(
-        report_id,
-        {
-          title,
-          description,
-          status,
-          resolution,
-          chatroom,
-        },
-        sender_id,
-      );
-
-      const result = await this.report_service.getReportByID(report_id, sender_id);
-      res.status(200).json(result);
-    },
     schema: {
       Params: z.object({
         report_id: z
@@ -160,8 +175,39 @@ export class ReportController extends Controller {
           .optional(),
         chatroom: z.boolean().optional(),
       }),
+      ResBody: z.object({
+        status: z.enum(report_status),
+        id: z.number(),
+        sender_id: z.number(),
+        title: z.string(),
+        description: z.string(),
+        created_at: z.date(),
+        resolved_at: z.date().nullable(),
+        resolution: z.string().nullable(),
+        chatroom_id: z.number().nullable(),
+      }),
     },
     method: "put",
     path: "/api/reports/:report_id",
+    handler: async (req, res) => {
+      const sender_id = Number(req.session.user_id!);
+      const report_id = Number(req.params.report_id);
+      const { title, description, status, resolution, chatroom } = req.body;
+
+      await this.report_service.updateReport(
+        report_id,
+        {
+          title,
+          description,
+          status,
+          resolution,
+          chatroom,
+        },
+        sender_id,
+      );
+
+      const result = await this.report_service.getReportByID(report_id, sender_id);
+      res.status(200).json(result);
+    },
   });
 }
