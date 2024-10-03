@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { AuthError } from "../../helpers/error.js";
+import { zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { FriendService } from "./FriendService.js";
 
 export class FriendController extends Controller {
@@ -25,14 +26,11 @@ export class FriendController extends Controller {
     path: "/api/users/:from_id/friends/:to_id",
     schema: {
       Params: z.object({
-        from_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID user pertama tidak valid!" }),
-        to_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID user kedua tidak valid!" }),
+        from_id: zodStringReadableAsNumber("ID pengguna pertama tidak valid!"),
+        to_id: zodStringReadableAsNumber("ID pengguna kedua tidak valid!"),
+      }),
+      ReqBody: z.object({
+        status: z.enum(["Accepted", "Sent", "Pending"]),
       }),
     },
     handler: async (req, res) => {
@@ -59,14 +57,8 @@ export class FriendController extends Controller {
     path: "/api/users/:from_id/friends/:to_id",
     schema: {
       Params: z.object({
-        from_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID user pertama tidak valid!" }),
-        to_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID user kedua tidak valid!" }),
+        from_id: zodStringReadableAsNumber("ID pengguna pertama tidak valid!"),
+        to_id: zodStringReadableAsNumber("ID pengguna kedua tidak valid!"),
       }),
     },
     handler: async (req, res) => {
@@ -82,14 +74,8 @@ export class FriendController extends Controller {
     path: "/api/users/:from_id/friends/:to_id",
     schema: {
       Params: z.object({
-        from_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID user pertama tidak valid!" }),
-        to_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID user kedua tidak valid!" }),
+        from_id: zodStringReadableAsNumber("ID pengguna pertama tidak valid!"),
+        to_id: zodStringReadableAsNumber("ID pengguna kedua tidak valid!"),
       }),
     },
     handler: async (req, res) => {
@@ -109,10 +95,7 @@ export class FriendController extends Controller {
     path: "/api/users/:user_id/friends",
     schema: {
       Params: z.object({
-        user_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID user pertama tidak valid!" }),
+        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
       }),
     },
     handler: async (req, res) => {
