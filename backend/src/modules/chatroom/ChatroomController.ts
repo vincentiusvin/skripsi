@@ -46,6 +46,20 @@ export class ChatController extends Controller {
   }
 
   ProjectsDetailChatroomsPost = new Route({
+    method: "post",
+    path: "/api/projects/:project_id/chatrooms",
+    priors: [validateLogged as RequestHandler],
+    schema: {
+      ReqBody: z.object({
+        name: z.string({ message: "Nama tidak valid!" }).min(1, "Nama tidak boleh kosong!"),
+      }),
+      Params: z.object({
+        project_id: z
+          .string()
+          .min(1)
+          .refine((arg) => !isNaN(Number(arg)), { message: "ID proyek tidak valid!" }),
+      }),
+    },
     handler: async (req, res) => {
       const name = req.body.name;
       const project_id = Number(req.params.project_id);
@@ -71,27 +85,8 @@ export class ChatController extends Controller {
 
       res.status(201).json(chatroom_data);
     },
-    method: "post",
-    path: "/api/projects/:project_id/chatrooms",
-    priors: [validateLogged as RequestHandler],
-    schema: {
-      ReqBody: z.object({
-        name: z.string({ message: "Nama tidak valid!" }).min(1, "Nama tidak boleh kosong!"),
-      }),
-      Params: z.object({
-        project_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID proyek tidak valid!" }),
-      }),
-    },
   });
   ProjectsDetailChatroomsGet = new Route({
-    handler: async (req, res) => {
-      const project_id = req.params.project_id;
-      const result = await this.chat_service.getProjectChatrooms(Number(project_id));
-      res.json(result);
-    },
     method: "get",
     path: "/api/projects/:project_id/chatrooms",
     schema: {
@@ -101,6 +96,11 @@ export class ChatController extends Controller {
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID tidak valid!" }),
       }),
+    },
+    handler: async (req, res) => {
+      const project_id = req.params.project_id;
+      const result = await this.chat_service.getProjectChatrooms(Number(project_id));
+      res.json(result);
     },
   });
   UsersDetailChatroomsPost = new Route({
