@@ -90,12 +90,10 @@ export function useSuspensionsDetailDelete(opts: {
 }) {
   const { suspension_id, onSuccess } = opts ?? {};
   return useMutation({
-    mutationFn: new APIContext("SuspensionsDetailDelete").bodyFetch(
-      `/api/suspensions/${suspension_id}`,
-      {
+    mutationFn: () =>
+      new APIContext("SuspensionsDetailDelete").fetch(`/api/suspensions/${suspension_id}`, {
         method: "delete",
-      },
-    ),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: suspensionKeys.all(),

@@ -1,4 +1,4 @@
-import { Add, Edit, KeyboardArrowDown, KeyboardArrowUp, Save } from "@mui/icons-material";
+import { Add, Delete, Edit, KeyboardArrowDown, KeyboardArrowUp, Save } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -28,6 +28,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import UserLabel from "../../components/UserLabel.tsx";
 import {
+  useSuspensionsDetailDelete,
   useSuspensionsDetailGet,
   useSuspensionsDetailPut,
   useSuspensionsGet,
@@ -164,6 +165,18 @@ function EditSuspension(props: { suspension_id: number }) {
   );
 }
 
+function DeleteSuspension(props: { suspension_id: number }) {
+  const { suspension_id } = props;
+  const { mutate: deleteBan } = useSuspensionsDetailDelete({
+    suspension_id,
+  });
+  return (
+    <IconButton onClick={() => deleteBan()}>
+      <Delete />
+    </IconButton>
+  );
+}
+
 function SuspensionData(props: { user_id: number }) {
   const { user_id } = props;
   const { data: suspension_data } = useSuspensionsGet({
@@ -196,8 +209,11 @@ function SuspensionData(props: { user_id: number }) {
               <TableCell>{dayjs(x.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}</TableCell>
               <TableCell>{dayjs(x.suspended_until).format("ddd[,] D[/]M[/]YY HH:mm")}</TableCell>
               <TableCell>{x.reason}</TableCell>
-              <TableCell>
-                <EditSuspension suspension_id={x.id} />
+              <TableCell width={"fit-content"}>
+                <Stack direction={"row"} spacing={1}>
+                  <EditSuspension suspension_id={x.id} />
+                  <DeleteSuspension suspension_id={x.id} />
+                </Stack>
               </TableCell>
             </TableRow>
           ))}
