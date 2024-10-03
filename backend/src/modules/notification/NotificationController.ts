@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { RH } from "../../helpers/types.js";
 import { validateLogged } from "../../helpers/validate.js";
+import { zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { NotificationTypes } from "./NotificationMisc.js";
 import { NotificationService } from "./NotificationService.js";
 
@@ -16,54 +17,65 @@ export class NotificationController extends Controller {
 
   override init() {
     return {
-      NotificationsGet: new Route({
-        handler: this.getNotifications,
-        method: "get",
-        path: "/api/notifications",
-        priors: [validateLogged as RequestHandler],
-      }),
-      NotificationsPut: new Route({
-        handler: this.putNotifications,
-        method: "put",
-        path: "/api/notifications/:notification_id",
-        priors: [validateLogged as RequestHandler],
-      }),
+      NotificationsGet: this.NotificationsGet,
+      NotificationsPut: this.NotificationsPut,
     };
   }
 
-  private getNotifications: RH<{
-    ReqQuery: {
-      user_id?: string;
-      read?: "true" | "false";
-    };
-    ResBody: {
-      user_id: number;
-      read: boolean;
-      title: string;
-      created_at: Date;
-      description: string;
-      type: NotificationTypes;
-      type_id: number | null;
-      id: number;
-    }[];
-  }> = async (req, res) => {
-    const { user_id, read } = req.query;
+  NotificationsGet = new Route({
+    method: "get",
+    path: "/api/notifications",
+    priors: [validateLogged as RequestHandler],
+    schema: {
+      ReqQuery: z.object({
+        user_id: zodStringReadableAsNumber("Pengguna tidak ditemukan!").optional(),
+        read: z.string().optional(),
+      }),
+      ResBody: z
+        .object({
+          type: z.enum(["OrgManage", "ProjectManage", "ProjectTask", "ProjectChat", "GeneralChat"]),
+          read: z.boolean(),
+          user_id: z.number(),
+          id: z.number(),
+          description: z.string(),
+          title: z.string(),
+          created_at: z.date(),
+          type_id: z.number().nullable(),
+        })
+        .array(),
+    },
+    handler: async (req, res) => {
+      const { user_id, read } = req.query;
 
-    const result = await this.notifcation_service.getNotifications({
-      user_id: user_id != undefined ? Number(user_id) : undefined,
-      read: read != undefined ? read === "true" : undefined,
-    });
+      const result = await this.notifcation_service.getNotifications({
+        user_id: user_id != undefined ? Number(user_id) : undefined,
+        read: read != undefined ? read === "true" : undefined,
+      });
 
-    res.status(200).json(result);
-  };
+      res.status(200).json(result);
+    },
+  });
 
   NotificationsPut = new Route({
     method: "put",
     path: "/api/notifications/:notification_id",
-    priors: [validateLogged as RequestHandler],
+    priors: [validateLogged],
     schema: {
       Params: z.object({
         notification_id: z.string(),
+      }),
+      ReqBody: z.object({
+        read: z.boolean(),
+      }),
+      ResBody: z.object({
+        type: z.enum(["OrgManage", "ProjectManage", "ProjectTask", "ProjectChat", "GeneralChat"]),
+        read: z.boolean(),
+        user_id: z.number(),
+        id: z.number(),
+        description: z.string(),
+        title: z.string(),
+        created_at: z.date(),
+        type_id: z.number().nullable(),
       }),
     },
     handler: async (req, res) => {
@@ -74,6 +86,7 @@ export class NotificationController extends Controller {
 
       await this.notifcation_service.updateNotification(notification_id, read, sender_id);
       const result = await this.notifcation_service.getNotification(notification_id);
+      res.status(200).json(result);
     },
   });
 

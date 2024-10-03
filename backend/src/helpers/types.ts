@@ -1,4 +1,31 @@
 import { RequestHandler } from "express";
+import { ZodTypeAny, z } from "zod";
+
+export type APISchema<
+  ZParams extends ZodTypeAny = ZodTypeAny,
+  ZResBody extends ZodTypeAny = ZodTypeAny,
+  ZReqBody extends ZodTypeAny = ZodTypeAny,
+  ZReqQuery extends ZodTypeAny = ZodTypeAny,
+> = {
+  Params?: ZParams;
+  ResBody?: ZResBody;
+  ReqBody?: ZReqBody;
+  ReqQuery?: ZReqQuery;
+};
+
+export type RequestHandlerFromSchema<S extends APISchema> = RequestHandler<
+  S["Params"] extends ZodTypeAny ? z.infer<S["Params"]> : unknown,
+  S["ResBody"] extends ZodTypeAny ? z.infer<S["ResBody"]> : unknown,
+  S["ReqBody"] extends ZodTypeAny ? z.infer<S["ReqBody"]> : unknown,
+  S["ReqQuery"] extends ZodTypeAny ? z.infer<S["ReqQuery"]> : unknown
+>;
+
+export type TypesFromSchema<S extends APISchema> = {
+  Params: S["Params"] extends ZodTypeAny ? z.infer<S["Params"]> : unknown;
+  ResBody: S["ResBody"] extends ZodTypeAny ? z.infer<S["ResBody"]> : unknown;
+  ReqBody: S["ReqBody"] extends ZodTypeAny ? z.infer<S["ReqBody"]> : unknown;
+  ReqQuery: S["ReqQuery"] extends ZodTypeAny ? z.infer<S["ReqQuery"]> : unknown;
+};
 
 type RequestHandlerOptions = {
   // Param itu data kiriman yang ada di pathnya, http://website/api/user/1.

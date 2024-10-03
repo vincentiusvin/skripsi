@@ -1,27 +1,8 @@
 import type { Express } from "express";
 import { RequestHandler } from "express";
-import { ZodTypeAny, z } from "zod";
+import { APISchema, RequestHandlerFromSchema } from "./types.js";
 
-type RequestHandlerValidator<
-  ZParams extends ZodTypeAny = ZodTypeAny,
-  ZResBody extends ZodTypeAny = ZodTypeAny,
-  ZReqBody extends ZodTypeAny = ZodTypeAny,
-  ZReqQuery extends ZodTypeAny = ZodTypeAny,
-> = {
-  Params?: ZParams;
-  ResBody?: ZResBody;
-  ReqBody?: ZReqBody;
-  ReqQuery?: ZReqQuery;
-};
-
-type RequestHandlerFromSchema<S extends RequestHandlerValidator> = RequestHandler<
-  S["Params"] extends ZodTypeAny ? z.infer<S["Params"]> : unknown,
-  S["ResBody"] extends ZodTypeAny ? z.infer<S["ResBody"]> : unknown,
-  S["ReqBody"] extends ZodTypeAny ? z.infer<S["ReqBody"]> : unknown,
-  S["ReqQuery"] extends ZodTypeAny ? z.infer<S["ReqQuery"]> : unknown
->;
-
-type Opts<S extends RequestHandlerValidator> = {
+type Opts<S extends APISchema> = {
   handler: RequestHandlerFromSchema<S>;
   method: "get" | "put" | "post" | "patch" | "delete";
   path: string;
@@ -35,7 +16,7 @@ type Opts<S extends RequestHandlerValidator> = {
  * Selain nampung juga ngelakuin type-checking.
  * Dia bakal mastiin fungsi `handler` nyambung sama `schema`.
  */
-export class Route<S extends RequestHandlerValidator = RequestHandlerValidator> {
+export class Route<S extends APISchema = APISchema> {
   opts: Opts<S>;
 
   constructor(opts: Opts<S>) {
