@@ -293,8 +293,8 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
                 onChange={(e) => setTaskDescription(e.target.value)}
                 label="Task description"
               />
-              <DatePicker onAccept={(x) => setTaskStartAt(x)} label="Start At"></DatePicker>
-              <DatePicker onAccept={(x) => setTaskEndAt(x)} label="End At"></DatePicker>
+              <DatePicker onChange={(x) => setTaskStartAt(x)} label="Start At"></DatePicker>
+              <DatePicker onChange={(x) => setTaskEndAt(x)} label="End At"></DatePicker>
               <Button
                 startIcon={<ManageAccounts />}
                 onClick={() => setManageUsers(true)}
@@ -411,12 +411,12 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
               />
               <DatePicker
                 defaultValue={task.start_at != null ? dayjs(task.start_at) : undefined}
-                onAccept={(x) => setTaskStartAt(x)}
+                onChange={(x) => setTaskStartAt(x)}
                 label="Start At"
               ></DatePicker>
               <DatePicker
                 defaultValue={task.end_at != null ? dayjs(task.start_at) : undefined}
-                onAccept={(x) => setTaskEndAt(x)}
+                onChange={(x) => setTaskEndAt(x)}
                 label="End At"
               ></DatePicker>
               <Button

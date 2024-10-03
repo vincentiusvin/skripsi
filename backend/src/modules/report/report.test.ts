@@ -69,39 +69,94 @@ describe("report api", () => {
     expect(result).to.deep.include(in_report);
   });
 
-  for (const { ok, user_key, name } of [
+  for (const { ok, user_key, statement, in_data, check_override } of [
     {
       user_key: "report_user",
-      name: "author",
+      statement: "should be able to update regular report data as author",
       ok: true,
+      in_data: {
+        title: "new update title",
+      },
     },
     {
       user_key: "plain_user",
-      name: "other user",
+      statement: "shouldn't be able to update regular report data as other user",
       ok: false,
+      in_data: {
+        title: "new update title",
+      },
     },
     {
       user_key: "admin_user",
-      name: "admin",
+      statement: "should be able to update regular report data as other user",
       ok: true,
+      in_data: {
+        title: "new update title",
+      },
+    },
+    {
+      user_key: "admin_user",
+      statement: "should be able to resolve report as admin",
+      ok: true,
+      in_data: {
+        status: "Resolved",
+        resolution: "abc",
+      },
+    },
+    {
+      user_key: "admin_user",
+      statement: "shouldn't be able to resolve report without notes",
+      ok: false,
+      in_data: {
+        status: "Resolved",
+      },
+    },
+    {
+      user_key: "report_user",
+      statement: "shouldn't be able to resolve report as user",
+      ok: false,
+      in_data: {
+        status: "Resolved",
+        resolution: "abc",
+      },
+    },
+    {
+      user_key: "report_user",
+      statement: "shouldn't be able to add report chatroom as user",
+      ok: false,
+      in_data: {
+        chatroom: true,
+      },
+    },
+    {
+      user_key: "admin_user",
+      statement: "should be able to add report chatroom as admin",
+      ok: true,
+      in_data: {
+        chatroom: true,
+      },
+      check_override: (result?: { chatroom_id: number | null }) => {
+        expect(result?.chatroom_id).to.be.a("number");
+      },
     },
   ] as const) {
-    it(`${ok ? "should" : "shouldn't"} be able to update report as ${name}`, async () => {
+    it(statement, async () => {
       const in_user = caseData[user_key];
       const in_report = caseData.reports[0];
-      const in_report_update = {
-        status: "Resolved",
-      } as const;
 
       const cookie = await getLoginCookie(in_user.name, in_user.password);
-      const read_req = await putReports(in_report.id, in_report_update, cookie);
+      const read_req = await putReports(in_report.id, in_data, cookie);
       const result = await read_req.json();
 
       if (ok) {
         expect(read_req.status).eq(200);
-        expect(result).to.deep.include(in_report_update);
+        if (check_override) {
+          check_override(result);
+        } else {
+          expect(result).to.deep.include(in_data);
+        }
       } else {
-        expect(read_req.status).eq(401);
+        expect(read_req.status).oneOf([401, 400]);
       }
     });
   }
@@ -158,8 +213,8 @@ function putReports(
     description?: string;
     status?: ReportStatus;
     resolution?: string | undefined;
+    chatroom?: boolean;
     resolved_at?: string | undefined;
-    chatroom_id?: number | undefined;
   },
   cookie: string,
 ) {

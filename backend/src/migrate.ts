@@ -1,5 +1,5 @@
 import { promises as fs } from "fs";
-import { FileMigrationProvider, Migrator, NO_MIGRATIONS } from "kysely";
+import { FileMigrationProvider, MigrationResultSet, Migrator } from "kysely";
 import path from "path";
 import { db } from "./db/db";
 
@@ -16,9 +16,11 @@ async function migrate(option: (typeof ARGS)[number]) {
     }),
   });
 
-  let migrationResult;
+  let migrationResult: MigrationResultSet | undefined;
   if (option == "init") {
-    migrationResult = await migrator.migrateTo(NO_MIGRATIONS);
+    await db.schema.dropSchema("public").cascade().execute();
+    await db.schema.createSchema("public").execute();
+    console.log("Schema reset!");
   } else if (option == "down") {
     migrationResult = await migrator.migrateDown();
   } else if (option == "up") {
@@ -27,7 +29,7 @@ async function migrate(option: (typeof ARGS)[number]) {
     migrationResult = await migrator.migrateToLatest();
   }
 
-  const { error, results } = migrationResult;
+  const { error, results } = migrationResult ?? {};
 
   results?.forEach((it) => {
     if (it.status === "Success") {

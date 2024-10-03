@@ -10,6 +10,8 @@ const defaultReportFields = [
   "ms_reports.status",
   "ms_reports.created_at",
   "ms_reports.resolved_at",
+  "ms_reports.resolution",
+  "ms_reports.chatroom_id",
 ] as const;
 
 export class ReportRepository {
@@ -20,7 +22,7 @@ export class ReportRepository {
 
   async getReports(opts: { user_id?: number }) {
     const { user_id } = opts;
-    let query = this.db.selectFrom("ms_reports").select(defaultReportFields);
+    let query = this.db.selectFrom("ms_reports").select(defaultReportFields).orderBy("id asc");
 
     if (user_id != undefined) {
       query = query.where("ms_reports.sender_id", "=", user_id);
@@ -69,13 +71,15 @@ export class ReportRepository {
       title?: string;
       description?: string;
       status?: ReportStatus;
-      resolution?: string;
-      resolved_at?: Date;
+      resolution?: string | null;
+      resolved_at?: Date | null;
       sender_id?: number;
       chatroom_id?: number;
     },
   ) {
-    await this.db.updateTable("ms_reports").set(opts).where("id", "=", report_id).execute();
+    if (Object.values(opts).some((x) => x != undefined)) {
+      await this.db.updateTable("ms_reports").set(opts).where("id", "=", report_id).execute();
+    }
   }
 
   async deleteReport(report_id: number) {

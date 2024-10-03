@@ -126,6 +126,14 @@ export interface MsReports {
   title: string;
 }
 
+export interface MsSuspensions {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  reason: string;
+  suspended_until: Timestamp;
+  user_id: number;
+}
+
 export interface MsTaskBuckets {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
@@ -198,6 +206,7 @@ export interface DB {
   ms_orgs: MsOrgs;
   ms_projects: MsProjects;
   ms_reports: MsReports;
+  ms_suspensions: MsSuspensions;
   ms_task_buckets: MsTaskBuckets;
   ms_tasks: MsTasks;
   ms_users: MsUsers;

@@ -10,6 +10,7 @@ const defaultUserFields = [
   "ms_users.about_me as user_about_me",
   "ms_users.image as user_image",
   "ms_users.is_admin as user_is_admin",
+  "ms_users.created_at as user_created_at",
 ] as const;
 
 const reducedFields = ["ms_users.id as user_id", "ms_users.name as user_name"] as const;

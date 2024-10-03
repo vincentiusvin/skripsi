@@ -1,4 +1,5 @@
 import { hashSync } from "bcryptjs";
+import dayjs from "dayjs";
 import { Kysely } from "kysely";
 import { DB } from "../db/db_types.js";
 
@@ -59,6 +60,10 @@ export async function baseCase(db: Kysely<DB>) {
         name: "report user",
         password: hashed,
       },
+      {
+        name: "banned user",
+        password: hashed,
+      },
     ])
     .returning(["id", "name"])
     .execute();
@@ -80,6 +85,7 @@ export async function baseCase(db: Kysely<DB>) {
   const friend_acc_user = { ...user_ids[7], password: orig_password };
   const notif_user = { ...user_ids[8], password: orig_password };
   const report_user = { ...user_ids[9], password: orig_password };
+  const banned_user = { ...user_ids[10], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -252,13 +258,33 @@ export async function baseCase(db: Kysely<DB>) {
 
   const reports = await db
     .insertInto("ms_reports")
-    .values({
-      title: "Report Testing",
-      description: "report test desc",
-      sender_id: report_user.id,
-      status: "Pending",
-    })
+    .values([
+      {
+        title: "Report Testing",
+        description: "report test desc",
+        sender_id: report_user.id,
+        status: "Pending",
+      },
+      {
+        title: "Report Testing 2",
+        description: "report test desc",
+        sender_id: report_user.id,
+        status: "Pending",
+      },
+    ])
     .returning(["id", "ms_reports.status", "ms_reports.title", "ms_reports.description"])
+    .execute();
+
+  const bans = await db
+    .insertInto("ms_suspensions")
+    .values([
+      {
+        reason: "Kurang beruntung",
+        suspended_until: dayjs().add(100, "day").toDate(),
+        user_id: banned_user.id,
+      },
+    ])
+    .returning(["id", "ms_suspensions.reason", "ms_suspensions.suspended_until"])
     .execute();
 
   return {
@@ -285,5 +311,7 @@ export async function baseCase(db: Kysely<DB>) {
     notif_user,
     reports,
     report_user,
+    bans,
+    banned_user,
   };
 }

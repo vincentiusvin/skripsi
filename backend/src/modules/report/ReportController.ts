@@ -42,31 +42,6 @@ export class ReportController extends Controller {
               .min(1, {
                 message: "Deskripsi tidak boleh kosong!",
               }),
-            status: z
-              .string({
-                message: "Status tidak valid!",
-              })
-              .min(1, {
-                message: "Status tidak boleh kosong!",
-              })
-              .transform((arg) => parseReportStatus(arg)) as ZodType<ReportStatus>,
-            resolution: z
-              .string({
-                message: "Resolusi tidak valid!",
-              })
-              .min(1, {
-                message: "Resolusi tidak boleh kosong!",
-              })
-              .optional(),
-            resolved_at: z
-              .string({ message: "Tanggal resolusi tidak valid!" })
-              .datetime("Tanggal resolusi tidak valid!")
-              .optional(),
-            chatroom_id: z
-              .number({
-                message: "ID ruangan tidak valid!",
-              })
-              .optional(),
           }),
         },
         method: "post",
@@ -109,21 +84,13 @@ export class ReportController extends Controller {
               .optional() as ZodType<ReportStatus>,
             resolution: z
               .string({
-                message: "Resolusi tidak valid!",
+                message: "Catatan tidak valid!",
               })
               .min(1, {
-                message: "Resolusi tidak boleh kosong!",
+                message: "Catatan tidak boleh kosong!",
               })
               .optional(),
-            resolved_at: z
-              .string({ message: "Tanggal resolusi tidak valid!" })
-              .datetime("Tanggal resolusi tidak valid!")
-              .optional(),
-            chatroom_id: z
-              .number({
-                message: "ID ruangan tidak valid!",
-              })
-              .optional(),
+            chatroom: z.boolean().optional(),
           }),
         },
         method: "put",
@@ -136,11 +103,13 @@ export class ReportController extends Controller {
     ResBody: {
       id: number;
       sender_id: number;
+      chatroom_id: number | null;
       title: string;
       description: string;
       status: ReportStatus;
       created_at: Date;
       resolved_at: Date | null;
+      resolution: string | null;
     }[];
     ReqQuery: {
       user_id?: string;
@@ -161,10 +130,12 @@ export class ReportController extends Controller {
       id: number;
       sender_id: number;
       title: string;
+      chatroom_id: number | null;
       description: string;
       status: ReportStatus;
       created_at: Date;
       resolved_at: Date | null;
+      resolution: string | null;
     };
     Params: {
       report_id: string;
@@ -183,29 +154,25 @@ export class ReportController extends Controller {
       id: number;
       sender_id: number;
       title: string;
+      chatroom_id: number | null;
       description: string;
       status: ReportStatus;
       created_at: Date;
       resolved_at: Date | null;
+      resolution: string | null;
     };
     ReqBody: {
       title: string;
       description: string;
-      status: ReportStatus;
-      resolution?: string;
-      resolved_at?: string;
       chatroom_id?: number;
     };
   }> = async (req, res) => {
     const sender_id = Number(req.session.user_id!);
-    const { title, description, status, resolution, resolved_at, chatroom_id } = req.body;
+    const { title, description, chatroom_id } = req.body;
 
-    const report_id = await this.report_service.addReport({
+    const report_id = await this.report_service.createReport({
       title,
       description,
-      status,
-      resolution,
-      resolved_at: resolved_at != undefined ? new Date(resolved_at) : undefined,
       chatroom_id,
       sender_id,
     });
@@ -222,19 +189,20 @@ export class ReportController extends Controller {
     ResBody: {
       id: number;
       sender_id: number;
+      chatroom_id: number | null;
       title: string;
       description: string;
       status: ReportStatus;
       created_at: Date;
       resolved_at: Date | null;
+      resolution: string | null;
     };
     ReqBody: {
       title?: string;
       description?: string;
       status?: ReportStatus;
       resolution?: string;
-      resolved_at?: string;
-      chatroom_id?: number;
+      chatroom?: boolean;
     };
     Params: {
       report_id: string;
@@ -242,7 +210,7 @@ export class ReportController extends Controller {
   }> = async (req, res) => {
     const sender_id = Number(req.session.user_id!);
     const report_id = Number(req.params.report_id);
-    const { title, description, status, resolution, resolved_at, chatroom_id } = req.body;
+    const { title, description, status, resolution, chatroom } = req.body;
 
     await this.report_service.updateReport(
       report_id,
@@ -251,9 +219,7 @@ export class ReportController extends Controller {
         description,
         status,
         resolution,
-        resolved_at: resolved_at != undefined ? new Date(resolved_at) : undefined,
-        chatroom_id,
-        sender_id,
+        chatroom,
       },
       sender_id,
     );

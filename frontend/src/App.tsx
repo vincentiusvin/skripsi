@@ -13,7 +13,8 @@ import SideNav from "./components/SideNav.tsx";
 import Navigation from "./components/TopNav.tsx";
 import { queryClient } from "./helpers/queryclient";
 import { ThemeContext } from "./helpers/theme.ts";
-import AdminPanelPage from "./routes/Admin/AdminPanelPage.tsx";
+import HandleReportsPage from "./routes/Admin/HandleReportsPage.tsx";
+import ManageAccountsPage from "./routes/Admin/ManageAccountsPage.tsx";
 import AuthPage from "./routes/AuthPage";
 import HomePage from "./routes/HomePage";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
@@ -118,7 +119,7 @@ function App() {
                     <Route path={"/orgs/:org_id/people"} component={OrgsPeoplePage} />
                     <Route path={"/orgs/:org_id/edit"} component={OrgsEditPage} />
                     <Route path={"/orgs/:org_id/leave"} component={OrgsLeavePage} />
-                    <Route path={"/chatroom"} component={ChatroomPage} />
+                    <Route path={"/chatrooms"} component={ChatroomPage} />
                     <Route path={"/projects"} component={ProjectListPage} />
                     <Route path={"/projects/:project_id"} component={ProjectInfoPage} />
                     <Route path={"/projects/:project_id/people"} component={ProjectsPeoplePage} />
@@ -129,7 +130,8 @@ function App() {
                     <Route path={"/projects/:project_id/chat"} component={ProjectsChatroomPage} />
                     <Route path={"/users/:id"} component={UserAccountPage} />
                     <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
-                    <Route path={"/admin"} component={AdminPanelPage} />
+                    <Route path={"/manage-reports"} component={HandleReportsPage} />
+                    <Route path={"/manage-accounts"} component={ManageAccountsPage} />
                   </Switch>
                 </Box>
               </Stack>

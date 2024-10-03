@@ -8,7 +8,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       build.references("ms_users.id").notNull().onDelete("cascade").onUpdate("cascade"),
     )
     .addColumn("chatroom_id", "integer", (build) =>
-      build.references("ms_chatrooms.id").onDelete("cascade").onUpdate("cascade"),
+      build.references("ms_chatrooms.id").onDelete("set null").onUpdate("cascade"),
     )
     .addColumn("title", "text", (col) => col.notNull())
     .addColumn("description", "text", (col) => col.notNull())
