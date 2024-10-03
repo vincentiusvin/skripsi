@@ -1,12 +1,12 @@
 import type { Express } from "express";
 import { RequestHandler } from "express";
-import { ZodSchema } from "zod";
+import { ZodTypeAny, z } from "zod";
 
 type RequestHandlerValidator<
-  ZParams extends ZodSchema = ZodSchema,
-  ZResBody extends ZodSchema = ZodSchema,
-  ZReqBody extends ZodSchema = ZodSchema,
-  ZReqQuery extends ZodSchema = ZodSchema,
+  ZParams extends ZodTypeAny = ZodTypeAny,
+  ZResBody extends ZodTypeAny = ZodTypeAny,
+  ZReqBody extends ZodTypeAny = ZodTypeAny,
+  ZReqQuery extends ZodTypeAny = ZodTypeAny,
 > = {
   Params?: ZParams;
   ResBody?: ZResBody;
@@ -15,10 +15,10 @@ type RequestHandlerValidator<
 };
 
 type RequestHandlerFromSchema<S extends RequestHandlerValidator> = RequestHandler<
-  S["Params"] extends ZodSchema ? Zod.infer<S["Params"]> : unknown,
-  S["ResBody"] extends ZodSchema ? Zod.infer<S["ResBody"]> : unknown,
-  S["ReqBody"] extends ZodSchema ? Zod.infer<S["ReqBody"]> : unknown,
-  S["ReqQuery"] extends ZodSchema ? Zod.infer<S["ReqQuery"]> : unknown
+  S["Params"] extends ZodTypeAny ? z.infer<S["Params"]> : unknown,
+  S["ResBody"] extends ZodTypeAny ? z.infer<S["ResBody"]> : unknown,
+  S["ReqBody"] extends ZodTypeAny ? z.infer<S["ReqBody"]> : unknown,
+  S["ReqQuery"] extends ZodTypeAny ? z.infer<S["ReqQuery"]> : unknown
 >;
 
 type Opts<S extends RequestHandlerValidator = RequestHandlerValidator> = {

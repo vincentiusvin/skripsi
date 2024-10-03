@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { RequestHandler } from "express";
+import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { RH } from "../../helpers/types.js";
 import { validateLogged } from "../../helpers/validate.js";
@@ -55,6 +56,26 @@ export class NotificationController extends Controller {
 
     res.status(200).json(result);
   };
+
+  NotificationsPut = new Route({
+    method: "put",
+    path: "/api/notifications/:notification_id",
+    priors: [validateLogged as RequestHandler],
+    schema: {
+      Params: z.object({
+        notification_id: z.string(),
+      }),
+    },
+    handler: async (req, res) => {
+      const { notification_id: notification_id_str } = req.params;
+      const notification_id = Number(notification_id_str);
+      const { read } = req.body;
+      const sender_id = Number(req.session.user_id);
+
+      await this.notifcation_service.updateNotification(notification_id, read, sender_id);
+      const result = await this.notifcation_service.getNotification(notification_id);
+    },
+  });
 
   private putNotifications: RH<{
     ReqBody: {
