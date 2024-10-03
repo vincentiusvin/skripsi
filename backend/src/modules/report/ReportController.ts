@@ -26,7 +26,7 @@ export class ReportController extends Controller {
     path: "/api/reports",
     schema: {
       ReqQuery: z.object({
-        user_id: z.number(),
+        user_id: zodStringReadableAsNumber("Pengguna tidak valid!").optional(),
       }),
     },
     handler: async (req, res) => {
