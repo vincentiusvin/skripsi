@@ -21,7 +21,7 @@ type RequestHandlerFromSchema<S extends RequestHandlerValidator> = RequestHandle
   S["ReqQuery"] extends ZodTypeAny ? z.infer<S["ReqQuery"]> : unknown
 >;
 
-type Opts<S extends RequestHandlerValidator = RequestHandlerValidator> = {
+type Opts<S extends RequestHandlerValidator> = {
   handler: RequestHandlerFromSchema<S>;
   method: "get" | "put" | "post" | "patch" | "delete";
   path: string;
@@ -35,10 +35,10 @@ type Opts<S extends RequestHandlerValidator = RequestHandlerValidator> = {
  * Selain nampung juga ngelakuin type-checking.
  * Dia bakal mastiin fungsi `handler` nyambung sama `schema`.
  */
-export class Route<O extends Opts = Opts> {
-  opts: O;
+export class Route<S extends RequestHandlerValidator = RequestHandlerValidator> {
+  opts: Opts<S>;
 
-  constructor(opts: O) {
+  constructor(opts: Opts<S>) {
     this.opts = opts;
   }
 
