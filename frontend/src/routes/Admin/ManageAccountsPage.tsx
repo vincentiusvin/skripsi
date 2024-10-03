@@ -59,7 +59,7 @@ function AddSuspension(props: { user_id: number; user_name: string }) {
             />
             <DatePicker
               value={endDate}
-              onAccept={(x) => setEndDate(x)}
+              onChange={(x) => setEndDate(x)}
               label="Tanggal Selesai"
             ></DatePicker>
           </Stack>
