@@ -3,6 +3,7 @@ import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
 import { validateLogged } from "../../helpers/validate.js";
+import { zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { OrgRoles, org_roles, parseRole } from "./OrgMisc.js";
 import { OrgService } from "./OrgService.js";
 
@@ -60,6 +61,12 @@ export class OrgController extends Controller {
             category_id: z.number(),
           }),
         ),
+        org_users: z
+          .object({
+            user_id: z.number(),
+            user_role: z.enum(org_roles).or(z.literal("Not Involved")),
+          })
+          .array(),
       }),
     },
     priors: [validateLogged],
@@ -92,7 +99,7 @@ export class OrgController extends Controller {
     path: "/api/orgs",
     schema: {
       ReqQuery: z.object({
-        user_id: z.number().optional(),
+        user_id: zodStringReadableAsNumber("Id pengguna invalid!").optional(),
       }),
       ResBody: z
         .object({
@@ -108,6 +115,12 @@ export class OrgController extends Controller {
               category_id: z.number(),
             }),
           ),
+          org_users: z
+            .object({
+              user_id: z.number(),
+              user_role: z.enum(org_roles).or(z.literal("Not Involved")),
+            })
+            .array(),
         })
         .array(),
     },
@@ -143,6 +156,12 @@ export class OrgController extends Controller {
             category_id: z.number(),
           }),
         ),
+        org_users: z
+          .object({
+            user_id: z.number(),
+            user_role: z.enum(org_roles).or(z.literal("Not Involved")),
+          })
+          .array(),
       }),
     },
     handler: async (req, res) => {
@@ -188,6 +207,12 @@ export class OrgController extends Controller {
             category_id: z.number(),
           }),
         ),
+        org_users: z
+          .object({
+            user_id: z.number(),
+            user_role: z.enum(org_roles).or(z.literal("Not Involved")),
+          })
+          .array(),
       }),
       Params: z.object({
         org_id: z
