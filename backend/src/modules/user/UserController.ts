@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
+import { zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { UserService } from "./UserService.js";
 
 export class UserController extends Controller {
@@ -18,7 +19,16 @@ export class UserController extends Controller {
       UsersDetailPut: this.UsersDetailPut,
     };
   }
+
   UsersPost = new Route({
+    method: "post",
+    path: "/api/users",
+    schema: {
+      ReqBody: z.object({
+        user_name: z.string().min(1, "Username tidak boleh kosong!"),
+        user_password: z.string().min(1, "Password tidak boleh kosong!"),
+      }),
+    },
     handler: async (req, res) => {
       const { user_name, user_password } = req.body;
 
@@ -34,29 +44,17 @@ export class UserController extends Controller {
 
       res.status(201).json(result);
     },
-    method: "post",
-    path: "/api/users",
-    schema: {
-      ReqBody: z.object({
-        user_name: z.string().min(1, "Username tidak boleh kosong!"),
-        user_password: z.string().min(1, "Password tidak boleh kosong!"),
-      }),
-    },
   });
+
   UsersGet = new Route({
+    method: "get",
+    path: "/api/users",
     handler: async (req, res) => {
       const result = await this.user_service.getUsers();
       res.status(200).json(result);
     },
-    method: "get",
-    path: "/api/users",
   });
   UsersDetailGet = new Route({
-    handler: async (req, res) => {
-      const id = Number(req.params.id);
-      const result = await this.user_service.getUserDetail(id);
-      res.status(200).json(result);
-    },
     method: "get",
     path: "/api/users/:id",
     schema: {
@@ -67,16 +65,18 @@ export class UserController extends Controller {
           .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid" }),
       }),
     },
+    handler: async (req, res) => {
+      const id = Number(req.params.id);
+      const result = await this.user_service.getUserDetail(id);
+      res.status(200).json(result);
+    },
   });
   UsersDetailPut = new Route({
     method: "put",
     path: "/api/users/:id",
     schema: {
       Params: z.object({
-        id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+        id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
       }),
       ReqBody: z.object({
         user_name: z.string().min(1, "Nama tidak boleh kosong!").optional(),
