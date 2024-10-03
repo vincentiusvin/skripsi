@@ -134,6 +134,7 @@ export class SuspensionController extends Controller {
       reason: string;
       suspended_until: Date;
       user_id: number;
+      created_at: Date;
     };
     Params: {
       suspension_id: string;
@@ -155,6 +156,7 @@ export class SuspensionController extends Controller {
       reason: string;
       suspended_until: Date;
       user_id: number;
+      created_at: Date;
     }[];
     ReqQuery: {
       user_id?: string;
@@ -181,6 +183,7 @@ export class SuspensionController extends Controller {
       reason: string;
       suspended_until: Date;
       user_id: number;
+      created_at: Date;
     };
     ReqBody: {
       reason: string;
@@ -217,6 +220,7 @@ export class SuspensionController extends Controller {
       reason: string;
       suspended_until: Date;
       user_id: number;
+      created_at: Date;
     };
     ReqBody: {
       reason?: string;

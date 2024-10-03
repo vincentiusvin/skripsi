@@ -1,19 +1,66 @@
+import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import {
+  Box,
   Chip,
+  Collapse,
+  Divider,
+  IconButton,
   Paper,
   Skeleton,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
+import { useState } from "react";
 import UserLabel from "../../components/UserLabel.tsx";
 import { useSuspensionsGet } from "../../queries/suspension_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
 import AuthorizeAdmin from "./components/AuthorizeAdmins.tsx";
+
+function SuspensionData(props: { user_id: number }) {
+  const { user_id } = props;
+  const { data: suspension_data } = useSuspensionsGet({
+    user_id: user_id,
+    expired_after: dayjs().startOf("day"),
+  });
+
+  if (suspension_data == undefined) {
+    return <Skeleton />;
+  }
+
+  if (suspension_data.length === 0) {
+    return <Typography variant="body1">Pengguna ini belum pernah ditangguhkan!</Typography>;
+  }
+
+  return (
+    <TableContainer component={Paper}>
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Tanggal Mulai</TableCell>
+            <TableCell>Tanggal Selesai</TableCell>
+            <TableCell>Alasan</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {suspension_data.map((x) => (
+            <TableRow key={x.id}>
+              <TableCell>{dayjs(x.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}</TableCell>
+              <TableCell>{dayjs(x.suspended_until).format("ddd[,] D[/]M[/]YY HH:mm")}</TableCell>
+              <TableCell>{x.reason}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
 
 function AccountRow(props: {
   user: {
@@ -33,6 +80,7 @@ function AccountRow(props: {
     user_id: user.user_id,
     expired_after: dayjs().startOf("day"),
   });
+  const [open, setOpen] = useState(false);
 
   let status = <Skeleton />;
 
@@ -60,14 +108,44 @@ function AccountRow(props: {
   const created_string = dayjs(user.user_created_at).format("ddd[,] D[/]M[/]YY HH:mm");
 
   return (
-    <TableRow key={user.user_id}>
-      <TableCell>
-        <UserLabel user_id={user.user_id} />
-      </TableCell>
-      <TableCell>{status}</TableCell>
-      <TableCell>{created_string}</TableCell>
-      <TableCell>{suspended_string}</TableCell>
-    </TableRow>
+    <>
+      <TableRow key={user.user_id}>
+        <TableCell>
+          <UserLabel user_id={user.user_id} />
+        </TableCell>
+        <TableCell>{status}</TableCell>
+        <TableCell>{created_string}</TableCell>
+        <TableCell>{suspended_string}</TableCell>
+        <TableCell>
+          {open ? (
+            <IconButton size="small" onClick={() => setOpen(false)}>
+              <KeyboardArrowUp />
+            </IconButton>
+          ) : (
+            <IconButton size="small" onClick={() => setOpen(true)}>
+              <KeyboardArrowDown />
+            </IconButton>
+          )}
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell colSpan={6} sx={{ paddingBottom: 0, paddingTop: 0 }}>
+          <Collapse in={open}>
+            <Stack sx={{ paddingBottom: 2, paddingTop: 2 }} spacing={2}>
+              <Box>
+                <Typography variant="h5">Daftar Penangguhan</Typography>
+                <Divider
+                  sx={{
+                    marginBottom: 2,
+                  }}
+                />
+                <SuspensionData user_id={user.user_id} />
+              </Box>
+            </Stack>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </>
   );
 }
 
