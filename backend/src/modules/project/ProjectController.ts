@@ -63,7 +63,7 @@ export class ProjectController extends Controller {
         project_members: z
           .object({
             user_id: z.number(),
-            role: z.enum(project_roles),
+            role: z.enum(project_roles).or(z.literal("Not Involved")),
           })
           .array(),
         project_categories: z
@@ -84,6 +84,26 @@ export class ProjectController extends Controller {
         user_id: zodStringReadableAsNumber("Pengguna yang dimasukkan tidak valid!").optional(),
         keyword: z.string().optional(),
       }),
+      ResBody: z
+        .object({
+          org_id: z.number(),
+          project_id: z.number(),
+          project_name: z.string(),
+          project_desc: z.string(),
+          project_members: z
+            .object({
+              user_id: z.number(),
+              role: z.enum(project_roles).or(z.literal("Not Involved")),
+            })
+            .array(),
+          project_categories: z
+            .object({
+              category_name: z.string(),
+              category_id: z.number(),
+            })
+            .array(),
+        })
+        .array(),
     },
     handler: async (req, res) => {
       const { org_id, user_id, keyword } = req.query;
@@ -106,6 +126,24 @@ export class ProjectController extends Controller {
           .string()
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+      }),
+      ResBody: z.object({
+        org_id: z.number(),
+        project_id: z.number(),
+        project_name: z.string(),
+        project_desc: z.string(),
+        project_members: z
+          .object({
+            user_id: z.number(),
+            role: z.enum(project_roles).or(z.literal("Not Involved")),
+          })
+          .array(),
+        project_categories: z
+          .object({
+            category_name: z.string(),
+            category_id: z.number(),
+          })
+          .array(),
       }),
     },
     handler: async (req, res) => {
@@ -139,6 +177,24 @@ export class ProjectController extends Controller {
           .optional(),
         category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
       }),
+      ResBody: z.object({
+        org_id: z.number(),
+        project_id: z.number(),
+        project_name: z.string(),
+        project_desc: z.string(),
+        project_members: z
+          .object({
+            user_id: z.number(),
+            role: z.enum(project_roles).or(z.literal("Not Involved")),
+          })
+          .array(),
+        project_categories: z
+          .object({
+            category_name: z.string(),
+            category_id: z.number(),
+          })
+          .array(),
+      }),
     },
     handler: async (req, res) => {
       const project_id = Number(req.params.project_id);
@@ -162,6 +218,9 @@ export class ProjectController extends Controller {
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
       }),
+      ResBody: z.object({
+        msg: z.string(),
+      }),
     },
     handler: async (req, res) => {
       const project_id = Number(req.params.project_id);
@@ -172,6 +231,7 @@ export class ProjectController extends Controller {
       res.status(200).json({ msg: "Projek berhasil dihapus!" });
     },
   });
+
   ProjectsDetailMembersGet = new Route({
     method: "get",
     path: "/api/projects/:project_id/users/:user_id",
@@ -185,6 +245,9 @@ export class ProjectController extends Controller {
           .string()
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+      }),
+      ResBody: z.object({
+        role: z.enum(project_roles).or(z.literal("Not Involved")),
       }),
     },
     handler: async (req, res) => {
@@ -215,6 +278,9 @@ export class ProjectController extends Controller {
         project_id: zodStringReadableAsNumber("Projek yang dimasukkan tidak valid!"),
         user_id: zodStringReadableAsNumber("Pengguna yang dimasukkan tidak valid!"),
       }),
+      ResBody: z.object({
+        role: z.enum(project_roles).or(z.literal("Not Involved")),
+      }),
     },
     handler: async (req, res) => {
       const { project_id: project_id_str, user_id: user_id_str } = req.params;
@@ -242,6 +308,9 @@ export class ProjectController extends Controller {
           .string()
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+      }),
+      ResBody: z.object({
+        role: z.enum(project_roles).or(z.literal("Not Involved")),
       }),
     },
     handler: async (req, res) => {
