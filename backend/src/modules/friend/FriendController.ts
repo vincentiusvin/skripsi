@@ -21,6 +21,20 @@ export class FriendController extends Controller {
   }
 
   UsersDetailFriendsDetailPut = new Route({
+    method: "put",
+    path: "/api/users/:from_id/friends/:to_id",
+    schema: {
+      Params: z.object({
+        from_id: z
+          .string()
+          .min(1)
+          .refine((arg) => !isNaN(Number(arg)), { message: "ID user pertama tidak valid!" }),
+        to_id: z
+          .string()
+          .min(1)
+          .refine((arg) => !isNaN(Number(arg)), { message: "ID user kedua tidak valid!" }),
+      }),
+    },
     handler: async (req, res) => {
       const from_user_id = Number(req.params.from_id);
       const to_user_id = Number(req.params.to_id);
@@ -39,29 +53,8 @@ export class FriendController extends Controller {
       const result = await this.friend_service.getFriendStatus(from_user_id, to_user_id);
       res.status(200).json({ status: result });
     },
-    method: "put",
-    path: "/api/users/:from_id/friends/:to_id",
-    schema: {
-      Params: z.object({
-        from_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID user pertama tidak valid!" }),
-        to_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID user kedua tidak valid!" }),
-      }),
-    },
   });
   UsersDetailFriendsDetailGet = new Route({
-    handler: async (req, res) => {
-      const from_user_id = Number(req.params.from_id);
-      const to_user_id = Number(req.params.to_id);
-
-      const result = await this.friend_service.getFriendStatus(from_user_id, to_user_id);
-      res.status(200).json({ status: result });
-    },
     method: "get",
     path: "/api/users/:from_id/friends/:to_id",
     schema: {
@@ -76,19 +69,15 @@ export class FriendController extends Controller {
           .refine((arg) => !isNaN(Number(arg)), { message: "ID user kedua tidak valid!" }),
       }),
     },
-  });
-  UsersDetailFriendsDetailDelete = new Route({
     handler: async (req, res) => {
       const from_user_id = Number(req.params.from_id);
       const to_user_id = Number(req.params.to_id);
 
-      if (from_user_id != req.session.user_id) {
-        throw new AuthError("Anda tidak memiliki akses untuk mengubah koneksi orang lain!");
-      }
-
-      await this.friend_service.deleteFriend(from_user_id, to_user_id);
-      res.status(200).json({ msg: "Teman berhasil dihapus!" });
+      const result = await this.friend_service.getFriendStatus(from_user_id, to_user_id);
+      res.status(200).json({ status: result });
     },
+  });
+  UsersDetailFriendsDetailDelete = new Route({
     method: "delete",
     path: "/api/users/:from_id/friends/:to_id",
     schema: {
@@ -103,14 +92,19 @@ export class FriendController extends Controller {
           .refine((arg) => !isNaN(Number(arg)), { message: "ID user kedua tidak valid!" }),
       }),
     },
+    handler: async (req, res) => {
+      const from_user_id = Number(req.params.from_id);
+      const to_user_id = Number(req.params.to_id);
+
+      if (from_user_id != req.session.user_id) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengubah koneksi orang lain!");
+      }
+
+      await this.friend_service.deleteFriend(from_user_id, to_user_id);
+      res.status(200).json({ msg: "Teman berhasil dihapus!" });
+    },
   });
   UsersDetailFriendsGet = new Route({
-    handler: async (req, res) => {
-      const user_id = Number(req.params.user_id);
-
-      const result = await this.friend_service.getFriends(user_id);
-      res.status(200).json(result);
-    },
     method: "get",
     path: "/api/users/:user_id/friends",
     schema: {
@@ -120,6 +114,12 @@ export class FriendController extends Controller {
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID user pertama tidak valid!" }),
       }),
+    },
+    handler: async (req, res) => {
+      const user_id = Number(req.params.user_id);
+
+      const result = await this.friend_service.getFriends(user_id);
+      res.status(200).json(result);
     },
   });
 }

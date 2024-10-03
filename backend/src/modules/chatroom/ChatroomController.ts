@@ -104,6 +104,17 @@ export class ChatController extends Controller {
     },
   });
   UsersDetailChatroomsPost = new Route({
+    method: "post",
+    path: "/api/users/:user_id/chatrooms",
+    priors: [validateLogged as RequestHandler],
+    schema: {
+      Params: z.object({
+        user_id: z
+          .string()
+          .min(1)
+          .refine((arg) => !isNaN(Number(arg)), { message: "ID tidak valid!" }),
+      }),
+    },
     handler: async (req, res) => {
       const name = req.body.name;
       const user_id_str = req.params.user_id;
@@ -123,24 +134,8 @@ export class ChatController extends Controller {
         msg: "Room created!",
       });
     },
-    method: "post",
-    path: "/api/users/:user_id/chatrooms",
-    priors: [validateLogged as RequestHandler],
-    schema: {
-      Params: z.object({
-        user_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID tidak valid!" }),
-      }),
-    },
   });
   UsersDetailChatroomsGet = new Route({
-    handler: async (req, res) => {
-      const user_id = req.params.user_id;
-      const result = await this.chat_service.getUserChatrooms(Number(user_id));
-      res.json(result);
-    },
     method: "get",
     path: "/api/users/:user_id/chatrooms",
     priors: [validateLogged as RequestHandler],
@@ -152,8 +147,24 @@ export class ChatController extends Controller {
           .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
       }),
     },
+    handler: async (req, res) => {
+      const user_id = req.params.user_id;
+      const result = await this.chat_service.getUserChatrooms(Number(user_id));
+      res.json(result);
+    },
   });
   ChatroomsDetailGet = new Route({
+    method: "get",
+    path: "/api/chatrooms/:chatroom_id",
+    priors: [validateLogged as RequestHandler],
+    schema: {
+      Params: z.object({
+        chatroom_id: z
+          .string()
+          .min(1)
+          .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
+      }),
+    },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str } = req.params;
       const chatroom_id = Number(chatroom_id_str);
@@ -168,7 +179,9 @@ export class ChatController extends Controller {
       const result = await this.chat_service.getChatroomByID(chatroom_id);
       res.status(200).json(result);
     },
-    method: "get",
+  });
+  ChatroomsDetailPut = new Route({
+    method: "put",
     path: "/api/chatrooms/:chatroom_id",
     priors: [validateLogged as RequestHandler],
     schema: {
@@ -178,9 +191,11 @@ export class ChatController extends Controller {
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
       }),
+      ReqBody: z.object({
+        name: z.string({ message: "Nama invalid!" }).min(1).optional(),
+        user_ids: z.array(z.number(), { message: "ID pengguna invalid!" }).optional(),
+      }),
     },
-  });
-  ChatroomsDetailPut = new Route({
     handler: async (req, res) => {
       const { name, user_ids } = req.body;
       const { chatroom_id: chatroom_id_str } = req.params;
@@ -199,7 +214,9 @@ export class ChatController extends Controller {
         msg: "Update successful!",
       });
     },
-    method: "put",
+  });
+  ChatroomsDetailDelete = new Route({
+    method: "delete",
     path: "/api/chatrooms/:chatroom_id",
     priors: [validateLogged as RequestHandler],
     schema: {
@@ -209,13 +226,7 @@ export class ChatController extends Controller {
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
       }),
-      ReqBody: z.object({
-        name: z.string({ message: "Nama invalid!" }).min(1).optional(),
-        user_ids: z.array(z.number(), { message: "ID pengguna invalid!" }).optional(),
-      }),
     },
-  });
-  ChatroomsDetailDelete = new Route({
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str } = req.params;
       const chatroom_id = Number(chatroom_id_str);
@@ -230,8 +241,10 @@ export class ChatController extends Controller {
         msg: "Delete successful!",
       });
     },
-    method: "delete",
-    path: "/api/chatrooms/:chatroom_id",
+  });
+  ChatroomsDetailMessagesPost = new Route({
+    method: "post",
+    path: "/api/chatrooms/:chatroom_id/messages",
     priors: [validateLogged as RequestHandler],
     schema: {
       Params: z.object({
@@ -240,9 +253,12 @@ export class ChatController extends Controller {
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
       }),
+      ReqBody: z.object({
+        message: z
+          .string({ message: "Isi pesan tidak valid!" })
+          .min(1, "Pesan tidak boleh kosong!"),
+      }),
     },
-  });
-  ChatroomsDetailMessagesPost = new Route({
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str } = req.params;
       const { message } = req.body;
@@ -264,8 +280,10 @@ export class ChatController extends Controller {
 
       res.status(201).json(ret);
     },
-    method: "post",
-    path: "/api/chatrooms/:chatroom_id/messages",
+  });
+  ChatroomsDetailMessagesPut = new Route({
+    method: "put",
+    path: "/api/chatrooms/:chatroom_id/messages/:message_id",
     priors: [validateLogged as RequestHandler],
     schema: {
       Params: z.object({
@@ -273,6 +291,10 @@ export class ChatController extends Controller {
           .string()
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
+        message_id: z
+          .string()
+          .min(1)
+          .refine((arg) => !isNaN(Number(arg)), { message: "ID pesan tidak valid!" }),
       }),
       ReqBody: z.object({
         message: z
@@ -280,8 +302,6 @@ export class ChatController extends Controller {
           .min(1, "Pesan tidak boleh kosong!"),
       }),
     },
-  });
-  ChatroomsDetailMessagesPut = new Route({
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str, message_id: message_id_str } = req.params;
       const { message } = req.body;
@@ -304,8 +324,10 @@ export class ChatController extends Controller {
 
       res.status(200).json(ret);
     },
-    method: "put",
-    path: "/api/chatrooms/:chatroom_id/messages/:message_id",
+  });
+  ChatroomsDetailMessagesGet = new Route({
+    method: "get",
+    path: "/api/chatrooms/:chatroom_id/messages",
     priors: [validateLogged as RequestHandler],
     schema: {
       Params: z.object({
@@ -313,19 +335,8 @@ export class ChatController extends Controller {
           .string()
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
-        message_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID pesan tidak valid!" }),
-      }),
-      ReqBody: z.object({
-        message: z
-          .string({ message: "Isi pesan tidak valid!" })
-          .min(1, "Pesan tidak boleh kosong!"),
       }),
     },
-  });
-  ChatroomsDetailMessagesGet = new Route({
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str } = req.params;
       const chatroom_id = Number(chatroom_id_str);
@@ -339,17 +350,6 @@ export class ChatController extends Controller {
       const result = await this.chat_service.getMessages(chatroom_id);
 
       res.status(200).json(result);
-    },
-    method: "get",
-    path: "/api/chatrooms/:chatroom_id/messages",
-    priors: [validateLogged as RequestHandler],
-    schema: {
-      Params: z.object({
-        chatroom_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID chatroom tidak valid!" }),
-      }),
     },
   });
 }
