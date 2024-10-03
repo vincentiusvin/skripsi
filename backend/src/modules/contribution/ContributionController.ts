@@ -12,8 +12,14 @@ export class ContributionController extends Controller {
   }
 
   init() {
-    return {};
+    return {
+      ContributionsGet: this.ContributionsGet,
+      ContributionsDetailGet: this.ContributionsDetailGet,
+      ContributionsPost: this.ContributionsPost,
+      ContributionsDetailPut: this.ContributionsDetailPut,
+    };
   }
+
   ContributionsGet = new Route({
     method: "get",
     path: "/api/contributions",
@@ -47,7 +53,7 @@ export class ContributionController extends Controller {
       res.status(200).json(result);
     },
   });
-  ContributionDetailGet = new Route({
+  ContributionsDetailGet = new Route({
     method: "get",
     path: "/api/contributions/:id",
     schema: {
@@ -76,7 +82,7 @@ export class ContributionController extends Controller {
       res.status(200).json(result);
     },
   });
-  ContributionPost = new Route({
+  ContributionsPost = new Route({
     method: "post",
     path: "/api/contributions",
     schema: {
@@ -116,7 +122,7 @@ export class ContributionController extends Controller {
       res.status(201).json(resultFinal);
     },
   });
-  ContributionDetailPut = new Route({
+  ContributionsDetailPut = new Route({
     method: "put",
     path: "/api/contributions/:id",
     schema: {
