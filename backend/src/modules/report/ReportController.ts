@@ -1,8 +1,8 @@
 import type { Express } from "express";
-import { ZodType, z } from "zod";
+import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { zodStringReadableAsNumber } from "../../helpers/validators.js";
-import { ReportStatus, parseReportStatus, report_status } from "./ReportMisc.js";
+import { report_status } from "./ReportMisc.js";
 import { ReportService } from "./ReportService.js";
 
 export class ReportController extends Controller {
@@ -156,15 +156,7 @@ export class ReportController extends Controller {
             message: "Deskripsi tidak boleh kosong!",
           })
           .optional(),
-        status: z
-          .string({
-            message: "Status tidak valid!",
-          })
-          .min(1, {
-            message: "Status tidak boleh kosong!",
-          })
-          .transform((arg) => parseReportStatus(arg))
-          .optional() as ZodType<ReportStatus>,
+        status: z.enum(report_status).optional(),
         resolution: z
           .string({
             message: "Catatan tidak valid!",

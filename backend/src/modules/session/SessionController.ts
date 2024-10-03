@@ -22,6 +22,21 @@ export class SessionController extends Controller {
   }
 
   SessionGet = new Route({
+    method: "get",
+    path: "/api/session",
+    schema: {
+      ResBody: z.union([
+        z.object({
+          user_name: z.string(),
+          user_id: z.number(),
+          logged: z.literal(true),
+          is_admin: z.boolean(),
+        }),
+        z.object({
+          logged: z.literal(false),
+        }),
+      ]),
+    },
     handler: async (req, res) => {
       const userId = req.session.user_id;
       const user =
@@ -45,8 +60,6 @@ export class SessionController extends Controller {
         });
       }
     },
-    method: "get",
-    path: "/api/session",
   });
   SessionPut = new Route({
     method: "put",
@@ -55,6 +68,9 @@ export class SessionController extends Controller {
       ReqBody: z.object({
         user_password: z.string().min(1),
         user_name: z.string().min(1),
+      }),
+      ResBody: z.object({
+        user_name: z.string(),
       }),
     },
     handler: async (req, res) => {
@@ -86,6 +102,11 @@ export class SessionController extends Controller {
   SessionDelete = new Route({
     method: "delete",
     path: "/api/session",
+    schema: {
+      ResBody: z.object({
+        msg: z.string(),
+      }),
+    },
     handler: async (req, res) => {
       req.session.destroy(() => {
         res.status(200).json({

@@ -23,6 +23,27 @@ export class SuspensionController extends Controller {
   }
 
   SuspensionsPost = new Route({
+    method: "post",
+    path: "/api/suspensions",
+    schema: {
+      ReqBody: z.object({
+        reason: z
+          .string({ message: "Alasan invalid!" })
+          .min(1, { message: "Alasan tidak boleh kosong!" }),
+        suspended_until: z
+          .string({ message: "Tanggal tidak valid!" })
+          .datetime("Tanggal tidak valid!"),
+        user_id: z.number({ message: "Pengguna tidak valid!" }),
+      }),
+      ResBody: z.object({
+        reason: z.string(),
+        suspended_until: z.date(),
+        user_id: z.number(),
+        created_at: z.date(),
+        id: z.number(),
+      }),
+    },
+    priors: [validateLogged],
     handler: async (req, res) => {
       const { reason, suspended_until, user_id } = req.body;
       const sender_id = req.session.user_id!;
@@ -46,22 +67,37 @@ export class SuspensionController extends Controller {
       }
       res.status(201).json(created);
     },
-    method: "post",
-    path: "/api/suspensions",
+  });
+  SuspensionsDetailPut = new Route({
+    method: "put",
+    path: "/api/suspensions/:suspension_id",
     schema: {
+      Params: z.object({
+        suspension_id: z
+          .string()
+          .min(1)
+          .refine((arg) => !isNaN(Number(arg)), { message: "ID penangguhan tidak valid!" }),
+      }),
+      ResBody: z.object({
+        reason: z.string(),
+        suspended_until: z.date(),
+        user_id: z.number(),
+        created_at: z.date(),
+        id: z.number(),
+      }),
       ReqBody: z.object({
         reason: z
           .string({ message: "Alasan invalid!" })
-          .min(1, { message: "Alasan tidak boleh kosong!" }),
+          .min(1, { message: "Alasan tidak boleh kosong!" })
+          .optional(),
         suspended_until: z
           .string({ message: "Tanggal tidak valid!" })
-          .datetime("Tanggal tidak valid!"),
-        user_id: z.number({ message: "Pengguna tidak valid!" }),
+          .datetime("Tanggal tidak valid!")
+          .optional(),
+        user_id: z.number({ message: "Pengguna tidak valid!" }).optional(),
       }),
     },
     priors: [validateLogged as RequestHandler],
-  });
-  SuspensionsDetailPut = new Route({
     handler: async (req, res) => {
       const { reason, suspended_until, user_id } = req.body;
       const { suspension_id: suspension_id_raw } = req.params;
@@ -84,28 +120,6 @@ export class SuspensionController extends Controller {
       }
       res.status(200).json(created);
     },
-    method: "put",
-    path: "/api/suspensions/:suspension_id",
-    schema: {
-      Params: z.object({
-        suspension_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID penangguhan tidak valid!" }),
-      }),
-      ReqBody: z.object({
-        reason: z
-          .string({ message: "Alasan invalid!" })
-          .min(1, { message: "Alasan tidak boleh kosong!" })
-          .optional(),
-        suspended_until: z
-          .string({ message: "Tanggal tidak valid!" })
-          .datetime("Tanggal tidak valid!")
-          .optional(),
-        user_id: z.number({ message: "Pengguna tidak valid!" }).optional(),
-      }),
-    },
-    priors: [validateLogged as RequestHandler],
   });
   SuspensionsDetailDelete = new Route({
     handler: async (req, res) => {
@@ -120,6 +134,9 @@ export class SuspensionController extends Controller {
     method: "delete",
     path: "/api/suspensions/:suspension_id",
     schema: {
+      ResBody: z.object({
+        msg: z.string(),
+      }),
       Params: z.object({
         suspension_id: z
           .string()
@@ -130,6 +147,24 @@ export class SuspensionController extends Controller {
     priors: [validateLogged as RequestHandler],
   });
   SuspensionsDetailGet = new Route({
+    method: "get",
+    path: "/api/suspensions/:suspension_id",
+    schema: {
+      ResBody: z.object({
+        reason: z.string(),
+        suspended_until: z.date(),
+        user_id: z.number(),
+        created_at: z.date(),
+        id: z.number(),
+      }),
+      Params: z.object({
+        suspension_id: z
+          .string()
+          .min(1)
+          .refine((arg) => !isNaN(Number(arg)), { message: "ID penangguhan tidak valid!" }),
+      }),
+    },
+    priors: [validateLogged as RequestHandler],
     handler: async (req, res) => {
       const sender_id = Number(req.session.user_id);
       const { suspension_id: suspension_id_raw } = req.params;
@@ -140,36 +175,21 @@ export class SuspensionController extends Controller {
       }
       res.status(200).json(result);
     },
-    method: "get",
-    path: "/api/suspensions/:suspension_id",
-    schema: {
-      Params: z.object({
-        suspension_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID penangguhan tidak valid!" }),
-      }),
-    },
-    priors: [validateLogged as RequestHandler],
   });
   SuspensionsGet = new Route({
-    handler: async (req, res) => {
-      const sender_id = Number(req.session.user_id);
-      const { user_id, expired_after, expired_before } = req.query;
-      const result = await this.suspension_service.getSuspension(
-        {
-          user_id: user_id != undefined ? Number(user_id) : undefined,
-          expired_after: expired_after != undefined ? new Date(expired_after) : undefined,
-          expired_before: expired_before != undefined ? new Date(expired_before) : undefined,
-        },
-        sender_id,
-      );
-      res.status(200).json(result);
-    },
     method: "get",
     path: "/api/suspensions",
     priors: [validateLogged as RequestHandler],
     schema: {
+      ResBody: z
+        .object({
+          reason: z.string(),
+          suspended_until: z.date(),
+          user_id: z.number(),
+          created_at: z.date(),
+          id: z.number(),
+        })
+        .array(),
       ReqQuery: z.object({
         user_id: z
           .string()
@@ -185,6 +205,19 @@ export class SuspensionController extends Controller {
           .datetime("Tanggal akhir tidak valid!")
           .optional(),
       }),
+    },
+    handler: async (req, res) => {
+      const sender_id = Number(req.session.user_id);
+      const { user_id, expired_after, expired_before } = req.query;
+      const result = await this.suspension_service.getSuspension(
+        {
+          user_id: user_id != undefined ? Number(user_id) : undefined,
+          expired_after: expired_after != undefined ? new Date(expired_after) : undefined,
+          expired_before: expired_before != undefined ? new Date(expired_before) : undefined,
+        },
+        sender_id,
+      );
+      res.status(200).json(result);
     },
   });
 }

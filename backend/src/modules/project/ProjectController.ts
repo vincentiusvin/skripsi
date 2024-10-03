@@ -329,6 +329,14 @@ export class ProjectController extends Controller {
   ProjectsCategoriesGet = new Route({
     method: "get",
     path: "/api/project-categories",
+    schema: {
+      ResBody: z
+        .object({
+          category_id: z.number(),
+          category_name: z.string(),
+        })
+        .array(),
+    },
     handler: async (req, res) => {
       const result = await this.project_service.getCategories();
       res.status(200).json(result);

@@ -6,7 +6,7 @@ type Opts<S extends APISchema> = {
   handler: RequestHandlerFromSchema<S>;
   method: "get" | "put" | "post" | "patch" | "delete";
   path: string;
-  schema?: S;
+  schema: S;
   priors?: RequestHandler[];
 };
 

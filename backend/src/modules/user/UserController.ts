@@ -28,6 +28,17 @@ export class UserController extends Controller {
         user_name: z.string().min(1, "Username tidak boleh kosong!"),
         user_password: z.string().min(1, "Password tidak boleh kosong!"),
       }),
+      ResBody: z.object({
+        user_id: z.number(),
+        user_name: z.string(),
+        user_email: z.string().nullable(),
+        user_education_level: z.string().nullable(),
+        user_school: z.string().nullable(),
+        user_about_me: z.string().nullable(),
+        user_image: z.string().nullable(),
+        user_is_admin: z.boolean(),
+        user_created_at: z.date(),
+      }),
     },
     handler: async (req, res) => {
       const { user_name, user_password } = req.body;
@@ -49,6 +60,21 @@ export class UserController extends Controller {
   UsersGet = new Route({
     method: "get",
     path: "/api/users",
+    schema: {
+      ResBody: z
+        .object({
+          user_id: z.number(),
+          user_name: z.string(),
+          user_email: z.string().nullable(),
+          user_education_level: z.string().nullable(),
+          user_school: z.string().nullable(),
+          user_about_me: z.string().nullable(),
+          user_image: z.string().nullable(),
+          user_is_admin: z.boolean(),
+          user_created_at: z.date(),
+        })
+        .array(),
+    },
     handler: async (req, res) => {
       const result = await this.user_service.getUsers();
       res.status(200).json(result);
@@ -63,6 +89,17 @@ export class UserController extends Controller {
           .string()
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid" }),
+      }),
+      ResBody: z.object({
+        user_id: z.number(),
+        user_name: z.string(),
+        user_email: z.string().nullable(),
+        user_education_level: z.string().nullable(),
+        user_school: z.string().nullable(),
+        user_about_me: z.string().nullable(),
+        user_image: z.string().nullable(),
+        user_is_admin: z.boolean(),
+        user_created_at: z.date(),
       }),
     },
     handler: async (req, res) => {
@@ -86,6 +123,17 @@ export class UserController extends Controller {
         user_about_me: z.string().min(1, "Biodata tidak boleh kosong!").optional(),
         user_image: z.string().min(1, "Gambar tidak boleh kosong!").optional(),
         user_email: z.string().min(1, "Email tidak boleh kosong!").optional(),
+      }),
+      ResBody: z.object({
+        user_id: z.number(),
+        user_name: z.string(),
+        user_email: z.string().nullable(),
+        user_education_level: z.string().nullable(),
+        user_school: z.string().nullable(),
+        user_about_me: z.string().nullable(),
+        user_image: z.string().nullable(),
+        user_is_admin: z.boolean(),
+        user_created_at: z.date(),
       }),
     },
     handler: async (req, res) => {
