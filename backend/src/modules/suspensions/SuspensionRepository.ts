@@ -42,7 +42,7 @@ export class SuspensionRepository {
       suspended_until: opts.suspended_until,
     };
 
-    if (Object.keys(updated_obj).some((x) => x != undefined)) {
+    if (Object.values(updated_obj).some((x) => x != undefined)) {
       return await this.db
         .updateTable("ms_suspensions")
         .set(updated_obj)
@@ -53,7 +53,10 @@ export class SuspensionRepository {
 
   async getSuspension(opts: { user_id?: number; expired_before?: Date; expired_after?: Date }) {
     const { user_id, expired_before, expired_after } = opts;
-    let query = this.db.selectFrom("ms_suspensions").select(defaultSuspensionFields);
+    let query = this.db
+      .selectFrom("ms_suspensions")
+      .select(defaultSuspensionFields)
+      .orderBy("ms_suspensions.suspended_until asc");
 
     if (user_id != undefined) {
       query = query.where("user_id", "=", user_id);

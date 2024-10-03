@@ -1,4 +1,4 @@
-import { Add, KeyboardArrowDown, KeyboardArrowUp, Save } from "@mui/icons-material";
+import { Add, Edit, KeyboardArrowDown, KeyboardArrowUp, Save } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -27,7 +27,12 @@ import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import UserLabel from "../../components/UserLabel.tsx";
-import { useSuspensionsGet, useSuspensionsPost } from "../../queries/suspension_hooks.ts";
+import {
+  useSuspensionsDetailGet,
+  useSuspensionsDetailPut,
+  useSuspensionsGet,
+  useSuspensionsPost,
+} from "../../queries/suspension_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
 import AuthorizeAdmin from "./components/AuthorizeAdmins.tsx";
 
@@ -94,6 +99,71 @@ function AddSuspension(props: { user_id: number; user_name: string }) {
   );
 }
 
+function EditSuspension(props: { suspension_id: number }) {
+  const { suspension_id } = props;
+  const [open, setOpen] = useState(false);
+  const [banName, setBanName] = useState<string | undefined>();
+  const [endDate, setEndDate] = useState<dayjs.Dayjs | null | undefined>();
+  const { mutate: edit } = useSuspensionsDetailPut({
+    suspension_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        variant: "success",
+        message: "Penangguhan berhasil diupdate!",
+      }),
+        setOpen(false);
+    },
+  });
+  const { data: suspension } = useSuspensionsDetailGet({
+    suspension_id,
+  });
+
+  if (!suspension) {
+    return <Skeleton />;
+  }
+
+  return (
+    <>
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle>Ubah Penangguhan</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} marginTop={2}>
+            <TextField
+              label="Alasan"
+              value={banName}
+              onChange={(e) => setBanName(e.target.value)}
+              defaultValue={suspension.reason}
+            />
+            <DatePicker
+              value={endDate}
+              onChange={(x) => setEndDate(x)}
+              label="Tanggal Selesai"
+              defaultValue={dayjs(suspension.suspended_until)}
+            ></DatePicker>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            startIcon={<Save />}
+            onClick={() => {
+              edit({
+                reason: banName,
+                suspended_until: endDate?.toISOString(),
+              });
+            }}
+          >
+            Simpan
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <IconButton onClick={() => setOpen(true)}>
+        <Edit />
+      </IconButton>
+    </>
+  );
+}
+
 function SuspensionData(props: { user_id: number }) {
   const { user_id } = props;
   const { data: suspension_data } = useSuspensionsGet({
@@ -117,6 +187,7 @@ function SuspensionData(props: { user_id: number }) {
             <TableCell>Tanggal Mulai</TableCell>
             <TableCell>Tanggal Selesai</TableCell>
             <TableCell>Alasan</TableCell>
+            <TableCell />
           </TableRow>
         </TableHead>
         <TableBody>
@@ -125,6 +196,9 @@ function SuspensionData(props: { user_id: number }) {
               <TableCell>{dayjs(x.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}</TableCell>
               <TableCell>{dayjs(x.suspended_until).format("ddd[,] D[/]M[/]YY HH:mm")}</TableCell>
               <TableCell>{x.reason}</TableCell>
+              <TableCell>
+                <EditSuspension suspension_id={x.id} />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
