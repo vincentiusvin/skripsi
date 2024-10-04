@@ -1,4 +1,4 @@
-import { Kysely, sql } from "kysely";
+import { Kysely } from "kysely";
 import { DB } from "../../db/db_types";
 
 export class ArticleRepository {
@@ -53,7 +53,7 @@ export class ArticleRepository {
   async getArticleLikesCount(articles_id: number) {
     return await this.db
       .selectFrom("ms_articles_likes")
-      .select(sql`COUNT(*)`.as(`articles_count`))
+      .select((eb) => eb.fn.count("article_id").as("articles_count"))
       .where("ms_articles_likes.article_id", "=", articles_id)
       .executeTakeFirst();
   }

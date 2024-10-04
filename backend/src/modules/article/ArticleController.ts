@@ -99,7 +99,7 @@ export class ArticleController extends Controller {
       }),
       ResBody: z.union([
         z.object({
-          articles_count: z.unknown(),
+          articles_count: z.number(),
         }),
         z.array(
           z.object({
@@ -113,7 +113,13 @@ export class ArticleController extends Controller {
       const count = req.query.count === "True";
       let result;
       if (count) {
-        result = await this.article_service.getArticleCount(id);
+        const res = await this.article_service.getArticleCount(id);
+        if (res == undefined) {
+          throw new Error("Gagal menghitung upvote!");
+        }
+        result = {
+          articles_count: Number(res.articles_count),
+        };
       } else {
         result = await this.article_service.getArticlesByLikes(id);
       }
