@@ -3,10 +3,10 @@ import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types";
 
 const defaultContributionFields = [
-  "ms_contributions.name as contributions_name",
-  "ms_contributions.description as contributions_description",
-  "ms_contributions.status as contributions_status",
-  "ms_contributions.project_id as project_id",
+  "ms_contributions.name",
+  "ms_contributions.description",
+  "ms_contributions.status",
+  "ms_contributions.project_id",
   "ms_contributions.id as id",
 ] as const;
 
@@ -47,7 +47,7 @@ export class ContributionRepository {
     return await query.execute();
   }
 
-  async getContributionsDetail(contributions_id: number) {
+  async getContributionsDetail(contribution_id: number) {
     return await this.db
       .selectFrom("ms_contributions")
       .select((eb) => [
@@ -59,26 +59,26 @@ export class ContributionRepository {
             .whereRef("ms_contributions_users.contributions_id", "=", "ms_contributions.id"),
         ).as("contribution_users"),
       ])
-      .where("ms_contributions.id", "=", contributions_id)
+      .where("ms_contributions.id", "=", contribution_id)
       .executeTakeFirst();
   }
 
   async addContributions(
     obj: {
-      contributions_name: string;
-      contributions_description: string;
-      contributions_project_id: number;
+      name: string;
+      description: string;
+      project_id: number;
     },
     users: number[],
   ) {
-    const { contributions_name, contributions_description, contributions_project_id } = obj;
+    const { name, description, project_id } = obj;
     return await this.db.transaction().execute(async (trx) => {
       const cont = await trx
         .insertInto("ms_contributions")
         .values({
-          name: contributions_name,
-          description: contributions_description,
-          project_id: contributions_project_id,
+          name: name,
+          description: description,
+          project_id: project_id,
           status: "Pending",
         })
         .returning(["ms_contributions.id"])
@@ -100,31 +100,25 @@ export class ContributionRepository {
     });
   }
 
-  async statusContributions(
+  async updateContribution(
     id: number,
     obj: {
-      contributions_name?: string;
-      contributions_description?: string;
-      contributions_project_id?: number;
+      name?: string;
+      description?: string;
+      project_id?: number;
       user_id?: number[];
       status?: string;
     },
   ) {
-    const {
-      contributions_name,
-      contributions_description,
-      contributions_project_id,
-      user_id,
-      status,
-    } = obj;
+    const { name, description, project_id, user_id, status } = obj;
     return await this.db.transaction().execute(async (trx) => {
       const cont = await trx
         .updateTable("ms_contributions")
         .set({
-          name: contributions_name,
-          description: contributions_description,
-          project_id: contributions_project_id,
-          status: status,
+          name,
+          description,
+          project_id,
+          status,
         })
         .where("id", "=", id)
         .executeTakeFirst();

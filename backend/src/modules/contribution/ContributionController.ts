@@ -30,9 +30,9 @@ export class ContributionController extends Controller {
       }),
       ResBody: z
         .object({
-          contributions_name: z.string(),
-          contributions_description: z.string(),
-          contributions_status: z.string(),
+          name: z.string(),
+          description: z.string(),
+          status: z.string(),
           project_id: z.number(),
           id: z.number(),
           contribution_users: z.array(
@@ -64,9 +64,9 @@ export class ContributionController extends Controller {
           .refine((arg) => !isNaN(Number(arg)), { message: "ID kontribusi tidak valid" }),
       }),
       ResBody: z.object({
-        contributions_name: z.string(),
-        contributions_description: z.string(),
-        contributions_status: z.string(),
+        name: z.string(),
+        description: z.string(),
+        status: z.string(),
         project_id: z.number(),
         id: z.number(),
         contribution_users: z.array(
@@ -87,9 +87,9 @@ export class ContributionController extends Controller {
     path: "/api/contributions",
     schema: {
       ResBody: z.object({
-        contributions_name: z.string(),
-        contributions_description: z.string(),
-        contributions_status: z.string(),
+        name: z.string(),
+        description: z.string(),
+        status: z.string(),
         project_id: z.number(),
         id: z.number(),
         contribution_users: z.array(
@@ -99,21 +99,20 @@ export class ContributionController extends Controller {
         ),
       }),
       ReqBody: z.object({
-        contributions_name: z.string().min(1, "Nama kontribusi tidak boleh kosong!"),
-        contributions_description: z.string().min(1, "Deskripsi kontribusi tidak boleh kosong!"),
-        contributions_project_id: z.number().min(1, "Project ID tidak boleh kosong!"),
+        name: z.string().min(1, "Nama kontribusi tidak boleh kosong!"),
+        description: z.string().min(1, "Deskripsi kontribusi tidak boleh kosong!"),
+        project_id: z.number().min(1, "Project ID tidak boleh kosong!"),
         user_id: z.array(z.number(), { message: "User Id invalid!" }).min(1),
       }),
     },
     handler: async (req, res) => {
-      const { contributions_name, contributions_description, contributions_project_id, user_id } =
-        req.body;
+      const { name, description, project_id, user_id } = req.body;
 
       const result = await this.cont_service.addContributions(
         {
-          contributions_name,
-          contributions_description,
-          contributions_project_id,
+          name: name,
+          description: description,
+          project_id: project_id,
         },
         user_id,
       );
@@ -127,9 +126,9 @@ export class ContributionController extends Controller {
     path: "/api/contributions/:id",
     schema: {
       ResBody: z.object({
-        contributions_name: z.string(),
-        contributions_description: z.string(),
-        contributions_status: z.string(),
+        name: z.string(),
+        description: z.string(),
+        status: z.string(),
         project_id: z.number(),
         id: z.number(),
         contribution_users: z.array(
@@ -142,29 +141,20 @@ export class ContributionController extends Controller {
         id: zodStringReadableAsNumber("ID Kontribusi tidak valid!"),
       }),
       ReqBody: z.object({
-        contributions_name: z.string().min(1, "Nama kontribusi tidak boleh kosong!").optional(),
-        contributions_description: z
-          .string()
-          .min(1, "Deskripsi kontribusi tidak boleh kosong!")
-          .optional(),
-        contributions_project_id: z.number().min(1, "Project ID tidak boleh kosong!").optional(),
+        name: z.string().min(1, "Nama kontribusi tidak boleh kosong!").optional(),
+        description: z.string().min(1, "Deskripsi kontribusi tidak boleh kosong!").optional(),
+        project_id: z.number().min(1, "Project ID tidak boleh kosong!").optional(),
         user_id: z.array(z.number(), { message: "User Id invalid!" }).min(1).optional(),
         status: z.string().min(1, "Status tidak boleh kosong").optional(),
       }),
     },
     handler: async (req, res) => {
       const id = Number(req.params.id);
-      const {
-        contributions_name,
-        contributions_description,
-        contributions_project_id,
-        user_id,
-        status,
-      } = req.body;
-      await this.cont_service.statusContributions(id, {
-        contributions_name,
-        contributions_description,
-        contributions_project_id,
+      const { name, description, project_id, user_id, status } = req.body;
+      await this.cont_service.updateContribution(id, {
+        name,
+        description,
+        project_id,
         user_id,
         status,
       });
