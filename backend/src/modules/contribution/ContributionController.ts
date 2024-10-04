@@ -58,10 +58,7 @@ export class ContributionController extends Controller {
     path: "/api/contributions/:id",
     schema: {
       Params: z.object({
-        id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID kontribusi tidak valid" }),
+        id: zodStringReadableAsNumber("ID kontribusi tidak valid"),
       }),
       ResBody: z.object({
         name: z.string(),

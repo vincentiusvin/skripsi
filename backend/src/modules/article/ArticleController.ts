@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller";
+import { zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { ArticleService } from "./ArticleService";
 
 export class ArticleController extends Controller {
@@ -48,10 +49,7 @@ export class ArticleController extends Controller {
     path: "/api/articles/:id",
     schema: {
       Params: z.object({
-        id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID artikel tidak boleh kosong!" }),
+        id: zodStringReadableAsNumber("ID artikel tidak boleh kosong!"),
       }),
       ResBody: z.object({
         user_id: z.number(),
@@ -73,10 +71,7 @@ export class ArticleController extends Controller {
     path: "/api/articles/:id/comments",
     schema: {
       Params: z.object({
-        id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID artikel tidak boleh kosong!" }),
+        id: zodStringReadableAsNumber("ID artikel tidak boleh kosong!"),
       }),
       ResBody: z
         .object({
@@ -97,10 +92,7 @@ export class ArticleController extends Controller {
     path: "/api/articles/:id/upvotes",
     schema: {
       Params: z.object({
-        id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID artikel tidak boleh kosong!" }),
+        id: zodStringReadableAsNumber("ID artikel tidak boleh kosong!"),
       }),
       ReqQuery: z.object({
         count: z.string().optional(),
@@ -165,10 +157,7 @@ export class ArticleController extends Controller {
     path: "/api/articles/:id",
     schema: {
       Params: z.object({
-        article_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID Artikel tidak valid" }),
+        article_id: zodStringReadableAsNumber("ID Artikel tidak valid"),
       }),
       ReqBody: z.object({
         articles_name: z.string({ message: "Nama invalid" }).min(1, "Nama tidak boleh kosong!"),
@@ -206,10 +195,7 @@ export class ArticleController extends Controller {
     path: "/api/articles/:article_id",
     schema: {
       Params: z.object({
-        article_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID Artikel tidak valid!" }),
+        article_id: zodStringReadableAsNumber("ID Artikel tidak valid!"),
       }),
       ResBody: z.object({
         msg: z.string(),

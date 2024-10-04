@@ -138,10 +138,7 @@ export class OrgController extends Controller {
     path: "/api/orgs/:org_id",
     schema: {
       Params: z.object({
-        org_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID tidak valid!" }),
+        org_id: zodStringReadableAsNumber("ID tidak valid!"),
       }),
       ResBody: z.object({
         org_id: z.number(),
@@ -215,10 +212,7 @@ export class OrgController extends Controller {
           .array(),
       }),
       Params: z.object({
-        org_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID organisasi tidak valid!" }),
+        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
       }),
       ReqBody: z.object({
         org_name: z
@@ -274,10 +268,7 @@ export class OrgController extends Controller {
         msg: z.string(),
       }),
       Params: z.object({
-        org_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID organisasi tidak valid!" }),
+        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
       }),
     },
     handler: async (req, res) => {
@@ -293,14 +284,8 @@ export class OrgController extends Controller {
     path: "/api/orgs/:org_id/users/:user_id",
     schema: {
       Params: z.object({
-        org_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID organisasi tidak valid!" }),
-        user_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
+        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
       }),
       ResBody: z.object({
         role: z.enum(org_roles).or(z.literal("Not Involved")),
@@ -329,14 +314,8 @@ export class OrgController extends Controller {
           .transform((arg) => parseRole(arg)) as ZodType<OrgRoles>,
       }),
       Params: z.object({
-        org_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID organisasi tidak valid!" }),
-        user_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
+        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
       }),
     },
     handler: async (req, res) => {
@@ -357,14 +336,8 @@ export class OrgController extends Controller {
     path: "/api/orgs/:org_id/users/:user_id",
     schema: {
       Params: z.object({
-        org_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID organisasi tidak valid!" }),
-        user_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
+        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
       }),
       ResBody: z.object({
         role: z.enum(org_roles).or(z.literal("Not Involved")),
