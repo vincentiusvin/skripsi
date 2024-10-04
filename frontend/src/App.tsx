@@ -33,6 +33,7 @@ import ProjectsLeavePage from "./routes/Projects/ProjectsLeavePage.tsx";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
 import ProjectsManagePage from "./routes/Projects/ProjectsManagePage.tsx";
 import ProjectsPeoplePage from "./routes/Projects/ProjectsPeoplePage.tsx";
+import UserReportPage from "./routes/Reports/UserReportPage.tsx";
 import UserAccountPageEdit from "./routes/User/UserEditPage.tsx";
 import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
 import ChatroomPage from "./routes/UserChatroom.tsx";
@@ -120,6 +121,7 @@ function App() {
                     <Route path={"/orgs/:org_id/edit"} component={OrgsEditPage} />
                     <Route path={"/orgs/:org_id/leave"} component={OrgsLeavePage} />
                     <Route path={"/chatrooms"} component={ChatroomPage} />
+                    <Route path={"/reports"} component={UserReportPage} />
                     <Route path={"/projects"} component={ProjectListPage} />
                     <Route path={"/projects/:project_id"} component={ProjectInfoPage} />
                     <Route path={"/projects/:project_id/people"} component={ProjectsPeoplePage} />
