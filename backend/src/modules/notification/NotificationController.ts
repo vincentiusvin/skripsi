@@ -2,10 +2,8 @@ import type { Express } from "express";
 import { RequestHandler } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
-import { RH } from "../../helpers/types.js";
 import { validateLogged } from "../../helpers/validate.js";
 import { zodStringReadableAsNumber } from "../../helpers/validators.js";
-import { NotificationTypes } from "./NotificationMisc.js";
 import { NotificationService } from "./NotificationService.js";
 
 export class NotificationController extends Controller {
@@ -89,33 +87,4 @@ export class NotificationController extends Controller {
       res.status(200).json(result);
     },
   });
-
-  private putNotifications: RH<{
-    ReqBody: {
-      read: boolean;
-    };
-    Params: {
-      notification_id: string;
-    };
-    ResBody: {
-      user_id: number;
-      read: boolean;
-      title: string;
-      created_at: Date;
-      description: string;
-      type: NotificationTypes;
-      type_id: number | null;
-      id: number;
-    };
-  }> = async (req, res) => {
-    const { notification_id: notification_id_str } = req.params;
-    const notification_id = Number(notification_id_str);
-    const { read } = req.body;
-    const sender_id = Number(req.session.user_id);
-
-    await this.notifcation_service.updateNotification(notification_id, read, sender_id);
-    const result = await this.notifcation_service.getNotification(notification_id);
-
-    res.status(200).json(result);
-  };
 }
