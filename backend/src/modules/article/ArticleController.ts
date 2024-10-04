@@ -54,10 +54,11 @@ export class ArticleController extends Controller {
           .refine((arg) => !isNaN(Number(arg)), { message: "ID artikel tidak boleh kosong!" }),
       }),
       ResBody: z.object({
-        article_id: z.number(),
         user_id: z.number(),
-        article_name: z.string(),
-        article_description: z.string(),
+        articles_name: z.string(),
+        articles_content: z.string(),
+        id: z.number(),
+        articles_description: z.string(),
       }),
     },
     handler: async (req, res) => {
@@ -104,6 +105,16 @@ export class ArticleController extends Controller {
       ReqQuery: z.object({
         count: z.string().optional(),
       }),
+      ResBody: z.union([
+        z.object({
+          articles_count: z.unknown(),
+        }),
+        z.array(
+          z.object({
+            user_id: z.number(),
+          }),
+        ),
+      ]),
     },
     handler: async (req, res) => {
       const id = Number(req.params.id);
@@ -129,10 +140,11 @@ export class ArticleController extends Controller {
         articles_user_id: z.number().min(1, "user_id invalid!"),
       }),
       ResBody: z.object({
-        article_id: z.number(),
         user_id: z.number(),
-        article_name: z.string(),
-        article_description: z.string(),
+        articles_name: z.string(),
+        articles_content: z.string(),
+        id: z.number(),
+        articles_description: z.string(),
       }),
     },
     handler: async (req, res) => {
@@ -170,6 +182,13 @@ export class ArticleController extends Controller {
           .number({ message: "user id invalid!" })
           .min(1, "user id tidak boleh kosong"),
       }),
+      ResBody: z.object({
+        user_id: z.number(),
+        articles_name: z.string(),
+        articles_content: z.string(),
+        id: z.number(),
+        articles_description: z.string(),
+      }),
     },
     handler: async (req, res) => {
       const article_id = Number(req.params.article_id);
@@ -183,11 +202,6 @@ export class ArticleController extends Controller {
   });
 
   ArticlesDetailDelete = new Route({
-    handler: async (req, res) => {
-      const article_id = Number(req.params.article_id);
-      await this.article_service.deleteArticle(article_id);
-      res.status(200).json({ msg: "Artikel berhasil dihapus! " });
-    },
     method: "delete",
     path: "/api/articles/:article_id",
     schema: {
@@ -197,6 +211,14 @@ export class ArticleController extends Controller {
           .min(1)
           .refine((arg) => !isNaN(Number(arg)), { message: "ID Artikel tidak valid!" }),
       }),
+      ResBody: z.object({
+        msg: z.string(),
+      }),
+    },
+    handler: async (req, res) => {
+      const article_id = Number(req.params.article_id);
+      await this.article_service.deleteArticle(article_id);
+      res.status(200).json({ msg: "Artikel berhasil dihapus! " });
     },
   });
 
@@ -208,10 +230,15 @@ export class ArticleController extends Controller {
         article_id: z.number().min(1, "article id tidak valid!"),
         user_id: z.number().min(1, "user id tidak valid!"),
       }),
+      ResBody: z
+        .object({
+          user_id: z.number(),
+        })
+        .array(),
     },
     handler: async (req, res) => {
       const { article_id, user_id } = req.body;
-      const result = this.article_service.upvotesPost({ article_id, user_id });
+      await this.article_service.upvotesPost({ article_id, user_id });
       const resultFinal = await this.article_service.getArticlesByLikes(article_id);
       res.status(201).json(resultFinal);
     },
@@ -224,6 +251,9 @@ export class ArticleController extends Controller {
       ReqBody: z.object({
         article_id: z.number().min(1, "article id tidak valid!"),
         user_id: z.number().min(1, "user id tidak valid!"),
+      }),
+      ResBody: z.object({
+        msg: z.string(),
       }),
     },
     handler: async (req, res) => {
