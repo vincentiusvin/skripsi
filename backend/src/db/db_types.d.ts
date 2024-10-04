@@ -108,6 +108,17 @@ export interface MsMessages {
   user_id: number;
 }
 
+export interface MsNotifications {
+  created_at: Generated<Timestamp>;
+  description: string;
+  id: Generated<number>;
+  read: Generated<boolean>;
+  title: string;
+  type: string;
+  type_id: number | null;
+  user_id: number;
+}
+
 export interface MsOrgs {
   address: string;
   created_at: Generated<Timestamp>;
@@ -124,6 +135,26 @@ export interface MsProjects {
   id: Generated<number>;
   name: string;
   org_id: number;
+}
+
+export interface MsReports {
+  chatroom_id: number | null;
+  created_at: Generated<Timestamp>;
+  description: string;
+  id: Generated<number>;
+  resolution: string | null;
+  resolved_at: Timestamp | null;
+  sender_id: number;
+  status: string;
+  title: string;
+}
+
+export interface MsSuspensions {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  reason: string;
+  suspended_until: Timestamp;
+  user_id: number;
 }
 
 export interface MsTaskBuckets {
@@ -151,6 +182,7 @@ export interface MsUsers {
   email: string | null;
   id: Generated<number>;
   image: string | null;
+  is_admin: Generated<boolean>;
   name: string;
   password: string;
   school: string | null;
@@ -196,8 +228,11 @@ export interface DB {
   ms_contributions_users: MsContributionsUsers;
   ms_friends: MsFriends;
   ms_messages: MsMessages;
+  ms_notifications: MsNotifications;
   ms_orgs: MsOrgs;
   ms_projects: MsProjects;
+  ms_reports: MsReports;
+  ms_suspensions: MsSuspensions;
   ms_task_buckets: MsTaskBuckets;
   ms_tasks: MsTasks;
   ms_users: MsUsers;

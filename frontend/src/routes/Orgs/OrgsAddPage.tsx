@@ -64,7 +64,7 @@ function OrgsAddPage() {
   });
 
   return (
-    <Grid container spacing={2} mt={2}>
+    <Grid container spacing={2}>
       <Grid size={12}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           Tambah Organisasi
@@ -146,8 +146,6 @@ function OrgsAddPage() {
           <FormControl>
             <InputLabel id="demo-simple-select-label">Category</InputLabel>
             <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
               value={orgCategory}
               onChange={(e) => setOrgCategory(Number(e.target.value))}
               label="Category"

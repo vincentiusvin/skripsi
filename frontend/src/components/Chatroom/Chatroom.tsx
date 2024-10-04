@@ -1,5 +1,14 @@
 import { Cancel, Check, Edit, Send } from "@mui/icons-material";
-import { Avatar, Box, Button, IconButton, Stack, TextField, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  IconButton,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -7,7 +16,9 @@ import {
   useChatroomsDetailMessagesPost,
   useChatroomsDetailMessagesPut,
 } from "../../queries/chat_hooks.ts";
+import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../queries/user_hooks.ts";
+import StyledLink from "../StyledLink.tsx";
 
 function Message(props: {
   message: {
@@ -20,6 +31,7 @@ function Message(props: {
   chatroom_id: number;
 }) {
   const { message, chatroom_id } = props;
+  const { data: session_data } = useSessionGet();
   const { data: user_data } = useUsersDetailGet({ user_id: message.user_id });
   const [isEditing, setIsEditing] = useState(false);
   const { mutate: updateMessage } = useChatroomsDetailMessagesPut({
@@ -28,49 +40,100 @@ function Message(props: {
   });
   const [editMsg, setEditMsg] = useState<string | undefined>();
 
-  return (
-    <Stack direction={"row"} spacing={2} alignItems={"center"}>
-      {isEditing ? (
-        <>
-          <Avatar src={user_data?.user_image ?? ""}></Avatar>
-          <Box>
-            <Typography fontWeight={"bold"}>{user_data?.user_name}</Typography>
-            <TextField
-              fullWidth
-              onChange={(e) => {
-                setEditMsg(e.target.value);
+  const isOurs = session_data && session_data.logged && session_data.user_id === message.user_id;
+
+  if (isOurs) {
+    return (
+      <Stack
+        direction={"row"}
+        spacing={2}
+        alignItems={"center"}
+        justifyContent={"flex-end"}
+        textAlign={"right"}
+      >
+        {isEditing ? (
+          <>
+            <Box>
+              <TextField
+                fullWidth
+                onChange={(e) => {
+                  setEditMsg(e.target.value);
+                }}
+                defaultValue={message.message}
+              ></TextField>
+              <Typography variant="caption">
+                {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+              </Typography>
+            </Box>
+            <IconButton
+              onClick={() => {
+                if (editMsg) {
+                  updateMessage(editMsg);
+                }
+                setIsEditing(false);
+                setEditMsg(undefined);
               }}
-              defaultValue={message.message}
-            ></TextField>
-            <Typography variant="caption">
-              {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
-            </Typography>
-          </Box>
-          <IconButton
-            onClick={() => {
-              if (editMsg) {
-                updateMessage(editMsg);
-              }
-              setIsEditing(false);
-              setEditMsg(undefined);
-            }}
-          >
-            <Check />
-          </IconButton>
-          <IconButton
-            onClick={() => {
-              setIsEditing(false);
-              setEditMsg(undefined);
-            }}
-          >
-            <Cancel />
-          </IconButton>
-        </>
-      ) : (
-        <>
+            >
+              <Check />
+            </IconButton>
+            <IconButton
+              onClick={() => {
+                setIsEditing(false);
+                setEditMsg(undefined);
+              }}
+            >
+              <Cancel />
+            </IconButton>
+          </>
+        ) : (
+          <>
+            <Stack direction={"column"} alignItems={"flex-end"}>
+              <Paper
+                sx={{
+                  paddingY: 1,
+                  paddingX: 2,
+                }}
+              >
+                <Typography
+                  sx={{
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {message.message}
+                </Typography>
+              </Paper>
+              <Typography variant="caption">
+                {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+                {message.is_edited ? " (Edited)" : ""}
+              </Typography>
+            </Stack>
+            <Box>
+              <IconButton
+                onClick={() => {
+                  setIsEditing(true);
+                }}
+              >
+                <Edit />
+              </IconButton>
+            </Box>
+          </>
+        )}
+      </Stack>
+    );
+  } else {
+    return (
+      <Stack direction={"row"} spacing={2} alignItems={"center"}>
+        <StyledLink to={`/users/${user_data?.user_id}`}>
           <Avatar src={user_data?.user_image ?? ""}></Avatar>
-          <Box>
-            <Typography fontWeight={"bold"}>{user_data?.user_name}</Typography>
+        </StyledLink>
+        <Stack direction={"column"} alignItems={"flex-start"}>
+          <Typography fontWeight={"bold"}>{user_data?.user_name}</Typography>
+          <Paper
+            sx={{
+              paddingY: 1,
+              paddingX: 2,
+            }}
+          >
             <Typography
               sx={{
                 wordBreak: "break-word",
@@ -78,24 +141,15 @@ function Message(props: {
             >
               {message.message}
             </Typography>
-            <Typography variant="caption">
-              {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
-              {message.is_edited ? " (Edited)" : ""}
-            </Typography>
-          </Box>
-          <Box>
-            <IconButton
-              onClick={() => {
-                setIsEditing(true);
-              }}
-            >
-              <Edit />
-            </IconButton>
-          </Box>
-        </>
-      )}
-    </Stack>
-  );
+          </Paper>
+          <Typography variant="caption">
+            {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+            {message.is_edited ? " (Edited)" : ""}
+          </Typography>
+        </Stack>
+      </Stack>
+    );
+  }
 }
 
 export function ChatroomComponent(props: { chatroom_id: number }) {

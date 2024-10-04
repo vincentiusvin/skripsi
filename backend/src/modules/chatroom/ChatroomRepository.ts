@@ -2,6 +2,21 @@ import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
 
+const defaultChatroomFields = [
+  "ms_chatrooms.id as chatroom_id",
+  "ms_chatrooms.name as chatroom_name",
+  "ms_chatrooms.project_id",
+  "ms_chatrooms.created_at as chatroom_created_at",
+] as const;
+
+const defaultMessageFields = [
+  "ms_messages.id as id",
+  "ms_messages.message as message",
+  "ms_messages.created_at as created_at",
+  "ms_messages.user_id as user_id",
+  "ms_messages.is_edited as is_edited",
+] as const;
+
 function chatroomWithUsers(eb: ExpressionBuilder<DB, "ms_chatrooms">) {
   return jsonArrayFrom(
     eb
@@ -30,13 +45,7 @@ export class ChatRepository {
   async getMessages(chatroom_id: number) {
     return await this.db
       .selectFrom("ms_messages")
-      .select([
-        "ms_messages.id as id",
-        "ms_messages.message as message",
-        "ms_messages.created_at as created_at",
-        "ms_messages.user_id as user_id",
-        "ms_messages.is_edited as is_edited",
-      ])
+      .select(defaultMessageFields)
       .where("ms_messages.chatroom_id", "=", chatroom_id)
       .orderBy("id asc")
       .execute();
@@ -81,16 +90,18 @@ export class ChatRepository {
       .executeTakeFirst();
   }
 
+  async getMessage(message_id: number) {
+    return await this.db
+      .selectFrom("ms_messages")
+      .select(defaultMessageFields)
+      .where("id", "=", message_id)
+      .executeTakeFirst();
+  }
+
   async getChatroomByID(chatroom_id: number) {
     return await this.db
       .selectFrom("ms_chatrooms")
-      .select((eb) => [
-        "ms_chatrooms.id as chatroom_id",
-        "ms_chatrooms.name as chatroom_name",
-        "ms_chatrooms.project_id",
-        "ms_chatrooms.created_at as chatroom_created_at",
-        chatroomWithUsers(eb).as("chatroom_users"),
-      ])
+      .select((eb) => [...defaultChatroomFields, chatroomWithUsers(eb).as("chatroom_users")])
       .where("ms_chatrooms.id", "=", chatroom_id)
       .executeTakeFirst();
   }
@@ -98,13 +109,7 @@ export class ChatRepository {
   async getProjectChatrooms(project_id: number) {
     return await this.db
       .selectFrom("ms_chatrooms")
-      .select((eb) => [
-        "ms_chatrooms.id as chatroom_id",
-        "ms_chatrooms.name as chatroom_name",
-        "ms_chatrooms.project_id",
-        "ms_chatrooms.created_at as chatroom_created_at",
-        chatroomWithUsers(eb).as("chatroom_users"),
-      ])
+      .select((eb) => [...defaultChatroomFields, chatroomWithUsers(eb).as("chatroom_users")])
       .orderBy("chatroom_id", "desc")
       .where("project_id", "=", project_id)
       .execute();
@@ -113,13 +118,7 @@ export class ChatRepository {
   async getUserChatrooms(user_id: number) {
     return await this.db
       .selectFrom("ms_chatrooms")
-      .select((eb) => [
-        "ms_chatrooms.id as chatroom_id",
-        "ms_chatrooms.name as chatroom_name",
-        "ms_chatrooms.project_id",
-        "ms_chatrooms.created_at as chatroom_created_at",
-        chatroomWithUsers(eb).as("chatroom_users"),
-      ])
+      .select((eb) => [...defaultChatroomFields, chatroomWithUsers(eb).as("chatroom_users")])
       .orderBy("chatroom_id", "desc")
       .where("ms_chatrooms.id", "in", (eb) =>
         eb.selectFrom("chatrooms_users").select("chatroom_id").where("user_id", "=", user_id),
@@ -128,7 +127,7 @@ export class ChatRepository {
   }
 
   async addUserChatroom(user_id: number, chatroom_name: string) {
-    await this.db.transaction().execute(async (trx) => {
+    return await this.db.transaction().execute(async (trx) => {
       const room_id = await trx
         .insertInto("ms_chatrooms")
         .values({
@@ -164,7 +163,8 @@ export class ChatRepository {
       .executeTakeFirst();
   }
 
-  async updateChatroom(chatroom_id: number, name?: string, user_ids?: number[]) {
+  async updateChatroom(chatroom_id: number, opts: { name?: string; user_ids?: number[] }) {
+    const { name, user_ids } = opts;
     if (name) {
       await this.db
         .updateTable("ms_chatrooms")

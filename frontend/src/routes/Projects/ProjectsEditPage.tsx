@@ -19,13 +19,13 @@ import {
   useProjectsDetailGet,
   useProjectsDetailPut,
 } from "../../queries/project_hooks";
+import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
 
-function ProjectsEditPage() {
+function ProjectsEdit(props: { project_id: number }) {
+  const { project_id } = props;
   const [projectName, setProjectName] = useState<string | undefined>();
   const [projectDesc, setProjectDesc] = useState<string | undefined>();
   const [projectCategory, setProjectCategory] = useState<number[] | undefined>();
-  const { project_id: project_id_raw } = useParams();
-  const project_id = Number(project_id_raw);
 
   const [, setLocation] = useLocation();
 
@@ -60,7 +60,7 @@ function ProjectsEditPage() {
   }
 
   return (
-    <Grid container spacing={2} mt={2}>
+    <Grid container spacing={2}>
       <Grid size={12}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
           Edit Project
@@ -107,6 +107,17 @@ function ProjectsEditPage() {
         </Button>
       </Grid>
     </Grid>
+  );
+}
+
+function ProjectsEditPage() {
+  const { project_id: id } = useParams();
+  const project_id = Number(id);
+
+  return (
+    <AuthorizeProjects allowedRoles={["Admin"]}>
+      <ProjectsEdit project_id={project_id} />
+    </AuthorizeProjects>
   );
 }
 

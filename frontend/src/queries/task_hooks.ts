@@ -2,6 +2,7 @@ import { useMutation, useQueries, useQuery } from "@tanstack/react-query";
 import { API } from "../../../backend/src/routes.ts";
 import { APIContext } from "../helpers/fetch.ts";
 import { queryClient } from "../helpers/queryclient.tsx";
+import { useProjectsDetailGet } from "./project_hooks.ts";
 
 const bucketKeys = {
   all: () => ["buckets"] as const,
@@ -14,16 +15,22 @@ const bucketKeys = {
 const taskKeys = {
   all: () => ["tasks"] as const,
   lists: () => [...taskKeys.all(), "list"] as const,
-  list: (bucket_id: number) => [...taskKeys.lists(), { bucket_id }] as const,
+  list: (opts: { bucket_id?: number }) => [...taskKeys.lists(), opts] as const,
   details: () => [...taskKeys.all(), "detail"] as const,
   detail: (task_id: number) => [...taskKeys.details(), task_id] as const,
 };
 
-export function useBucketsDetailTasksGet(opts: { bucket_id: number }) {
-  const { bucket_id } = opts;
+export function useTasksGet(opts: { bucket_id?: number; user_id?: number }) {
+  const { bucket_id, user_id } = opts;
   return useQuery({
-    queryKey: taskKeys.list(bucket_id),
-    queryFn: () => new APIContext("BucketsDetailTasksGet").fetch(`/api/buckets/${bucket_id}/tasks`),
+    queryKey: taskKeys.list({ bucket_id }),
+    queryFn: () =>
+      new APIContext("TasksGet").fetch(`/api/tasks`, {
+        query: {
+          bucket_id: bucket_id?.toString(),
+          user_id: user_id?.toString(),
+        },
+      }),
   });
 }
 
@@ -35,26 +42,34 @@ export function useTasksDetailGet(opts: { task_id: number }) {
   });
 }
 
-export function useProjectsDetailBucketsGet(opts: { project_id: number }) {
+export function useBucketsGet(opts: { project_id: number }) {
   const { project_id } = opts;
   return useQuery({
     queryKey: bucketKeys.list(project_id),
     queryFn: () =>
-      new APIContext("ProjectsDetailBucketsGet").fetch(`/api/projects/${project_id}/buckets`),
+      new APIContext("BucketsGet").fetch(`/api/buckets`, {
+        query: {
+          project_id: project_id?.toString(),
+        },
+      }),
   });
 }
 
 export function useFormattedTasks(opts: { project_id: number }) {
   const { project_id } = opts;
-  const { data: buckets } = useProjectsDetailBucketsGet({ project_id });
+  const { data: buckets } = useBucketsGet({ project_id });
 
   return useQueries({
     queries:
       buckets?.map((bucket) => {
         return {
-          queryKey: taskKeys.list(bucket.id),
+          queryKey: taskKeys.list({ bucket_id: bucket.id }),
           queryFn: () =>
-            new APIContext("BucketsDetailTasksGet").fetch(`/api/buckets/${bucket.id}/tasks`),
+            new APIContext("TasksGet").fetch(`/api/tasks`, {
+              query: {
+                bucket_id: bucket.id.toString(),
+              },
+            }),
         };
       }) || [],
     combine: (res) => {
@@ -66,15 +81,12 @@ export function useFormattedTasks(opts: { project_id: number }) {
   });
 }
 
-export function useBucketsDetailTasksPost(opts: { onSuccess: () => void; bucket_id: number }) {
-  const { bucket_id, onSuccess } = opts;
+export function useTasksPost(opts: { onSuccess: () => void }) {
+  const { onSuccess } = opts;
   return useMutation({
-    mutationFn: new APIContext("BucketsDetailTasksPost").bodyFetch(
-      `/api/buckets/${bucket_id}/tasks`,
-      {
-        method: "POST",
-      },
-    ),
+    mutationFn: new APIContext("TasksPost").bodyFetch(`/api/tasks`, {
+      method: "POST",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all() });
       if (onSuccess) {
@@ -119,15 +131,12 @@ export function useTasksDetailDelete(opts: { onSuccess?: () => void; task_id: nu
   });
 }
 
-export function useProjectsDetailBucketsPost(opts: { project_id: number; onSuccess: () => void }) {
-  const { project_id, onSuccess } = opts;
+export function useBucketsPost(opts: { onSuccess: () => void }) {
+  const { onSuccess } = opts;
   return useMutation({
-    mutationFn: new APIContext("ProjectsDetailBucketsPost").bodyFetch(
-      `/api/projects/${project_id}/buckets`,
-      {
-        method: "POST",
-      },
-    ),
+    mutationFn: new APIContext("BucketsPost").bodyFetch(`/api/buckets`, {
+      method: "POST",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bucketKeys.all() });
       if (onSuccess) {
@@ -137,9 +146,10 @@ export function useProjectsDetailBucketsPost(opts: { project_id: number; onSucce
   });
 }
 
-export function useBucketsDetailGet(opts: { bucket_id: number }) {
-  const { bucket_id } = opts;
+export function useBucketsDetailGet(opts: { bucket_id: number; enabled?: boolean }) {
+  const { enabled, bucket_id } = opts;
   return useQuery({
+    enabled,
     queryKey: bucketKeys.detail(bucket_id),
     queryFn: () => new APIContext("BucketsDetailGet").fetch(`/api/buckets/${bucket_id}`),
   });
@@ -168,4 +178,28 @@ export function useBucketsDetailDelete(opts: { bucket_id: number }) {
       queryClient.invalidateQueries({ queryKey: bucketKeys.all() });
     },
   });
+}
+
+export function useTasksToProject(opts: { task_id: number }) {
+  const { task_id } = opts;
+  const task = useTasksDetailGet({
+    task_id,
+  });
+  const bucket = useBucketsDetailGet({
+    bucket_id: task.data?.bucket_id ?? 0,
+    enabled: task.data != undefined,
+  });
+  const project = useProjectsDetailGet({
+    project_id: bucket.data?.project_id ?? 0,
+    enabled: bucket.data != undefined,
+  });
+
+  return {
+    data: {
+      task,
+      bucket,
+      project,
+    },
+    isFetching: [task, bucket, project].some((x) => x.isFetching),
+  };
 }

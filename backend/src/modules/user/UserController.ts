@@ -26,13 +26,13 @@ export class UserController extends Controller {
       }),
 
       UsersGet: new Route({
-        handler: this.getUser,
+        handler: this.getUsers,
         method: "get",
         path: "/api/users",
       }),
 
-      UserAccountGet: new Route({
-        handler: this.getUserAccount,
+      UsersDetailGet: new Route({
+        handler: this.getUserDetail,
         method: "get",
         path: "/api/users/:id",
         schema: {
@@ -45,7 +45,7 @@ export class UserController extends Controller {
         },
       }),
 
-      UserAccountUpdate: new Route({
+      UsersDetailPut: new Route({
         handler: this.updateUserAccount,
         method: "put",
         path: "/api/users/:id",
@@ -80,7 +80,7 @@ export class UserController extends Controller {
       throw new Error("Gagal menambahkan pengguna!");
     }
 
-    const result = await this.user_service.getUserByID(user_id.id);
+    const result = await this.user_service.getUserDetail(user_id.id);
     if (result == undefined) {
       throw new Error("Gagal menambahkan pengguna!");
     }
@@ -88,28 +88,39 @@ export class UserController extends Controller {
     res.status(201).json(result);
   };
 
-  private getUser: RH<{
-    ResBody: { user_id: number; user_name: string }[];
-  }> = async (req, res) => {
-    const result = await this.user_service.getUsers();
-    res.status(200).json(result);
-  };
-
-  private getUserAccount: RH<{
-    Params: { id: string };
+  private getUsers: RH<{
     ResBody: {
       user_id: number;
       user_name: string;
-      user_password: string;
+      user_is_admin: boolean;
       user_email: string | null;
       user_education_level: string | null;
       user_school: string | null;
       user_about_me: string | null;
       user_image: string | null;
+      user_created_at: Date;
+    }[];
+  }> = async (req, res) => {
+    const result = await this.user_service.getUsers();
+    res.status(200).json(result);
+  };
+
+  private getUserDetail: RH<{
+    Params: { id: string };
+    ResBody: {
+      user_id: number;
+      user_is_admin: boolean;
+      user_name: string;
+      user_email: string | null;
+      user_education_level: string | null;
+      user_school: string | null;
+      user_about_me: string | null;
+      user_image: string | null;
+      user_created_at: Date;
     };
   }> = async (req, res) => {
     const id = Number(req.params.id);
-    const result = await this.user_service.getUserAccountDetail(id);
+    const result = await this.user_service.getUserDetail(id);
     res.status(200).json(result);
   };
 
@@ -121,6 +132,7 @@ export class UserController extends Controller {
       user_education_level: string | null;
       user_school: string | null;
       user_about_me: string | null;
+      user_created_at: Date;
       user_image: string | null;
     };
     Params: {
@@ -146,17 +158,22 @@ export class UserController extends Controller {
       user_image,
     } = req.body;
     const user_id = Number(req.params.id);
+    const sender_id = Number(req.session.user_id);
 
-    await this.user_service.updateAccountDetail(user_id, {
-      user_name,
-      user_email,
-      user_education_level,
-      user_school,
-      user_about_me,
-      user_image,
-      user_password,
-    });
-    const updated = await this.user_service.getUserAccountDetail(user_id);
+    await this.user_service.updateAccountDetail(
+      user_id,
+      {
+        user_name,
+        user_email,
+        user_education_level,
+        user_school,
+        user_about_me,
+        user_image,
+        user_password,
+      },
+      sender_id,
+    );
+    const updated = await this.user_service.getUserDetail(user_id);
     res.status(200).json(updated);
   };
 }

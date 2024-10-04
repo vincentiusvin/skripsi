@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { RequestHandler } from "express";
 import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
-import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { NotFoundError } from "../../helpers/error.js";
 import { RH } from "../../helpers/types.js";
 import { validateLogged } from "../../helpers/validate.js";
 import { OrgRoles, parseRole } from "./OrgMisc.js";
@@ -184,7 +184,7 @@ export class OrgController extends Controller {
       }[];
       org_users: {
         user_id: number;
-        user_role: string;
+        user_role: OrgRoles;
       }[];
     }[];
     ReqQuery: {
@@ -213,7 +213,7 @@ export class OrgController extends Controller {
       }[];
       org_users: {
         user_id: number;
-        user_role: string;
+        user_role: OrgRoles;
       }[];
     };
   }> = async (req, res) => {
@@ -240,7 +240,7 @@ export class OrgController extends Controller {
       }[];
       org_users: {
         user_id: number;
-        user_role: string;
+        user_role: OrgRoles;
       }[];
     };
     ReqBody: {
@@ -299,7 +299,7 @@ export class OrgController extends Controller {
       }[];
       org_users: {
         user_id: number;
-        user_role: string;
+        user_role: OrgRoles;
       }[];
     };
     Params: {
@@ -319,20 +319,18 @@ export class OrgController extends Controller {
     const org_id = Number(req.params.org_id);
     const sender_id = req.session.user_id!;
 
-    const sender_role = await this.org_service.getMemberRole(org_id, sender_id);
-
-    if (sender_role !== "Admin") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
-    }
-
-    await this.org_service.updateOrg(Number(org_id), {
-      org_name,
-      org_address,
-      org_category: org_categories,
-      org_description,
-      org_image,
-      org_phone,
-    });
+    await this.org_service.updateOrg(
+      Number(org_id),
+      {
+        org_name,
+        org_address,
+        org_category: org_categories,
+        org_description,
+        org_image,
+        org_phone,
+      },
+      sender_id,
+    );
     const updated = await this.org_service.getOrgByID(Number(org_id));
 
     res.status(200).json(updated);
@@ -348,13 +346,8 @@ export class OrgController extends Controller {
   }> = async (req, res) => {
     const org_id = Number(req.params.org_id);
     const sender_id = req.session.user_id!;
-    const sender_role = await this.org_service.getMemberRole(org_id, sender_id);
 
-    if (sender_role !== "Admin") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
-    }
-
-    await this.org_service.deleteOrg(org_id);
+    await this.org_service.deleteOrg(org_id, sender_id);
     res.status(200).json({ msg: "Organisasi berhasil di hapus" });
   };
 

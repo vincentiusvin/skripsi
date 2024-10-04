@@ -1,7 +1,8 @@
 import { expect } from "chai";
 import { describe } from "mocha";
 import { Application } from "../../app.js";
-import { APIContext, baseCase, getLoginCookie } from "../../test/helpers.js";
+import { baseCase } from "../../test/fixture_data.js";
+import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 
@@ -14,7 +15,7 @@ describe("projects api", () => {
 
   beforeEach(async () => {
     await clearDB(app);
-    caseData = await baseCase(app);
+    caseData = await baseCase(app.db);
   });
 
   it("should be able to get projects", async () => {

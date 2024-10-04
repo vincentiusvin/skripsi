@@ -1,11 +1,10 @@
-import { Add, Delete, Edit, Logout, People, Remove } from "@mui/icons-material";
+import { Delete, Edit, Logout, People } from "@mui/icons-material";
 import {
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   ListItemIcon,
   ListItemText,
   MenuItem,
@@ -13,15 +12,15 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   useChatroomsDetailDelete,
   useChatroomsDetailGet,
   useChatroomsDetailPut,
 } from "../../queries/chat_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
+import UserSelectDialog from "../UserSelect.tsx";
 
 export function AddMembersDialog(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
@@ -39,27 +38,13 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
     },
   });
   const [editRoomMembersOpen, setEditRoomMembersOpen] = useState(false);
-  const [editRoomMembers, setEditRoomMembers] = useState<number[] | undefined>();
-
-  const inUsers: typeof users & [] = [];
-  const pendingUsers: typeof users & [] = [];
-  const outUsers: typeof users & [] = [];
 
   if (!chatroom || !users) {
     return <Skeleton />;
   }
 
   const chatroom_users = chatroom.chatroom_users.map((x) => x.user_id);
-
-  users.forEach((x) => {
-    if (chatroom_users.includes(x.user_id)) {
-      inUsers.push(x);
-    } else if (editRoomMembers?.includes(x.user_id)) {
-      pendingUsers.push(x);
-    } else {
-      outUsers.push(x);
-    }
-  });
+  const all_users = users.map((x) => x.user_id);
 
   return (
     <>
@@ -69,88 +54,18 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
         </ListItemIcon>
         <ListItemText>Add Members</ListItemText>
       </MenuItem>
-      <Dialog open={editRoomMembersOpen} onClose={() => setEditRoomMembersOpen(false)}>
-        <DialogTitle>Add members</DialogTitle>
-        <DialogContent
-          sx={{
-            minWidth: 350,
-          }}
-        >
-          <Typography fontWeight={"bold"} variant="h6">
-            Chat members:
-          </Typography>
-          {inUsers.map((x, i) => (
-            <Typography key={i}>{x.user_name}</Typography>
-          ))}
-          <Divider
-            sx={{
-              my: 2,
-            }}
-          />
-          <Typography fontWeight={"bold"} variant="h6">
-            Could be invited:
-          </Typography>
-          <Grid container>
-            {outUsers.map((x, i) => (
-              <React.Fragment key={i}>
-                <Grid size={10}>
-                  <Typography>{x.user_name}</Typography>
-                </Grid>
-                <Grid size={2}>
-                  <Button onClick={() => setEditRoomMembers((old) => [...(old ?? []), x.user_id])}>
-                    <Add />
-                  </Button>
-                </Grid>
-              </React.Fragment>
-            ))}
-          </Grid>
-
-          {!!pendingUsers.length && (
-            <>
-              <Divider
-                sx={{
-                  my: 2,
-                }}
-              />
-              <Typography fontWeight={"bold"} variant="h6">
-                Pending invite:
-              </Typography>
-              <Grid container>
-                {pendingUsers.map((x, i) => (
-                  <React.Fragment key={i}>
-                    <Grid key={i} size={10}>
-                      <Typography>{x.user_name}</Typography>
-                    </Grid>
-                    <Grid size={2}>
-                      <Button
-                        onClick={() =>
-                          setEditRoomMembers((old) =>
-                            old?.filter((old_num) => old_num !== x.user_id),
-                          )
-                        }
-                      >
-                        <Remove />
-                      </Button>
-                    </Grid>
-                  </React.Fragment>
-                ))}
-              </Grid>
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              editRoom({
-                user_ids: [...(editRoomMembers ?? []), ...inUsers.map((x) => x.user_id)],
-              });
-              setEditRoomMembersOpen(false);
-            }}
-          >
-            Save members
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <UserSelectDialog
+        current_users={chatroom_users}
+        allowed_users={all_users}
+        open={editRoomMembersOpen}
+        onClose={() => setEditRoomMembersOpen(false)}
+        onSave={(new_users) => {
+          editRoom({
+            user_ids: new_users,
+          });
+          setEditRoomMembersOpen(false);
+        }}
+      />
     </>
   );
 }

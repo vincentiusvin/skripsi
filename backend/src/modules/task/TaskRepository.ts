@@ -55,7 +55,7 @@ export class TaskRepository {
     return result;
   }
 
-  async findTaskByID(task_id: number) {
+  async getTaskByID(task_id: number) {
     const result = await this.db
       .selectFrom("ms_tasks")
       .select((eb) => [
@@ -74,8 +74,9 @@ export class TaskRepository {
     return result;
   }
 
-  async findTasksByBucket(bucket_id: number) {
-    const result = await this.db
+  async getTasks(opts: { bucket_id?: number; user_id?: number }) {
+    const { bucket_id, user_id } = opts;
+    let query = this.db
       .selectFrom("ms_tasks")
       .select((eb) => [
         "ms_tasks.id",
@@ -87,11 +88,26 @@ export class TaskRepository {
         "ms_tasks.end_at",
         taskWithUsers(eb).as("users"),
       ])
-      .where("ms_tasks.bucket_id", "=", bucket_id)
-      .orderBy(["order asc", "id asc"])
-      .execute();
+      .orderBy(["order asc", "id asc"]);
 
-    return result;
+    if (bucket_id != undefined) {
+      query = query.where("ms_tasks.bucket_id", "=", bucket_id);
+    }
+
+    if (user_id != undefined) {
+      query = query.where((eb) =>
+        eb(
+          "ms_tasks.id",
+          "in",
+          eb
+            .selectFrom("tasks_users")
+            .select("tasks_users.task_id")
+            .where("tasks_users.user_id", "=", user_id),
+        ),
+      );
+    }
+
+    return await query.execute();
   }
 
   async getMaxOrder(bucket_id: number) {
@@ -107,23 +123,43 @@ export class TaskRepository {
     bucket_id: number;
     order: number;
     name: string;
+    users?: number[];
     description?: string;
     end_at?: string;
     start_at?: string;
   }) {
-    const { order, bucket_id, name, description, end_at, start_at } = data;
-    return await this.db
-      .insertInto("ms_tasks")
-      .values({
-        bucket_id: Number(bucket_id),
-        order,
-        name,
-        description,
-        end_at,
-        start_at,
-      })
-      .returning("id")
-      .executeTakeFirst();
+    const { order, users, bucket_id, name, description, end_at, start_at } = data;
+    return await this.db.transaction().execute(async (trx) => {
+      const res = await trx
+        .insertInto("ms_tasks")
+        .values({
+          bucket_id: Number(bucket_id),
+          order,
+          name,
+          description,
+          end_at,
+          start_at,
+        })
+        .returning("id")
+        .executeTakeFirst();
+
+      if (!res) {
+        throw new Error("Gagal memasukkan data!");
+      }
+
+      if (users != undefined) {
+        for (const user_id of users) {
+          await trx
+            .insertInto("tasks_users")
+            .values({
+              task_id: res.id,
+              user_id,
+            })
+            .execute();
+        }
+      }
+      return res;
+    });
   }
 
   /**
@@ -148,33 +184,65 @@ export class TaskRepository {
       order?: number;
       bucket_id?: number;
       name?: string;
+      users?: number[];
       description?: string;
       start_at?: string;
       end_at?: string;
     },
   ) {
-    const { bucket_id, name, description, start_at, end_at, order } = data;
-    await this.db
-      .updateTable("ms_tasks")
-      .set({
-        bucket_id,
-        description,
-        end_at,
-        name,
-        order,
-        start_at,
-      })
-      .where("ms_tasks.id", "=", Number(task_id))
-      .execute();
+    const { bucket_id, name, users, description, start_at, end_at, order } = data;
+    await this.db.transaction().execute(async (trx) => {
+      if (
+        bucket_id != undefined ||
+        description != undefined ||
+        end_at != undefined ||
+        name != undefined ||
+        order != undefined ||
+        start_at != undefined
+      ) {
+        trx
+          .updateTable("ms_tasks")
+          .set({
+            bucket_id,
+            description,
+            end_at,
+            name,
+            order,
+            start_at,
+          })
+          .where("ms_tasks.id", "=", task_id)
+          .execute();
+      }
+
+      if (users != undefined) {
+        await trx.deleteFrom("tasks_users").where("task_id", "=", task_id).execute();
+        if (users.length) {
+          await trx
+            .insertInto("tasks_users")
+            .values(
+              users.map((user_id) => ({
+                task_id,
+                user_id,
+              })),
+            )
+            .execute();
+        }
+      }
+    });
   }
 
-  async getProjectBuckets(project_id: number) {
-    return await this.db
+  async getBuckets(opts: { project_id?: number }) {
+    const { project_id } = opts;
+    let query = this.db
       .selectFrom("ms_task_buckets")
       .select(["name", "id", "project_id"])
-      .where("ms_task_buckets.project_id", "=", project_id)
-      .orderBy("ms_task_buckets.id asc")
-      .execute();
+      .orderBy("ms_task_buckets.id asc");
+
+    if (project_id != undefined) {
+      query = query.where("ms_task_buckets.project_id", "=", project_id);
+    }
+
+    return query.execute();
   }
 
   async addBucket(project_id: number, name: string) {

@@ -163,6 +163,11 @@ export class ProjectController extends Controller {
     const project_id = Number(project_id_str);
     const user_id = Number(user_id_str);
 
+    const verify = await this.project_service.getProjectByID(project_id);
+    if (verify == undefined) {
+      throw new NotFoundError("Proyek tersebut tidak dapat ditemukan!");
+    }
+
     const result = await this.project_service.getMemberRole(project_id, user_id);
     res.status(200).json({ role: result });
   };
@@ -219,7 +224,7 @@ export class ProjectController extends Controller {
       project_desc: string;
       project_members: {
         user_id: number;
-        role: string;
+        role: ProjectRoles;
       }[];
       project_categories: {
         category_name: string;
@@ -251,7 +256,7 @@ export class ProjectController extends Controller {
       project_desc: string;
       project_members: {
         user_id: number;
-        role: string;
+        role: ProjectRoles;
       }[];
       project_categories: {
         category_name: string;
@@ -302,7 +307,7 @@ export class ProjectController extends Controller {
       project_desc: string;
       project_members: {
         user_id: number;
-        role: string;
+        role: ProjectRoles;
       }[];
       project_categories: {
         category_name: string;
@@ -336,7 +341,7 @@ export class ProjectController extends Controller {
       project_desc: string;
       project_members: {
         user_id: number;
-        role: string;
+        role: ProjectRoles;
       }[];
       project_categories: {
         category_name: string;

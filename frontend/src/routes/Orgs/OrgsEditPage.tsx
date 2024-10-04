@@ -17,26 +17,26 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
-import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { useOrgDetailGet, useOrgsCategoriesGet, useOrgsUpdate } from "../../queries/org_hooks";
+import AuthorizeOrgs from "./components/AuthorizeOrgs.tsx";
 
-function OrgsEditPage() {
+function OrgsEdit(props: { org_id: number }) {
+  const { org_id } = props;
   const [orgName, setOrgName] = useState<string | undefined>(undefined);
   const [orgDesc, setOrgDesc] = useState<string | undefined>(undefined);
   const [orgAddress, setOrgAddress] = useState<string | undefined>(undefined);
   const [orgPhone, setOrgPhone] = useState<string | undefined>(undefined);
   const [orgImage, setOrgImage] = useState<string | undefined>(undefined);
   const [orgCategory, setOrgCategory] = useState<number[] | undefined>(undefined);
-  const { id } = useParams();
   const [, setLocation] = useLocation();
 
   const { data: org_data } = useOrgDetailGet({
-    id: Number(id),
+    id: org_id,
   });
 
   const { mutate: editOrg } = useOrgsUpdate({
-    id: Number(id),
+    id: org_id,
     name: orgName,
     desc: orgDesc,
     address: orgAddress,
@@ -49,27 +49,18 @@ function OrgsEditPage() {
         autoHideDuration: 5000,
         variant: "success",
       });
-      setLocation("/orgs");
+      setLocation(`/orgs/${org_id}`);
     },
   });
 
-  // Fetch categories from the backend API
-  const { data: categories } = useOrgsCategoriesGet({
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
-        setLocation("/");
-        return false;
-      }
-      return true;
-    },
-  });
+  const { data: categories } = useOrgsCategoriesGet({});
 
   if (org_data == undefined) {
     return <Skeleton />;
   }
 
   return (
-    <Grid container spacing={2} mt={2}>
+    <Grid container spacing={2}>
       <Grid size={12}>
         <Typography
           variant="h4"
@@ -184,6 +175,17 @@ function OrgsEditPage() {
         </Button>
       </Grid>
     </Grid>
+  );
+}
+
+function OrgsEditPage() {
+  const { org_id: id } = useParams();
+  const org_id = Number(id);
+
+  return (
+    <AuthorizeOrgs allowedRoles={["Admin"]}>
+      <OrgsEdit org_id={org_id} />
+    </AuthorizeOrgs>
   );
 }
 

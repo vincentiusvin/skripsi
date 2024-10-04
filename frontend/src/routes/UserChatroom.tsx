@@ -27,6 +27,7 @@ import {
   ChangeNameDialog,
   LeaveRoom,
 } from "../components/Chatroom/ChatroomMisc.tsx";
+import { useSearchParams, useStateSearch } from "../helpers/search.ts";
 import {
   useChatSocket,
   useUsersDetailChatroomsGet,
@@ -83,8 +84,17 @@ function AddRoomDialog(props: { user_id: number }) {
 
 function ChatroomPageAuthorized(props: { user_id: number }) {
   const { user_id } = props;
+  const searchHook = useSearchParams();
+
+  let activeRoom: undefined | number = undefined;
+
+  const [activeRoomRaw, setActiveRoom] = useStateSearch("room", searchHook);
+  const tryNumber = Number(activeRoomRaw);
+  if (!Number.isNaN(tryNumber)) {
+    activeRoom = tryNumber;
+  }
+
   const [connected, setConnected] = useState(false);
-  const [activeRoom, setActiveRoom] = useState<number | false>(false);
 
   const { data: chatrooms } = useUsersDetailChatroomsGet({
     user_id: user_id,
@@ -92,8 +102,8 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
 
   const selectedChatroom = chatrooms?.find((x) => x.chatroom_id === activeRoom);
 
-  if (activeRoom !== false && chatrooms && selectedChatroom === undefined) {
-    setActiveRoom(false);
+  if (activeRoom != undefined && chatrooms && selectedChatroom === undefined) {
+    setActiveRoom(undefined);
   }
 
   useChatSocket({
@@ -183,7 +193,7 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
                     chatroom_id={selectedChatroom.chatroom_id}
                     user_id={user_id}
                     onLeave={() => {
-                      setActiveRoom(false);
+                      setActiveRoom(undefined);
                       setMenuAnchor(undefined);
                     }}
                   />

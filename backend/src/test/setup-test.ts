@@ -23,6 +23,7 @@ export async function mochaGlobalTeardown() {
 }
 
 export async function clearDB(app: Application) {
+  await app.db.deleteFrom("ms_notifications").execute();
   await app.db.deleteFrom("ms_contributions_users").execute();
   await app.db.deleteFrom("ms_contributions").execute();
   await app.db.deleteFrom("ms_friends").execute();
@@ -40,6 +41,6 @@ export async function clearDB(app: Application) {
   await app.db.deleteFrom("categories_orgs").execute();
   await app.db.deleteFrom("ms_category_orgs").execute();
   await app.db.deleteFrom("ms_orgs").execute();
-  await app.db.deleteFrom("ms_users").execute();
+  await app.db.deleteFrom("ms_users").where("ms_users.is_admin", "=", false).execute();
   await app.db.deleteFrom("session").execute();
 }

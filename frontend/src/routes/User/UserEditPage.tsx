@@ -133,7 +133,7 @@ function UserAccountPageEdit() {
             </ImageDropzone>
           </DialogContent>
         </Dialog>
-        <Grid container mt={2} rowGap={2}>
+        <Grid container rowGap={2}>
           <Grid
             size={{
               xs: 12,
@@ -173,7 +173,6 @@ function UserAccountPageEdit() {
                 sx={{
                   px: 4,
                   py: 2,
-                  backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
                 }}
               >
                 <TextField
@@ -242,7 +241,6 @@ function UserAccountPageEdit() {
                 sx={{
                   px: 4,
                   py: 2,
-                  backgroundColor: (theme) => (theme.palette.mode === "dark" ? "#1A2027" : "#fff"),
                 }}
               >
                 <TextField

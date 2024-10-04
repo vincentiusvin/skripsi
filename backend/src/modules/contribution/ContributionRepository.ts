@@ -2,6 +2,14 @@ import { Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types";
 
+const defaultContributionFields = [
+  "ms_contributions.name as contributions_name",
+  "ms_contributions.description as contributions_description",
+  "ms_contributions.status as contributions_status",
+  "ms_contributions.project_id as project_id",
+  "ms_contributions.id as id",
+] as const;
+
 export class ContributionRepository {
   private db: Kysely<DB>;
   constructor(db: Kysely<DB>) {
@@ -12,11 +20,7 @@ export class ContributionRepository {
     let query = this.db
       .selectFrom("ms_contributions")
       .select((eb) => [
-        "ms_contributions.name as contributions_name",
-        "ms_contributions.description as contributions_description",
-        "ms_contributions.status as contributions_status",
-        "ms_contributions.project_id as project_id",
-        "ms_contributions.id as id",
+        ...defaultContributionFields,
         jsonArrayFrom(
           eb
             .selectFrom("ms_contributions_users")
@@ -47,11 +51,7 @@ export class ContributionRepository {
     return await this.db
       .selectFrom("ms_contributions")
       .select((eb) => [
-        "ms_contributions.name as contributions_name",
-        "ms_contributions.description as contributions_description",
-        "ms_contributions.status as contributions_status",
-        "ms_contributions.project_id as project_id",
-        "ms_contributions.id as id",
+        ...defaultContributionFields,
         jsonArrayFrom(
           eb
             .selectFrom("ms_contributions_users")

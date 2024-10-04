@@ -1,7 +1,16 @@
-import { ExpressionBuilder, Kysely } from "kysely";
+import { ExpressionBuilder, Kysely, RawBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
 import { OrgRoles, parseRole } from "./OrgMisc.js";
+
+const defaultOrgFields = [
+  "ms_orgs.id as org_id",
+  "ms_orgs.name as org_name",
+  "ms_orgs.description as org_description",
+  "ms_orgs.address as org_address",
+  "ms_orgs.phone as org_phone",
+  "ms_orgs.image as org_image",
+] as const;
 
 function orgWithCategories(eb: ExpressionBuilder<DB, "ms_orgs">) {
   return jsonArrayFrom(
@@ -19,7 +28,12 @@ function orgWithUsers(eb: ExpressionBuilder<DB, "ms_orgs">) {
       .selectFrom("orgs_users")
       .select(["orgs_users.user_id", "orgs_users.role as user_role"])
       .whereRef("orgs_users.org_id", "=", "ms_orgs.id"),
-  );
+  ) as RawBuilder<
+    {
+      user_id: number;
+      user_role: OrgRoles;
+    }[]
+  >;
 }
 
 export class OrgRepository {
@@ -34,12 +48,7 @@ export class OrgRepository {
     let query = this.db
       .selectFrom("ms_orgs")
       .select((eb) => [
-        "ms_orgs.id as org_id",
-        "ms_orgs.name as org_name",
-        "ms_orgs.description as org_description",
-        "ms_orgs.address as org_address",
-        "ms_orgs.phone as org_phone",
-        "ms_orgs.image as org_image",
+        ...defaultOrgFields,
         orgWithCategories(eb).as("org_categories"),
         orgWithUsers(eb).as("org_users"),
       ]);
@@ -64,12 +73,7 @@ export class OrgRepository {
     return await this.db
       .selectFrom("ms_orgs")
       .select((eb) => [
-        "ms_orgs.id as org_id",
-        "ms_orgs.name as org_name",
-        "ms_orgs.description as org_description",
-        "ms_orgs.address as org_address",
-        "ms_orgs.phone as org_phone",
-        "ms_orgs.image as org_image",
+        ...defaultOrgFields,
         orgWithCategories(eb).as("org_categories"),
         orgWithUsers(eb).as("org_users"),
       ])
@@ -81,12 +85,7 @@ export class OrgRepository {
     return await this.db
       .selectFrom("ms_orgs")
       .select((eb) => [
-        "ms_orgs.id as org_id",
-        "ms_orgs.name as org_name",
-        "ms_orgs.description as org_description",
-        "ms_orgs.address as org_address",
-        "ms_orgs.phone as org_phone",
-        "ms_orgs.image as org_image",
+        ...defaultOrgFields,
         orgWithCategories(eb).as("org_categories"),
         orgWithUsers(eb).as("org_users"),
       ])

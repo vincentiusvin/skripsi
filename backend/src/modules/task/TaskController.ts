@@ -54,6 +54,7 @@ export class TaskController extends Controller {
           ReqBody: z.object({
             bucket_id: z.number({ message: "ID kelompok tugas tidak valid!" }).optional(),
             before_id: z.number({ message: "Lokasi tugas tidak valid!" }).optional(),
+            users: z.array(z.number(), { message: "Pengguna invalid!" }).optional(),
             name: z
               .string({ message: "Nama tidak valid!" })
               .min(1, "Nama tidak boleh kosong!")
@@ -118,19 +119,15 @@ export class TaskController extends Controller {
           }),
         },
       }),
-      BucketsDetailTasksPost: new Route({
-        handler: this.postBucketsDetailTasks,
+      TasksPost: new Route({
+        handler: this.postTasks,
         method: "post",
-        path: "/api/buckets/:bucket_id/tasks",
+        path: "/api/tasks",
         schema: {
-          Params: z.object({
-            bucket_id: z
-              .string()
-              .min(1)
-              .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
-          }),
           ReqBody: z.object({
             name: z.string({ message: "Nama tidak valid!" }).min(1, "Nama tidak boleh kosong!"),
+            bucket_id: z.number({ message: "Kelompok tugas tidak boleh kosong!" }),
+            users: z.array(z.number(), { message: "Pengguna invalid!" }).optional(),
             description: z
               .string({ message: "Deskripsi tidak valid!" })
               .min(1, "Deskripsi tidak boleh kosong!")
@@ -146,46 +143,49 @@ export class TaskController extends Controller {
           }),
         },
       }),
-      BucketsDetailTasksGet: new Route({
-        handler: this.getBucketsDetailTasks,
+      TasksGet: new Route({
+        handler: this.getTasks,
         method: "get",
-        path: "/api/buckets/:bucket_id/tasks",
+        path: "/api/tasks",
         schema: {
-          Params: z.object({
+          ReqQuery: z.object({
             bucket_id: z
               .string()
               .min(1)
-              .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" })
+              .optional(),
+            user_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" })
+              .optional(),
           }),
         },
       }),
-      ProjectsDetailBucketsGet: new Route({
-        handler: this.getProjectsDetailBuckets,
+      BucketsGet: new Route({
+        handler: this.getBuckets,
         method: "get",
-        path: "/api/projects/:project_id/buckets",
+        path: "/api/buckets",
         schema: {
-          Params: z.object({
+          ReqQuery: z.object({
             project_id: z
               .string()
               .min(1)
-              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" })
+              .optional(),
           }),
         },
       }),
-      ProjectsDetailBucketsPost: new Route({
-        handler: this.postProjectsDetailBuckets,
+      BucketsPost: new Route({
+        handler: this.postBuckets,
         method: "post",
-        path: "/api/projects/:project_id/buckets",
+        path: "/api/buckets",
         schema: {
           ReqBody: z.object({
             name: z.string({ message: "Nama invalid!" }).min(1, "Nama tidak boleh kosong!"),
+            project_id: z.number({ message: "ID projek tidak boleh kosong!" }),
           }),
-          Params: z.object({
-            project_id: z
-              .string()
-              .min(1)
-              .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
-          }),
+          Params: z.object({}),
         },
       }),
     };
@@ -200,6 +200,7 @@ export class TaskController extends Controller {
       before_id?: number;
       name?: string;
       description?: string;
+      users?: number[];
       start_at?: string;
       end_at?: string;
     };
@@ -217,17 +218,23 @@ export class TaskController extends Controller {
     };
   }> = async (req, res) => {
     const { task_id: task_id_raw } = req.params;
-    const { bucket_id, name, description, start_at, end_at, before_id } = req.body;
+    const { users, bucket_id, name, description, start_at, end_at, before_id } = req.body;
+    const sender_id = Number(req.session.user_id);
 
     const task_id = Number(task_id_raw);
-    await this.task_service.updateTask(task_id, {
-      before_id,
-      bucket_id,
-      description,
-      end_at,
-      name,
-      start_at,
-    });
+    await this.task_service.updateTask(
+      task_id,
+      {
+        before_id,
+        bucket_id,
+        description,
+        end_at,
+        name,
+        users,
+        start_at,
+      },
+      sender_id,
+    );
 
     const result = await this.task_service.getTaskByID(task_id);
 
@@ -238,10 +245,7 @@ export class TaskController extends Controller {
     res.status(200).json(result);
   };
 
-  private postBucketsDetailTasks: RH<{
-    Params: {
-      bucket_id: string;
-    };
+  private postTasks: RH<{
     ResBody: {
       id: number;
       name: string;
@@ -257,20 +261,26 @@ export class TaskController extends Controller {
     ReqBody: {
       name: string;
       description?: string;
+      bucket_id: number;
+      users?: number[];
       end_at?: string;
       start_at?: string;
     };
   }> = async (req, res) => {
-    const { bucket_id } = req.params;
-    const { name, description, end_at, start_at } = req.body;
+    const { bucket_id, users, name, description, end_at, start_at } = req.body;
+    const sender_id = Number(req.session.user_id);
 
-    const task_id = await this.task_service.addTask({
-      bucket_id: Number(bucket_id),
-      name,
-      description,
-      end_at,
-      start_at,
-    });
+    const task_id = await this.task_service.addTask(
+      {
+        bucket_id,
+        name,
+        users,
+        description,
+        end_at,
+        start_at,
+      },
+      sender_id,
+    );
 
     if (!task_id) {
       throw new Error("Gagal menemukan task setelah ditambahkan!");
@@ -283,12 +293,14 @@ export class TaskController extends Controller {
     res.status(201).json(result);
   };
 
-  private getBucketsDetailTasks: RH<{
-    Params: {
-      bucket_id: string;
+  private getTasks: RH<{
+    ReqQuery: {
+      bucket_id?: string;
+      user_id?: string;
     };
     ResBody: {
       id: number;
+      bucket_id: number;
       name: string;
       description: string | null;
       end_at: Date | null;
@@ -298,14 +310,17 @@ export class TaskController extends Controller {
       }[];
     }[];
   }> = async (req, res) => {
-    const { bucket_id } = req.params;
-    const result = await this.task_service.getTaskByBucket(Number(bucket_id));
+    const { bucket_id, user_id } = req.query;
+    const result = await this.task_service.getTasks({
+      bucket_id: bucket_id != undefined ? Number(bucket_id) : undefined,
+      user_id: user_id != undefined ? Number(user_id) : undefined,
+    });
     res.status(200).json(result);
   };
 
-  private getProjectsDetailBuckets: RH<{
-    Params: {
-      project_id: string;
+  private getBuckets: RH<{
+    ReqQuery: {
+      project_id?: string;
     };
     ResBody: {
       name: string;
@@ -313,27 +328,27 @@ export class TaskController extends Controller {
       project_id: number;
     }[];
   }> = async (req, res) => {
-    const { project_id } = req.params;
+    const { project_id } = req.query;
 
-    const result = await this.task_service.getBuckets(Number(project_id));
+    const result = await this.task_service.getBuckets({
+      project_id: project_id != undefined ? Number(project_id) : undefined,
+    });
     res.status(200).json(result);
   };
 
-  private postProjectsDetailBuckets: RH<{
-    Params: {
-      project_id: string;
-    };
+  private postBuckets: RH<{
     ReqBody: {
       name: string;
+      project_id: number;
     };
     ResBody: {
       msg: string;
     };
   }> = async (req, res) => {
-    const { project_id } = req.params;
-    const { name } = req.body;
+    const { name, project_id } = req.body;
+    const sender_id = Number(req.session.user_id);
 
-    await this.task_service.addBucket(Number(project_id), name);
+    await this.task_service.addBucket(project_id, name, sender_id);
 
     res.status(201).json({
       msg: "Bucket created!",
@@ -347,6 +362,7 @@ export class TaskController extends Controller {
     ResBody: {
       id: number;
       name: string;
+      bucket_id: number;
       description: string | null;
       end_at: Date | null;
       start_at: Date | null;
@@ -377,8 +393,9 @@ export class TaskController extends Controller {
   }> = async (req, res) => {
     const { task_id: task_id_raw } = req.params;
     const task_id = Number(task_id_raw);
+    const sender_id = Number(req.session.user_id);
 
-    await this.task_service.deleteTask(task_id);
+    await this.task_service.deleteTask(task_id, sender_id);
 
     res.status(200).json({ msg: "Tugas berhasil dihapus!" });
   };
@@ -421,10 +438,15 @@ export class TaskController extends Controller {
     const { bucket_id: bucket_id_raw } = req.params;
     const { name } = req.body;
     const bucket_id = Number(bucket_id_raw);
+    const sender_id = Number(req.session.user_id);
 
-    await this.task_service.updateBucket(bucket_id, {
-      name,
-    });
+    await this.task_service.updateBucket(
+      bucket_id,
+      {
+        name,
+      },
+      sender_id,
+    );
 
     const result = await this.task_service.getBucketByID(bucket_id);
 

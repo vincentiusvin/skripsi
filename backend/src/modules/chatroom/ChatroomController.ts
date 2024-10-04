@@ -189,6 +189,13 @@ export class ChatController extends Controller {
     };
   }
 
+  private async broadcastEvent(user_ids: number[], event: string, ...args: unknown[]) {
+    const socks = await this.socket_server.fetchSockets();
+
+    const filtered = socks.filter((x) => user_ids.includes(x.data.userId));
+    filtered.forEach((x) => x.emit(event, ...args));
+  }
+
   private getChatroomsDetailMessages: RH<{
     Params: {
       chatroom_id: string;
@@ -238,22 +245,14 @@ export class ChatController extends Controller {
       throw new ClientError("Pesan tidak boleh kosong!");
     }
 
-    const val = await this.chat_service.isAllowed(chatroom_id, user_id);
-    if (!val) {
-      throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
-    }
-
     const ret = await this.chat_service.sendMessage(chatroom_id, user_id, message);
 
     if (!ret) {
       throw new Error("Pesan tidak terkirim!");
     }
 
-    const members = await this.chat_service.getMembers(chatroom_id);
-
-    const socks = await this.socket_server.fetchSockets();
-    const filtered = socks.filter((x) => members.includes(x.data.userId));
-    filtered.forEach((x) => x.emit("msg", chatroom_id, JSON.stringify(ret)));
+    const members = await this.chat_service.getAllowedListeners(chatroom_id);
+    await this.broadcastEvent(members, "msg", chatroom_id, JSON.stringify(ret));
 
     res.status(201).json(ret);
   };
@@ -283,22 +282,14 @@ export class ChatController extends Controller {
       throw new ClientError("Pesan tidak boleh kosong!");
     }
 
-    const val = await this.chat_service.isAllowed(chatroom_id, user_id);
-    if (!val) {
-      throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
-    }
-
-    const ret = await this.chat_service.updateMessage(message_id, { message });
+    const ret = await this.chat_service.updateMessage(message_id, { message }, user_id);
 
     if (!ret) {
       throw new Error("Pesan tidak terkirim!");
     }
 
-    const members = await this.chat_service.getMembers(chatroom_id);
-
-    const socks = await this.socket_server.fetchSockets();
-    const filtered = socks.filter((x) => members.includes(x.data.userId));
-    filtered.forEach((x) => x.emit("msgUpd", chatroom_id, JSON.stringify(ret)));
+    const members = await this.chat_service.getAllowedListeners(chatroom_id);
+    await this.broadcastEvent(members, "msgUpd", chatroom_id, JSON.stringify(ret));
 
     res.status(200).json(ret);
   };
@@ -374,16 +365,16 @@ export class ChatController extends Controller {
     const name = req.body.name;
     const user_id_str = req.params.user_id;
     const user_id = Number(user_id_str);
+    const sender_id = Number(req.session.user_id);
 
     if (name.length === 0) {
       throw new ClientError("Nama chatroom tidak boleh kosong!");
     }
 
-    await this.chat_service.addUserChatroom(user_id, name);
+    const chatroom_id = await this.chat_service.addUserChatroom(user_id, name, sender_id);
 
-    const socks = await this.socket_server.fetchSockets();
-    const filtered = socks.filter((x) => user_id === x.data.userId);
-    filtered.forEach((x) => x.emit("roomUpdate"));
+    const members = await this.chat_service.getAllowedListeners(chatroom_id);
+    await this.broadcastEvent(members, "roomUpdate");
 
     res.status(201).json({
       msg: "Room created!",
@@ -405,22 +396,20 @@ export class ChatController extends Controller {
   }> = async (req, res) => {
     const name = req.body.name;
     const project_id = Number(req.params.project_id);
+    const sender_id = Number(req.session.user_id);
 
     if (name.length === 0) {
       throw new ClientError("Nama chatroom tidak boleh kosong!");
     }
 
-    const chatroom_id = await this.chat_service.addProjectChatroom(project_id, name);
+    const chatroom_id = await this.chat_service.addProjectChatroom(project_id, name, sender_id);
 
     if (!chatroom_id) {
       throw new Error("Chatroom gagal untuk dibuat!");
     }
 
-    const members = await this.chat_service.getMembers(chatroom_id.id);
-    const socks = await this.socket_server.fetchSockets();
-
-    const filtered = socks.filter((x) => members.includes(x.data.userId));
-    filtered.forEach((x) => x.emit("roomUpdate"));
+    const members = await this.chat_service.getAllowedListeners(chatroom_id.id);
+    await this.broadcastEvent(members, "roomUpdate");
 
     const chatroom_data = await this.chat_service.getChatroomByID(chatroom_id.id);
     if (!chatroom_data) {
@@ -438,22 +427,15 @@ export class ChatController extends Controller {
     const { name, user_ids } = req.body;
     const { chatroom_id: chatroom_id_str } = req.params;
     const chatroom_id = Number(chatroom_id_str);
-    const user_id = req.session.user_id!;
+    const sender_id = req.session.user_id!;
 
-    const val = await this.chat_service.isAllowed(chatroom_id, user_id);
-    if (!val) {
-      throw new AuthError("Anda tidak memiliki akses untuk membaca chat ini!");
-    }
+    const old_members = await this.chat_service.getAllowedListeners(chatroom_id);
+    await this.chat_service.updateChatroom(chatroom_id, { name, user_ids }, sender_id);
+    const new_members = await this.chat_service.getAllowedListeners(chatroom_id);
 
-    const old_members = await this.chat_service.getMembers(chatroom_id);
-    await this.chat_service.updateChatroom(chatroom_id, name, user_ids);
-    const new_members = await this.chat_service.getMembers(chatroom_id);
+    const users_to_notify = [...old_members, ...new_members];
 
-    const users_to_notify = [...old_members.map((x) => x), ...new_members.map((x) => x)];
-
-    const socks = await this.socket_server.fetchSockets();
-    const filtered = socks.filter((x) => users_to_notify.includes(x.data.userId));
-    filtered.forEach((x) => x.emit("roomUpdate"));
+    await this.broadcastEvent(users_to_notify, "roomUpdate");
 
     res.status(200).json({
       msg: "Update successful!",
@@ -466,19 +448,12 @@ export class ChatController extends Controller {
   }> = async (req, res) => {
     const { chatroom_id: chatroom_id_str } = req.params;
     const chatroom_id = Number(chatroom_id_str);
-    const user_id = req.session.user_id!;
+    const sender_id = req.session.user_id!;
 
-    const val = await this.chat_service.isAllowed(chatroom_id, user_id);
-    if (!val) {
-      throw new AuthError("Anda tidak memiliki akses untuk membaca chat ini!");
-    }
+    const members = await this.chat_service.getAllowedListeners(chatroom_id);
+    await this.chat_service.deleteChatroom(chatroom_id, sender_id);
 
-    const members = await this.chat_service.getMembers(chatroom_id);
-    await this.chat_service.deleteChatroom(chatroom_id);
-
-    const socks = await this.socket_server.fetchSockets();
-    const filtered = socks.filter((x) => members.includes(x.data.userId));
-    filtered.forEach((x) => x.emit("roomUpdate"));
+    await this.broadcastEvent(members, "roomUpdate");
 
     res.status(200).json({
       msg: "Delete successful!",

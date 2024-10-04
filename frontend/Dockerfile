@@ -10,4 +10,5 @@ RUN npm run build
 
 FROM nginx:1.27.0-alpine3.19 as frontend_serve
 COPY --from=frontend_build /frontend/dist /usr/share/nginx/html
+RUN gzip -9k $(find /usr/share/nginx/html/ -type f)
 COPY ./default.conf.template /etc/nginx/templates/default.conf.template
