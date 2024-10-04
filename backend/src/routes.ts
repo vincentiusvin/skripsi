@@ -1,6 +1,6 @@
 import { Application } from "./app.js";
 import { Route } from "./helpers/controller.js";
-import { ExtractRH, UnionToIntersection } from "./helpers/types";
+import { TypesFromSchema, UnionToIntersection } from "./helpers/types";
 import { ArticleController } from "./modules/article/ArticleController.js";
 import { ArticleRepository } from "./modules/article/ArticleRepository.js";
 import { ArticleService } from "./modules/article/ArticleService.js";
@@ -96,7 +96,7 @@ type Controllers = ReturnType<typeof registerControllers>;
 type Routes = UnionToIntersection<ReturnType<Controllers[number]["init"]>>;
 
 type _api = {
-  [K in keyof Routes]: Routes[K] extends Route<infer O> ? O : never;
+  [K in keyof Routes]: Routes[K] extends Route<infer O> ? TypesFromSchema<O> : never;
 };
 
 /**
@@ -105,5 +105,5 @@ type _api = {
  * API[NamaKey]["ResBody" | "ReqBody" | "ReqParams"]
  */
 export type API = {
-  [K in keyof _api]: ExtractRH<_api[K]>;
+  [K in keyof _api]: _api[K];
 };

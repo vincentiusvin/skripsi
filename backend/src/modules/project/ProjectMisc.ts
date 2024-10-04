@@ -1,4 +1,4 @@
-const project_roles = ["Pending", "Invited", "Dev", "Admin"] as const;
+export const project_roles = ["Pending", "Invited", "Dev", "Admin"] as const;
 export type ProjectRoles = (typeof project_roles)[number] | "Not Involved";
 
 export function parseRole(role: string): Exclude<ProjectRoles, "Not Involved"> {
