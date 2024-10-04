@@ -2,7 +2,10 @@ import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import {
+  zodStringReadableAsDateTime,
+  zodStringReadableAsNumber,
+} from "../../helpers/validators.js";
 import { TaskService } from "./TaskService.js";
 
 export class TaskController extends Controller {
@@ -102,14 +105,8 @@ export class TaskController extends Controller {
           .string({ message: "Deskripsi tidak valid!" })
           .min(1, "Deskripsi tidak boleh kosong!")
           .optional(),
-        start_at: z
-          .string({ message: "Tanggal mulai tidak valid!" })
-          .datetime("Tanggal mulai tidak valid!")
-          .optional(),
-        end_at: z
-          .string({ message: "Tanggal selesai tidak valid!" })
-          .datetime("Tanggal selesai tidak valid!")
-          .optional(),
+        start_at: zodStringReadableAsDateTime("Tanggal mulai tidak valid!").optional(),
+        end_at: zodStringReadableAsDateTime("Tanggal selesai tidak valid!").optional(),
       }),
       ResBody: z.object({
         bucket_id: z.number(),
@@ -255,14 +252,8 @@ export class TaskController extends Controller {
           .string({ message: "Deskripsi tidak valid!" })
           .min(1, "Deskripsi tidak boleh kosong!")
           .optional(),
-        start_at: z
-          .string({ message: "Tanggal mulai tidak valid!" })
-          .datetime("Tanggal mulai tidak valid!")
-          .optional(),
-        end_at: z
-          .string({ message: "Tanggal selesai tidak valid!" })
-          .datetime("Tanggal selesai tidak valid!")
-          .optional(),
+        start_at: zodStringReadableAsDateTime("Tanggal mulai tidak valid!").optional(),
+        end_at: zodStringReadableAsDateTime("Tanggal selesai tidak valid!").optional(),
       }),
       ResBody: z.object({
         bucket_id: z.number(),

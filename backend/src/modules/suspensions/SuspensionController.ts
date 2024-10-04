@@ -3,7 +3,10 @@ import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
 import { validateLogged } from "../../helpers/validate.js";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import {
+  zodStringReadableAsDateTime,
+  zodStringReadableAsNumber,
+} from "../../helpers/validators.js";
 import { SuspensionService } from "./SuspensionService.js";
 
 export class SuspensionController extends Controller {
@@ -31,9 +34,7 @@ export class SuspensionController extends Controller {
         reason: z
           .string({ message: "Alasan invalid!" })
           .min(1, { message: "Alasan tidak boleh kosong!" }),
-        suspended_until: z
-          .string({ message: "Tanggal tidak valid!" })
-          .datetime("Tanggal tidak valid!"),
+        suspended_until: zodStringReadableAsDateTime("Tanggal tidak valid!"),
         user_id: z.number({ message: "Pengguna tidak valid!" }),
       }),
       ResBody: z.object({
@@ -88,10 +89,7 @@ export class SuspensionController extends Controller {
           .string({ message: "Alasan invalid!" })
           .min(1, { message: "Alasan tidak boleh kosong!" })
           .optional(),
-        suspended_until: z
-          .string({ message: "Tanggal tidak valid!" })
-          .datetime("Tanggal tidak valid!")
-          .optional(),
+        suspended_until: zodStringReadableAsDateTime("Tanggal tidak valid!").optional(),
         user_id: z.number({ message: "Pengguna tidak valid!" }).optional(),
       }),
     },
@@ -184,14 +182,8 @@ export class SuspensionController extends Controller {
         .array(),
       ReqQuery: z.object({
         user_id: zodStringReadableAsNumber("ID pengguna tidak valid!").optional(),
-        expired_after: z
-          .string({ message: "Tanggal mulai tidak valid!" })
-          .datetime("Tanggal mulai tidak valid!")
-          .optional(),
-        expired_before: z
-          .string({ message: "Tanggal akhir tidak valid!" })
-          .datetime("Tanggal akhir tidak valid!")
-          .optional(),
+        expired_after: zodStringReadableAsDateTime("Tanggal mulai tidak valid!").optional(),
+        expired_before: zodStringReadableAsDateTime("Tanggal akhir tidak valid!").optional(),
       }),
     },
     handler: async (req, res) => {
