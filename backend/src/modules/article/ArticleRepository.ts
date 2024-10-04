@@ -110,4 +110,40 @@ export class ArticleRepository {
       }
     });
   }
+
+  async deleteArticle(article_id: number) {
+    return await this.db
+      .deleteFrom("ms_articles")
+      .where("ms_articles.id", "=", article_id)
+      .execute();
+  }
+
+  async upvotesPost(obj: { article_id: number; user_id: number }) {
+    const { article_id, user_id } = obj;
+    return await this.db.transaction().execute(async (trx) => {
+      let upvotes;
+      if (article_id != undefined || user_id != undefined) {
+        upvotes = await trx
+          .insertInto("ms_articles_likes")
+          .values({
+            article_id: article_id,
+            user_id: user_id,
+          })
+          .returning(["ms_articles_likes.article_id", "ms_articles_likes.user_id"])
+          .execute();
+        if (!upvotes) {
+          throw new Error("upvote failed");
+        }
+      }
+      return upvotes;
+    });
+  }
+
+  async upvotesDelete(article_id: number, user_id: number) {
+    return await this.db
+      .deleteFrom("ms_articles_likes")
+      .where("article_id", "=", article_id)
+      .where("user_id", "=", user_id)
+      .execute();
+  }
 }

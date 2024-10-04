@@ -51,4 +51,16 @@ export class ArticleService {
     }
     return await this.article_repo.updateArticle(article_id, obj);
   }
+
+  async deleteArticle(article_id: number) {
+    return await this.article_repo.deleteArticle(article_id);
+  }
+
+  async upvotesPost(obj: { article_id: number; user_id: number }) {
+    return await this.article_repo.upvotesPost(obj);
+  }
+
+  async upvotesDelete(article_id: number, user_id: number) {
+    return await this.article_repo.upvotesDelete(article_id, user_id);
+  }
 }

@@ -98,6 +98,41 @@ export class ArticleController extends Controller {
           }),
         },
       }),
+      articleDelete: new Route({
+        handler: this.articleDelete,
+        method: "delete",
+        path: "/api/articles/:article_id",
+        schema: {
+          Params: z.object({
+            article_id: z
+              .string()
+              .min(1)
+              .refine((arg) => !isNaN(Number(arg)), { message: "ID Artikel tidak valid!" }),
+          }),
+        },
+      }),
+      upvoteAdd: new Route({
+        handler: this.upvotePost,
+        method: "post",
+        path: "/api/articles/upvote",
+        schema: {
+          ReqBody: z.object({
+            article_id: z.number().min(1, "article id tidak valid!"),
+            user_id: z.number().min(1, "user id tidak valid!"),
+          }),
+        },
+      }),
+      upvoteDelete: new Route({
+        handler: this.upvotesDelete,
+        method: "delete",
+        path: "/api/articles/upvotes",
+        schema: {
+          ReqBody: z.object({
+            article_id: z.number().min(1, "article id tidak valid!"),
+            user_id: z.number().min(1, "user id tidak valid!"),
+          }),
+        },
+      }),
     };
   }
 
@@ -206,5 +241,44 @@ export class ArticleController extends Controller {
     await this.article_service.updateArticle(article_id, obj, editor_user);
     const result = await this.article_service.getArticlesById(article_id);
     res.status(200).json(result);
+  };
+  private articleDelete: RH<{
+    ResBody: {
+      msg: string;
+    };
+    Params: {
+      article_id: string;
+    };
+  }> = async (req, res) => {
+    const article_id = Number(req.params.article_id);
+    await this.article_service.deleteArticle(article_id);
+    res.status(200).json({ msg: "Artikel berhasil dihapus! " });
+  };
+  private upvotePost: RH<{
+    ResBody: {
+      user_id: number;
+    }[];
+    ReqBody: {
+      article_id: number;
+      user_id: number;
+    };
+  }> = async (req, res) => {
+    const { article_id, user_id } = req.body;
+    const result = this.article_service.upvotesPost({ article_id, user_id });
+    const resultFinal = await this.article_service.getArticlesByLikes(article_id);
+    res.status(201).json(resultFinal);
+  };
+  private upvotesDelete: RH<{
+    ResBody: {
+      msg: string;
+    };
+    ReqBody: {
+      article_id: number;
+      user_id: number;
+    };
+  }> = async (req, res) => {
+    const { article_id, user_id } = req.body;
+    await this.article_service.upvotesDelete(article_id, user_id);
+    res.status(200).json({ msg: "Upvote berhasil dihapus!" });
   };
 }
