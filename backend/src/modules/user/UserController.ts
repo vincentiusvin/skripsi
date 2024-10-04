@@ -85,10 +85,7 @@ export class UserController extends Controller {
     path: "/api/users/:id",
     schema: {
       Params: z.object({
-        id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid" }),
+        id: zodStringReadableAsNumber("ID pengguna tidak valid"),
       }),
       ResBody: z.object({
         user_id: z.number(),

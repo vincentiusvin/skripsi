@@ -122,10 +122,7 @@ export class ProjectController extends Controller {
     path: "/api/projects/:project_id",
     schema: {
       Params: z.object({
-        project_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+        project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
       }),
       ResBody: z.object({
         org_id: z.number(),
@@ -161,10 +158,7 @@ export class ProjectController extends Controller {
     path: "/api/projects/:project_id",
     schema: {
       Params: z.object({
-        project_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+        project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
       }),
       ReqBody: z.object({
         project_name: z
@@ -213,10 +207,7 @@ export class ProjectController extends Controller {
     path: "/api/projects/:project_id",
     schema: {
       Params: z.object({
-        project_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
+        project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
       }),
       ResBody: z.object({
         msg: z.string(),
@@ -237,14 +228,8 @@ export class ProjectController extends Controller {
     path: "/api/projects/:project_id/users/:user_id",
     schema: {
       Params: z.object({
-        project_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
-        user_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+        project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
+        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
       }),
       ResBody: z.object({
         role: z.enum(project_roles).or(z.literal("Not Involved")),
@@ -300,14 +285,8 @@ export class ProjectController extends Controller {
     path: "/api/projects/:project_id/users/:user_id",
     schema: {
       Params: z.object({
-        project_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" }),
-        user_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" }),
+        project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
+        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
       }),
       ResBody: z.object({
         role: z.enum(project_roles).or(z.literal("Not Involved")),

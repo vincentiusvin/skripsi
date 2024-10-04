@@ -134,10 +134,7 @@ export class ReportController extends Controller {
   ReportsDetailPut = new Route({
     schema: {
       Params: z.object({
-        report_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID tidak valid!" }),
+        report_id: zodStringReadableAsNumber("ID tidak valid!"),
       }),
       ReqBody: z.object({
         title: z

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
 import { validateLogged } from "../../helpers/validate.js";
+import { zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { SuspensionService } from "./SuspensionService.js";
 
 export class SuspensionController extends Controller {
@@ -73,10 +74,7 @@ export class SuspensionController extends Controller {
     path: "/api/suspensions/:suspension_id",
     schema: {
       Params: z.object({
-        suspension_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID penangguhan tidak valid!" }),
+        suspension_id: zodStringReadableAsNumber("ID penangguhan tidak valid!"),
       }),
       ResBody: z.object({
         reason: z.string(),
@@ -138,10 +136,7 @@ export class SuspensionController extends Controller {
         msg: z.string(),
       }),
       Params: z.object({
-        suspension_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID penangguhan tidak valid!" }),
+        suspension_id: zodStringReadableAsNumber("ID penangguhan tidak valid!"),
       }),
     },
     priors: [validateLogged as RequestHandler],
@@ -158,10 +153,7 @@ export class SuspensionController extends Controller {
         id: z.number(),
       }),
       Params: z.object({
-        suspension_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID penangguhan tidak valid!" }),
+        suspension_id: zodStringReadableAsNumber("ID penangguhan tidak valid!"),
       }),
     },
     priors: [validateLogged as RequestHandler],
@@ -191,11 +183,7 @@ export class SuspensionController extends Controller {
         })
         .array(),
       ReqQuery: z.object({
-        user_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" })
-          .optional(),
+        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!").optional(),
         expired_after: z
           .string({ message: "Tanggal mulai tidak valid!" })
           .datetime("Tanggal mulai tidak valid!")

@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
+import { zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { TaskService } from "./TaskService.js";
 
 export class TaskController extends Controller {
@@ -31,10 +32,7 @@ export class TaskController extends Controller {
     path: "/api/tasks/:task_id",
     schema: {
       Params: z.object({
-        task_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID tugas tidak valid!" }),
+        task_id: zodStringReadableAsNumber("ID tugas tidak valid!"),
       }),
       ResBody: z.object({
         bucket_id: z.number(),
@@ -69,10 +67,7 @@ export class TaskController extends Controller {
     path: "/api/tasks/:task_id",
     schema: {
       Params: z.object({
-        task_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID tugas tidak valid!" }),
+        task_id: zodStringReadableAsNumber("ID tugas tidak valid!"),
       }),
       ResBody: z.object({
         msg: z.string(),
@@ -93,10 +88,7 @@ export class TaskController extends Controller {
     path: "/api/tasks/:task_id",
     schema: {
       Params: z.object({
-        task_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID tugas tidak valid!" }),
+        task_id: zodStringReadableAsNumber("ID tugas tidak valid!"),
       }),
       ReqBody: z.object({
         bucket_id: z.number({ message: "ID kelompok tugas tidak valid!" }).optional(),
@@ -173,10 +165,7 @@ export class TaskController extends Controller {
         project_id: z.number(),
       }),
       Params: z.object({
-        bucket_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
+        bucket_id: zodStringReadableAsNumber("ID kelompok tugas tidak valid!"),
       }),
     },
     handler: async (req, res) => {
@@ -202,10 +191,7 @@ export class TaskController extends Controller {
         project_id: z.number(),
       }),
       Params: z.object({
-        bucket_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
+        bucket_id: zodStringReadableAsNumber("ID kelompok tugas tidak valid!"),
       }),
       ReqBody: z.object({
         name: z
@@ -245,10 +231,7 @@ export class TaskController extends Controller {
         msg: z.string(),
       }),
       Params: z.object({
-        bucket_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" }),
+        bucket_id: zodStringReadableAsNumber("ID kelompok tugas tidak valid!"),
       }),
     },
     handler: async (req, res) => {
@@ -344,16 +327,8 @@ export class TaskController extends Controller {
         })
         .array(),
       ReqQuery: z.object({
-        bucket_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID kelompok tugas tidak valid!" })
-          .optional(),
-        user_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID pengguna tidak valid!" })
-          .optional(),
+        bucket_id: zodStringReadableAsNumber("ID kelompok tugas tidak valid!").optional(),
+        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!").optional(),
       }),
     },
     handler: async (req, res) => {
@@ -377,11 +352,7 @@ export class TaskController extends Controller {
         })
         .array(),
       ReqQuery: z.object({
-        project_id: z
-          .string()
-          .min(1)
-          .refine((arg) => !isNaN(Number(arg)), { message: "ID projek tidak valid!" })
-          .optional(),
+        project_id: zodStringReadableAsNumber("ID projek tidak valid!").optional(),
       }),
     },
     handler: async (req, res) => {
