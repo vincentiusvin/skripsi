@@ -39,12 +39,7 @@ export class ReportService {
     return data;
   }
 
-  async createReport(opts: {
-    title: string;
-    description: string;
-    sender_id: number;
-    chatroom_id?: number;
-  }) {
+  async createReport(opts: { title: string; description: string; sender_id: number }) {
     return await this.report_repo.addReport({ ...opts, status: "Pending" });
   }
 

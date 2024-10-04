@@ -1,6 +1,9 @@
 import { Application } from "./app.js";
 import { Route } from "./helpers/controller.js";
-import { ExtractRH, UnionToIntersection } from "./helpers/types";
+import { TypesFromSchema, UnionToIntersection } from "./helpers/types";
+import { ArticleController } from "./modules/article/ArticleController.js";
+import { ArticleRepository } from "./modules/article/ArticleRepository.js";
+import { ArticleService } from "./modules/article/ArticleService.js";
 import { ChatController } from "./modules/chatroom/ChatroomController.js";
 import { ChatRepository } from "./modules/chatroom/ChatroomRepository.js";
 import { ChatService } from "./modules/chatroom/ChatroomService.js";
@@ -43,6 +46,7 @@ export function registerControllers(app: Application) {
   const user_repo = new UserRepository(app.db);
   const friend_repo = new FriendRepository(app.db);
   const contribution_repo = new ContributionRepository(app.db);
+  const article_repo = new ArticleRepository(app.db);
   const report_repo = new ReportRepository(app.db);
   const suspension_repo = new SuspensionRepository(app.db);
 
@@ -64,6 +68,7 @@ export function registerControllers(app: Application) {
   const chat_service = new ChatService(chat_repo, project_service, user_service);
   const friend_service = new FriendService(friend_repo);
   const contribution_service = new ContributionService(contribution_repo);
+  const article_service = new ArticleService(article_repo);
   const report_service = new ReportService(report_repo, user_service, chat_service);
   const suspension_service = new SuspensionService(suspension_repo, user_service);
 
@@ -76,6 +81,7 @@ export function registerControllers(app: Application) {
     new TaskController(app.express_server, task_service),
     new FriendController(app.express_server, friend_service),
     new ContributionController(app.express_server, contribution_service),
+    new ArticleController(app.express_server, article_service),
     new NotificationController(app.express_server, notification_service),
     new ReportController(app.express_server, report_service),
     new SuspensionController(app.express_server, suspension_service),
@@ -90,7 +96,7 @@ type Controllers = ReturnType<typeof registerControllers>;
 type Routes = UnionToIntersection<ReturnType<Controllers[number]["init"]>>;
 
 type _api = {
-  [K in keyof Routes]: Routes[K] extends Route<infer O> ? O : never;
+  [K in keyof Routes]: Routes[K] extends Route<infer O> ? TypesFromSchema<O> : never;
 };
 
 /**
@@ -99,5 +105,5 @@ type _api = {
  * API[NamaKey]["ResBody" | "ReqBody" | "ReqParams"]
  */
 export type API = {
-  [K in keyof _api]: ExtractRH<_api[K]>;
+  [K in keyof _api]: _api[K];
 };

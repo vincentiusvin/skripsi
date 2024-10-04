@@ -1,7 +1,7 @@
+import { RequestHandler } from "express";
 import logger from "./logging.js";
-import { RH } from "./types";
 
-export const loggingMiddleware: RH = function (req, res, next) {
+export const loggingMiddleware: RequestHandler = function (req, res, next) {
   res.on("finish", () => {
     logger.http(`${req.method} ${req.originalUrl} --- ${res.statusCode} ${res.statusMessage}`, {
       req_query: req.query,

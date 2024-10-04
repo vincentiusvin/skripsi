@@ -1,4 +1,4 @@
-const report_status = ["Rejected", "Resolved", "Pending"] as const;
+export const report_status = ["Rejected", "Resolved", "Pending"] as const;
 export type ReportStatus = (typeof report_status)[number];
 
 export function parseReportStatus(role: string): ReportStatus {
