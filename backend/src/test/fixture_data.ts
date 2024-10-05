@@ -64,6 +64,10 @@ export async function baseCase(db: Kysely<DB>) {
         name: "banned user",
         password: hashed,
       },
+      {
+        name: "article user",
+        password: hashed,
+      },
     ])
     .returning(["id", "name"])
     .execute();
@@ -86,6 +90,7 @@ export async function baseCase(db: Kysely<DB>) {
   const notif_user = { ...user_ids[8], password: orig_password };
   const report_user = { ...user_ids[9], password: orig_password };
   const banned_user = { ...user_ids[10], password: orig_password };
+  const article_user = { ...user_ids[11], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -287,8 +292,23 @@ export async function baseCase(db: Kysely<DB>) {
     .returning(["id", "ms_suspensions.reason", "ms_suspensions.suspended_until"])
     .execute();
 
+  const articles = await db
+    .insertInto("ms_articles")
+    .values([
+      {
+        name: "Artikel baru",
+        content: "Golang menambahkan generic!",
+        description: "Tentang generics",
+        user_id: article_user.id,
+      },
+    ])
+    .returning(["id", "content", "description", "user_id", "name"])
+    .execute();
+
   return {
     org,
+    article_user,
+    articles,
     project,
     bucket_fill: bucket[0],
     bucket_empty: bucket[1],
