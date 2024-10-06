@@ -1,9 +1,9 @@
 import { Skeleton } from "@mui/material";
 import { ReactNode } from "react";
 import { Redirect, useParams } from "wouter";
-import { APIError } from "../../helpers/fetch.ts";
-import { useReportsDetailGet } from "../../queries/report_hooks.ts";
-import { useSessionGet } from "../../queries/sesssion_hooks.ts";
+import { APIError } from "../../../helpers/fetch.ts";
+import { useReportsDetailGet } from "../../../queries/report_hooks.ts";
+import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 
 export function RedirectBack() {
   return <Redirect to="/reports" />;

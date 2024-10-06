@@ -7,14 +7,14 @@ import {
   TimelineOppositeContent,
   TimelineSeparator,
 } from "@mui/lab";
-import { Box, Button, Chip, Skeleton, Stack, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Skeleton, Stack, Tooltip, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { stringify } from "qs";
-import { ReactNode } from "react";
 import { useParams } from "wouter";
 import StyledLink from "../../components/StyledLink.tsx";
 import { useReportsDetailGet } from "../../queries/report_hooks.ts";
-import AuthorizeReports from "./AuthorizeReports.tsx";
+import AuthorizeReports from "./components/AuthorizeReports.tsx";
+import ReportStatusChip from "./components/ReportStatus.tsx";
 
 function ReportChatroomButton(props: { chatroom_id: null | number }) {
   const { chatroom_id } = props;
@@ -56,15 +56,6 @@ function UserReportDetail(props: { report_id: number }) {
     return <Skeleton />;
   }
 
-  let status: ReactNode;
-  if (report.status === "Pending") {
-    status = <Chip color="warning" label="Menunggu" />;
-  } else if (report.status === "Resolved") {
-    status = <Chip color="success" label="Diterima" />;
-  } else if (report.status === "Rejected") {
-    status = <Chip color="error" label="Ditolak" />;
-  }
-
   const report_created_at = dayjs(report.created_at);
   const report_resolved_at = report.resolved_at != null ? dayjs(report.resolved_at) : null;
 
@@ -73,7 +64,9 @@ function UserReportDetail(props: { report_id: number }) {
       <Typography variant="h5" fontWeight={"bold"}>
         {report.title}
       </Typography>
-      <Box>{status}</Box>
+      <Box>
+        <ReportStatusChip status={report.status} />
+      </Box>
       <Typography variant="body1">{report.description}</Typography>
       <Box>
         <ReportChatroomButton chatroom_id={report.chatroom_id} />

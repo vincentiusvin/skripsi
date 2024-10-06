@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Chip,
   ListItem,
   ListItemButton,
   ListItemIcon,
@@ -10,11 +9,11 @@ import {
   Stack,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { ReactNode } from "react";
 import { Redirect } from "wouter";
 import StyledLink from "../../components/StyledLink.tsx";
 import { useReportsGet } from "../../queries/report_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
+import ReportStatusChip from "./components/ReportStatus.tsx";
 
 function ReportEntry(props: {
   report: {
@@ -31,15 +30,6 @@ function ReportEntry(props: {
 }) {
   const { report } = props;
 
-  let status: ReactNode;
-  if (report.status === "Pending") {
-    status = <Chip color="warning" label="Menunggu" />;
-  } else if (report.status === "Resolved") {
-    status = <Chip color="success" label="Diterima" />;
-  } else if (report.status === "Rejected") {
-    status = <Chip color="error" label="Ditolak" />;
-  }
-
   return (
     <StyledLink to={`/reports/${report.id}`}>
       <ListItem>
@@ -55,7 +45,9 @@ function ReportEntry(props: {
               </>
             }
           />
-          <ListItemIcon>{status}</ListItemIcon>
+          <ListItemIcon>
+            <ReportStatusChip status={report.status} />
+          </ListItemIcon>
         </ListItemButton>
       </ListItem>
     </StyledLink>

@@ -3,7 +3,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { useReportsDetailGet, useReportsPut } from "../../queries/report_hooks.ts";
-import AuthorizeReports from "./AuthorizeReports.tsx";
+import AuthorizeReports from "./components/AuthorizeReports.tsx";
 
 function UserReportEdit(props: { report_id: number }) {
   const { report_id } = props;
