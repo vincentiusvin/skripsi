@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Chip,
   ListItem,
   ListItemButton,
@@ -11,6 +12,7 @@ import {
 import dayjs from "dayjs";
 import { ReactNode } from "react";
 import { Redirect } from "wouter";
+import StyledLink from "../../components/StyledLink.tsx";
 import { useReportsGet } from "../../queries/report_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 
@@ -39,22 +41,24 @@ function ReportEntry(props: {
   }
 
   return (
-    <ListItem>
-      <ListItemButton>
-        <ListItemText
-          primary={report.title}
-          secondary={
-            <>
-              <Box>Dibuat: {dayjs(report.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}</Box>
-              {report.resolved_at ? (
-                <Box>Selesai: {dayjs(report.resolved_at).format("ddd[,] D[/]M[/]YY HH:mm")}</Box>
-              ) : null}
-            </>
-          }
-        />
-        <ListItemIcon>{status}</ListItemIcon>
-      </ListItemButton>
-    </ListItem>
+    <StyledLink to={`/reports/${report.id}`}>
+      <ListItem>
+        <ListItemButton>
+          <ListItemText
+            primary={report.title}
+            secondary={
+              <>
+                <Box>Dibuat: {dayjs(report.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}</Box>
+                {report.resolved_at ? (
+                  <Box>Selesai: {dayjs(report.resolved_at).format("ddd[,] D[/]M[/]YY HH:mm")}</Box>
+                ) : null}
+              </>
+            }
+          />
+          <ListItemIcon>{status}</ListItemIcon>
+        </ListItemButton>
+      </ListItem>
+    </StyledLink>
   );
 }
 
@@ -69,7 +73,12 @@ function UserReport(props: { user_id: number }) {
   }
 
   return (
-    <Stack>
+    <Stack spacing={2}>
+      <StyledLink to={"/reports/add"}>
+        <Button fullWidth variant="contained">
+          Buat Laporan Baru
+        </Button>
+      </StyledLink>
       {reports.map((x) => (
         <ReportEntry report={x} key={x.id} />
       ))}
