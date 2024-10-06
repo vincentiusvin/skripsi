@@ -78,6 +78,17 @@ function UserReportDetail(props: { report_id: number }) {
       <Box>
         <ReportChatroomButton chatroom_id={report.chatroom_id} />
       </Box>
+      <Box>
+        {report.status === "Pending" ? (
+          <StyledLink to={`/reports/${report_id}/edit`}>
+            <Button variant="contained">Edit</Button>
+          </StyledLink>
+        ) : (
+          <Button disabled variant="contained">
+            Edit
+          </Button>
+        )}
+      </Box>
       <Timeline>
         <TimelineItem>
           <TimelineOppositeContent>
