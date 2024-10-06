@@ -238,7 +238,7 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <Work />,
       },
       {
-        link: `/friends`,
+        link: `/users`,
         name: `Cari Teman`,
         avatar: <People />,
       },
