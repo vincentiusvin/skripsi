@@ -2,7 +2,6 @@ import { Edit, KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import {
   Box,
   Button,
-  Chip,
   Collapse,
   Divider,
   IconButton,
@@ -25,13 +24,8 @@ import { useState } from "react";
 import StyledLink from "../../components/StyledLink.tsx";
 import UserLabel from "../../components/UserLabel.tsx";
 import { useReportsGet, useReportsPut } from "../../queries/report_hooks.ts";
+import ReportStatusChip from "../Reports/components/ReportStatus.tsx";
 import AuthorizeAdmin from "./components/AuthorizeAdmins.tsx";
-
-const statusColor = {
-  Pending: "warning",
-  Rejected: "error",
-  Resolved: "success",
-} as const;
 
 function ResolveReport(props: {
   report_id: number;
@@ -177,7 +171,7 @@ function ReportRow(props: {
           <UserLabel user_id={report.sender_id} />
         </TableCell>
         <TableCell>
-          <Chip label={report.status} color={statusColor[report.status]} />
+          <ReportStatusChip status={report.status} />
         </TableCell>
         <TableCell>{dayjs(report.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}</TableCell>
         <TableCell>

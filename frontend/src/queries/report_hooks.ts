@@ -23,11 +23,15 @@ export function useReportsGet(opts: { user_id?: number }) {
   });
 }
 
-export function useReportsDetailGet(opts: { report_id: number }) {
-  const { report_id } = opts;
+export function useReportsDetailGet(opts: {
+  report_id: number;
+  retry?: (failurecount: number, error: unknown) => boolean;
+}) {
+  const { report_id, retry } = opts;
   return useQuery({
     queryKey: reportKeys.detail(opts.report_id),
     queryFn: () => new APIContext("ReportsDetailGet").fetch(`/api/reports/${report_id}`),
+    retry,
   });
 }
 
