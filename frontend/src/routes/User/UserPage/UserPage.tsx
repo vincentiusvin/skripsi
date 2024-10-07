@@ -7,6 +7,7 @@ import StyledLink from "../../../components/StyledLink.tsx";
 import { APIError } from "../../../helpers/fetch.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
+import ContributionsAddPage from "../../User/UserPage/UserContribution.tsx";
 import UserFriends from "./UserFriends.tsx";
 import UserProfile from "./UserProfile/UserProfile.tsx";
 
@@ -65,7 +66,7 @@ function UserAccountPage() {
         >
           <Tab label={"Profil"} value="acc" />
           {isViewingSelf ? <Tab label={"Teman"} value="conn" /> : null}
-          <Tab label={"Kontribusi"} value="contrib" />
+          {isViewingSelf ? <Tab label={"Kontribusi"} value="contrib" /> : null}
         </Tabs>
       </Grid>
       <Grid
@@ -87,6 +88,7 @@ function UserAccountPage() {
           <UserProfile viewed_id={viewed_id} our_id={isLogged ? userLog.user_id : undefined} />
         ) : null}
         {activeTab === "conn" && isViewingSelf ? <UserFriends user_id={viewed_id} /> : null}
+        {activeTab === "contrib" && isViewingSelf ? <ContributionsAddPage /> : null}
       </Grid>
     </Grid>
   );
