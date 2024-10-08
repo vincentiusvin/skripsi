@@ -74,9 +74,15 @@ export class UserController extends Controller {
           user_created_at: z.date(),
         })
         .array(),
+      ReqQuery: z.object({
+        keyword: z.string().optional(),
+      }),
     },
     handler: async (req, res) => {
-      const result = await this.user_service.getUsers();
+      const { keyword } = req.query;
+      const result = await this.user_service.getUsers({
+        keyword,
+      });
       res.status(200).json(result);
     },
   });

@@ -37,12 +37,16 @@ export class UserRepository {
       .executeTakeFirst();
   }
 
-  async getUsers(opts?: { is_admin?: boolean }) {
-    const { is_admin } = opts ?? {};
+  async getUsers(opts?: { is_admin?: boolean; keyword?: string }) {
+    const { is_admin, keyword } = opts ?? {};
     let query = this.db.selectFrom("ms_users").select(defaultUserFields);
 
     if (is_admin) {
       query = query.where("is_admin", "=", is_admin);
+    }
+
+    if (keyword != undefined) {
+      query = query.where("ms_users.name", "ilike", `%${keyword}%`);
     }
 
     return await query.execute();
