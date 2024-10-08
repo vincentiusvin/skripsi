@@ -252,6 +252,11 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         name: `Laporan`,
         avatar: <Flag />,
       },
+      {
+        link: `/settings`,
+        name: `Preferensi`,
+        avatar: <Settings />,
+      },
     ];
   } else if (parsedContext.type === "project") {
     const project_id = parsedContext.id;

@@ -37,6 +37,7 @@ import UserReportAddPage from "./routes/Reports/UserReportAddPage.tsx";
 import UserReportDetailPage from "./routes/Reports/UserReportDetailPage.tsx";
 import UserReportEditPage from "./routes/Reports/UserReportEditPage.tsx";
 import UserReportPage from "./routes/Reports/UserReportPage.tsx";
+import SettingsPage from "./routes/SettingsPage.tsx";
 import FindUsersPage from "./routes/User/FindUsersPage.tsx";
 import UserAccountPageEdit from "./routes/User/UserEditPage.tsx";
 import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
@@ -142,6 +143,7 @@ function App() {
                     <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
                     <Route path={"/manage-reports"} component={HandleReportsPage} />
                     <Route path={"/manage-accounts"} component={ManageAccountsPage} />
+                    <Route path={"/settings"} component={SettingsPage} />
                   </Switch>
                 </Box>
               </Stack>
