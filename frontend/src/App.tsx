@@ -38,6 +38,9 @@ import UserReportDetailPage from "./routes/Reports/UserReportDetailPage.tsx";
 import UserReportEditPage from "./routes/Reports/UserReportEditPage.tsx";
 import UserReportPage from "./routes/Reports/UserReportPage.tsx";
 import UserAccountPageEdit from "./routes/User/UserEditPage.tsx";
+import ContributionsAddPage from "./routes/User/UserPage/UserContributions/UserAddContributionPage.tsx";
+import UserContributionDetailPage from "./routes/User/UserPage/UserContributions/UserContributionDetailPage.tsx";
+import ContributionsListPage from "./routes/User/UserPage/UserContributions/UserContributionsListPage.tsx";
 import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
 import ChatroomPage from "./routes/UserChatroom.tsx";
 import { darkTheme, lightTheme } from "./theme.ts";
@@ -140,6 +143,12 @@ function App() {
                     <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
                     <Route path={"/manage-reports"} component={HandleReportsPage} />
                     <Route path={"/manage-accounts"} component={ManageAccountsPage} />
+                    <Route path={"/contributions"} component={ContributionsListPage} />
+                    <Route path={"/contributions/add"} component={ContributionsAddPage} />
+                    <Route
+                      path={"/contributions/:contribution_id"}
+                      component={UserContributionDetailPage}
+                    />
                   </Switch>
                 </Box>
               </Stack>

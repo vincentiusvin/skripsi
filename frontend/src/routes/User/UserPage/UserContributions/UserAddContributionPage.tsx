@@ -13,8 +13,8 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useContributionsPost } from "../../../queries/contribution_hooks";
-import { useProjectsGet } from "../../../queries/project_hooks"; // Hook to fetch projects for dropdown
+import { useContributionsPost } from "../../../../queries/contribution_hooks";
+import { useProjectsGet } from "../../../../queries/project_hooks"; // Hook to fetch projects for dropdown
 
 function ContributionsAddPage() {
   const [contributionName, setContributionName] = useState("");
