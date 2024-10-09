@@ -9,8 +9,21 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
+import { useState } from "react";
 
 function Settings() {
+  const [config, setConfig] = useState({
+    projectInvite: false,
+    friendInvite: false,
+    projectNotif: "off",
+    orgNotif: "off",
+    msgNotif: "off",
+    reportNotif: "off",
+    taskNotif: "off",
+    contribNotif: "off",
+    friendNotif: "off",
+  });
+
   const settings = [
     {
       section: "Umum",
@@ -19,18 +32,28 @@ function Settings() {
           title: "Undangan Proyek",
           description: "Terima undangan dari pengurus organisasi untuk ikut terlibat dalam proyek.",
           type: "switch",
-          value: true,
+          value: config.projectInvite,
           onChange: (c: boolean) => {
-            console.log(c);
+            setConfig((x) => {
+              return {
+                ...x,
+                projectInvite: c,
+              };
+            });
           },
         },
         {
           title: "Pesan dari Pengguna Non-Teman",
           description: "Terima pesan masuk dari pengguna yang belum menjadi teman anda.",
           type: "switch",
-          value: true,
+          value: config.friendInvite,
           onChange: (c: boolean) => {
-            console.log(c);
+            setConfig((x) => {
+              return {
+                ...x,
+                friendInvite: c,
+              };
+            });
           },
         },
       ],
@@ -42,70 +65,105 @@ function Settings() {
           title: "Proyek",
           description: "Terima notifikasi terkait keanggotaan proyek.",
           type: "choice",
-          value: "email",
           choice: ["off", "on", "email"],
+          value: config.projectNotif,
           onChange: (c: "off" | "on" | "email") => {
-            console.log(c);
+            setConfig((x) => {
+              return {
+                ...x,
+                projectNotif: c,
+              };
+            });
           },
         },
         {
           title: "Organisasi",
           description: "Terima notifikasi terkait keanggotaan organisasi.",
           type: "choice",
-          value: "email",
           choice: ["off", "on", "email"],
+          value: config.orgNotif,
           onChange: (c: "off" | "on" | "email") => {
-            console.log(c);
+            setConfig((x) => {
+              return {
+                ...x,
+                orgNotif: c,
+              };
+            });
           },
         },
         {
           title: "Pesan",
           description: "Terima notifikasi untuk pesan yang ditujukan kepada anda.",
           type: "choice",
-          value: "email",
           choice: ["off", "on", "email"],
+          value: config.msgNotif,
           onChange: (c: "off" | "on" | "email") => {
-            console.log(c);
+            setConfig((x) => {
+              return {
+                ...x,
+                msgNotif: c,
+              };
+            });
           },
         },
         {
           title: "Laporan",
           description: "Terima notifikasi terkait laporan yang anda buat.",
           type: "choice",
-          value: "email",
           choice: ["off", "on", "email"],
+          value: config.reportNotif,
           onChange: (c: "off" | "on" | "email") => {
-            console.log(c);
+            setConfig((x) => {
+              return {
+                ...x,
+                reportNotif: c,
+              };
+            });
           },
         },
         {
           title: "Tugas",
           description: "Terima notifikasi terkait tugas yang diberikan kepada anda.",
           type: "choice",
-          value: "email",
           choice: ["off", "on", "email"],
+          value: config.taskNotif,
           onChange: (c: "off" | "on" | "email") => {
-            console.log(c);
+            setConfig((x) => {
+              return {
+                ...x,
+                taskNotif: c,
+              };
+            });
           },
         },
         {
           title: "Kontribusi",
           description: "Terima notifikasi terkait pencatatan kontribusi yang anda kerjakan.",
           type: "choice",
-          value: "email",
           choice: ["off", "on", "email"],
+          value: config.contribNotif,
           onChange: (c: "off" | "on" | "email") => {
-            console.log(c);
+            setConfig((x) => {
+              return {
+                ...x,
+                contribNotif: c,
+              };
+            });
           },
         },
         {
           title: "Teman",
           description: "Terima notifikasi terkait permintaan teman.",
           type: "choice",
-          value: "email",
           choice: ["off", "on", "email"],
+          value: config.friendNotif,
           onChange: (c: "off" | "on" | "email") => {
-            console.log(c);
+            setConfig((x) => {
+              return {
+                ...x,
+                friendNotif: c,
+              };
+            });
           },
         },
       ],
