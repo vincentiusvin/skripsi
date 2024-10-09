@@ -129,6 +129,19 @@ export interface MsOrgs {
   phone: string;
 }
 
+export interface MsPreferences {
+  contrib_notif: Generated<string>;
+  friend_invite: Generated<boolean>;
+  friend_notif: Generated<string>;
+  msg_notif: Generated<string>;
+  org_notif: Generated<string>;
+  project_invite: Generated<boolean>;
+  project_notif: Generated<string>;
+  report_notif: Generated<string>;
+  task_notif: Generated<string>;
+  user_id: number;
+}
+
 export interface MsProjects {
   created_at: Generated<Timestamp>;
   description: string;
@@ -230,6 +243,7 @@ export interface DB {
   ms_messages: MsMessages;
   ms_notifications: MsNotifications;
   ms_orgs: MsOrgs;
+  ms_preferences: MsPreferences;
   ms_projects: MsProjects;
   ms_reports: MsReports;
   ms_suspensions: MsSuspensions;
