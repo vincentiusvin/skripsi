@@ -8,6 +8,7 @@ const userKeys = {
   list: (opts: { keyword: string | undefined }) => [...userKeys.all(), "list", opts] as const,
   details: () => [...userKeys.all(), "detail"] as const,
   detail: (user_id: number) => [...userKeys.details(), user_id] as const,
+  preferences: (user_id: number) => [...userKeys.detail(user_id), "prefs"] as const,
 };
 
 export function useUsersPost(opts?: { onSuccess?: () => void }) {
@@ -66,5 +67,28 @@ export function useUsersDetailUpdate(opts: { user_id: number; onSuccess?: () => 
         onSuccess();
       }
     },
+  });
+}
+
+export function useUsersDetailPreferencesPut(opts: { user_id: number; onSuccess?: () => void }) {
+  const { user_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: new APIContext("PreferencesPut").bodyFetch(`/api/users/${user_id}/preferences`, {
+      method: "put",
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.preferences(user_id) });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useUsersDetailPreferencesGet(opts: { user_id: number }) {
+  const { user_id } = opts;
+  return useQuery({
+    queryKey: userKeys.preferences(user_id),
+    queryFn: () => new APIContext("PreferencesGet").fetch(`/api/users/${user_id}/preferences`),
   });
 }

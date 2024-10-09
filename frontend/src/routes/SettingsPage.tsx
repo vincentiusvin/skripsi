@@ -5,24 +5,30 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  Skeleton,
   Switch,
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
-import { useState } from "react";
+import { Redirect } from "wouter";
+import { useSessionGet } from "../queries/sesssion_hooks.ts";
+import {
+  useUsersDetailPreferencesGet,
+  useUsersDetailPreferencesPut,
+} from "../queries/user_hooks.ts";
 
-function Settings() {
-  const [config, setConfig] = useState({
-    projectInvite: false,
-    friendInvite: false,
-    projectNotif: "off",
-    orgNotif: "off",
-    msgNotif: "off",
-    reportNotif: "off",
-    taskNotif: "off",
-    contribNotif: "off",
-    friendNotif: "off",
+function Settings(props: { user_id: number }) {
+  const { user_id } = props;
+  const { mutate: update } = useUsersDetailPreferencesPut({
+    user_id,
   });
+  const { data: prefs } = useUsersDetailPreferencesGet({
+    user_id,
+  });
+
+  if (!prefs) {
+    return <Skeleton />;
+  }
 
   const settings = [
     {
@@ -32,13 +38,10 @@ function Settings() {
           title: "Undangan Proyek",
           description: "Terima undangan dari pengurus organisasi untuk ikut terlibat dalam proyek.",
           type: "switch",
-          value: config.projectInvite,
+          value: prefs.project_invite === "on",
           onChange: (c: boolean) => {
-            setConfig((x) => {
-              return {
-                ...x,
-                projectInvite: c,
-              };
+            update({
+              project_invite: c ? "on" : "off",
             });
           },
         },
@@ -46,13 +49,10 @@ function Settings() {
           title: "Pesan dari Pengguna Non-Teman",
           description: "Terima pesan masuk dari pengguna yang belum menjadi teman anda.",
           type: "switch",
-          value: config.friendInvite,
+          value: prefs.friend_invite === "on",
           onChange: (c: boolean) => {
-            setConfig((x) => {
-              return {
-                ...x,
-                friendInvite: c,
-              };
+            update({
+              friend_invite: c ? "on" : "off",
             });
           },
         },
@@ -66,13 +66,10 @@ function Settings() {
           description: "Terima notifikasi terkait keanggotaan proyek.",
           type: "choice",
           choice: ["off", "on", "email"],
-          value: config.projectNotif,
+          value: prefs.project_notif,
           onChange: (c: "off" | "on" | "email") => {
-            setConfig((x) => {
-              return {
-                ...x,
-                projectNotif: c,
-              };
+            update({
+              project_notif: c,
             });
           },
         },
@@ -81,13 +78,10 @@ function Settings() {
           description: "Terima notifikasi terkait keanggotaan organisasi.",
           type: "choice",
           choice: ["off", "on", "email"],
-          value: config.orgNotif,
+          value: prefs.org_notif,
           onChange: (c: "off" | "on" | "email") => {
-            setConfig((x) => {
-              return {
-                ...x,
-                orgNotif: c,
-              };
+            update({
+              org_notif: c,
             });
           },
         },
@@ -96,13 +90,10 @@ function Settings() {
           description: "Terima notifikasi untuk pesan yang ditujukan kepada anda.",
           type: "choice",
           choice: ["off", "on", "email"],
-          value: config.msgNotif,
+          value: prefs.msg_notif,
           onChange: (c: "off" | "on" | "email") => {
-            setConfig((x) => {
-              return {
-                ...x,
-                msgNotif: c,
-              };
+            update({
+              msg_notif: c,
             });
           },
         },
@@ -111,13 +102,10 @@ function Settings() {
           description: "Terima notifikasi terkait laporan yang anda buat.",
           type: "choice",
           choice: ["off", "on", "email"],
-          value: config.reportNotif,
+          value: prefs.report_notif,
           onChange: (c: "off" | "on" | "email") => {
-            setConfig((x) => {
-              return {
-                ...x,
-                reportNotif: c,
-              };
+            update({
+              report_notif: c,
             });
           },
         },
@@ -126,13 +114,10 @@ function Settings() {
           description: "Terima notifikasi terkait tugas yang diberikan kepada anda.",
           type: "choice",
           choice: ["off", "on", "email"],
-          value: config.taskNotif,
+          value: prefs.task_notif,
           onChange: (c: "off" | "on" | "email") => {
-            setConfig((x) => {
-              return {
-                ...x,
-                taskNotif: c,
-              };
+            update({
+              task_notif: c,
             });
           },
         },
@@ -141,13 +126,10 @@ function Settings() {
           description: "Terima notifikasi terkait pencatatan kontribusi yang anda kerjakan.",
           type: "choice",
           choice: ["off", "on", "email"],
-          value: config.contribNotif,
+          value: prefs.contrib_notif,
           onChange: (c: "off" | "on" | "email") => {
-            setConfig((x) => {
-              return {
-                ...x,
-                contribNotif: c,
-              };
+            update({
+              contrib_notif: c,
             });
           },
         },
@@ -156,19 +138,17 @@ function Settings() {
           description: "Terima notifikasi terkait permintaan teman.",
           type: "choice",
           choice: ["off", "on", "email"],
-          value: config.friendNotif,
+          value: prefs.friend_notif,
           onChange: (c: "off" | "on" | "email") => {
-            setConfig((x) => {
-              return {
-                ...x,
-                friendNotif: c,
-              };
+            update({
+              friend_notif: c,
             });
           },
         },
       ],
     },
   ] as const;
+  console.log(settings);
 
   return (
     <List>
@@ -181,7 +161,7 @@ function Settings() {
               <ListItemIcon>
                 {setting.type === "switch" ? (
                   <Switch
-                    value={setting.value}
+                    checked={setting.value}
                     onChange={(e) => {
                       setting.onChange(e.target.checked);
                     }}
@@ -211,7 +191,15 @@ function Settings() {
 }
 
 function SettingsPage() {
-  return <Settings />;
+  const { data: session } = useSessionGet();
+  if (session == undefined) {
+    return <Skeleton />;
+  }
+  if (session.logged) {
+    return <Settings user_id={session.user_id} />;
+  } else {
+    return <Redirect to={"/"} />;
+  }
 }
 
 export default SettingsPage;
