@@ -59,7 +59,7 @@ describe.only("preference api", () => {
     await read_req.json();
 
     const update_req = await putPrefs(in_user.id, in_data_2, cookie);
-    const result = await read_req.json();
+    const result = await update_req.json();
 
     expect(update_req.status).eq(200);
     expect(result).to.include(in_data_2);

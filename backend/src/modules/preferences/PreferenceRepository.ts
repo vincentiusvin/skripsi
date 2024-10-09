@@ -78,7 +78,15 @@ export class PreferenceRepository {
         })
         .filter((x) => x.value != undefined);
 
-      await trx.insertInto("preferences_users").values(to_insert).execute();
+      await trx
+        .insertInto("preferences_users")
+        .values(to_insert)
+        .onConflict((oc) =>
+          oc.columns(["user_id", "preference_id"]).doUpdateSet((eb) => ({
+            value: eb.ref("excluded.value"),
+          })),
+        )
+        .execute();
     });
   }
 }
