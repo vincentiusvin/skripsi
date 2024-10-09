@@ -18,17 +18,18 @@ describe.only("preference api", () => {
   });
 
   it("should be able to get preference", async () => {
-    const in_user = caseData.plain_user;
+    const in_user = caseData.pref_user;
+    const expected_preferences = caseData.preferences;
     const cookie = await getLoginCookie(in_user.name, in_user.password);
 
     const read_req = await getPrefs(in_user.id, cookie);
     const result = await read_req.json();
 
     expect(read_req.status).eq(200);
-    expect(result).to.not.eq(undefined);
+    expect(result).to.include(expected_preferences);
   });
 
-  it("should be able to put preference", async () => {
+  it("should be able to add preference", async () => {
     const in_user = caseData.plain_user;
     const in_data = {
       org_notif: "email",
@@ -42,6 +43,26 @@ describe.only("preference api", () => {
 
     expect(read_req.status).eq(200);
     expect(result).to.include(in_data);
+  });
+
+  it("should be able to update preference after setting value", async () => {
+    const in_user = caseData.plain_user;
+    const in_data_1 = {
+      org_notif: "email",
+    } as const;
+    const in_data_2 = {
+      org_notif: "on",
+    } as const;
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+
+    const read_req = await putPrefs(in_user.id, in_data_1, cookie);
+    await read_req.json();
+
+    const update_req = await putPrefs(in_user.id, in_data_2, cookie);
+    const result = await read_req.json();
+
+    expect(update_req.status).eq(200);
+    expect(result).to.include(in_data_2);
   });
 });
 
