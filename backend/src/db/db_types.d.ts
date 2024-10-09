@@ -130,16 +130,8 @@ export interface MsOrgs {
 }
 
 export interface MsPreferences {
-  contrib_notif: Generated<string>;
-  friend_invite: Generated<boolean>;
-  friend_notif: Generated<string>;
-  msg_notif: Generated<string>;
-  org_notif: Generated<string>;
-  project_invite: Generated<boolean>;
-  project_notif: Generated<string>;
-  report_notif: Generated<string>;
-  task_notif: Generated<string>;
-  user_id: number;
+  id: Generated<number>;
+  name: string;
 }
 
 export interface MsProjects {
@@ -208,6 +200,12 @@ export interface OrgsUsers {
   user_id: number;
 }
 
+export interface PreferencesUsers {
+  preference_id: number;
+  user_id: number;
+  value: string;
+}
+
 export interface ProjectsUsers {
   created_at: Generated<Timestamp>;
   project_id: number;
@@ -251,6 +249,7 @@ export interface DB {
   ms_tasks: MsTasks;
   ms_users: MsUsers;
   orgs_users: OrgsUsers;
+  preferences_users: PreferencesUsers;
   projects_users: ProjectsUsers;
   session: Session;
   tasks_users: TasksUsers;

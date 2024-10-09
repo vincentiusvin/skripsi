@@ -2,21 +2,9 @@ import { Kysely } from "kysely";
 import { z } from "zod";
 import { DB } from "../../db/db_types.js";
 
-const defaultPreferenceKeys = [
-  "contrib_notif",
-  "friend_invite",
-  "friend_notif",
-  "msg_notif",
-  "org_notif",
-  "project_invite",
-  "project_notif",
-  "report_notif",
-  "task_notif",
-] as const;
-
 const strictPreferenceValidator = z.object({
-  project_invite: z.boolean().default(true),
-  friend_invite: z.boolean().default(true),
+  project_invite: z.enum(["on", "off"]).default("on"),
+  friend_invite: z.enum(["on", "off"]).default("on"),
   project_notif: z.enum(["off", "on", "email"]).default("on"),
   org_notif: z.enum(["off", "on", "email"]).default("on"),
   msg_notif: z.enum(["off", "on", "email"]).default("on"),
@@ -27,8 +15,8 @@ const strictPreferenceValidator = z.object({
 });
 
 const optionalPreferenceValidator = z.object({
-  project_invite: z.boolean().optional(),
-  friend_invite: z.boolean().optional(),
+  project_invite: z.enum(["on", "off"]).optional(),
+  friend_invite: z.enum(["on", "off"]).optional(),
   project_notif: z.enum(["off", "on", "email"]).optional(),
   org_notif: z.enum(["off", "on", "email"]).optional(),
   msg_notif: z.enum(["off", "on", "email"]).optional(),
@@ -49,18 +37,48 @@ export class PreferenceRepository {
 
   async getUserPreference(user_id: number): Promise<ReadablePreference> {
     const query_result = await this.db
-      .selectFrom("ms_preferences")
-      .select(defaultPreferenceKeys)
+      .selectFrom("preferences_users")
+      .innerJoin("ms_preferences", "ms_preferences.id", "preferences_users.preference_id")
+      .select(["preferences_users.value", "ms_preferences.name"])
       .where("user_id", "=", user_id)
-      .executeTakeFirst();
+      .execute();
 
-    const result = strictPreferenceValidator.parse(query_result ?? {});
+    const obj: Record<string, string> = {};
+    for (const { name, value } of query_result) {
+      obj[name] = value;
+    }
+
+    const result = strictPreferenceValidator.parse(obj);
 
     return result;
   }
 
   async saveUserPreference(user_id: number, pref: WritablePreference) {
     const res = optionalPreferenceValidator.parse(pref);
-    await this.db.updateTable("ms_preferences").set(res).where("user_id", "=", user_id).execute();
+
+    await this.db.transaction().execute(async (trx) => {
+      const modified_keys = Object.keys(res);
+      const key_refs = await trx
+        .selectFrom("ms_preferences")
+        .select(["id", "name"])
+        .where("ms_preferences.name", "in", modified_keys)
+        .execute();
+      const key_map: Record<string, number> = {};
+      key_refs.forEach((x) => {
+        key_map[x.name] = x.id;
+      });
+
+      const to_insert = Object.entries(res)
+        .map(([key, val]) => {
+          return {
+            preference_id: key_map[key],
+            user_id,
+            value: val,
+          };
+        })
+        .filter((x) => x.value != undefined);
+
+      await trx.insertInto("preferences_users").values(to_insert).execute();
+    });
   }
 }
