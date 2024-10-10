@@ -23,9 +23,9 @@ import { OrgService } from "./modules/organization/OrgService.js";
 import { PreferenceController } from "./modules/preferences/PreferenceController.js";
 import { PreferenceRepository } from "./modules/preferences/PreferenceRepository.js";
 import { PreferenceService } from "./modules/preferences/PreferenceService.js";
+import { NotificationProjectService } from "./modules/project/NotificationProjectService.js";
 import { ProjectController } from "./modules/project/ProjectController.js";
 import { ProjectRepository } from "./modules/project/ProjectRepository.js";
-import { ProjectService } from "./modules/project/ProjectService.js";
 import { ReportController } from "./modules/report/ReportController.js";
 import { ReportRepository } from "./modules/report/ReportRepository.js";
 import { ReportService } from "./modules/report/ReportService.js";
@@ -62,11 +62,11 @@ export function registerControllers(app: Application) {
     user_service,
   );
   const org_service = new OrgService(org_repo, notification_service, user_service);
-  const project_service = new ProjectService(
+  const project_service = new NotificationProjectService(
     project_repo,
     org_service,
-    notification_service,
     user_service,
+    notification_service,
   );
   const task_service = new TaskService(task_repo, project_service);
   const chat_service = new ChatService(chat_repo, project_service, user_service);

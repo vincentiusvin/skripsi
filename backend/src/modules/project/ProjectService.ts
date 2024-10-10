@@ -1,5 +1,4 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
-import { NotificationService } from "../notification/NotificationService.js";
 import { OrgService } from "../organization/OrgService.js";
 import { UserService } from "../user/UserService.js";
 import { ProjectRoles } from "./ProjectMisc.js";
@@ -8,18 +7,11 @@ import { ProjectRepository } from "./ProjectRepository.js";
 export class ProjectService {
   private project_repo: ProjectRepository;
   private org_service: OrgService;
-  private notification_service: NotificationService;
   private user_service: UserService;
 
-  constructor(
-    repo: ProjectRepository,
-    org_service: OrgService,
-    notification_service: NotificationService,
-    user_service: UserService,
-  ) {
+  constructor(repo: ProjectRepository, org_service: OrgService, user_service: UserService) {
     this.project_repo = repo;
     this.org_service = org_service;
-    this.notification_service = notification_service;
     this.user_service = user_service;
   }
 
@@ -29,53 +21,6 @@ export class ProjectService {
       return "Admin";
     }
     return await this.project_repo.getMemberRole(project_id, user_id);
-  }
-
-  async sendAcceptanceNotification(user_id: number, project_id: number) {
-    const project = await this.getProjectByID(project_id);
-    if (!project) {
-      return;
-    }
-    return this.notification_service.addNotification({
-      title: `Penerimaan Developer di ${project.project_name}`,
-      user_id,
-      description: `Anda telah diterima sebagai "Developer" di projek "${project.project_name}" dan dapat mulai berkontribusi.`,
-      type: "ProjectManage",
-      type_id: project_id,
-    });
-  }
-
-  async sendInvitationNotification(user_id: number, project_id: number) {
-    const project = await this.getProjectByID(project_id);
-    if (!project) {
-      return;
-    }
-    return this.notification_service.addNotification({
-      title: `Undangan Developer di ${project.project_name}`,
-      user_id,
-      description: `Anda diundang untuk menjadi "Developer" di projek "${project.project_name}".
-Anda dapat menerima tawaran ini dan berkontribusi di projek tersebut.`,
-      type: "ProjectManage",
-      type_id: project_id,
-    });
-  }
-
-  async sendDevRequestNotification(dev_id: number, project_id: number) {
-    const project = await this.getProjectByID(project_id);
-    if (!project) {
-      return;
-    }
-    const members = project.project_members.filter((x) => x.role === "Admin");
-    for (const org_user_id of members) {
-      return this.notification_service.addNotification({
-        title: `Lamaran Developer di ${project.project_name}`,
-        user_id: org_user_id.user_id,
-        description: `Terdapat pengguna yang ingin menjadi "Developer" di projek "${project.project_name}" yang anda kelola.
-Anda dapat menerima atau menolak permintaan tersebut.`,
-        type: "ProjectManage",
-        type_id: project_id,
-      });
-    }
   }
 
   /**
@@ -109,28 +54,22 @@ Anda dapat menerima atau menolak permintaan tersebut.`,
       if (target_role === "Pending" && target_user_role === "Not Involved") {
         const user_org_role = await this.org_service.getMemberRole(org.org_id, user_id);
         if (user_org_role === "Admin") {
-          return this.project_repo.assignMember(project_id, user_id, "Admin");
+          return await this.promoteOrgAdminAsProjectAdmin(project_id, user_id);
         } else {
-          const result = this.project_repo.assignMember(project_id, user_id, "Pending");
-          await this.sendDevRequestNotification(user_id, project_id);
-          return result;
+          return await this.storePendingDevRequest(project_id, user_id);
         }
       }
       if (target_role === "Dev" && target_user_role === "Invited") {
-        return this.project_repo.assignMember(project_id, user_id, "Dev");
+        return await this.promoteInvitedDev(project_id, user_id);
       }
     }
 
     if (sender_role === "Admin") {
       if (target_role === "Dev" && target_user_role === "Pending") {
-        const result = await this.project_repo.assignMember(project_id, user_id, "Dev");
-        await this.sendAcceptanceNotification(user_id, project_id);
-        return result;
+        return await this.acceptPendingDevRequest(project_id, user_id);
       }
       if (target_role === "Invited" && target_user_role === "Not Involved") {
-        const result = await this.project_repo.assignMember(project_id, user_id, "Invited");
-        await this.sendInvitationNotification(user_id, project_id);
-        return result;
+        return await this.inviteDevToJoin(project_id, user_id);
       }
     }
 
@@ -151,19 +90,6 @@ Anda dapat menerima atau menolak permintaan tersebut.`,
 
   getProjectByID(project_id: number) {
     return this.project_repo.getProjectByID(project_id);
-  }
-
-  getAllMembers(project_id: number) {
-    return this.project_repo.getMembers(project_id);
-  }
-
-  isInvolvedRole(role: ProjectRoles) {
-    return role === "Dev" || role === "Admin";
-  }
-
-  async getInvolvedMembers(project_id: number) {
-    const members = await this.project_repo.getMembers(project_id);
-    return members.filter((x) => this.isInvolvedRole(x.role));
   }
 
   async addProject(
@@ -204,5 +130,26 @@ Anda dapat menerima atau menolak permintaan tersebut.`,
 
   getCategories() {
     return this.project_repo.getCategories();
+  }
+
+  protected async promoteOrgAdminAsProjectAdmin(project_id: number, user_id: number) {
+    return this.project_repo.assignMember(project_id, user_id, "Admin");
+  }
+
+  protected async inviteDevToJoin(project_id: number, user_id: number) {
+    return await this.project_repo.assignMember(project_id, user_id, "Invited");
+  }
+
+  protected async storePendingDevRequest(project_id: number, user_id: number) {
+    return await this.project_repo.assignMember(project_id, user_id, "Pending");
+  }
+
+  protected async promoteInvitedDev(project_id: number, user_id: number) {
+    return await this.project_repo.assignMember(project_id, user_id, "Dev");
+  }
+
+  // sama kek atas, cuma dipecah jadi dua biar bisa dioverride
+  protected async acceptPendingDevRequest(project_id: number, user_id: number) {
+    return await this.project_repo.assignMember(project_id, user_id, "Dev");
   }
 }
