@@ -4,8 +4,13 @@ import { UserService } from "../user/UserService.js";
 import { ProjectRepository } from "./ProjectRepository.js";
 import { ProjectService } from "./ProjectService.js";
 
-// cross cutting concern boss
-export class NotificationProjectService extends ProjectService {
+/**
+ * Handle side effects buat project service.
+ * Hal-hal yang nggak "core".
+ * Notif & timeline event
+ * Abstrak lagi jadi decorator atau observer kalau butuh.
+ */
+export class ProjectServiceEffects extends ProjectService {
   private notification_service: NotificationService;
   constructor(
     repo: ProjectRepository,

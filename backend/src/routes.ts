@@ -17,15 +17,15 @@ import { FriendService } from "./modules/friend/FriendService.js";
 import { NotificationController } from "./modules/notification/NotificationController.js";
 import { NotificationRepository } from "./modules/notification/NotificationRepository.js";
 import { NotificationService } from "./modules/notification/NotificationService.js";
-import { NotificationOrgService } from "./modules/organization/NotificationOrgService.js";
 import { OrgController } from "./modules/organization/OrgController.js";
 import { OrgRepository } from "./modules/organization/OrgRepository.js";
+import { OrgServiceEffects } from "./modules/organization/OrgServiceEffects.js";
 import { PreferenceController } from "./modules/preferences/PreferenceController.js";
 import { PreferenceRepository } from "./modules/preferences/PreferenceRepository.js";
 import { PreferenceService } from "./modules/preferences/PreferenceService.js";
-import { NotificationProjectService } from "./modules/project/NotificationProjectService.js";
 import { ProjectController } from "./modules/project/ProjectController.js";
 import { ProjectRepository } from "./modules/project/ProjectRepository.js";
+import { ProjectServiceEffects } from "./modules/project/ProjectServiceEffects.js";
 import { ReportController } from "./modules/report/ReportController.js";
 import { ReportRepository } from "./modules/report/ReportRepository.js";
 import { ReportService } from "./modules/report/ReportService.js";
@@ -61,8 +61,8 @@ export function registerControllers(app: Application) {
     email_service,
     user_service,
   );
-  const org_service = new NotificationOrgService(org_repo, user_service, notification_service);
-  const project_service = new NotificationProjectService(
+  const org_service = new OrgServiceEffects(org_repo, user_service, notification_service);
+  const project_service = new ProjectServiceEffects(
     project_repo,
     org_service,
     user_service,

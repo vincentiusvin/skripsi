@@ -3,7 +3,13 @@ import { UserService } from "../user/UserService.js";
 import { OrgRepository } from "./OrgRepository.js";
 import { OrgService } from "./OrgService.js";
 
-export class NotificationOrgService extends OrgService {
+/**
+ * Handle side effects buat org service.
+ * Hal-hal yang nggak "core".
+ * Notif & timeline event.
+ * Abstrak lagi jadi decorator atau observer kalau butuh.
+ */
+export class OrgServiceEffects extends OrgService {
   private notification_service: NotificationService;
 
   constructor(
