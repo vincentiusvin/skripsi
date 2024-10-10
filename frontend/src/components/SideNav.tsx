@@ -238,7 +238,7 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <Work />,
       },
       {
-        link: `/friends`,
+        link: `/users`,
         name: `Cari Teman`,
         avatar: <People />,
       },
@@ -251,6 +251,11 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         link: `/reports`,
         name: `Laporan`,
         avatar: <Flag />,
+      },
+      {
+        link: `/settings`,
+        name: `Preferensi`,
+        avatar: <Settings />,
       },
     ];
   } else if (parsedContext.type === "project") {

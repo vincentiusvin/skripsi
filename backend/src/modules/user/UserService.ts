@@ -46,7 +46,7 @@ export class UserService {
     return await this.user_repo.getUserDetail(user_id);
   }
 
-  async getUsers(opts?: { is_admin?: boolean }) {
+  async getUsers(opts?: { is_admin?: boolean; keyword?: string }) {
     return await this.user_repo.getUsers(opts);
   }
 

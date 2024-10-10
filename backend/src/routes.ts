@@ -20,6 +20,9 @@ import { NotificationService } from "./modules/notification/NotificationService.
 import { OrgController } from "./modules/organization/OrgController.js";
 import { OrgRepository } from "./modules/organization/OrgRepository.js";
 import { OrgService } from "./modules/organization/OrgService.js";
+import { PreferenceController } from "./modules/preferences/PreferenceController.js";
+import { PreferenceRepository } from "./modules/preferences/PreferenceRepository.js";
+import { PreferenceService } from "./modules/preferences/PreferenceService.js";
 import { ProjectController } from "./modules/project/ProjectController.js";
 import { ProjectRepository } from "./modules/project/ProjectRepository.js";
 import { ProjectService } from "./modules/project/ProjectService.js";
@@ -49,6 +52,7 @@ export function registerControllers(app: Application) {
   const article_repo = new ArticleRepository(app.db);
   const report_repo = new ReportRepository(app.db);
   const suspension_repo = new SuspensionRepository(app.db);
+  const preference_repo = new PreferenceRepository(app.db);
 
   const user_service = new UserService(user_repo);
   const email_service = EmailService.fromEnv();
@@ -71,6 +75,7 @@ export function registerControllers(app: Application) {
   const article_service = new ArticleService(article_repo);
   const report_service = new ReportService(report_repo, user_service, chat_service);
   const suspension_service = new SuspensionService(suspension_repo, user_service);
+  const preference_service = new PreferenceService(preference_repo);
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),
@@ -85,6 +90,7 @@ export function registerControllers(app: Application) {
     new NotificationController(app.express_server, notification_service),
     new ReportController(app.express_server, report_service),
     new SuspensionController(app.express_server, suspension_service),
+    new PreferenceController(app.express_server, preference_service),
   ] as const;
 
   controllers.forEach((x) => x.register());

@@ -64,6 +64,10 @@ export async function baseCase(db: Kysely<DB>) {
         name: "banned user",
         password: hashed,
       },
+      {
+        name: "pref user",
+        password: hashed,
+      },
     ])
     .returning(["id", "name"])
     .execute();
@@ -86,6 +90,7 @@ export async function baseCase(db: Kysely<DB>) {
   const notif_user = { ...user_ids[8], password: orig_password };
   const report_user = { ...user_ids[9], password: orig_password };
   const banned_user = { ...user_ids[10], password: orig_password };
+  const pref_user = { ...user_ids[11], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -287,11 +292,45 @@ export async function baseCase(db: Kysely<DB>) {
     .returning(["id", "ms_suspensions.reason", "ms_suspensions.suspended_until"])
     .execute();
 
+  const pref_map = await db
+    .selectFrom("ms_preferences")
+    .select(["ms_preferences.id", "ms_preferences.name"])
+    .execute();
+
+  await db
+    .insertInto("preferences_users")
+    .values([
+      {
+        user_id: pref_user.id,
+        preference_id: pref_map.find((x) => x.name === "project_invite")!.id,
+        value: "on",
+      },
+      {
+        user_id: pref_user.id,
+        preference_id: pref_map.find((x) => x.name === "project_notif")!.id,
+        value: "email",
+      },
+    ])
+    .execute();
+
+  const preferences_tidy = await db
+    .selectFrom("ms_preferences")
+    .innerJoin("preferences_users", "preferences_users.preference_id", "ms_preferences.id")
+    .select(["ms_preferences.name", "preferences_users.value"])
+    .where("user_id", "=", pref_user.id)
+    .execute();
+  const preferences: Record<string, string> = {};
+  preferences_tidy.forEach((x) => {
+    preferences[x.name] = x.value;
+  });
+
   return {
     org,
+    preferences,
     project,
     bucket_fill: bucket[0],
     bucket_empty: bucket[1],
+    pref_user,
     org_categories,
     project_categories,
     task,

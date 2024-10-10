@@ -129,6 +129,11 @@ export interface MsOrgs {
   phone: string;
 }
 
+export interface MsPreferences {
+  id: Generated<number>;
+  name: string;
+}
+
 export interface MsProjects {
   created_at: Generated<Timestamp>;
   description: string;
@@ -195,6 +200,12 @@ export interface OrgsUsers {
   user_id: number;
 }
 
+export interface PreferencesUsers {
+  preference_id: number;
+  user_id: number;
+  value: string;
+}
+
 export interface ProjectsUsers {
   created_at: Generated<Timestamp>;
   project_id: number;
@@ -230,6 +241,7 @@ export interface DB {
   ms_messages: MsMessages;
   ms_notifications: MsNotifications;
   ms_orgs: MsOrgs;
+  ms_preferences: MsPreferences;
   ms_projects: MsProjects;
   ms_reports: MsReports;
   ms_suspensions: MsSuspensions;
@@ -237,6 +249,7 @@ export interface DB {
   ms_tasks: MsTasks;
   ms_users: MsUsers;
   orgs_users: OrgsUsers;
+  preferences_users: PreferencesUsers;
   projects_users: ProjectsUsers;
   session: Session;
   tasks_users: TasksUsers;
