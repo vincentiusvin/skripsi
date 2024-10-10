@@ -1,21 +1,14 @@
 import { AuthError, ClientError } from "../../helpers/error.js";
-import { NotificationService } from "../notification/NotificationService.js";
 import { UserService } from "../user/UserService.js";
 import { OrgRoles } from "./OrgMisc.js";
 import { OrgRepository } from "./OrgRepository.js";
 
 export class OrgService {
   private org_repo: OrgRepository;
-  private notification_service: NotificationService;
   private user_service: UserService;
 
-  constructor(
-    repo: OrgRepository,
-    notification_service: NotificationService,
-    user_service: UserService,
-  ) {
+  constructor(repo: OrgRepository, user_service: UserService) {
     this.org_repo = repo;
-    this.notification_service = notification_service;
     this.user_service = user_service;
   }
 
@@ -25,10 +18,6 @@ export class OrgService {
 
   async getOrgByID(id: number) {
     return await this.org_repo.getOrgsByID(id);
-  }
-
-  async getOrgByName(name: string) {
-    return await this.org_repo.getOrgsByName(name);
   }
 
   async addOrg(
@@ -96,31 +85,14 @@ export class OrgService {
     return await this.org_repo.getMemberRole(org_id, user_id);
   }
 
-  async sendInvitationNotification(user_id: number, org_id: number) {
-    const org = await this.getOrgByID(org_id);
-    if (!org) {
-      return;
-    }
-    return this.notification_service.addNotification({
-      title: `Undangan Admin di ${org.org_id}`,
-      user_id,
-      description: `Anda diundang untuk menjadi "Admin" di organisasi "${org.org_name}".
-Anda dapat menerima tawaran ini dan mengelola projek yang dijalankan oleh organisasi.`,
-      type: "OrgManage",
-      type_id: org_id,
-    });
-  }
-
   async assignMember(org_id: number, user_id: number, sender_id: number, role: OrgRoles) {
     const previous_role = await this.getMemberRole(org_id, user_id);
     const sender_role = await this.getMemberRole(org_id, sender_id);
     if (role === "Admin" && user_id === sender_id && previous_role === "Invited") {
-      return await this.org_repo.assignMember(org_id, user_id, "Admin");
+      return await this.acceptAdminInvite(org_id, user_id);
     }
     if (role === "Invited" && sender_role === "Admin" && previous_role === "Not Involved") {
-      const result = await this.org_repo.assignMember(org_id, user_id, "Invited");
-      await this.sendInvitationNotification(user_id, org_id);
-      return result;
+      return await this.storeAdminInvite(org_id, user_id);
     }
 
     throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
@@ -132,5 +104,17 @@ Anda dapat menerima tawaran ini dan mengelola projek yang dijalankan oleh organi
       return await this.org_repo.unassignMember(org_id, user_id);
     }
     throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+  }
+
+  protected async acceptAdminInvite(org_id: number, user_id: number) {
+    return await this.org_repo.assignMember(org_id, user_id, "Admin");
+  }
+
+  protected async getOrgByName(name: string) {
+    return await this.org_repo.getOrgsByName(name);
+  }
+
+  protected async storeAdminInvite(org_id: number, user_id: number) {
+    return await this.org_repo.assignMember(org_id, user_id, "Invited");
   }
 }
