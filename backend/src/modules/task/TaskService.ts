@@ -146,10 +146,13 @@ export class TaskService {
 
     const order = await this.task_repo.getMaxOrder(bucket_id);
 
-    return await this.task_repo.addTask({
+    const result = await this.task_repo.addTask({
       ...data,
       order: order ?? 1,
     });
+
+    await this.addTaskEvent(bucket.project_id, result.id);
+    return result;
   }
 
   async getTasks(opts: { bucket_id?: number; user_id?: number }) {
@@ -167,5 +170,13 @@ export class TaskService {
     }
 
     return await this.task_repo.addBucket(project_id, name);
+  }
+
+  private async addTaskEvent(project_id: number, task_id: number) {
+    const task = await this.getTaskByID(task_id);
+    if (!task) {
+      throw new Error(`Gagal menemukan tugas ${task_id}`);
+    }
+    await this.project_service.addEvent(project_id, `Ditmbahkan tugas baru ${task.name}`);
   }
 }

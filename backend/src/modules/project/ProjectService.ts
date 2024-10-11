@@ -89,8 +89,8 @@ export class ProjectService {
     if (sender_role !== "Admin" && sender_id !== user_id) {
       throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
     }
+    await this.project_repo.unassignMember(project_id, user_id);
     await this.removeUserevent(project_id, user_id);
-    return await this.project_repo.unassignMember(project_id, user_id);
   }
 
   getProjects(filter?: { org_id?: number; user_id?: number; keyword?: string }) {
@@ -150,23 +150,23 @@ export class ProjectService {
   }
 
   private async promoteOrgAdminAsProjectAdmin(project_id: number, user_id: number) {
+    await this.project_repo.assignMember(project_id, user_id, "Admin");
     await this.addAdminEvent(project_id, user_id);
-    return this.project_repo.assignMember(project_id, user_id, "Admin");
   }
 
   private async inviteDevToJoin(project_id: number, user_id: number) {
+    await this.project_repo.assignMember(project_id, user_id, "Invited");
     await this.sendInvitationNotification(user_id, project_id);
-    return await this.project_repo.assignMember(project_id, user_id, "Invited");
   }
 
   private async storePendingDevRequest(project_id: number, user_id: number) {
+    await this.project_repo.assignMember(project_id, user_id, "Pending");
     await this.sendDevRequestNotification(user_id, project_id);
-    return await this.project_repo.assignMember(project_id, user_id, "Pending");
   }
 
   private async promoteInvitedDev(project_id: number, user_id: number) {
+    await this.project_repo.assignMember(project_id, user_id, "Dev");
     await this.addDevEvent(project_id, user_id);
-    return await this.project_repo.assignMember(project_id, user_id, "Dev");
   }
 
   private async acceptPendingDevRequest(project_id: number, user_id: number) {
