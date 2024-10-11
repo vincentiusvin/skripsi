@@ -129,9 +129,23 @@ export interface MsOrgs {
   phone: string;
 }
 
+export interface MsOrgsEvents {
+  created_at: Generated<Timestamp>;
+  event: string;
+  id: Generated<number>;
+  org_id: number;
+}
+
 export interface MsPreferences {
   id: Generated<number>;
   name: string;
+}
+
+export interface MsProjectEvents {
+  created_at: Generated<Timestamp>;
+  event: string;
+  id: Generated<number>;
+  project_id: number;
 }
 
 export interface MsProjects {
@@ -241,7 +255,9 @@ export interface DB {
   ms_messages: MsMessages;
   ms_notifications: MsNotifications;
   ms_orgs: MsOrgs;
+  ms_orgs_events: MsOrgsEvents;
   ms_preferences: MsPreferences;
+  ms_project_events: MsProjectEvents;
   ms_projects: MsProjects;
   ms_reports: MsReports;
   ms_suspensions: MsSuspensions;

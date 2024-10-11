@@ -10,6 +10,8 @@ const defaultProjectFields = [
   "ms_projects.description as project_desc",
 ] as const;
 
+const defaultProjectEventFields = ["id", "project_id", "event", "created_at"] as const;
+
 function projectWithMembers(eb: ExpressionBuilder<DB, "ms_projects">) {
   return jsonArrayFrom(
     eb
@@ -245,6 +247,24 @@ export class ProjectRepository {
     return await this.db
       .selectFrom("ms_category_projects")
       .select(["id as category_id", "name as category_name"])
+      .execute();
+  }
+
+  async getEvents(project_id: number) {
+    return await this.db
+      .selectFrom("ms_project_events")
+      .select(defaultProjectEventFields)
+      .where("project_id", "=", project_id)
+      .execute();
+  }
+
+  async addEvent(project_id: number, event: string) {
+    return await this.db
+      .insertInto("ms_project_events")
+      .values({
+        project_id,
+        event,
+      })
       .execute();
   }
 }
