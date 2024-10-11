@@ -82,7 +82,7 @@ Anda dapat menerima atau menolak permintaan tersebut.`,
   }
 
   protected override async acceptPendingDevRequest(project_id: number, user_id: number) {
-    const result = super.acceptPendingDevRequest(project_id, user_id);
+    const result = await super.acceptPendingDevRequest(project_id, user_id);
     await this.sendAcceptanceNotification(user_id, project_id);
     return result;
   }
