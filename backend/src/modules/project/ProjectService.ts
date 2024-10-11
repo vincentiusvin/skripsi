@@ -5,9 +5,9 @@ import { ProjectRoles } from "./ProjectMisc.js";
 import { ProjectRepository } from "./ProjectRepository.js";
 
 export class ProjectService {
-  private project_repo: ProjectRepository;
-  private org_service: OrgService;
-  private user_service: UserService;
+  protected project_repo: ProjectRepository;
+  protected org_service: OrgService;
+  protected user_service: UserService;
 
   constructor(repo: ProjectRepository, org_service: OrgService, user_service: UserService) {
     this.project_repo = repo;
@@ -128,8 +128,16 @@ export class ProjectService {
     return this.project_repo.deleteProject(project_id);
   }
 
-  getCategories() {
-    return this.project_repo.getCategories();
+  async getCategories() {
+    return await this.project_repo.getCategories();
+  }
+
+  async getEvents(project_id: number) {
+    return await this.project_repo.getEvents(project_id);
+  }
+
+  async addEvent(project_id: number, event: string) {
+    return await this.project_repo.addEvent(project_id, event);
   }
 
   protected async promoteOrgAdminAsProjectAdmin(project_id: number, user_id: number) {
