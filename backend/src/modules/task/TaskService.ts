@@ -1,14 +1,21 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { NotificationService } from "../notification/NotificationService.js";
 import { ProjectService } from "../project/ProjectService.js";
 import { TaskRepository } from "./TaskRepository.js";
 
 export class TaskService {
   private task_repo: TaskRepository;
   private project_service: ProjectService;
+  private notification_service: NotificationService;
 
-  constructor(repo: TaskRepository, project_service: ProjectService) {
+  constructor(
+    repo: TaskRepository,
+    project_service: ProjectService,
+    notification_service: NotificationService,
+  ) {
     this.task_repo = repo;
     this.project_service = project_service;
+    this.notification_service = notification_service;
   }
 
   async getTaskByID(task_id: number) {
@@ -177,6 +184,23 @@ export class TaskService {
     if (!task) {
       throw new Error(`Gagal menemukan tugas ${task_id}`);
     }
-    await this.project_service.addEvent(project_id, `Ditambahkan tugas baru ${task.name}`);
+    for (const { user_id } of task.users) {
+      await this.sendTaskNotification(task_id, project_id, user_id);
+    }
+    await this.project_service.addEvent(project_id, `Ditambahkan tugas baru "${task.name}"`);
+  }
+
+  private async sendTaskNotification(task_id: number, project_id: number, user_id: number) {
+    const task = await this.getTaskByID(task_id);
+    if (!task) {
+      return;
+    }
+    return this.notification_service.addNotification({
+      title: `Tugas "${task.name}"`,
+      user_id,
+      description: `Anda tercatat sebagai pelaksana tugas "${task.name}"`,
+      type: "ProjectTask",
+      type_id: project_id,
+    });
   }
 }
