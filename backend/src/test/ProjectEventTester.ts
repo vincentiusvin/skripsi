@@ -27,14 +27,14 @@ export class ProjectEventTester {
     event: string;
   }[];
 
-  private constructor(user_id: number, cookie: string) {
-    this.project_id = user_id;
+  private constructor(project_id: number, cookie: string) {
+    this.project_id = project_id;
     this.cookie = cookie;
   }
 
-  static async fromLoginInfo(user_id: number, username: string, password: string) {
+  static async fromLoginInfo(project_id: number, username: string, password: string) {
     const cookie = await getLoginCookie(username, password);
-    return new ProjectEventTester(user_id, cookie);
+    return new ProjectEventTester(project_id, cookie);
   }
 
   static fromCookie(user_id: number, cookie: string) {

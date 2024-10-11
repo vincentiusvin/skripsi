@@ -2,12 +2,13 @@ import { expect } from "chai";
 import { describe } from "mocha";
 import { Application } from "../../app.js";
 import { NotificationTester } from "../../test/NotificationTester.js";
+import { ProjectEventTester } from "../../test/ProjectEventTester.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 
-describe("projects api", () => {
+describe.only("projects api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -241,8 +242,9 @@ describe("projects api", () => {
       const accept_dev_req = await assignMember(in_project.id, in_dev.id, "Dev", admin_cookie);
       await accept_dev_req.json();
       await nt.finish();
+      const diff = nt.diff();
 
-      expect(nt.diff().length).to.eq(1);
+      expect(diff.length).to.eq(1);
     });
 
     it("should send notification to org users when user applies", async () => {
@@ -261,8 +263,9 @@ describe("projects api", () => {
       const res = await assignMember(in_project.id, in_user.id, in_role, cookie);
       await res.json();
       await nt.finish();
+      const diff = nt.diff();
 
-      expect(nt.diff().length).eq(1);
+      expect(diff.length).eq(1);
     });
 
     it("should send notification to invited users", async () => {
@@ -276,8 +279,54 @@ describe("projects api", () => {
       const invite_req = await assignMember(in_project.id, in_dev.id, "Invited", admin_cookie);
       await invite_req.json();
       await nt.finish();
+      const diff = nt.diff();
 
-      expect(nt.diff().length).eq(1);
+      expect(diff.length).eq(1);
+    });
+  });
+
+  describe("events", () => {
+    it("should send an event on new admin", async () => {
+      const in_user = caseData.org_user;
+      const in_project = caseData.project;
+      const in_role = "Pending";
+      const in_viewer = caseData.project_admin_user;
+
+      const pet = await ProjectEventTester.fromLoginInfo(
+        in_project.id,
+        in_viewer.name,
+        in_viewer.password,
+      );
+      await pet.start();
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const res = await assignMember(in_project.id, in_user.id, in_role, cookie);
+      await res.json();
+      await pet.finish();
+      const diff = pet.diff();
+
+      expect(diff.length).to.eq(1);
+    });
+
+    it("should send an event on new dev", async () => {
+      const in_dev = caseData.plain_user;
+      const in_admin = caseData.project_admin_user;
+      const in_project = caseData.project;
+
+      // dev applies
+      const dev_cookie = await getLoginCookie(in_dev.name, in_dev.password);
+      const send_dev_req = await assignMember(in_project.id, in_dev.id, "Pending", dev_cookie);
+      await send_dev_req.json();
+
+      // admin accepts
+      const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
+      const pet = ProjectEventTester.fromCookie(in_project.id, admin_cookie);
+      await pet.start();
+      const accept_dev_req = await assignMember(in_project.id, in_dev.id, "Dev", admin_cookie);
+      await accept_dev_req.json();
+      await pet.finish();
+      const diff = pet.diff();
+
+      expect(diff.length).to.eq(1);
     });
   });
 });
