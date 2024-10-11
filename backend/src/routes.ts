@@ -25,7 +25,7 @@ import { PreferenceRepository } from "./modules/preferences/PreferenceRepository
 import { PreferenceService } from "./modules/preferences/PreferenceService.js";
 import { ProjectController } from "./modules/project/ProjectController.js";
 import { ProjectRepository } from "./modules/project/ProjectRepository.js";
-import { ProjectServiceEffects } from "./modules/project/ProjectServiceEffects.js";
+import { ProjectService } from "./modules/project/ProjectService.js";
 import { ReportController } from "./modules/report/ReportController.js";
 import { ReportRepository } from "./modules/report/ReportRepository.js";
 import { ReportService } from "./modules/report/ReportService.js";
@@ -62,7 +62,7 @@ export function registerControllers(app: Application) {
     user_service,
   );
   const org_service = new OrgServiceEffects(org_repo, user_service, notification_service);
-  const project_service = new ProjectServiceEffects(
+  const project_service = new ProjectService(
     project_repo,
     org_service,
     user_service,

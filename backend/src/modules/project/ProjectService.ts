@@ -1,18 +1,26 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { NotificationService } from "../notification/NotificationService.js";
 import { OrgService } from "../organization/OrgService.js";
 import { UserService } from "../user/UserService.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 import { ProjectRepository } from "./ProjectRepository.js";
 
 export class ProjectService {
-  protected project_repo: ProjectRepository;
-  protected org_service: OrgService;
-  protected user_service: UserService;
+  private project_repo: ProjectRepository;
+  private org_service: OrgService;
+  private user_service: UserService;
+  private notification_service: NotificationService;
 
-  constructor(repo: ProjectRepository, org_service: OrgService, user_service: UserService) {
+  constructor(
+    repo: ProjectRepository,
+    org_service: OrgService,
+    user_service: UserService,
+    notification_service: NotificationService,
+  ) {
     this.project_repo = repo;
     this.org_service = org_service;
     this.user_service = user_service;
+    this.notification_service = notification_service;
   }
 
   async getMemberRole(project_id: number, user_id: number) {
@@ -81,6 +89,7 @@ export class ProjectService {
     if (sender_role !== "Admin" && sender_id !== user_id) {
       throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
     }
+    await this.removeUserevent(project_id, user_id);
     return await this.project_repo.unassignMember(project_id, user_id);
   }
 
@@ -140,24 +149,100 @@ export class ProjectService {
     return await this.project_repo.addEvent(project_id, event);
   }
 
-  protected async promoteOrgAdminAsProjectAdmin(project_id: number, user_id: number) {
+  private async promoteOrgAdminAsProjectAdmin(project_id: number, user_id: number) {
+    await this.addAdminEvent(project_id, user_id);
     return this.project_repo.assignMember(project_id, user_id, "Admin");
   }
 
-  protected async inviteDevToJoin(project_id: number, user_id: number) {
+  private async inviteDevToJoin(project_id: number, user_id: number) {
+    await this.sendInvitationNotification(user_id, project_id);
     return await this.project_repo.assignMember(project_id, user_id, "Invited");
   }
 
-  protected async storePendingDevRequest(project_id: number, user_id: number) {
+  private async storePendingDevRequest(project_id: number, user_id: number) {
+    await this.sendDevRequestNotification(user_id, project_id);
     return await this.project_repo.assignMember(project_id, user_id, "Pending");
   }
 
-  protected async promoteInvitedDev(project_id: number, user_id: number) {
+  private async promoteInvitedDev(project_id: number, user_id: number) {
+    await this.addDevEvent(project_id, user_id);
     return await this.project_repo.assignMember(project_id, user_id, "Dev");
   }
 
-  // sama kek atas, cuma dipecah jadi dua biar bisa dioverride
-  protected async acceptPendingDevRequest(project_id: number, user_id: number) {
+  private async acceptPendingDevRequest(project_id: number, user_id: number) {
+    await this.sendAcceptanceNotification(user_id, project_id);
+    await this.addDevEvent(project_id, user_id);
     return await this.project_repo.assignMember(project_id, user_id, "Dev");
+  }
+
+  private async sendAcceptanceNotification(user_id: number, project_id: number) {
+    const project = await this.getProjectByID(project_id);
+    if (!project) {
+      return;
+    }
+    return this.notification_service.addNotification({
+      title: `Penerimaan Developer di ${project.project_name}`,
+      user_id,
+      description: `Anda telah diterima sebagai "Developer" di projek "${project.project_name}" dan dapat mulai berkontribusi.`,
+      type: "ProjectManage",
+      type_id: project_id,
+    });
+  }
+
+  private async sendInvitationNotification(user_id: number, project_id: number) {
+    const project = await this.getProjectByID(project_id);
+    if (!project) {
+      return;
+    }
+    return this.notification_service.addNotification({
+      title: `Undangan Developer di ${project.project_name}`,
+      user_id,
+      description: `Anda diundang untuk menjadi "Developer" di projek "${project.project_name}".
+Anda dapat menerima tawaran ini dan berkontribusi di projek tersebut.`,
+      type: "ProjectManage",
+      type_id: project_id,
+    });
+  }
+
+  private async sendDevRequestNotification(dev_id: number, project_id: number) {
+    const project = await this.getProjectByID(project_id);
+    if (!project) {
+      return;
+    }
+    const members = project.project_members.filter((x) => x.role === "Admin");
+    for (const org_user_id of members) {
+      return this.notification_service.addNotification({
+        title: `Lamaran Developer di ${project.project_name}`,
+        user_id: org_user_id.user_id,
+        description: `Terdapat pengguna yang ingin menjadi "Developer" di projek "${project.project_name}" yang anda kelola.
+Anda dapat menerima atau menolak permintaan tersebut.`,
+        type: "ProjectManage",
+        type_id: project_id,
+      });
+    }
+  }
+
+  private async addDevEvent(project_id: number, user_id: number) {
+    const user = await this.user_service.getUserDetail(user_id);
+    if (!user) {
+      throw new Error(`Gagal menemukan pengguna ${user_id}`);
+    }
+    await this.addEvent(project_id, `Pengguna ${user.user_name} ditambahkan menjadi developer.`);
+  }
+
+  private async removeUserevent(project_id: number, user_id: number) {
+    const user = await this.user_service.getUserDetail(user_id);
+    if (!user) {
+      throw new Error(`Gagal menemukan pengguna ${user_id}`);
+    }
+    await this.addEvent(project_id, `Pengguna ${user.user_name} berhenti menjadi anggota proyek.`);
+  }
+
+  private async addAdminEvent(project_id: number, user_id: number) {
+    const user = await this.user_service.getUserDetail(user_id);
+    if (!user) {
+      throw new Error(`Gagal menemukan pengguna ${user_id}`);
+    }
+    await this.addEvent(project_id, `Pengguna ${user.user_name} ditambahkan menjadi admin.`);
   }
 }
