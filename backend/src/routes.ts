@@ -73,7 +73,12 @@ export function registerControllers(app: Application) {
   const friend_service = new FriendService(friend_repo);
   const contribution_service = new ContributionService(contribution_repo);
   const article_service = new ArticleService(article_repo);
-  const report_service = new ReportService(report_repo, user_service, chat_service);
+  const report_service = new ReportService(
+    report_repo,
+    user_service,
+    chat_service,
+    notification_service,
+  );
   const suspension_service = new SuspensionService(suspension_repo, user_service);
   const preference_service = new PreferenceService(preference_repo);
 

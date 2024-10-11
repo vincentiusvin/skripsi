@@ -61,8 +61,8 @@ export class ReportService {
     }
 
     const translate_status = {
-      Resolved: "Diterima",
-      Rejected: "Ditolak",
+      Resolved: "diterima",
+      Rejected: "ditolak",
     }[status];
 
     await this.notification_service.addNotification({

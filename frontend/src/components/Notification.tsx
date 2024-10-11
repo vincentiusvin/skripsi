@@ -33,6 +33,9 @@ function resolveNotificationLink(type: NotificationData["type"], type_id: number
   if (type === "OrgManage") {
     return `/orgs/${type_id}`;
   }
+  if (type === "ReportUpdate") {
+    return `/reports/${type_id}`;
+  }
 }
 
 function NotificationEntry(props: { notification_data: NotificationData; onClick?: () => void }) {
