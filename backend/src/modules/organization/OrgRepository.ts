@@ -12,8 +12,6 @@ const defaultOrgFields = [
   "ms_orgs.image as org_image",
 ] as const;
 
-const defaultOrgEventFields = ["id", "org_id", "event", "created_at"] as const;
-
 function orgWithCategories(eb: ExpressionBuilder<DB, "ms_orgs">) {
   return jsonArrayFrom(
     eb
@@ -264,24 +262,6 @@ export class OrgRepository {
           "orgs_users.user_id": user_id,
         }),
       )
-      .execute();
-  }
-
-  async getEvents(project_id: number) {
-    return await this.db
-      .selectFrom("ms_orgs_events")
-      .select(defaultOrgEventFields)
-      .where("org_id", "=", project_id)
-      .execute();
-  }
-
-  async addEvent(org_id: number, event: string) {
-    return await this.db
-      .insertInto("ms_orgs_events")
-      .values({
-        org_id,
-        event,
-      })
       .execute();
   }
 }
