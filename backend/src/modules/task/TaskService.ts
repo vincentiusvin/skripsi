@@ -70,7 +70,7 @@ export class TaskService {
     task_id: number,
     data: {
       bucket_id?: number;
-      before_id?: number; // sisipin tasknya sebelum id ini.
+      before_id?: number | null; // sisipin tasknya sebelum id ini.
       name?: string;
       description?: string;
       users?: number[];
@@ -109,7 +109,7 @@ export class TaskService {
       }
       updateOrder = insert_before_this.order;
       await this.task_repo.bumpOrderBiggerThan(target_bucket, updateOrder);
-    } else {
+    } else if (before_id === null || target_bucket != old_data.bucket_id) {
       const data_after = await this.task_repo.getMaxOrder(target_bucket);
       if (data_after == undefined) {
         updateOrder = 1;
@@ -127,6 +127,12 @@ export class TaskService {
       order: updateOrder,
       start_at,
     });
+
+    if (users != undefined) {
+      for (const user_id of users) {
+        await this.sendTaskNotification(task_id, project_id, user_id);
+      }
+    }
   }
 
   async addTask(

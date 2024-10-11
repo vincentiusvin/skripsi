@@ -94,7 +94,7 @@ describe.only("task api", () => {
   }
 
   for (const idx of [0, 1]) {
-    it("should be able to move task to the end if no before_id is specified", async () => {
+    it("should be able to move task to the end if before_id is null", async () => {
       const in_user = caseData.dev_user;
       const in_task = caseData.task[idx];
       const in_bucket = caseData.bucket_fill;
@@ -104,6 +104,7 @@ describe.only("task api", () => {
         in_task.id,
         {
           bucket_id: in_bucket.id,
+          before_id: null,
         },
         cookie,
       );
@@ -246,6 +247,29 @@ describe.only("task api", () => {
 
       expect(result.length).to.eq(1);
     });
+
+    it("should send a notification on task users update", async () => {
+      const in_user = caseData.dev_user;
+      const in_assignees = [caseData.project_admin_user, caseData.dev_user];
+      const in_task = caseData.task[0];
+
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const nt = NotificationTester.fromCookie(in_user.id, cookie);
+      const asignees_id = in_assignees.map((x) => x.id);
+      await nt.start();
+      const send_req = await updateTask(
+        in_task.id,
+        {
+          users: asignees_id,
+        },
+        cookie,
+      );
+      await send_req.json();
+      await nt.finish();
+      const result = await nt.diff();
+
+      expect(result.length).eq(1);
+    });
   });
 });
 
@@ -305,7 +329,7 @@ function updateTask(
   task_id: number,
   data: {
     bucket_id?: number;
-    before_id?: number;
+    before_id?: number | null;
     name?: string;
     description?: string;
     start_at?: string;
