@@ -177,6 +177,6 @@ export class TaskService {
     if (!task) {
       throw new Error(`Gagal menemukan tugas ${task_id}`);
     }
-    await this.project_service.addEvent(project_id, `Ditmbahkan tugas baru ${task.name}`);
+    await this.project_service.addEvent(project_id, `Ditambahkan tugas baru ${task.name}`);
   }
 }
