@@ -1,10 +1,11 @@
 import { expect } from "chai";
 import { Application } from "../../app.js";
+import { NotificationTester } from "../../test/NotificationTester.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("task api", () => {
+describe.only("task api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -153,6 +154,7 @@ describe("task api", () => {
         name: in_name,
         bucket_id: in_bucket.id,
         description: in_description,
+        users: [in_user.id],
       },
       cookie,
     );
@@ -218,6 +220,33 @@ describe("task api", () => {
     expect(send_req.status).eq(200);
     expect(read_req.status).eq(404);
   });
+
+  describe("notifications", () => {
+    it("should send a notification on new task", async () => {
+      const in_user = caseData.dev_user;
+      const in_bucket = caseData.bucket_fill;
+      const in_name = "New Task";
+      const in_description = "Cool";
+
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const nt = NotificationTester.fromCookie(in_user.id, cookie);
+      await nt.start();
+      const send_req = await addTask(
+        {
+          name: in_name,
+          bucket_id: in_bucket.id,
+          description: in_description,
+          users: [in_user.id],
+        },
+        cookie,
+      );
+      await send_req.json();
+      await nt.finish();
+      const result = nt.diff();
+
+      expect(result.length).to.eq(1);
+    });
+  });
 });
 
 function getTasks(opts: { bucket_id?: number }, cookie: string) {
@@ -238,6 +267,7 @@ function addTask(
     description?: string | undefined;
     end_at?: string | undefined;
     start_at?: string | undefined;
+    users?: number[];
   },
   cookie: string,
 ) {
