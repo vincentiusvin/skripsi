@@ -70,7 +70,7 @@ export function registerControllers(app: Application) {
   );
   const task_service = new TaskService(task_repo, project_service, notification_service);
   const chat_service = new ChatService(chat_repo, project_service, user_service);
-  const friend_service = new FriendService(friend_repo);
+  const friend_service = new FriendService(friend_repo, user_service, notification_service);
   const contribution_service = new ContributionService(contribution_repo);
   const article_service = new ArticleService(article_repo);
   const report_service = new ReportService(

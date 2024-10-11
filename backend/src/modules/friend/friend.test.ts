@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { before, beforeEach, describe } from "mocha";
 import { Application } from "../../app.js";
+import { NotificationTester } from "../../test/NotificationTester.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
@@ -182,6 +183,42 @@ describe("friend api", () => {
       }
     });
   }
+
+  describe("notifications", () => {
+    it("should send notification to receiver when a user is invited as friend", async () => {
+      const in_us = caseData.friend_send_user;
+      const in_them = caseData.plain_user;
+      const cookie = await getLoginCookie(in_us.name, in_them.password);
+
+      const nt = await NotificationTester.fromLoginInfo(in_them.id, in_them.name, in_them.password);
+      await nt.start();
+      const read_req = await putFriend(in_us.id, in_them.id, "Sent", cookie);
+      await read_req.json();
+      await nt.finish();
+      const result = nt.diff();
+
+      expect(result.length).to.eq(1);
+    });
+
+    it("should send notification to sender when a user accepts a friend invitation", async () => {
+      const in_accepter = caseData.friend_recv_user;
+      const in_sender = caseData.friend_send_user;
+      const cookie = await getLoginCookie(in_accepter.name, in_sender.password);
+
+      const nt = await NotificationTester.fromLoginInfo(
+        in_sender.id,
+        in_sender.name,
+        in_sender.password,
+      );
+      await nt.start();
+      const read_req = await putFriend(in_accepter.id, in_sender.id, "Accepted", cookie);
+      await read_req.json();
+      await nt.finish();
+      const result = nt.diff();
+
+      expect(result.length).to.eq(1);
+    });
+  });
 });
 
 function putFriend(from_id: number, to_id: number, status: "Accepted" | "Sent", cookie: string) {
