@@ -4,7 +4,7 @@ import { before, beforeEach, describe } from "mocha";
 import { Application } from "../../app.js";
 import { DB } from "../../db/db_types.js";
 import { baseCase } from "../../test/fixture_data.js";
-import { APIContext, getLoginCookie } from "../../test/helpers.js";
+import { APIContext, getLoginCookie, getNotifications } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { MockedEmailService } from "../email/MockedEmailService.js";
 import { UserRepository } from "../user/UserRepository.js";
@@ -95,19 +95,6 @@ describe("notification service", () => {
     expect(notif).to.deep.include(in_data);
   });
 });
-
-function getNotifications(user_id: number, cookie: string) {
-  return new APIContext("NotificationsGet").fetch(`/api/notifications`, {
-    headers: {
-      cookie: cookie,
-    },
-    query: {
-      user_id: user_id.toString(),
-    },
-    credentials: "include",
-    method: "get",
-  });
-}
 
 function putNotifications(notification_id: number, read: boolean, cookie: string) {
   return new APIContext("NotificationsPut").fetch(`/api/notifications/${notification_id}`, {

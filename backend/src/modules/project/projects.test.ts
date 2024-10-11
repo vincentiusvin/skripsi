@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { describe } from "mocha";
 import { Application } from "../../app.js";
 import { baseCase } from "../../test/fixture_data.js";
-import { APIContext, getLoginCookie } from "../../test/helpers.js";
+import { APIContext, NotificationTester, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 
@@ -220,6 +220,64 @@ describe("projects api", () => {
 
     expect(read_req.status).eq(200);
     expect(find_project).eq(undefined);
+  });
+
+  describe("notifications", () => {
+    it("should send notification on user acceptance", async () => {
+      const in_dev = caseData.plain_user;
+      const in_admin = caseData.project_admin_user;
+      const in_project = caseData.project;
+
+      // dev applies
+      const dev_cookie = await getLoginCookie(in_dev.name, in_dev.password);
+      const nt = NotificationTester.fromCookie(in_dev.id, dev_cookie);
+      const send_dev_req = await assignMember(in_project.id, in_dev.id, "Pending", dev_cookie);
+      await send_dev_req.json();
+
+      // admin accepts
+      await nt.start();
+      const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
+      const accept_dev_req = await assignMember(in_project.id, in_dev.id, "Dev", admin_cookie);
+      await accept_dev_req.json();
+      await nt.finish();
+
+      expect(nt.diff().length).to.eq(1);
+    });
+
+    it("should send notification to org users when user applies", async () => {
+      const in_user = caseData.plain_user;
+      const in_project = caseData.project;
+      const in_project_admin = caseData.project_admin_user;
+      const in_role = "Pending";
+
+      const nt = await NotificationTester.fromLoginInfo(
+        in_project_admin.id,
+        in_project_admin.name,
+        in_project_admin.password,
+      );
+      await nt.start();
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const res = await assignMember(in_project.id, in_user.id, in_role, cookie);
+      await res.json();
+      await nt.finish();
+
+      expect(nt.diff().length).eq(1);
+    });
+
+    it("should send notification to invited users", async () => {
+      const in_dev = caseData.plain_user;
+      const in_admin = caseData.project_admin_user;
+      const in_project = caseData.project;
+
+      const nt = await NotificationTester.fromLoginInfo(in_dev.id, in_dev.name, in_dev.password);
+      await nt.start();
+      const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
+      const invite_req = await assignMember(in_project.id, in_dev.id, "Invited", admin_cookie);
+      await invite_req.json();
+      await nt.finish();
+
+      expect(nt.diff().length).eq(1);
+    });
   });
 });
 
