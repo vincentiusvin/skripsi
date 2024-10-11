@@ -1,8 +1,9 @@
 import { expect } from "chai";
 import { describe } from "mocha";
 import { Application } from "../../app.js";
+import { NotificationTester } from "../../test/NotificationTester.js";
 import { baseCase } from "../../test/fixture_data.js";
-import { APIContext, NotificationTester, getLoginCookie } from "../../test/helpers.js";
+import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 
