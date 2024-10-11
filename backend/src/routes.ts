@@ -19,7 +19,7 @@ import { NotificationRepository } from "./modules/notification/NotificationRepos
 import { NotificationService } from "./modules/notification/NotificationService.js";
 import { OrgController } from "./modules/organization/OrgController.js";
 import { OrgRepository } from "./modules/organization/OrgRepository.js";
-import { OrgServiceEffects } from "./modules/organization/OrgServiceEffects.js";
+import { OrgService } from "./modules/organization/OrgService.js";
 import { PreferenceController } from "./modules/preferences/PreferenceController.js";
 import { PreferenceRepository } from "./modules/preferences/PreferenceRepository.js";
 import { PreferenceService } from "./modules/preferences/PreferenceService.js";
@@ -61,7 +61,7 @@ export function registerControllers(app: Application) {
     email_service,
     user_service,
   );
-  const org_service = new OrgServiceEffects(org_repo, user_service, notification_service);
+  const org_service = new OrgService(org_repo, user_service, notification_service);
   const project_service = new ProjectService(
     project_repo,
     org_service,
