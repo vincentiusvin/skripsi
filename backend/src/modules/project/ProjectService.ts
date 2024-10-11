@@ -234,7 +234,7 @@ Anda dapat menerima atau menolak permintaan tersebut.`,
     if (!user) {
       throw new Error(`Gagal menemukan pengguna ${user_id}`);
     }
-    await this.addEvent(project_id, `Pengguna ${user.user_name} ditambahkan menjadi developer.`);
+    await this.addEvent(project_id, `Pengguna "${user.user_name}" ditambahkan menjadi developer.`);
   }
 
   private async removeUserEvent(project_id: number, user_id: number) {
@@ -242,7 +242,10 @@ Anda dapat menerima atau menolak permintaan tersebut.`,
     if (!user) {
       throw new Error(`Gagal menemukan pengguna ${user_id}`);
     }
-    await this.addEvent(project_id, `Pengguna ${user.user_name} berhenti menjadi anggota proyek.`);
+    await this.addEvent(
+      project_id,
+      `Pengguna "${user.user_name}" berhenti menjadi anggota proyek.`,
+    );
   }
 
   private async addAdminEvent(project_id: number, user_id: number) {
@@ -250,6 +253,6 @@ Anda dapat menerima atau menolak permintaan tersebut.`,
     if (!user) {
       throw new Error(`Gagal menemukan pengguna ${user_id}`);
     }
-    await this.addEvent(project_id, `Pengguna ${user.user_name} ditambahkan menjadi admin.`);
+    await this.addEvent(project_id, `Pengguna "${user.user_name}" ditambahkan menjadi admin.`);
   }
 }
