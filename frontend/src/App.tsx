@@ -27,6 +27,7 @@ import OrgsPeoplePage from "./routes/Orgs/OrgsPeoplePage.tsx";
 import ProjectInfoPage from "./routes/Projects/ProjectDetailPage.tsx";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectsChatroomPage from "./routes/Projects/ProjectsChatroomPage.tsx";
+import ProjectsDashboardPage from "./routes/Projects/ProjectsDashboardPage.tsx";
 import ProjectsEditPage from "./routes/Projects/ProjectsEditPage.tsx";
 import ProjectsKanbanPage from "./routes/Projects/ProjectsKanbanPage.tsx";
 import ProjectsLeavePage from "./routes/Projects/ProjectsLeavePage.tsx";
@@ -132,6 +133,7 @@ function App() {
                     <Route path={"/reports"} component={UserReportPage} />
                     <Route path={"/projects"} component={ProjectListPage} />
                     <Route path={"/projects/:project_id"} component={ProjectInfoPage} />
+                    <Route path={"/projects/:project_id/home"} component={ProjectsDashboardPage} />
                     <Route path={"/projects/:project_id/people"} component={ProjectsPeoplePage} />
                     <Route path={"/projects/:project_id/manage"} component={ProjectsManagePage} />
                     <Route path={"/projects/:project_id/leave"} component={ProjectsLeavePage} />

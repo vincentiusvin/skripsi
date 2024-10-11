@@ -15,6 +15,7 @@ const projectKeys = {
     "detail",
     user_id,
   ],
+  detailEvents: (project_id: number) => [...projectKeys.detail(project_id), "events"],
   projectCategories: () => ["project-categories"],
 };
 
@@ -168,5 +169,14 @@ export function useProjectsCategoriesGet() {
   return useQuery({
     queryKey: projectKeys.projectCategories(),
     queryFn: () => new APIContext("ProjectsCategoriesGet").fetch(`/api/project-categories`),
+  });
+}
+
+export function useProjectsDetailEventsGet(opts: { project_id: number }) {
+  const { project_id } = opts;
+  return useQuery({
+    queryKey: projectKeys.detailEvents(project_id),
+    queryFn: () =>
+      new APIContext("ProjectsDetailEventsGet").fetch(`/api/projects/${project_id}/events`),
   });
 }
