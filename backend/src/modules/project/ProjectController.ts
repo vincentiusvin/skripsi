@@ -324,7 +324,7 @@ export class ProjectController extends Controller {
       const user_id = Number(user_id_str);
       const sender_id = req.session.user_id!;
 
-      await this.project_service.unassignMember(project_id, user_id, sender_id);
+      await this.project_service.tryUnassignMember(project_id, user_id, sender_id);
 
       const result = await this.project_service.getMemberRole(project_id, user_id);
       res.status(200).json({ role: result });

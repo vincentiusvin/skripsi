@@ -84,13 +84,12 @@ export class ProjectService {
     throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
   }
 
-  async unassignMember(project_id: number, user_id: number, sender_id: number) {
+  async tryUnassignMember(project_id: number, user_id: number, sender_id: number) {
     const sender_role = await this.getMemberRole(project_id, sender_id);
     if (sender_role !== "Admin" && sender_id !== user_id) {
       throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
     }
-    await this.project_repo.unassignMember(project_id, user_id);
-    await this.removeUserevent(project_id, user_id);
+    await this.unassignMember(project_id, user_id);
   }
 
   getProjects(filter?: { org_id?: number; user_id?: number; keyword?: string }) {
@@ -149,6 +148,11 @@ export class ProjectService {
     return await this.project_repo.addEvent(project_id, event);
   }
 
+  private async unassignMember(project_id: number, user_id: number) {
+    await this.project_repo.unassignMember(project_id, user_id);
+    await this.removeUserEvent(project_id, user_id);
+  }
+
   private async promoteOrgAdminAsProjectAdmin(project_id: number, user_id: number) {
     await this.project_repo.assignMember(project_id, user_id, "Admin");
     await this.addAdminEvent(project_id, user_id);
@@ -161,18 +165,21 @@ export class ProjectService {
 
   private async storePendingDevRequest(project_id: number, user_id: number) {
     await this.project_repo.assignMember(project_id, user_id, "Pending");
+
     await this.sendDevRequestNotification(user_id, project_id);
   }
 
   private async promoteInvitedDev(project_id: number, user_id: number) {
     await this.project_repo.assignMember(project_id, user_id, "Dev");
+
     await this.addDevEvent(project_id, user_id);
   }
 
   private async acceptPendingDevRequest(project_id: number, user_id: number) {
+    await this.project_repo.assignMember(project_id, user_id, "Dev");
+
     await this.sendAcceptanceNotification(user_id, project_id);
     await this.addDevEvent(project_id, user_id);
-    return await this.project_repo.assignMember(project_id, user_id, "Dev");
   }
 
   private async sendAcceptanceNotification(user_id: number, project_id: number) {
@@ -230,7 +237,7 @@ Anda dapat menerima atau menolak permintaan tersebut.`,
     await this.addEvent(project_id, `Pengguna ${user.user_name} ditambahkan menjadi developer.`);
   }
 
-  private async removeUserevent(project_id: number, user_id: number) {
+  private async removeUserEvent(project_id: number, user_id: number) {
     const user = await this.user_service.getUserDetail(user_id);
     if (!user) {
       throw new Error(`Gagal menemukan pengguna ${user_id}`);
