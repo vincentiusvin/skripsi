@@ -1,8 +1,9 @@
-import { Cancel, Check, Edit, Send } from "@mui/icons-material";
+import { Cancel, Check, Clear, Edit, InsertDriveFile, Send } from "@mui/icons-material";
 import {
   Avatar,
   Box,
   Button,
+  Divider,
   IconButton,
   Paper,
   Stack,
@@ -11,6 +12,7 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
+import { fileToBase64DataURL } from "../../helpers/file.ts";
 import {
   useChatroomsDetailMessagesGet,
   useChatroomsDetailMessagesPost,
@@ -152,11 +154,69 @@ function Message(props: {
   }
 }
 
+type FileData = {
+  file: File;
+  b64?: string;
+};
+
+function FileDisplay(props: FileData & { onDelete?: () => void }) {
+  const { onDelete, b64, file } = props;
+  const isRenderableImage = ["image/png", "image/jpeg", "image/jpg"].includes(file.type) && b64;
+
+  return (
+    <Paper
+      sx={{
+        position: "relative",
+      }}
+    >
+      <Button
+        variant="contained"
+        size="small"
+        onClick={() => {
+          if (onDelete) {
+            onDelete();
+          }
+        }}
+        sx={{
+          right: 0,
+          position: "absolute",
+          zIndex: "tooltip",
+          minWidth: 0,
+        }}
+      >
+        <Clear />
+      </Button>
+      {isRenderableImage ? (
+        <Avatar
+          variant="rounded"
+          sx={{
+            height: "125px",
+            width: "125px",
+          }}
+          src={b64}
+        />
+      ) : (
+        <InsertDriveFile
+          sx={{
+            height: "125px",
+            width: "125px",
+          }}
+        />
+      )}
+      <Divider />
+      <Typography variant="body1" textAlign={"center"}>
+        {file.name}
+      </Typography>
+    </Paper>
+  );
+}
+
 export function ChatroomComponent(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
   const [draft, setDraft] = useState("");
   const { mutate: sendMessage } = useChatroomsDetailMessagesPost({ chatroom_id });
   const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
+  const [files, setFiles] = useState<FileData[]>([]);
 
   function send() {
     setDraft("");
@@ -182,6 +242,21 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
       </Stack>
       <Stack my={2} direction={"row"} display={"flex"} spacing={2}>
         <TextField
+          onPaste={async (event) => {
+            const files = event.clipboardData.files;
+            if (files.length) {
+              for (const file of files) {
+                const img = await fileToBase64DataURL(file);
+                setFiles((x) => [
+                  ...x,
+                  {
+                    file,
+                    b64: img ?? undefined,
+                  },
+                ]);
+              }
+            }
+          }}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
               send();
@@ -199,6 +274,30 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
           <Send />
         </Button>
       </Stack>
+      {files.length ? (
+        <Box>
+          <Typography variant="h6">Files</Typography>
+          <Divider
+            sx={{
+              marginBottom: 1,
+            }}
+          />
+          <Stack direction={"row"} spacing={4}>
+            {files.map(({ file, b64 }, i) => (
+              <FileDisplay
+                onDelete={() => {
+                  setFiles((x) => {
+                    return x.filter((x) => x.file !== file);
+                  });
+                }}
+                key={i}
+                file={file}
+                b64={b64}
+              />
+            ))}
+          </Stack>
+        </Box>
+      ) : null}
     </>
   );
 }
