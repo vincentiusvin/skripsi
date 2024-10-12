@@ -20,6 +20,7 @@ import {
 } from "../../queries/chat_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../queries/user_hooks.ts";
+import FileDropzone from "../FileDropzone.tsx";
 import StyledLink from "../StyledLink.tsx";
 
 function Message(props: {
@@ -232,7 +233,26 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
   }, [messages]);
 
   return (
-    <>
+    <FileDropzone
+      sx={{
+        flexGrow: 1,
+        display: "flex",
+        flexDirection: "column",
+      }}
+      onChange={async (file) => {
+        if (file == null) {
+          return;
+        }
+        const img = await fileToBase64DataURL(file);
+        setFiles((x) => [
+          ...x,
+          {
+            file,
+            b64: img ?? undefined,
+          },
+        ]);
+      }}
+    >
       <Stack mt={2} marginLeft={2} spacing={1} overflow={"auto"} flexGrow={1} flexBasis={0}>
         {messages?.map((x, i) => (
           <Box ref={i === messages.length - 1 ? bottomRef : null} key={i}>
@@ -298,7 +318,7 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
           </Stack>
         </Box>
       ) : null}
-    </>
+    </FileDropzone>
   );
 }
 
