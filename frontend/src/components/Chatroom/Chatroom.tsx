@@ -200,6 +200,14 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
             >
               {message.message}
             </Typography>
+            {message.files != undefined && message.files.length > 0 ? (
+              <Stack spacing={1} marginTop={1} direction="column">
+                <Divider />
+                {message.files.map((file) => (
+                  <DownloadableFile key={file.id} file_id={file.id} filename={file.filename} />
+                ))}
+              </Stack>
+            ) : null}
           </Paper>
           <Typography variant="caption">
             {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
