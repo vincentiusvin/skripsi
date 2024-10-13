@@ -71,7 +71,7 @@ function Message(props: {
             <IconButton
               onClick={() => {
                 if (editMsg) {
-                  updateMessage(editMsg);
+                  updateMessage({ message: editMsg });
                 }
                 setIsEditing(false);
                 setEditMsg(undefined);
@@ -157,7 +157,7 @@ function Message(props: {
 
 type FileData = {
   file: File;
-  b64?: string;
+  b64: string;
 };
 
 function FileDisplay(props: FileData & { onDelete?: () => void }) {
@@ -220,8 +220,15 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
   const [files, setFiles] = useState<FileData[]>([]);
 
   function send() {
+    sendMessage({
+      message: draft,
+      files: files.map((x) => ({
+        filename: x.file.name,
+        content: x.b64,
+      })),
+    });
     setDraft("");
-    sendMessage(draft);
+    setFiles([]);
   }
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -248,7 +255,7 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
           ...x,
           {
             file,
-            b64: img ?? undefined,
+            b64: img,
           },
         ]);
       }}
@@ -271,7 +278,7 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
                   ...x,
                   {
                     file,
-                    b64: img ?? undefined,
+                    b64: img,
                   },
                 ]);
               }

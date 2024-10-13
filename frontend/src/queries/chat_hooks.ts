@@ -43,32 +43,24 @@ export function useChatroomsDetailMessagesGet(opts: { chatroom_id: number }) {
 export function useChatroomsDetailMessagesPost(opts: { chatroom_id: number }) {
   const { chatroom_id } = opts;
   return useMutation({
-    mutationFn: async (message: string) =>
-      await new APIContext("ChatroomsDetailMessagesPost").fetch(
-        `/api/chatrooms/${chatroom_id}/messages`,
-        {
-          method: "POST",
-          body: {
-            message: message,
-          },
-        },
-      ),
+    mutationFn: new APIContext("ChatroomsDetailMessagesPost").bodyFetch(
+      `/api/chatrooms/${chatroom_id}/messages`,
+      {
+        method: "POST",
+      },
+    ),
   });
 }
 
 export function useChatroomsDetailMessagesPut(opts: { chatroom_id: number; message_id: number }) {
   const { chatroom_id, message_id } = opts;
   return useMutation({
-    mutationFn: async (message: string) =>
-      await new APIContext("ChatroomsDetailMessagesPut").fetch(
-        `/api/chatrooms/${chatroom_id}/messages/${message_id}`,
-        {
-          method: "PUT",
-          body: {
-            message: message,
-          },
-        },
-      ),
+    mutationFn: new APIContext("ChatroomsDetailMessagesPut").bodyFetch(
+      `/api/chatrooms/${chatroom_id}/messages/${message_id}`,
+      {
+        method: "PUT",
+      },
+    ),
   });
 }
 
