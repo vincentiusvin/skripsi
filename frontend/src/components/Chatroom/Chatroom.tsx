@@ -141,6 +141,7 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
                 <Typography
                   sx={{
                     wordBreak: "break-word",
+                    whiteSpace: "pre-wrap",
                   }}
                 >
                   {message.message}
@@ -328,8 +329,9 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
             }
           }}
           onKeyDown={(event) => {
-            if (event.key === "Enter") {
+            if (!event.shiftKey && event.key === "Enter") {
               send();
+              event.preventDefault();
             }
           }}
           value={draft}

@@ -301,9 +301,7 @@ export class ChatController extends Controller {
         chatroom_id: zodStringReadableAsNumber("ID chatroom tidak valid!"),
       }),
       ReqBody: z.object({
-        message: z
-          .string({ message: "Isi pesan tidak valid!" })
-          .min(1, "Pesan tidak boleh kosong!"),
+        message: z.string({ message: "Isi pesan tidak valid!" }),
         files: z
           .object({
             filename: z.string(),
@@ -332,7 +330,7 @@ export class ChatController extends Controller {
       const chatroom_id = Number(chatroom_id_str);
       const user_id = req.session.user_id!;
 
-      if (message.length === 0) {
+      if (message.length === 0 && (files == undefined || files.length === 0)) {
         throw new ClientError("Pesan tidak boleh kosong!");
       }
 
