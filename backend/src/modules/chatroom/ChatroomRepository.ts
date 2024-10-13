@@ -9,13 +9,15 @@ const defaultChatroomFields = [
   "ms_chatrooms.created_at as chatroom_created_at",
 ] as const;
 
-const defaultMessageFields = [
-  "ms_messages.id as id",
-  "ms_messages.message as message",
-  "ms_messages.created_at as created_at",
-  "ms_messages.user_id as user_id",
-  "ms_messages.is_edited as is_edited",
-] as const;
+const defaultMessageFields = (eb: ExpressionBuilder<DB, "ms_messages">) =>
+  [
+    "ms_messages.id as id",
+    "ms_messages.message as message",
+    "ms_messages.created_at as created_at",
+    "ms_messages.user_id as user_id",
+    "ms_messages.is_edited as is_edited",
+    messageWithAttachments(eb).as("files"),
+  ] as const;
 
 function chatroomWithUsers(eb: ExpressionBuilder<DB, "ms_chatrooms">) {
   return jsonArrayFrom(
@@ -23,6 +25,15 @@ function chatroomWithUsers(eb: ExpressionBuilder<DB, "ms_chatrooms">) {
       .selectFrom("chatrooms_users")
       .select("chatrooms_users.user_id")
       .whereRef("chatrooms_users.chatroom_id", "=", "ms_chatrooms.id"),
+  );
+}
+
+function messageWithAttachments(eb: ExpressionBuilder<DB, "ms_messages">) {
+  return jsonArrayFrom(
+    eb
+      .selectFrom("ms_chatroom_files as f")
+      .select(["f.id", "f.filename"])
+      .whereRef("f.message_id", "=", "ms_messages.id"),
   );
 }
 
@@ -51,24 +62,68 @@ export class ChatRepository {
       .execute();
   }
 
-  async addMessage(chatroom_id: number, sender_id: number, message: string, is_edited?: boolean) {
-    return await this.db
-      .insertInto("ms_messages")
-      .values({
-        chatroom_id: chatroom_id,
-        message: message,
-        user_id: sender_id,
-        is_edited,
-      })
-      .returning(["id", "message", "user_id", "created_at", "is_edited"])
-      .executeTakeFirst();
+  async addMessage(
+    chatroom_id: number,
+    data: {
+      sender_id: number;
+      message: string;
+      is_edited?: boolean;
+      files?: {
+        filename: string;
+        content: string;
+      }[];
+    },
+  ) {
+    const { message, files, sender_id, is_edited } = data;
+
+    return await this.db.transaction().execute(async (trx) => {
+      const res = await trx
+        .insertInto("ms_messages")
+        .values({
+          chatroom_id: chatroom_id,
+          message: message,
+          user_id: sender_id,
+          is_edited,
+        })
+        .returning("id")
+        .executeTakeFirst();
+
+      if (!res) {
+        throw new Error("Pesan gagal dimasukkan!");
+      }
+
+      if (files != undefined && files.length) {
+        await trx
+          .insertInto("ms_chatroom_files")
+          .values(
+            files.map((x) => ({
+              content: Buffer.from(x.content, "base64"),
+              message_id: res.id,
+              filename: x.filename,
+            })),
+          )
+          .execute();
+      }
+
+      return res;
+    });
   }
 
   async updateMessage(
     message_id: number,
-    obj: { chatroom_id?: number; sender_id?: number; message?: string; is_edited?: boolean },
+    data: {
+      chatroom_id?: number;
+      sender_id?: number;
+      message?: string;
+      is_edited?: boolean;
+      files?: {
+        filename: string;
+        content: string;
+      }[];
+    },
   ) {
-    const { chatroom_id, sender_id, message, is_edited } = obj;
+    const { files, chatroom_id, sender_id, message, is_edited } = data;
+
     if (
       chatroom_id == undefined &&
       sender_id == undefined &&
@@ -77,17 +132,40 @@ export class ChatRepository {
     ) {
       return;
     }
-    return await this.db
-      .updateTable("ms_messages")
-      .set({
-        chatroom_id: chatroom_id,
-        message: message,
-        user_id: sender_id,
-        is_edited,
-      })
-      .where("id", "=", message_id)
-      .returning(["id", "message", "user_id", "created_at", "is_edited"])
-      .executeTakeFirst();
+
+    return await this.db.transaction().execute(async (trx) => {
+      const res = await trx
+        .updateTable("ms_messages")
+        .set({
+          chatroom_id: chatroom_id,
+          message: message,
+          user_id: sender_id,
+          is_edited,
+        })
+        .where("id", "=", message_id)
+        .executeTakeFirst();
+
+      if (!res) {
+        throw new Error("Pesan gagal dimasukkan!");
+      }
+
+      if (files != undefined && files.length) {
+        await trx.deleteFrom("ms_chatroom_files").where("id", "=", message_id).execute();
+
+        await trx
+          .insertInto("ms_chatroom_files")
+          .values(
+            files.map((x) => ({
+              content: Buffer.from(x.content, "base64"),
+              message_id: message_id,
+              filename: x.filename,
+            })),
+          )
+          .execute();
+      }
+
+      return res;
+    });
   }
 
   async getMessage(message_id: number) {

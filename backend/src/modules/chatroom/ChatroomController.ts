@@ -295,6 +295,13 @@ export class ChatController extends Controller {
         message: z
           .string({ message: "Isi pesan tidak valid!" })
           .min(1, "Pesan tidak boleh kosong!"),
+        files: z
+          .object({
+            filename: z.string(),
+            content: z.string(),
+          })
+          .array()
+          .optional(),
       }),
       ResBody: z.object({
         id: z.number(),
@@ -302,11 +309,17 @@ export class ChatController extends Controller {
         created_at: z.date(),
         user_id: z.number(),
         is_edited: z.boolean(),
+        files: z
+          .object({
+            id: z.number(),
+            filename: z.string(),
+          })
+          .array(),
       }),
     },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str } = req.params;
-      const { message } = req.body;
+      const { message, files } = req.body;
       const chatroom_id = Number(chatroom_id_str);
       const user_id = req.session.user_id!;
 
@@ -314,11 +327,17 @@ export class ChatController extends Controller {
         throw new ClientError("Pesan tidak boleh kosong!");
       }
 
-      const ret = await this.chat_service.sendMessage(chatroom_id, user_id, message);
+      const id = await this.chat_service.sendMessage(chatroom_id, {
+        sender_id: user_id,
+        files,
+        message,
+      });
 
-      if (!ret) {
+      if (!id) {
         throw new Error("Pesan tidak terkirim!");
       }
+
+      const ret = await this.chat_service.getMessage(id.id);
 
       const members = await this.chat_service.getAllowedListeners(chatroom_id);
       await this.broadcastEvent(members, "msg", chatroom_id, JSON.stringify(ret));
@@ -338,7 +357,15 @@ export class ChatController extends Controller {
       ReqBody: z.object({
         message: z
           .string({ message: "Isi pesan tidak valid!" })
-          .min(1, "Pesan tidak boleh kosong!"),
+          .min(1, "Pesan tidak boleh kosong!")
+          .optional(),
+        files: z
+          .object({
+            filename: z.string(),
+            content: z.string(),
+          })
+          .array()
+          .optional(),
       }),
       ResBody: z.object({
         id: z.number(),
@@ -346,24 +373,24 @@ export class ChatController extends Controller {
         created_at: z.date(),
         user_id: z.number(),
         is_edited: z.boolean(),
+        files: z
+          .object({
+            id: z.number(),
+            filename: z.string(),
+          })
+          .array(),
       }),
     },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str, message_id: message_id_str } = req.params;
-      const { message } = req.body;
+      const { files, message } = req.body;
       const chatroom_id = Number(chatroom_id_str);
       const message_id = Number(message_id_str);
       const user_id = req.session.user_id!;
 
-      if (message.length === 0) {
-        throw new ClientError("Pesan tidak boleh kosong!");
-      }
+      await this.chat_service.updateMessage(message_id, { files, message }, user_id);
 
-      const ret = await this.chat_service.updateMessage(message_id, { message }, user_id);
-
-      if (!ret) {
-        throw new Error("Pesan tidak terkirim!");
-      }
+      const ret = await this.chat_service.getMessage(message_id);
 
       const members = await this.chat_service.getAllowedListeners(chatroom_id);
       await this.broadcastEvent(members, "msgUpd", chatroom_id, JSON.stringify(ret));
@@ -386,6 +413,12 @@ export class ChatController extends Controller {
           created_at: z.date(),
           user_id: z.number(),
           is_edited: z.boolean(),
+          files: z
+            .object({
+              id: z.number(),
+              filename: z.string(),
+            })
+            .array(),
         })
         .array(),
     },

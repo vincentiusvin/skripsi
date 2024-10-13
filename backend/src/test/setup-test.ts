@@ -1,7 +1,11 @@
+import chai = require("chai");
+import chaiSubset = require("chai-subset");
 import { execSync } from "node:child_process";
 import { Application } from "../app.js";
 
 export async function mochaGlobalSetup() {
+  chai.use(chaiSubset);
+
   const app = Application.getApplication();
   await app.db.schema.dropSchema("public").cascade().execute();
   await app.db.schema.createSchema("public").execute();
