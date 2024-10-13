@@ -91,7 +91,7 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
                 onChange={(e) => {
                   setEditMsg(e.target.value);
                 }}
-                defaultValue={message.message}
+                value={editMsg ?? message.message}
               ></TextField>
               {message.files != undefined && message.files.length > 0 ? (
                 <Stack spacing={1} marginTop={1} direction="column">
