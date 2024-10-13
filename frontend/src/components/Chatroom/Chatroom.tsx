@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MessageData } from "../../../../backend/src/sockets";
 import { fileToBase64DataURL } from "../../helpers/file.ts";
 import {
@@ -76,6 +76,14 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
 
   const isOurs = session_data && session_data.logged && session_data.user_id === message.user_id;
 
+  function update() {
+    if (editMsg) {
+      updateMessage({ message: editMsg });
+    }
+    setIsEditing(false);
+    setEditMsg(undefined);
+  }
+
   if (isOurs) {
     return (
       <Stack
@@ -90,6 +98,12 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
             <Box>
               <TextField
                 maxRows={5}
+                onKeyDown={(event) => {
+                  if (!event.shiftKey && event.key === "Enter") {
+                    update();
+                    event.preventDefault();
+                  }
+                }}
                 multiline
                 fullWidth
                 onChange={(e) => {
@@ -109,15 +123,7 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
                 {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
               </Typography>
             </Box>
-            <IconButton
-              onClick={() => {
-                if (editMsg) {
-                  updateMessage({ message: editMsg });
-                }
-                setIsEditing(false);
-                setEditMsg(undefined);
-              }}
-            >
+            <IconButton onClick={update}>
               <Check />
             </IconButton>
             <IconButton
@@ -269,6 +275,14 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
   const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
   const [files, setFiles] = useState<FileData[]>([]);
 
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (bottomRef.current !== null) {
+      bottomRef.current.scrollIntoView(true);
+    }
+  }, [messages?.length]);
+
   function send() {
     sendMessage({
       message: draft,
@@ -304,7 +318,7 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
     >
       <Stack mt={2} marginLeft={2} spacing={1} overflow={"auto"} flexGrow={1} flexBasis={0}>
         {messages?.map((x, i) => (
-          <Box key={i}>
+          <Box key={i} ref={i === messages.length - 1 ? bottomRef : null}>
             <Message message={x} chatroom_id={chatroom_id} />
           </Box>
         ))}
