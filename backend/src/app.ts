@@ -8,6 +8,7 @@ import { DB } from "./db/db_types.js";
 import { AuthError, errorHandler } from "./helpers/error";
 import { loggingMiddleware } from "./helpers/loggermiddleware";
 import { registerControllers } from "./routes";
+import { ServerToClientEvents, ServerType, SocketData } from "./sockets.js";
 import connectPgSimple = require("connect-pg-simple");
 import _session = require("express-session");
 
@@ -20,7 +21,7 @@ declare module "express-session" {
 export class Application {
   express_server: express.Express;
   http_server: import("http").Server;
-  socket_server: import("socket.io").Server;
+  socket_server: ServerType;
   db: Kysely<DB>;
 
   private static app: Application;
@@ -36,9 +37,12 @@ export class Application {
 
     this.express_server = express();
     this.http_server = createServer(this.express_server);
-    this.socket_server = new Server(this.http_server, {
-      path: "/api/chat",
-    });
+    this.socket_server = new Server<never, ServerToClientEvents, never, SocketData>(
+      this.http_server,
+      {
+        path: "/api/chat",
+      },
+    );
     this.db = db;
 
     this.express_server.use(loggingMiddleware);

@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { API } from "../../../backend/src/routes";
+import type { MessageData } from "../../../backend/src/sockets";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 import { socket } from "../helpers/socket";
@@ -155,10 +156,9 @@ export function useChatSocket(opts: {
   userId: number | undefined;
   onConnect?: () => void;
   onRoomUpdate?: () => void;
-  onMsg?: (chatroom_id: number, msg: string) => void;
   onDisconnect?: () => void;
 }) {
-  const { onConnect, onRoomUpdate, onMsg, onDisconnect, userId: userId } = opts;
+  const { onConnect, onRoomUpdate, onDisconnect, userId: userId } = opts;
   useEffect(() => {
     if (userId === undefined) {
       return () => {
@@ -182,50 +182,26 @@ export function useChatSocket(opts: {
       }
     });
 
-    socket.on("msg", (chatroom_id: number, msg: string) => {
-      const msgObj: {
-        message: string;
-        user_id: number;
-        created_at: Date;
-      } = JSON.parse(msg);
-
+    socket.on("msg", (chatroom_id: number, data: MessageData) => {
       queryClient.setQueryData(
         messageKeys.list(chatroom_id),
-        (old: API["ChatroomsDetailMessagesGet"]["ResBody"]) => (old ? [...old, msgObj] : [msgObj]),
+        (old: API["ChatroomsDetailMessagesGet"]["ResBody"]) => (old ? [...old, data] : [data]),
       );
-
-      if (onMsg) {
-        onMsg(chatroom_id, msg);
-      }
     });
 
-    socket.on("msgUpd", (chatroom_id: number, msg: string) => {
-      const msgObj: {
-        message: string;
-        id: number;
-        user_id: number;
-        created_at: Date;
-        is_edited: boolean;
-      } = JSON.parse(msg);
-
+    socket.on("msgUpd", (chatroom_id: number, data: MessageData) => {
       queryClient.setQueryData(
         messageKeys.list(chatroom_id),
         (old: API["ChatroomsDetailMessagesGet"]["ResBody"]) => {
           const cloned = structuredClone(old);
-          const found = cloned.find((x) => x.id === msgObj.id);
+          const found = cloned.find((x) => x.id === data.id);
           if (!found) {
             return old;
           }
-          found.message = msgObj.message;
-          found.created_at = msgObj.created_at;
-          found.is_edited = msgObj.is_edited;
+          Object.assign(found, data);
           return cloned;
         },
       );
-
-      if (onMsg) {
-        onMsg(chatroom_id, msg);
-      }
     });
 
     if (onDisconnect) {
