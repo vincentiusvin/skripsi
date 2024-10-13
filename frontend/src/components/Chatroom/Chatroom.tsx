@@ -1,4 +1,4 @@
-import { Cancel, Check, Clear, Edit, InsertDriveFile, Send } from "@mui/icons-material";
+import { Cancel, Check, Clear, Download, Edit, InsertDriveFile, Send } from "@mui/icons-material";
 import {
   Avatar,
   Box,
@@ -11,7 +11,8 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import type { MessageData } from "../../../../backend/src/sockets";
 import { fileToBase64DataURL } from "../../helpers/file.ts";
 import {
   useChatroomsDetailMessagesGet,
@@ -23,16 +24,42 @@ import { useUsersDetailGet } from "../../queries/user_hooks.ts";
 import FileDropzone from "../FileDropzone.tsx";
 import StyledLink from "../StyledLink.tsx";
 
-function Message(props: {
-  message: {
-    id: number;
-    message: string;
-    user_id: number;
-    created_at: Date;
-    is_edited: boolean;
-  };
-  chatroom_id: number;
-}) {
+function DownloadableFile(props: { filename: string; file_id: number }) {
+  const { filename } = props;
+  return (
+    <Paper
+      elevation={4}
+      variant="elevation"
+      sx={{
+        padding: 1,
+      }}
+    >
+      <Stack direction="row" alignItems={"center"} spacing={2}>
+        <InsertDriveFile
+          sx={{
+            height: "50px",
+            width: "50px",
+          }}
+        />
+        <Typography
+          flexGrow={1}
+          variant="body1"
+          textAlign={"left"}
+          sx={{
+            wordBreak: "break-word",
+          }}
+        >
+          {filename}
+        </Typography>
+        <IconButton color="default">
+          <Download />
+        </IconButton>
+      </Stack>
+    </Paper>
+  );
+}
+
+function Message(props: { message: MessageData; chatroom_id: number }) {
   const { message, chatroom_id } = props;
   const { data: session_data } = useSessionGet();
   const { data: user_data } = useUsersDetailGet({ user_id: message.user_id });
@@ -58,12 +85,22 @@ function Message(props: {
           <>
             <Box>
               <TextField
+                maxRows={5}
+                multiline
                 fullWidth
                 onChange={(e) => {
                   setEditMsg(e.target.value);
                 }}
                 defaultValue={message.message}
               ></TextField>
+              {message.files != undefined && message.files.length > 0 ? (
+                <Stack spacing={1} marginTop={1} direction="column">
+                  <Divider />
+                  {message.files.map((file) => (
+                    <DownloadableFile key={file.id} file_id={file.id} filename={file.filename} />
+                  ))}
+                </Stack>
+              ) : null}
               <Typography variant="caption">
                 {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
               </Typography>
@@ -104,6 +141,14 @@ function Message(props: {
                 >
                   {message.message}
                 </Typography>
+                {message.files != undefined && message.files.length > 0 ? (
+                  <Stack spacing={1} marginTop={1} direction="column">
+                    <Divider />
+                    {message.files.map((file) => (
+                      <DownloadableFile key={file.id} file_id={file.id} filename={file.filename} />
+                    ))}
+                  </Stack>
+                ) : null}
               </Paper>
               <Typography variant="caption">
                 {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
@@ -191,16 +236,16 @@ function FileDisplay(props: FileData & { onDelete?: () => void }) {
         <Avatar
           variant="rounded"
           sx={{
-            height: "125px",
-            width: "125px",
+            height: "100px",
+            width: "100px",
           }}
           src={b64}
         />
       ) : (
         <InsertDriveFile
           sx={{
-            height: "125px",
-            width: "125px",
+            height: "100px",
+            width: "100px",
           }}
         />
       )}
@@ -231,14 +276,6 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
     setFiles([]);
   }
 
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (bottomRef.current !== null) {
-      bottomRef.current.scrollIntoView(true);
-    }
-  }, [messages]);
-
   return (
     <FileDropzone
       sx={{
@@ -262,13 +299,15 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
     >
       <Stack mt={2} marginLeft={2} spacing={1} overflow={"auto"} flexGrow={1} flexBasis={0}>
         {messages?.map((x, i) => (
-          <Box ref={i === messages.length - 1 ? bottomRef : null} key={i}>
+          <Box key={i}>
             <Message message={x} chatroom_id={chatroom_id} />
           </Box>
         ))}
       </Stack>
       <Stack my={2} direction={"row"} display={"flex"} spacing={2}>
         <TextField
+          multiline
+          maxRows={5}
           onPaste={async (event) => {
             const files = event.clipboardData.files;
             if (files.length) {
