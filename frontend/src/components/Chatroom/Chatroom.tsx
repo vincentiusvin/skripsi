@@ -1,4 +1,13 @@
-import { Cancel, Check, Clear, Download, Edit, InsertDriveFile, Send } from "@mui/icons-material";
+import {
+  AttachFile,
+  Cancel,
+  Check,
+  Clear,
+  Download,
+  Edit,
+  InsertDriveFile,
+  Send,
+} from "@mui/icons-material";
 import {
   Avatar,
   Box,
@@ -232,6 +241,7 @@ function FileDisplay(props: FileData & { onDelete?: () => void }) {
     <Paper
       sx={{
         position: "relative",
+        width: "100px",
       }}
     >
       <Button
@@ -269,7 +279,14 @@ function FileDisplay(props: FileData & { onDelete?: () => void }) {
         />
       )}
       <Divider />
-      <Typography variant="body1" textAlign={"center"}>
+      <Typography
+        variant="body1"
+        textAlign={"center"}
+        sx={{
+          wordBreak: "break-word",
+        }}
+        width={"100%"}
+      >
         {file.name}
       </Typography>
     </Paper>
@@ -310,6 +327,7 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
         display: "flex",
         flexDirection: "column",
       }}
+      disableClick
       onChange={async (file) => {
         if (file == null) {
           return;
@@ -332,6 +350,26 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
         ))}
       </Stack>
       <Stack my={2} direction={"row"} display={"flex"} spacing={2}>
+        <FileDropzone
+          sx={{ display: "flex" }}
+          onChange={async (file) => {
+            if (file == null) {
+              return;
+            }
+            const img = await fileToBase64DataURL(file);
+            setFiles((x) => [
+              ...x,
+              {
+                file,
+                b64: img,
+              },
+            ]);
+          }}
+        >
+          <IconButton>
+            <AttachFile />
+          </IconButton>
+        </FileDropzone>
         <TextField
           multiline
           maxRows={5}
@@ -376,7 +414,7 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
               marginBottom: 1,
             }}
           />
-          <Stack direction={"row"} spacing={4}>
+          <Stack direction={"row"} gap={4} flexWrap={"wrap"}>
             {files.map(({ file, b64 }, i) => (
               <FileDisplay
                 onDelete={() => {

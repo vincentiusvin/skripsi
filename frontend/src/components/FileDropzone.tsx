@@ -7,10 +7,11 @@ type FileDropzoneProps = {
   onChange: (file: File | null) => void;
   children?: ReactNode;
   sx?: SxProps;
+  disableClick?: boolean;
 };
 
 function FileDropzone(props: FileDropzoneProps) {
-  const { onChange, children, sx } = props;
+  const { disableClick, onChange, children, sx } = props;
 
   const [isHovered, setIsHovered] = useState(false);
   const { getRootProps, getInputProps } = useDropzone({
@@ -36,7 +37,9 @@ function FileDropzone(props: FileDropzoneProps) {
       <input
         {...getInputProps()}
         onClick={(e) => {
-          e.preventDefault();
+          if (disableClick) {
+            e.preventDefault();
+          }
         }}
       />
       {children}
