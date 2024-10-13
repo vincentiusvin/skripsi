@@ -122,6 +122,24 @@ export class ChatService {
     return await this.repo.getUserChatrooms(user_id);
   }
 
+  async getFile(file_id: number, sender_id: number) {
+    const chatroom_id = await this.repo.findChatroomByFileID(file_id);
+    if (chatroom_id == undefined) {
+      throw new NotFoundError("File gagal ditemukan!");
+    }
+
+    const allowed = await this.isAllowed(chatroom_id.id, sender_id);
+    if (!allowed) {
+      throw new AuthError("Anda tidak memiliki akses untuk membaca file ini!");
+    }
+
+    const file = await this.repo.getFile(file_id);
+    if (!file) {
+      throw new NotFoundError("File gagal ditemukan!");
+    }
+    return file;
+  }
+
   async addUserChatroom(user_id: number, chatroom_name: string, sender_id: number) {
     if (sender_id != user_id) {
       throw new AuthError("Anda tidak memiliki akses untuk menambahkan chatroom orang lain!");

@@ -37,6 +37,7 @@ export class ChatController extends Controller {
       ChatroomsDetailMessagesPost: this.ChatroomsDetailMessagesPost,
       ChatroomsDetailMessagesPut: this.ChatroomsDetailMessagesPut,
       ChatroomsDetailMessagesGet: this.ChatroomsDetailMessagesGet,
+      FileDetailGet: this.FileDetailGet,
     };
   }
 
@@ -451,6 +452,27 @@ export class ChatController extends Controller {
       const result = await this.chat_service.getMessages(chatroom_id);
 
       res.status(200).json(result);
+    },
+  });
+  FileDetailGet = new Route({
+    method: "get",
+    path: "/api/files/:file_id",
+    schema: {
+      ResBody: z.undefined(),
+      Params: z.object({
+        file_id: zodStringReadableAsNumber("ID file invalid!"),
+      }),
+    },
+    handler: async (req, res) => {
+      const { file_id: file_id_raw } = req.params;
+
+      const sender_id = Number(req.session.user_id);
+      const file_id = Number(file_id_raw);
+
+      const file = await this.chat_service.getFile(file_id, sender_id);
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader("Content-Disposition", `attachment; filename=${file.filename}`);
+      res.end(file.content);
     },
   });
 }

@@ -5,6 +5,7 @@ import {
   Button,
   Divider,
   IconButton,
+  Link,
   Paper,
   Stack,
   TextField,
@@ -25,7 +26,7 @@ import FileDropzone from "../FileDropzone.tsx";
 import StyledLink from "../StyledLink.tsx";
 
 function DownloadableFile(props: { filename: string; file_id: number }) {
-  const { filename } = props;
+  const { filename, file_id } = props;
   return (
     <Paper
       elevation={4}
@@ -51,9 +52,12 @@ function DownloadableFile(props: { filename: string; file_id: number }) {
         >
           {filename}
         </Typography>
-        <IconButton color="default">
-          <Download />
-        </IconButton>
+        {/* Pake yang MUI punya, yang wouter gabisa buka di new tab */}
+        <Link href={`/api/files/${file_id}`} target="_blank">
+          <IconButton color="default">
+            <Download />
+          </IconButton>
+        </Link>
       </Stack>
     </Paper>
   );

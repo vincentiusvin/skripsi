@@ -53,6 +53,16 @@ export class ChatRepository {
     return result.map((x) => x.user_id);
   }
 
+  async findChatroomByFileID(file_id: number) {
+    return await this.db
+      .selectFrom("ms_chatroom_files as f")
+      .innerJoin("ms_messages as m", "m.id", "f.message_id")
+      .innerJoin("ms_chatrooms as c", "c.id", "m.chatroom_id")
+      .select("c.id")
+      .where("f.id", "=", file_id)
+      .executeTakeFirst();
+  }
+
   async getMessages(chatroom_id: number) {
     return await this.db
       .selectFrom("ms_messages")
@@ -96,17 +106,27 @@ export class ChatRepository {
         await trx
           .insertInto("ms_chatroom_files")
           .values(
-            files.map((x) => ({
-              content: Buffer.from(x.content, "base64"),
-              message_id: res.id,
-              filename: x.filename,
-            })),
+            files.map((x) => {
+              return {
+                content: Buffer.from(x.content.split(",")[1], "base64"),
+                message_id: res.id,
+                filename: x.filename,
+              };
+            }),
           )
           .execute();
       }
 
       return res;
     });
+  }
+
+  async getFile(file_id: number) {
+    return this.db
+      .selectFrom("ms_chatroom_files")
+      .select(["id", "filename", "content", "message_id"])
+      .where("id", "=", file_id)
+      .executeTakeFirst();
   }
 
   async updateMessage(
