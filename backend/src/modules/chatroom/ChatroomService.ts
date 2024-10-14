@@ -51,18 +51,35 @@ export class ChatService {
     return await this.repo.getMessages(chatroom_id);
   }
 
-  async sendMessage(chatroom_id: number, sender_id: number, message: string) {
+  async sendMessage(
+    chatroom_id: number,
+    data: {
+      sender_id: number;
+      message: string;
+      files?: {
+        filename: string;
+        content: string;
+      }[];
+    },
+  ) {
+    const { sender_id } = data;
     const val = await this.isAllowed(chatroom_id, sender_id);
     if (!val) {
       throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
     }
 
-    return await this.repo.addMessage(chatroom_id, sender_id, message);
+    return await this.repo.addMessage(chatroom_id, data);
   }
 
   async updateMessage(
     message_id: number,
-    obj: { chatroom_id?: number; sender_id?: number; message?: string },
+    data: {
+      message?: string;
+      files?: {
+        filename: string;
+        content: string;
+      }[];
+    },
     sender_id: number,
   ) {
     const old_message = await this.getMessage(message_id);
@@ -75,7 +92,7 @@ export class ChatService {
     }
 
     return await this.repo.updateMessage(message_id, {
-      ...obj,
+      ...data,
       is_edited: true,
     });
   }
@@ -103,6 +120,24 @@ export class ChatService {
 
   async getUserChatrooms(user_id: number) {
     return await this.repo.getUserChatrooms(user_id);
+  }
+
+  async getFile(file_id: number, sender_id: number) {
+    const chatroom_id = await this.repo.findChatroomByFileID(file_id);
+    if (chatroom_id == undefined) {
+      throw new NotFoundError("File gagal ditemukan!");
+    }
+
+    const allowed = await this.isAllowed(chatroom_id.id, sender_id);
+    if (!allowed) {
+      throw new AuthError("Anda tidak memiliki akses untuk membaca file ini!");
+    }
+
+    const file = await this.repo.getFile(file_id);
+    if (!file) {
+      throw new NotFoundError("File gagal ditemukan!");
+    }
+    return file;
   }
 
   async addUserChatroom(user_id: number, chatroom_name: string, sender_id: number) {

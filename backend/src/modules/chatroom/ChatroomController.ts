@@ -1,10 +1,12 @@
 import type { Express } from "express";
 import { Server } from "socket.io";
+import { EventNames, EventParams } from "socket.io/dist/typed-events.js";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
-import { AuthError, ClientError } from "../../helpers/error.js";
+import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { validateLogged } from "../../helpers/validate.js";
 import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import { ServerToClientEvents, ServerType } from "../../sockets.js";
 import { ChatService } from "./ChatroomService.js";
 
 // Manipulasi data semuanya dilakuin lewat http.
@@ -14,7 +16,7 @@ import { ChatService } from "./ChatroomService.js";
 // Kalau chatroomnya bukan, validasi pakai daftar member chatroom
 
 export class ChatController extends Controller {
-  private socket_server: Server;
+  private socket_server: ServerType;
   private chat_service: ChatService;
 
   constructor(express_server: Express, socket_server: Server, chat_service: ChatService) {
@@ -35,13 +37,20 @@ export class ChatController extends Controller {
       ChatroomsDetailMessagesPost: this.ChatroomsDetailMessagesPost,
       ChatroomsDetailMessagesPut: this.ChatroomsDetailMessagesPut,
       ChatroomsDetailMessagesGet: this.ChatroomsDetailMessagesGet,
+      FileDetailGet: this.FileDetailGet,
     };
   }
 
-  private async broadcastEvent(user_ids: number[], event: string, ...args: unknown[]) {
+  private async broadcastEvent<ev extends EventNames<ServerToClientEvents>>(
+    user_ids: number[],
+    event: ev,
+    ...args: EventParams<ServerToClientEvents, ev>
+  ) {
     const socks = await this.socket_server.fetchSockets();
 
-    const filtered = socks.filter((x) => user_ids.includes(x.data.userId));
+    const filtered = socks.filter(
+      (x) => x.data.userId != undefined && user_ids.includes(x.data.userId),
+    );
     filtered.forEach((x) => x.emit(event, ...args));
   }
 
@@ -292,9 +301,14 @@ export class ChatController extends Controller {
         chatroom_id: zodStringReadableAsNumber("ID chatroom tidak valid!"),
       }),
       ReqBody: z.object({
-        message: z
-          .string({ message: "Isi pesan tidak valid!" })
-          .min(1, "Pesan tidak boleh kosong!"),
+        message: z.string({ message: "Isi pesan tidak valid!" }),
+        files: z
+          .object({
+            filename: z.string(),
+            content: z.string(),
+          })
+          .array()
+          .optional(),
       }),
       ResBody: z.object({
         id: z.number(),
@@ -302,26 +316,42 @@ export class ChatController extends Controller {
         created_at: z.date(),
         user_id: z.number(),
         is_edited: z.boolean(),
+        files: z
+          .object({
+            id: z.number(),
+            filename: z.string(),
+          })
+          .array(),
       }),
     },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str } = req.params;
-      const { message } = req.body;
+      const { message, files } = req.body;
       const chatroom_id = Number(chatroom_id_str);
       const user_id = req.session.user_id!;
 
-      if (message.length === 0) {
+      if (message.length === 0 && (files == undefined || files.length === 0)) {
         throw new ClientError("Pesan tidak boleh kosong!");
       }
 
-      const ret = await this.chat_service.sendMessage(chatroom_id, user_id, message);
+      const id = await this.chat_service.sendMessage(chatroom_id, {
+        sender_id: user_id,
+        files,
+        message,
+      });
+
+      if (!id) {
+        throw new Error("Pesan tidak terkirim!");
+      }
+
+      const ret = await this.chat_service.getMessage(id.id);
 
       if (!ret) {
         throw new Error("Pesan tidak terkirim!");
       }
 
       const members = await this.chat_service.getAllowedListeners(chatroom_id);
-      await this.broadcastEvent(members, "msg", chatroom_id, JSON.stringify(ret));
+      await this.broadcastEvent(members, "msg", chatroom_id, ret);
 
       res.status(201).json(ret);
     },
@@ -338,7 +368,15 @@ export class ChatController extends Controller {
       ReqBody: z.object({
         message: z
           .string({ message: "Isi pesan tidak valid!" })
-          .min(1, "Pesan tidak boleh kosong!"),
+          .min(1, "Pesan tidak boleh kosong!")
+          .optional(),
+        files: z
+          .object({
+            filename: z.string(),
+            content: z.string(),
+          })
+          .array()
+          .optional(),
       }),
       ResBody: z.object({
         id: z.number(),
@@ -346,27 +384,31 @@ export class ChatController extends Controller {
         created_at: z.date(),
         user_id: z.number(),
         is_edited: z.boolean(),
+        files: z
+          .object({
+            id: z.number(),
+            filename: z.string(),
+          })
+          .array(),
       }),
     },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str, message_id: message_id_str } = req.params;
-      const { message } = req.body;
+      const { files, message } = req.body;
       const chatroom_id = Number(chatroom_id_str);
       const message_id = Number(message_id_str);
       const user_id = req.session.user_id!;
 
-      if (message.length === 0) {
-        throw new ClientError("Pesan tidak boleh kosong!");
-      }
+      await this.chat_service.updateMessage(message_id, { files, message }, user_id);
 
-      const ret = await this.chat_service.updateMessage(message_id, { message }, user_id);
+      const ret = await this.chat_service.getMessage(message_id);
 
       if (!ret) {
-        throw new Error("Pesan tidak terkirim!");
+        throw new NotFoundError("Gagal menemukan pesan tersebut!");
       }
 
       const members = await this.chat_service.getAllowedListeners(chatroom_id);
-      await this.broadcastEvent(members, "msgUpd", chatroom_id, JSON.stringify(ret));
+      await this.broadcastEvent(members, "msgUpd", chatroom_id, ret);
 
       res.status(200).json(ret);
     },
@@ -386,6 +428,12 @@ export class ChatController extends Controller {
           created_at: z.date(),
           user_id: z.number(),
           is_edited: z.boolean(),
+          files: z
+            .object({
+              id: z.number(),
+              filename: z.string(),
+            })
+            .array(),
         })
         .array(),
     },
@@ -402,6 +450,27 @@ export class ChatController extends Controller {
       const result = await this.chat_service.getMessages(chatroom_id);
 
       res.status(200).json(result);
+    },
+  });
+  FileDetailGet = new Route({
+    method: "get",
+    path: "/api/files/:file_id",
+    schema: {
+      ResBody: z.undefined(),
+      Params: z.object({
+        file_id: zodStringReadableAsNumber("ID file invalid!"),
+      }),
+    },
+    handler: async (req, res) => {
+      const { file_id: file_id_raw } = req.params;
+
+      const sender_id = Number(req.session.user_id);
+      const file_id = Number(file_id_raw);
+
+      const file = await this.chat_service.getFile(file_id, sender_id);
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader("Content-Disposition", `attachment; filename=${file.filename}`);
+      res.end(file.content);
     },
   });
 }

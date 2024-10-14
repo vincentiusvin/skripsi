@@ -63,6 +63,13 @@ export interface MsCategoryProjects {
   name: string;
 }
 
+export interface MsChatroomFiles {
+  content: Buffer;
+  filename: string;
+  id: Generated<number>;
+  message_id: number;
+}
+
 export interface MsChatrooms {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
@@ -233,6 +240,7 @@ export interface DB {
   ms_articles_likes: MsArticlesLikes;
   ms_category_orgs: MsCategoryOrgs;
   ms_category_projects: MsCategoryProjects;
+  ms_chatroom_files: MsChatroomFiles;
   ms_chatrooms: MsChatrooms;
   ms_comments: MsComments;
   ms_contributions: MsContributions;
