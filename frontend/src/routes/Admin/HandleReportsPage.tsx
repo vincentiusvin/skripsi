@@ -19,7 +19,6 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
-import { stringify } from "qs";
 import { useState } from "react";
 import StyledLink from "../../components/StyledLink.tsx";
 import UserLabel from "../../components/UserLabel.tsx";
@@ -117,16 +116,8 @@ function ChatroomReport(props: { chatroom_id?: number; report_id: number }) {
   });
 
   if (chatroom_id != undefined) {
-    const chatroom_params = stringify(
-      {
-        room: chatroom_id,
-      },
-      {
-        addQueryPrefix: true,
-      },
-    );
     return (
-      <StyledLink to={`/chatrooms${chatroom_params}`}>
+      <StyledLink to={`/chatroom-forwarder/${chatroom_id}`}>
         <Button variant="contained">Buka Ruang Diskusi</Button>
       </StyledLink>
     );

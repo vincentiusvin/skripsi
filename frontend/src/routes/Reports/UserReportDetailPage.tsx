@@ -9,7 +9,6 @@ import {
 } from "@mui/lab";
 import { Box, Button, Skeleton, Stack, Tooltip, Typography } from "@mui/material";
 import dayjs from "dayjs";
-import { stringify } from "qs";
 import { useParams } from "wouter";
 import StyledLink from "../../components/StyledLink.tsx";
 import { useReportsDetailGet } from "../../queries/report_hooks.ts";
@@ -19,16 +18,8 @@ import ReportStatusChip from "./components/ReportStatus.tsx";
 function ReportChatroomButton(props: { chatroom_id: null | number }) {
   const { chatroom_id } = props;
   if (chatroom_id != undefined) {
-    const chatroom_params = stringify(
-      {
-        room: chatroom_id,
-      },
-      {
-        addQueryPrefix: true,
-      },
-    );
     return (
-      <StyledLink to={`/chatrooms${chatroom_params}`}>
+      <StyledLink to={`/chatroom-forwarder/${chatroom_id}`}>
         <Button variant="contained">Ruang Diskusi</Button>
       </StyledLink>
     );

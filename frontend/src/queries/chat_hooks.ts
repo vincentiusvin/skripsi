@@ -24,11 +24,15 @@ const messageKeys = {
 
 // Mutation di sini nggak perlu manggil invalidateQuery karena kita pakai socket untuk nge-invalidate querynya.
 
-export function useChatroomsDetailGet(opts: { chatroom_id: number }) {
-  const { chatroom_id } = opts;
+export function useChatroomsDetailGet(opts: {
+  chatroom_id: number;
+  retry?: (failureCount: number, error: Error) => boolean;
+}) {
+  const { retry, chatroom_id } = opts;
   return useQuery({
     queryKey: chatKeys.detail(chatroom_id),
     queryFn: () => new APIContext("ChatroomsDetailGet").fetch(`/api/chatrooms/${chatroom_id}`),
+    retry,
   });
 }
 

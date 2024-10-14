@@ -16,6 +16,7 @@ import { ThemeContext } from "./helpers/theme.ts";
 import HandleReportsPage from "./routes/Admin/HandleReportsPage.tsx";
 import ManageAccountsPage from "./routes/Admin/ManageAccountsPage.tsx";
 import AuthPage from "./routes/AuthPage";
+import ChatroomForwarderPage from "./routes/ChatroomForwarder.tsx";
 import HomePage from "./routes/HomePage";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
 import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage";
@@ -127,6 +128,7 @@ function App() {
                     <Route path={"/orgs/:org_id/edit"} component={OrgsEditPage} />
                     <Route path={"/orgs/:org_id/leave"} component={OrgsLeavePage} />
                     <Route path={"/chatrooms"} component={ChatroomPage} />
+                    <Route path={"/chatroom-forwarder/:chatroom_id"} component={ChatroomForwarderPage} />
                     <Route path={"/reports/add"} component={UserReportAddPage} />
                     <Route path={"/reports/:report_id"} component={UserReportDetailPage} />
                     <Route path={"/reports/:report_id/edit"} component={UserReportEditPage} />
