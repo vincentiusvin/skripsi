@@ -74,8 +74,8 @@ export class TaskService {
       name?: string;
       description?: string;
       users?: number[];
-      start_at?: string;
-      end_at?: string;
+      start_at?: string | null;
+      end_at?: string | null;
     },
     sender_id: number,
   ) {

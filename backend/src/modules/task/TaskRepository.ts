@@ -186,19 +186,19 @@ export class TaskRepository {
       name?: string;
       users?: number[];
       description?: string;
-      start_at?: string;
-      end_at?: string;
+      start_at?: string | null;
+      end_at?: string | null;
     },
   ) {
     const { bucket_id, name, users, description, start_at, end_at, order } = data;
     await this.db.transaction().execute(async (trx) => {
       if (
-        bucket_id != undefined ||
-        description != undefined ||
-        end_at != undefined ||
-        name != undefined ||
-        order != undefined ||
-        start_at != undefined
+        bucket_id !== undefined ||
+        description !== undefined ||
+        end_at !== undefined ||
+        name !== undefined ||
+        order !== undefined ||
+        start_at !== undefined
       ) {
         trx
           .updateTable("ms_tasks")
