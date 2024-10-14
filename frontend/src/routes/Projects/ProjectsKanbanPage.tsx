@@ -198,7 +198,7 @@ function EditBucketDialog(props: { bucket_id: number }) {
         <DialogContent>
           <TextField
             label="Insert name"
-            defaultValue={bucket.name}
+            value={newName ?? bucket.name}
             onChange={(x) => setNewName(x.target.value)}
           ></TextField>
         </DialogContent>
@@ -346,10 +346,10 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
   // undef: gak ada yang dipilih
   // number: lagi ngedit bucket itu
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const [taskName, setTaskName] = useState<string | null>();
-  const [taskDescription, setTaskDescription] = useState<null | string>();
-  const [taskStartAt, setTaskStartAt] = useState<null | Dayjs>();
-  const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>();
+  const [taskName, setTaskName] = useState<string | undefined>();
+  const [taskDescription, setTaskDescription] = useState<undefined | string>();
+  const [taskStartAt, setTaskStartAt] = useState<undefined | null | Dayjs>();
+  const [taskEndAt, setTaskEndAt] = useState<undefined | null | Dayjs>();
   const [taskAssign, setTaskAssign] = useState<undefined | number[]>();
   const [openManageUsers, setManageUsers] = useState(false);
   const { data: project_data } = useProjectsDetailGet({
@@ -401,21 +401,21 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
                 fullWidth
                 onChange={(e) => setTaskName(e.target.value)}
                 label="Task name"
-                defaultValue={task.name}
+                value={taskName ?? task.name}
               />
               <TextField
                 fullWidth
                 onChange={(e) => setTaskDescription(e.target.value)}
                 label="Task description"
-                defaultValue={task.description}
+                value={taskDescription ?? task.description ?? ""}
               />
               <DatePicker
-                defaultValue={task.start_at != null ? dayjs(task.start_at) : undefined}
                 onChange={(x) => setTaskStartAt(x)}
                 label="Start At"
+                value={taskStartAt ?? task.start_at != null ? dayjs(task.start_at) : null}
               ></DatePicker>
               <DatePicker
-                defaultValue={task.end_at != null ? dayjs(task.start_at) : undefined}
+                value={taskEndAt ?? task.end_at != null ? dayjs(task.end_at) : null}
                 onChange={(x) => setTaskEndAt(x)}
                 label="End At"
               ></DatePicker>
@@ -454,10 +454,10 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
               onClick={() => {
                 editTask({
                   task_id,
-                  name: taskName ?? undefined,
-                  description: taskDescription ?? undefined,
-                  start_at: taskStartAt?.toISOString(),
-                  end_at: taskEndAt?.toISOString(),
+                  name: taskName,
+                  description: taskDescription,
+                  start_at: taskStartAt != undefined ? taskStartAt.toISOString() : taskStartAt,
+                  end_at: taskEndAt != undefined ? taskEndAt.toISOString() : taskEndAt,
                   users: taskAssign,
                 });
               }}

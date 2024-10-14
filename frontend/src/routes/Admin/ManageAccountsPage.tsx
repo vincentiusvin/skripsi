@@ -131,15 +131,13 @@ function EditSuspension(props: { suspension_id: number }) {
           <Stack spacing={2} marginTop={2}>
             <TextField
               label="Alasan"
-              value={banName}
+              value={banName ?? suspension.reason}
               onChange={(e) => setBanName(e.target.value)}
-              defaultValue={suspension.reason}
             />
             <DatePicker
-              value={endDate}
+              value={endDate ?? dayjs(suspension.suspended_until)}
               onChange={(x) => setEndDate(x)}
               label="Tanggal Selesai"
-              defaultValue={dayjs(suspension.suspended_until)}
             ></DatePicker>
           </Stack>
         </DialogContent>
@@ -181,7 +179,6 @@ function SuspensionData(props: { user_id: number }) {
   const { user_id } = props;
   const { data: suspension_data } = useSuspensionsGet({
     user_id: user_id,
-    expired_after: dayjs().startOf("day"),
   });
 
   if (suspension_data == undefined) {

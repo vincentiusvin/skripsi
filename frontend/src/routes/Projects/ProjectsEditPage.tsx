@@ -72,24 +72,21 @@ function ProjectsEdit(props: { project_id: number }) {
             fullWidth
             onChange={(e) => setProjectName(e.target.value)}
             label="Name"
-            defaultValue={oldData.project_name}
+            value={projectName ?? oldData.project_name}
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setProjectDesc(e.target.value)}
             label="Description"
-            defaultValue={oldData.project_desc}
+            value={projectDesc ?? oldData.project_desc}
           ></TextField>
           <FormControl>
-            <InputLabel id="demo-simple-select-label">Category</InputLabel>
+            <InputLabel>Category</InputLabel>
             <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={projectCategory}
+              value={projectCategory ?? oldData.project_categories.map((x) => x.category_id)}
               label="Category"
               multiple
               onChange={(e) => setProjectCategory(e.target.value as number[])}
-              defaultValue={oldData.project_categories.map((x) => x.category_id)}
             >
               {categories &&
                 categories.map((category) => (

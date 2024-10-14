@@ -105,8 +105,8 @@ export class TaskController extends Controller {
           .string({ message: "Deskripsi tidak valid!" })
           .min(1, "Deskripsi tidak boleh kosong!")
           .optional(),
-        start_at: zodStringReadableAsDateTime("Tanggal mulai tidak valid!").optional(),
-        end_at: zodStringReadableAsDateTime("Tanggal selesai tidak valid!").optional(),
+        start_at: zodStringReadableAsDateTime("Tanggal mulai tidak valid!").optional().nullable(),
+        end_at: zodStringReadableAsDateTime("Tanggal selesai tidak valid!").optional().nullable(),
       }),
       ResBody: z.object({
         bucket_id: z.number(),
