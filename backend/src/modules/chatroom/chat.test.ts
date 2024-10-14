@@ -5,7 +5,7 @@ import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("chatting api", () => {
+describe.only("chatting api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
 
@@ -80,7 +80,7 @@ describe("chatting api", () => {
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
 
-    const send_req = await sendMessage(in_chat.id, in_message, cookie);
+    const send_req = await sendMessage(in_chat.id, { message: in_message }, cookie);
     expect(send_req.status).to.eq(201);
 
     const read_req = await getChatroomMessages(caseData.chat.id, cookie);
@@ -100,7 +100,7 @@ describe("chatting api", () => {
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
 
-    const send_req = await updateMessage(in_chat.id, in_message.id, in_edited, cookie);
+    const send_req = await updateMessage(in_chat.id, in_message.id, { message: in_edited }, cookie);
     const send_result = await send_req.json();
 
     expect(send_req.status).to.eq(200);
@@ -115,6 +115,56 @@ describe("chatting api", () => {
     const read_req = await getChatroomMessages(caseData.chat.id, cookie);
 
     expect(read_req.status).to.eq(401);
+  });
+
+  it("should allow users to attach files", async () => {
+    const in_data = {
+      message: "test",
+      files: [
+        {
+          filename: "abc.txt",
+          content: "abc",
+        },
+      ],
+    };
+    const in_user = caseData.chat_user;
+    const in_room = caseData.chat;
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const send_req = await sendMessage(in_room.id, in_data, cookie);
+    const result = await send_req.json();
+
+    expect(send_req.status).to.eq(201);
+    expect(result.files).to.containSubset(
+      in_data.files.map((x) => ({
+        filename: x.filename,
+      })),
+    );
+  });
+
+  it("should allow users to attach files to sent messages", async () => {
+    const in_data = {
+      files: [
+        {
+          filename: "abc.txt",
+          content: "abc",
+        },
+      ],
+    };
+    const in_user = caseData.chat_user;
+    const in_room = caseData.chat;
+    const in_msg = caseData.message;
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const send_req = await updateMessage(in_room.id, in_msg.id, in_data, cookie);
+    const result = await send_req.json();
+
+    expect(send_req.status).to.eq(200);
+    expect(result).to.containSubset({
+      files: in_data.files.map((x) => ({
+        filename: x.filename,
+      })),
+    });
   });
 });
 
@@ -192,7 +242,18 @@ function getChatroomMessages(chatroom_id: number, cookie: string) {
   );
 }
 
-function sendMessage(chatroom_id: number, message: string, cookie: string) {
+function sendMessage(
+  chatroom_id: number,
+  data: {
+    message: string;
+    files?: {
+      filename: string;
+      content: string;
+    }[];
+  },
+  cookie: string,
+) {
+  const { files, message } = data;
   return new APIContext("ChatroomsDetailMessagesPost").fetch(
     `/api/chatrooms/${chatroom_id}/messages`,
     {
@@ -202,14 +263,27 @@ function sendMessage(chatroom_id: number, message: string, cookie: string) {
       credentials: "include",
       method: "post",
       body: {
-        message: message,
+        files,
+        message,
       },
     },
   );
 }
 
-function updateMessage(chatroom_id: number, message_id: number, message: string, cookie: string) {
-  return new APIContext("ChatroomsDetailMessagesPost").fetch(
+function updateMessage(
+  chatroom_id: number,
+  message_id: number,
+  data: {
+    message?: string;
+    files?: {
+      filename: string;
+      content: string;
+    }[];
+  },
+  cookie: string,
+) {
+  const { files, message } = data;
+  return new APIContext("ChatroomsDetailMessagesPut").fetch(
     `/api/chatrooms/${chatroom_id}/messages/${message_id}`,
     {
       headers: {
@@ -218,7 +292,8 @@ function updateMessage(chatroom_id: number, message_id: number, message: string,
       credentials: "include",
       method: "put",
       body: {
-        message: message,
+        message,
+        files,
       },
     },
   );
