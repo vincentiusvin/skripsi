@@ -109,6 +109,21 @@ describe("chatting api", () => {
     expect(send_result.message).to.eq(in_edited);
   });
 
+  it("shouldn't allow users that disabled stranger messaging to be invited", async () => {
+    const in_chat = caseData.chat;
+    const in_user = caseData.chat_user;
+    const in_disabled_user = caseData.pref_user;
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const send_req = await updateRoom(
+      in_chat.id,
+      { user_ids: [in_user.id, in_disabled_user.id] },
+      cookie,
+    );
+
+    expect(send_req.status).to.eq(400);
+  });
+
   it("should reject unauthorized viewers", async () => {
     const in_member = caseData.org_user;
 
