@@ -24,6 +24,7 @@ import { useState } from "react";
 import { useParams } from "wouter";
 import ChatroomComponent from "../../components/Chatroom/Chatroom.tsx";
 import { ChangeNameDialog, DeleteRoom } from "../../components/Chatroom/ChatroomMisc.tsx";
+import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
 import {
   useChatSocket,
   useProjectsDetailChatroomsGet,
@@ -35,7 +36,17 @@ import AuthorizeProjects, { RedirectBack } from "./components/AuthorizeProjects.
 function ChatroomWrapper(props: { user_id: number; project_id: number }) {
   const { project_id, user_id } = props;
   const [connected, setConnected] = useState(false);
-  const [activeRoom, setActiveRoom] = useState<number | false>(false);
+
+  const searchHook = useSearchParams();
+
+  let activeRoom: undefined | number = undefined;
+
+  const [activeRoomRaw, setActiveRoom] = useStateSearch("room", searchHook);
+  const tryNumber = Number(activeRoomRaw);
+  if (!Number.isNaN(tryNumber)) {
+    activeRoom = tryNumber;
+  }
+
   const { data: chatrooms } = useProjectsDetailChatroomsGet({ project_id });
   const selectedChatroom = chatrooms?.find((x) => x.chatroom_id === activeRoom);
 

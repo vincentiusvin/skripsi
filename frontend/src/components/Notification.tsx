@@ -14,6 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
+import { stringify } from "qs";
 import { useState } from "react";
 import { useNotificationsGet, useNotificationsPut } from "../queries/notification_hooks.ts";
 import StyledLink from "./StyledLink.tsx";
@@ -21,14 +22,32 @@ import StyledLink from "./StyledLink.tsx";
 type NotificationData = NonNullable<ReturnType<typeof useNotificationsGet>["data"]>[number];
 
 function resolveNotificationLink(type: NotificationData["type"], type_id: number | null) {
-  const isProjectType =
-    type === "ProjectChat" || type === "ProjectManage" || type === "ProjectTask";
+  const isProjectType = type === "ProjectManage" || type === "ProjectTask";
 
   if (isProjectType && type_id != null) {
     return `/projects/${type_id}`;
   }
   if (type === "GeneralChat") {
-    return `/chatrooms`;
+    const chatroom_params = stringify(
+      {
+        room: type_id,
+      },
+      {
+        addQueryPrefix: true,
+      },
+    );
+    return `/chatrooms${chatroom_params}`;
+  }
+  if (type === "ProjectChat") {
+    const chatroom_params = stringify(
+      {
+        room: type_id,
+      },
+      {
+        addQueryPrefix: true,
+      },
+    );
+    return `/projects/${1}/chat${chatroom_params}`;
   }
   if (type === "OrgManage") {
     return `/orgs/${type_id}`;
