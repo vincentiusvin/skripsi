@@ -23,7 +23,7 @@ export class NotificationService {
     this.preference_service = preference_service;
   }
 
-  async getNotificationPreference(user_id: number, notification_type: NotificationTypes) {
+  private async getNotificationPreference(user_id: number, notification_type: NotificationTypes) {
     const pref = await this.preference_service.getUserPreference(user_id);
     const key = getPreferenceKeyFromNotificationType(notification_type);
     return pref[key];

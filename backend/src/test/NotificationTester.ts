@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { NotificationTypes } from "../modules/notification/NotificationMisc.js";
 import { APIContext, getLoginCookie } from "./helpers.js";
 
 export function getNotifications(user_id: number, cookie: string) {
@@ -22,7 +23,7 @@ export class NotificationTester {
     description: string;
     id: number;
     user_id: number;
-    type: "OrgManage" | "ProjectManage" | "ProjectTask" | "ProjectChat" | "GeneralChat";
+    type: NotificationTypes;
     read: boolean;
     title: string;
     type_id: number | null;
@@ -32,7 +33,7 @@ export class NotificationTester {
     description: string;
     id: number;
     user_id: number;
-    type: "OrgManage" | "ProjectManage" | "ProjectTask" | "ProjectChat" | "GeneralChat";
+    type: NotificationTypes;
     read: boolean;
     title: string;
     type_id: number | null;
