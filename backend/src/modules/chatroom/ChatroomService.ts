@@ -1,5 +1,6 @@
-import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { NotificationService } from "../notification/NotificationService.js";
+import { PreferenceService } from "../preferences/PreferenceService.js";
 import { ProjectService } from "../project/ProjectService.js";
 import { UserService } from "../user/UserService.js";
 import { ChatRepository } from "./ChatroomRepository.js";
@@ -11,16 +12,20 @@ export class ChatService {
   private project_service: ProjectService;
   private user_service: UserService;
   private notification_service: NotificationService;
+  private preference_service: PreferenceService;
+
   constructor(
     repo: ChatRepository,
     project_service: ProjectService,
     user_service: UserService,
     notification_service: NotificationService,
+    preference_service: PreferenceService,
   ) {
     this.repo = repo;
     this.project_service = project_service;
     this.user_service = user_service;
     this.notification_service = notification_service;
+    this.preference_service = preference_service;
   }
 
   async getMembers(chatroom_id: number) {
@@ -188,9 +193,40 @@ export class ChatService {
     opts: { name?: string; user_ids?: number[] },
     sender_id: number,
   ) {
+    const { user_ids } = opts;
     const val = await this.isAllowed(chatroom_id, sender_id);
     if (!val) {
       throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
+    }
+
+    const chatroom = await this.getChatroomByID(chatroom_id);
+    if (chatroom == undefined) {
+      throw new NotFoundError("Gagal menemukan ruangan tersebut!");
+    }
+
+    if (user_ids != undefined) {
+      if (chatroom.project_id != undefined) {
+        throw new ClientError(
+          "Anda tidak dapat mengkonfigurasi anggota untuk ruang diskusi proyek!",
+        );
+      }
+
+      const old_members = chatroom.chatroom_users.map((x) => x.user_id);
+      for (const user_id of user_ids) {
+        if (old_members.includes(user_id)) {
+          continue;
+        }
+        const pref = await this.preference_service.getUserPreference(user_id);
+        if (pref.friend_invite === "off") {
+          const user_data = await this.user_service.getUserDetail(user_id);
+          if (user_data == undefined) {
+            throw new Error("Gagal menemukan pengguna tersebut!");
+          }
+          throw new ClientError(
+            `Pengguna "${user_data.user_name}" tidak menerima pesan dari orang asing!`,
+          );
+        }
+      }
     }
 
     await this.repo.updateChatroom(chatroom_id, opts);

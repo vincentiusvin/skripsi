@@ -1,4 +1,4 @@
-import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { NotificationService } from "../notification/NotificationService.js";
 import { OrgService } from "../organization/OrgService.js";
 import { PreferenceService } from "../preferences/PreferenceService.js";
@@ -165,7 +165,7 @@ export class ProjectService {
   private async inviteDevToJoin(project_id: number, user_id: number) {
     const pref = await this.preference_service.getUserPreference(user_id);
     if (pref.project_invite === "off") {
-      throw new AuthError("Pengguna ini tidak menerima undangan proyek.");
+      throw new ClientError("Pengguna ini tidak menerima undangan proyek.");
     }
     await this.project_repo.assignMember(project_id, user_id, "Invited");
     await this.sendInvitationNotification(user_id, project_id);

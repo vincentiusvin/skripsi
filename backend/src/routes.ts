@@ -77,6 +77,7 @@ export function registerControllers(app: Application) {
     project_service,
     user_service,
     notification_service,
+    preference_service,
   );
   const friend_service = new FriendService(friend_repo, user_service, notification_service);
   const contribution_service = new ContributionService(contribution_repo);
