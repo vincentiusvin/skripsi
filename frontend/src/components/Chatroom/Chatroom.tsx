@@ -36,6 +36,28 @@ import StyledLink from "../StyledLink.tsx";
 
 function DownloadableFile(props: { filename: string; file_id: number }) {
   const { filename, file_id } = props;
+  const isImage =
+    filename.endsWith(".jpeg") || filename.endsWith(".jpg") || filename.endsWith(".png");
+
+  if (isImage) {
+    return (
+      <Avatar
+        src={`/api/files/${file_id}`}
+        variant="rounded"
+        sx={{
+          margin: 2,
+          maxWidth: {
+            xs: "200px",
+            sm: "300px",
+            md: "400px",
+          },
+          width: "100%",
+          height: "100%",
+        }}
+      />
+    );
+  }
+
   return (
     <Paper
       elevation={4}
