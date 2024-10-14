@@ -1,6 +1,7 @@
 import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
+import { ClientError } from "../../helpers/error.js";
 
 const defaultChatroomFields = [
   "ms_chatrooms.id as chatroom_id",
@@ -103,18 +104,27 @@ export class ChatRepository {
       }
 
       if (files != undefined && files.length) {
-        await trx
-          .insertInto("ms_chatroom_files")
-          .values(
-            files.map((x) => {
-              return {
-                content: Buffer.from(x.content.split(",")[1], "base64"),
-                message_id: res.id,
-                filename: x.filename,
-              };
-            }),
-          )
-          .execute();
+        const files_cleaned = files.flatMap((x) => {
+          const b64_data = x.content.split(",")[1];
+          if (b64_data == undefined) {
+            return [];
+          }
+          const buf = Buffer.from(b64_data, "base64");
+
+          return [
+            {
+              content: buf,
+              message_id: res.id,
+              filename: x.filename,
+            },
+          ];
+        });
+
+        if (files_cleaned.length == 0) {
+          throw new ClientError("Ditemukan file yang invalid!");
+        }
+
+        await trx.insertInto("ms_chatroom_files").values(files_cleaned).execute();
       }
 
       return res;
@@ -172,16 +182,27 @@ export class ChatRepository {
       if (files != undefined && files.length) {
         await trx.deleteFrom("ms_chatroom_files").where("id", "=", message_id).execute();
 
-        await trx
-          .insertInto("ms_chatroom_files")
-          .values(
-            files.map((x) => ({
-              content: Buffer.from(x.content, "base64"),
+        const files_cleaned = files.flatMap((x) => {
+          const b64_data = x.content.split(",")[1];
+          if (b64_data == undefined) {
+            return [];
+          }
+          const buf = Buffer.from(b64_data, "base64url");
+
+          return [
+            {
+              content: buf,
               message_id: message_id,
               filename: x.filename,
-            })),
-          )
-          .execute();
+            },
+          ];
+        });
+
+        if (files_cleaned.length == 0) {
+          throw new ClientError("Ditemukan file yang invalid!");
+        }
+
+        await trx.insertInto("ms_chatroom_files").values(files_cleaned).execute();
       }
 
       return res;

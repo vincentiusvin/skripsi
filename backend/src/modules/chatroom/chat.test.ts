@@ -122,8 +122,8 @@ describe.only("chatting api", () => {
       message: "test",
       files: [
         {
-          filename: "abc.txt",
-          content: "abc",
+          filename: "def.txt",
+          content: "data:text/plain;base64,abc",
         },
       ],
     };
@@ -147,10 +147,11 @@ describe.only("chatting api", () => {
       files: [
         {
           filename: "abc.txt",
-          content: "abc",
+          content: "data:text/plain;base64,abc",
         },
       ],
     };
+
     const in_user = caseData.chat_user;
     const in_room = caseData.chat;
     const in_msg = caseData.message;
@@ -160,13 +161,23 @@ describe.only("chatting api", () => {
     const result = await send_req.json();
 
     expect(send_req.status).to.eq(200);
-    expect(result).to.containSubset({
-      files: in_data.files.map((x) => ({
+    expect(result.files).to.containSubset(
+      in_data.files.map((x) => ({
         filename: x.filename,
       })),
-    });
+    );
   });
 });
+
+// function getFileData(file_id: number, cookie: string) {
+//   return new APIContext("FileDetailGet").fetch(`/api/files/${file_id}`, {
+//     headers: {
+//       cookie: cookie,
+//     },
+//     credentials: "include",
+//     method: "get",
+//   });
+// }
 
 function getUserChatrooms(user_id: number, cookie: string) {
   return new APIContext("UsersDetailChatroomsGet").fetch(`/api/users/${user_id}/chatrooms`, {
