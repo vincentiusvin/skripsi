@@ -1,6 +1,7 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
 import { NotificationService } from "../notification/NotificationService.js";
 import { OrgService } from "../organization/OrgService.js";
+import { PreferenceService } from "../preferences/PreferenceService.js";
 import { UserService } from "../user/UserService.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 import { ProjectRepository } from "./ProjectRepository.js";
@@ -10,17 +11,20 @@ export class ProjectService {
   private org_service: OrgService;
   private user_service: UserService;
   private notification_service: NotificationService;
+  private preference_service: PreferenceService;
 
   constructor(
     repo: ProjectRepository,
     org_service: OrgService,
     user_service: UserService,
     notification_service: NotificationService,
+    preference_service: PreferenceService,
   ) {
     this.project_repo = repo;
     this.org_service = org_service;
     this.user_service = user_service;
     this.notification_service = notification_service;
+    this.preference_service = preference_service;
   }
 
   async getMemberRole(project_id: number, user_id: number) {
@@ -159,6 +163,10 @@ export class ProjectService {
   }
 
   private async inviteDevToJoin(project_id: number, user_id: number) {
+    const pref = await this.preference_service.getUserPreference(user_id);
+    if (pref.project_invite === "off") {
+      throw new AuthError("Pengguna ini tidak menerima undangan proyek.");
+    }
     await this.project_repo.assignMember(project_id, user_id, "Invited");
     await this.sendInvitationNotification(user_id, project_id);
   }

@@ -69,6 +69,7 @@ export function registerControllers(app: Application) {
     org_service,
     user_service,
     notification_service,
+    preference_service,
   );
   const task_service = new TaskService(task_repo, project_service, notification_service);
   const chat_service = new ChatService(
