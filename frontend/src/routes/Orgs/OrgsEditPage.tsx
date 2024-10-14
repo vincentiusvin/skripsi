@@ -151,7 +151,7 @@ function OrgsEdit(props: { org_id: number }) {
             value={orgPhone ?? org_data.org_phone}
           ></TextField>
           <FormControl>
-            <InputLabel id="demo-simple-select-label">Category</InputLabel>
+            <InputLabel>Category</InputLabel>
             <Select
               onChange={(e) => setOrgCategory(e.target.value as number[])}
               label="Category"

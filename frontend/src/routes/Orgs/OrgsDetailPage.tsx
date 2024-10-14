@@ -122,7 +122,8 @@ function OrgsInfo(props: { org_id: number }) {
                 key={x.user_id}
                 size={{
                   xs: 12,
-                  md: 3,
+                  md: 6,
+                  lg: 4,
                 }}
               >
                 <OrgMember user_id={x.user_id} org_id={org_id} />
