@@ -141,6 +141,13 @@ export interface MsPreferences {
   name: string;
 }
 
+export interface MsProjectEvents {
+  created_at: Generated<Timestamp>;
+  event: string;
+  id: Generated<number>;
+  project_id: number;
+}
+
 export interface MsProjects {
   created_at: Generated<Timestamp>;
   description: string;
@@ -250,6 +257,7 @@ export interface DB {
   ms_notifications: MsNotifications;
   ms_orgs: MsOrgs;
   ms_preferences: MsPreferences;
+  ms_project_events: MsProjectEvents;
   ms_projects: MsProjects;
   ms_reports: MsReports;
   ms_suspensions: MsSuspensions;

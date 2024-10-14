@@ -3,10 +3,13 @@ import { Kysely } from "kysely";
 import { before, beforeEach, describe } from "mocha";
 import { Application } from "../../app.js";
 import { DB } from "../../db/db_types.js";
+import { getNotifications } from "../../test/NotificationTester.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { MockedEmailService } from "../email/MockedEmailService.js";
+import { PreferenceRepository } from "../preferences/PreferenceRepository.js";
+import { PreferenceService } from "../preferences/PreferenceService.js";
 import { UserRepository } from "../user/UserRepository.js";
 import { UserService } from "../user/UserService.js";
 import { NotificationTypes } from "./NotificationMisc.js";
@@ -96,19 +99,6 @@ describe("notification service", () => {
   });
 });
 
-function getNotifications(user_id: number, cookie: string) {
-  return new APIContext("NotificationsGet").fetch(`/api/notifications`, {
-    headers: {
-      cookie: cookie,
-    },
-    query: {
-      user_id: user_id.toString(),
-    },
-    credentials: "include",
-    method: "get",
-  });
-}
-
 function putNotifications(notification_id: number, read: boolean, cookie: string) {
   return new APIContext("NotificationsPut").fetch(`/api/notifications/${notification_id}`, {
     headers: {
@@ -125,6 +115,8 @@ function putNotifications(notification_id: number, read: boolean, cookie: string
 function getMockedEmailNotificationService(db: Kysely<DB>) {
   const notif_repo = new NotificationRepository(db);
   const user_repo = new UserRepository(db);
+  const pref_repo = new PreferenceRepository(db);
+  const pref_service = new PreferenceService(pref_repo);
   const user_service = new UserService(user_repo);
-  return new NotificationService(notif_repo, new MockedEmailService(), user_service);
+  return new NotificationService(notif_repo, new MockedEmailService(), user_service, pref_service);
 }

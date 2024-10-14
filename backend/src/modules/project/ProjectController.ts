@@ -24,6 +24,7 @@ export class ProjectController extends Controller {
       ProjectsDetailMembersPut: this.ProjectsDetailMembersPut,
       ProjectsDetailMembersDelete: this.ProjectsDetailMembersDelete,
       ProjectsCategoriesGet: this.ProjectsCategoriesGet,
+      ProjectsDetailEventsGet: this.ProjectsDetailEventsGet,
     };
   }
   ProjectsPost = new Route({
@@ -153,6 +154,31 @@ export class ProjectController extends Controller {
       res.status(200).json(result);
     },
   });
+
+  ProjectsDetailEventsGet = new Route({
+    method: "get",
+    path: "/api/projects/:project_id/events",
+    schema: {
+      Params: z.object({
+        project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
+      }),
+      ResBody: z
+        .object({
+          project_id: z.number(),
+          created_at: z.date(),
+          id: z.number(),
+          event: z.string(),
+        })
+        .array(),
+    },
+    handler: async (req, res) => {
+      const project_id = req.params.project_id;
+
+      const result = await this.project_service.getEvents(Number(project_id));
+      res.status(200).json(result);
+    },
+  });
+
   ProjectsDetailPut = new Route({
     method: "put",
     path: "/api/projects/:project_id",
@@ -298,7 +324,7 @@ export class ProjectController extends Controller {
       const user_id = Number(user_id_str);
       const sender_id = req.session.user_id!;
 
-      await this.project_service.unassignMember(project_id, user_id, sender_id);
+      await this.project_service.tryUnassignMember(project_id, user_id, sender_id);
 
       const result = await this.project_service.getMemberRole(project_id, user_id);
       res.status(200).json({ role: result });

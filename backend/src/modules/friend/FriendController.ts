@@ -40,18 +40,11 @@ export class FriendController extends Controller {
       const from_user_id = Number(req.params.from_id);
       const to_user_id = Number(req.params.to_id);
       const { status } = req.body;
+      const sender_id = Number(req.session.user_id);
 
-      if (from_user_id != req.session.user_id) {
-        throw new AuthError("Anda tidak memiliki akses untuk mengubah koneksi orang lain!");
-      }
-
-      if (status === "Accepted") {
-        await this.friend_service.acceptFriend(from_user_id, to_user_id);
-      } else if (status === "Sent") {
-        await this.friend_service.addFriend(from_user_id, to_user_id);
-      }
-
+      await this.friend_service.updateFriend(from_user_id, to_user_id, status, sender_id);
       const result = await this.friend_service.getFriendStatus(from_user_id, to_user_id);
+
       res.status(200).json({ status: result });
     },
   });

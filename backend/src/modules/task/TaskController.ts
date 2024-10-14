@@ -95,7 +95,7 @@ export class TaskController extends Controller {
       }),
       ReqBody: z.object({
         bucket_id: z.number({ message: "ID kelompok tugas tidak valid!" }).optional(),
-        before_id: z.number({ message: "Lokasi tugas tidak valid!" }).optional(),
+        before_id: z.number({ message: "Lokasi tugas tidak valid!" }).optional().nullable(),
         users: z.array(z.number(), { message: "Pengguna invalid!" }).optional(),
         name: z
           .string({ message: "Nama tidak valid!" })

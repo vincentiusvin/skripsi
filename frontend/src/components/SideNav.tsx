@@ -263,6 +263,11 @@ function ContextualDashboard(props: { context: SidenavContext }) {
     links = [
       {
         link: `/projects/${project_id}`,
+        name: `Profil`,
+        avatar: <People />,
+      },
+      {
+        link: `/projects/${project_id}/home`,
         name: `Beranda`,
         avatar: <Home />,
       },

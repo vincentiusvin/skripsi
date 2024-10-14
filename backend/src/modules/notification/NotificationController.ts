@@ -31,7 +31,15 @@ export class NotificationController extends Controller {
       }),
       ResBody: z
         .object({
-          type: z.enum(["OrgManage", "ProjectManage", "ProjectTask", "ProjectChat", "GeneralChat"]),
+          type: z.enum([
+            "OrgManage",
+            "ProjectManage",
+            "ProjectTask",
+            "ProjectChat",
+            "GeneralChat",
+            "ReportUpdate",
+            "Friend",
+          ]),
           read: z.boolean(),
           user_id: z.number(),
           id: z.number(),
@@ -66,7 +74,15 @@ export class NotificationController extends Controller {
         read: z.boolean(),
       }),
       ResBody: z.object({
-        type: z.enum(["OrgManage", "ProjectManage", "ProjectTask", "ProjectChat", "GeneralChat"]),
+        type: z.enum([
+          "OrgManage",
+          "ProjectManage",
+          "ProjectTask",
+          "ProjectChat",
+          "GeneralChat",
+          "ReportUpdate",
+          "Friend",
+        ]),
         read: z.boolean(),
         user_id: z.number(),
         id: z.number(),

@@ -1,5 +1,6 @@
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { ChatService } from "../chatroom/ChatroomService.js";
+import { NotificationService } from "../notification/NotificationService.js";
 import { UserService } from "../user/UserService.js";
 import { ReportStatus } from "./ReportMisc.js";
 import { ReportRepository } from "./ReportRepository.js";
@@ -8,11 +9,18 @@ export class ReportService {
   private report_repo: ReportRepository;
   private user_service: UserService;
   private chat_service: ChatService;
+  private notification_service: NotificationService;
 
-  constructor(report_repo: ReportRepository, user_service: UserService, chat_service: ChatService) {
+  constructor(
+    report_repo: ReportRepository,
+    user_service: UserService,
+    chat_service: ChatService,
+    notification_service: NotificationService,
+  ) {
     this.report_repo = report_repo;
     this.user_service = user_service;
     this.chat_service = chat_service;
+    this.notification_service = notification_service;
   }
 
   async getReports(
@@ -43,6 +51,45 @@ export class ReportService {
     return await this.report_repo.addReport({ ...opts, status: "Pending" });
   }
 
+  private async sendReportResolutionNotification(
+    report_id: number,
+    status: "Resolved" | "Rejected",
+  ) {
+    const report = await this.report_repo.getReportByID(report_id);
+    if (!report || report.status !== status) {
+      throw new Error(`Laporan ${report_id} gagal ditemukan.`);
+    }
+
+    const translate_status = {
+      Resolved: "diterima",
+      Rejected: "ditolak",
+    }[status];
+
+    await this.notification_service.addNotification({
+      title: `Laporan "${report.title}" telah ${translate_status}`,
+      user_id: report.sender_id,
+      description: `Laporan anda telah ${translate_status} oleh pengelola website.
+      Anda dapat membaca alasan lebih lanjut pada halaman laporan.`,
+      type: "ReportUpdate",
+      type_id: report.id,
+    });
+  }
+
+  private async sendReportChatroomCreatedNotification(report_id: number) {
+    const report = await this.report_repo.getReportByID(report_id);
+    if (!report) {
+      throw new Error(`Laporan ${report_id} gagal ditemukan.`);
+    }
+
+    await this.notification_service.addNotification({
+      title: `Diskusi "${report.title}"`,
+      user_id: report.sender_id,
+      description: `Pengelola website telah membuka ruang diskusi untuk membahas laporan ${report.title} yang anda buat.`,
+      type: "ReportUpdate",
+      type_id: report.id,
+    });
+  }
+
   async updateReportStatus(report_id: number, status: ReportStatus, resolution?: string) {
     if (status === "Pending") {
       await this.report_repo.updateReport(report_id, {
@@ -59,6 +106,7 @@ export class ReportService {
         resolution,
         resolved_at: new Date(),
       });
+      await this.sendReportResolutionNotification(report_id, status);
     }
   }
 
@@ -83,6 +131,7 @@ export class ReportService {
     await this.report_repo.updateReport(report_id, {
       chatroom_id,
     });
+    await this.sendReportChatroomCreatedNotification(report_id);
   }
 
   async updateReport(

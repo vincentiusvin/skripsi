@@ -1,14 +1,21 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { NotificationService } from "../notification/NotificationService.js";
 import { ProjectService } from "../project/ProjectService.js";
 import { TaskRepository } from "./TaskRepository.js";
 
 export class TaskService {
   private task_repo: TaskRepository;
   private project_service: ProjectService;
+  private notification_service: NotificationService;
 
-  constructor(repo: TaskRepository, project_service: ProjectService) {
+  constructor(
+    repo: TaskRepository,
+    project_service: ProjectService,
+    notification_service: NotificationService,
+  ) {
     this.task_repo = repo;
     this.project_service = project_service;
+    this.notification_service = notification_service;
   }
 
   async getTaskByID(task_id: number) {
@@ -63,7 +70,7 @@ export class TaskService {
     task_id: number,
     data: {
       bucket_id?: number;
-      before_id?: number; // sisipin tasknya sebelum id ini.
+      before_id?: number | null; // sisipin tasknya sebelum id ini.
       name?: string;
       description?: string;
       users?: number[];
@@ -102,7 +109,7 @@ export class TaskService {
       }
       updateOrder = insert_before_this.order;
       await this.task_repo.bumpOrderBiggerThan(target_bucket, updateOrder);
-    } else {
+    } else if (before_id === null || target_bucket != old_data.bucket_id) {
       const data_after = await this.task_repo.getMaxOrder(target_bucket);
       if (data_after == undefined) {
         updateOrder = 1;
@@ -120,6 +127,12 @@ export class TaskService {
       order: updateOrder,
       start_at,
     });
+
+    if (users != undefined) {
+      for (const user_id of users) {
+        await this.sendTaskNotification(task_id, project_id, user_id);
+      }
+    }
   }
 
   async addTask(
@@ -146,10 +159,13 @@ export class TaskService {
 
     const order = await this.task_repo.getMaxOrder(bucket_id);
 
-    return await this.task_repo.addTask({
+    const result = await this.task_repo.addTask({
       ...data,
       order: order ?? 1,
     });
+
+    await this.addTaskEvent(bucket.project_id, result.id);
+    return result;
   }
 
   async getTasks(opts: { bucket_id?: number; user_id?: number }) {
@@ -167,5 +183,30 @@ export class TaskService {
     }
 
     return await this.task_repo.addBucket(project_id, name);
+  }
+
+  private async addTaskEvent(project_id: number, task_id: number) {
+    const task = await this.getTaskByID(task_id);
+    if (!task) {
+      throw new Error(`Gagal menemukan tugas ${task_id}`);
+    }
+    for (const { user_id } of task.users) {
+      await this.sendTaskNotification(task_id, project_id, user_id);
+    }
+    await this.project_service.addEvent(project_id, `Ditambahkan tugas baru "${task.name}"`);
+  }
+
+  private async sendTaskNotification(task_id: number, project_id: number, user_id: number) {
+    const task = await this.getTaskByID(task_id);
+    if (!task) {
+      return;
+    }
+    return this.notification_service.addNotification({
+      title: `Tugas "${task.name}"`,
+      user_id,
+      description: `Anda tercatat sebagai pelaksana tugas "${task.name}"`,
+      type: "ProjectTask",
+      type_id: project_id,
+    });
   }
 }

@@ -56,26 +56,37 @@ export function registerControllers(app: Application) {
 
   const user_service = new UserService(user_repo);
   const email_service = EmailService.fromEnv();
+  const preference_service = new PreferenceService(preference_repo);
   const notification_service = new NotificationService(
     notification_repo,
     email_service,
     user_service,
+    preference_service,
   );
-  const org_service = new OrgService(org_repo, notification_service, user_service);
+  const org_service = new OrgService(org_repo, user_service, notification_service);
   const project_service = new ProjectService(
     project_repo,
     org_service,
-    notification_service,
     user_service,
+    notification_service,
   );
-  const task_service = new TaskService(task_repo, project_service);
-  const chat_service = new ChatService(chat_repo, project_service, user_service);
-  const friend_service = new FriendService(friend_repo);
+  const task_service = new TaskService(task_repo, project_service, notification_service);
+  const chat_service = new ChatService(
+    chat_repo,
+    project_service,
+    user_service,
+    notification_service,
+  );
+  const friend_service = new FriendService(friend_repo, user_service, notification_service);
   const contribution_service = new ContributionService(contribution_repo);
   const article_service = new ArticleService(article_repo);
-  const report_service = new ReportService(report_repo, user_service, chat_service);
+  const report_service = new ReportService(
+    report_repo,
+    user_service,
+    chat_service,
+    notification_service,
+  );
   const suspension_service = new SuspensionService(suspension_repo, user_service);
-  const preference_service = new PreferenceService(preference_repo);
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),

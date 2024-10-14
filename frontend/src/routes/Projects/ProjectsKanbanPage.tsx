@@ -596,10 +596,10 @@ function Kanban(props: { project_id: number }) {
             }
 
             const next_task = tasks[loc.cellIdx + 1];
-            let next_id: number | undefined = undefined;
+            let next_id: number | null = null;
 
             if (next_task !== undefined) {
-              next_id = extractID(next_task.id);
+              next_id = extractID(next_task.id) ?? null;
             }
 
             updateTask({
