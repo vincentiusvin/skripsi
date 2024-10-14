@@ -130,25 +130,25 @@ function OrgsEdit(props: { org_id: number }) {
             fullWidth
             onChange={(e) => setOrgName(e.target.value)}
             label="Name"
-            defaultValue={org_data?.org_name}
+            value={orgName ?? org_data.org_name}
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgDesc(e.target.value)}
             label="Description"
-            defaultValue={org_data?.org_description}
+            value={orgDesc ?? org_data.org_description}
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgAddress(e.target.value)}
             label="Address"
-            defaultValue={org_data?.org_address}
+            value={orgAddress ?? org_data.org_address}
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgPhone(e.target.value)}
             label="Phone"
-            defaultValue={org_data?.org_phone}
+            value={orgPhone ?? org_data.org_phone}
           ></TextField>
           <FormControl>
             <InputLabel id="demo-simple-select-label">Category</InputLabel>
@@ -156,8 +156,7 @@ function OrgsEdit(props: { org_id: number }) {
               onChange={(e) => setOrgCategory(e.target.value as number[])}
               label="Category"
               multiple
-              value={orgCategory}
-              defaultValue={org_data.org_categories.map((x) => x.category_id)}
+              value={orgCategory ?? org_data.org_categories.map((x) => x.category_id)}
             >
               {categories &&
                 categories.map((category) => (

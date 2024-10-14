@@ -178,37 +178,39 @@ function UserAccountPageEdit() {
                 <TextField
                   label="Username"
                   required
-                  id="filled-required"
                   variant="standard"
-                  defaultValue={data.user_name}
+                  value={userName ?? data.user_name}
                   onChange={(e) => setUserName(e.target.value)}
                   fullWidth
                 />
                 <TextField
                   type={showPassword ? "text" : "password"}
-                  value={userPassword}
+                  value={userPassword ?? ""}
                   onChange={(e) => setUserPassword(e.target.value)}
                   variant="standard"
                   label="Password"
                   fullWidth
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="start">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={handleClickShowPassword}
-                          onMouseDown={handleMouseDownPassword}
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="start">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            onMouseDown={handleMouseDownPassword}
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                 />
                 <TextField
                   required
                   label="Confirm Password"
                   fullWidth
+                  value={userConfirmPassword ?? ""}
                   onChange={(e) => setUserConfirmPassword(e.target.value)}
                   type="password"
                   variant="standard"
@@ -219,21 +221,21 @@ function UserAccountPageEdit() {
                   variant="standard"
                   fullWidth
                   onChange={(e) => setUserEmail(e.target.value)}
-                  defaultValue={data.user_email}
+                  value={userEmail ?? data.user_email}
                 />
                 <TextField
                   label="Education Level"
                   fullWidth
                   variant="standard"
                   onChange={(e) => setUserEducationLevel(e.target.value)}
-                  defaultValue={data.user_education_level}
+                  value={userEducationLevel ?? data.user_education_level}
                 />
                 <TextField
                   label="School"
                   fullWidth
                   variant="standard"
                   onChange={(e) => setUserSchool(e.target.value)}
-                  defaultValue={data.user_school}
+                  value={userSchool ?? data.user_school}
                 />
               </Paper>
 
@@ -248,7 +250,7 @@ function UserAccountPageEdit() {
                   variant="standard"
                   fullWidth
                   onChange={(e) => setUserAboutMe(e.target.value)}
-                  defaultValue={data.user_about_me}
+                  value={userAboutMe ?? data.user_about_me}
                 />
               </Paper>
               <Button endIcon={<Save />} variant="contained" onClick={handleUpdateClick}>

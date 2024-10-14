@@ -103,10 +103,9 @@ export function ChangeNameDialog(props: { chatroom_id: number }) {
         <DialogContent>
           <TextField
             fullWidth
-            value={editRoomName}
+            value={editRoomName ?? chatroom.chatroom_name}
             onChange={(e) => setEditRoomName(e.target.value)}
             label="Room name"
-            defaultValue={chatroom.chatroom_name}
           />
         </DialogContent>
         <DialogActions>
