@@ -103,6 +103,23 @@ describe("projects api", () => {
     expect(accept_result.role).eq("Dev");
   });
 
+  it("shouldn't allow admin to invite members that disabled being invited", async () => {
+    const in_disabled_dev = caseData.pref_user;
+    const in_admin = caseData.project_admin_user;
+    const in_project = caseData.project;
+
+    const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
+    const invite_req = await assignMember(
+      in_project.id,
+      in_disabled_dev.id,
+      "Invited",
+      admin_cookie,
+    );
+    await invite_req.json();
+
+    expect(invite_req.status).to.eq(400);
+  });
+
   it("should not allow users to self promote", async () => {
     const in_dev = caseData.plain_user;
     const in_project = caseData.project;

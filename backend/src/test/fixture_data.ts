@@ -312,12 +312,17 @@ export async function baseCase(db: Kysely<DB>) {
       {
         user_id: pref_user.id,
         preference_id: pref_map.find((x) => x.name === "project_invite")!.id,
-        value: "on",
+        value: "off",
       },
       {
         user_id: pref_user.id,
         preference_id: pref_map.find((x) => x.name === "project_notif")!.id,
         value: "email",
+      },
+      {
+        user_id: pref_user.id,
+        preference_id: pref_map.find((x) => x.name === "friend_invite")!.id,
+        value: "off",
       },
     ])
     .execute();
