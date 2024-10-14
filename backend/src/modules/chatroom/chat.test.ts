@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { before, describe } from "mocha";
 import { Application } from "../../app.js";
+import { NotificationTester } from "../../test/NotificationTester.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
@@ -166,6 +167,50 @@ describe.only("chatting api", () => {
         filename: x.filename,
       })),
     );
+  });
+
+  describe("notifications", () => {
+    it("should send notification on user message", async () => {
+      const in_user = caseData.chat_user;
+      const in_chat = caseData.chat;
+      const in_message = "Hello testing!";
+
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const nt = NotificationTester.fromCookie(in_user.id, cookie);
+      await nt.start();
+      const send_req = await sendMessage(in_chat.id, { message: in_message }, cookie);
+      await send_req.json();
+      await nt.finish();
+      const diff = nt.diff();
+
+      expect(diff.length).eq(1);
+      expect(diff).containSubset([
+        {
+          type: "GeneralChat",
+        },
+      ]);
+    });
+
+    it("should send notification on project message", async () => {
+      const in_user = caseData.project_admin_user;
+      const in_chat = caseData.project_chat;
+      const in_message = "Hello testing!";
+
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const nt = NotificationTester.fromCookie(in_user.id, cookie);
+      await nt.start();
+      const send_req = await sendMessage(in_chat.id, { message: in_message }, cookie);
+      await send_req.json();
+      await nt.finish();
+      const diff = nt.diff();
+
+      expect(diff.length).eq(1);
+      expect(diff).containSubset([
+        {
+          type: "ProjectChat",
+        },
+      ]);
+    });
   });
 });
 

@@ -17,6 +17,7 @@ const defaultMessageFields = (eb: ExpressionBuilder<DB, "ms_messages">) =>
     "ms_messages.created_at as created_at",
     "ms_messages.user_id as user_id",
     "ms_messages.is_edited as is_edited",
+    "ms_messages.chatroom_id as chatroom_id",
     messageWithAttachments(eb).as("files"),
   ] as const;
 

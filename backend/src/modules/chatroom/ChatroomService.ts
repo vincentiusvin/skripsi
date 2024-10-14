@@ -1,4 +1,5 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { NotificationService } from "../notification/NotificationService.js";
 import { ProjectService } from "../project/ProjectService.js";
 import { UserService } from "../user/UserService.js";
 import { ChatRepository } from "./ChatroomRepository.js";
@@ -6,13 +7,20 @@ import { ChatRepository } from "./ChatroomRepository.js";
 // Kalau chatroomnya berkaitan dengan projek, validasi pakai daftar member projek.
 // Kalau chatroomnya bukan, validasi pakai daftar member chatroom
 export class ChatService {
-  repo: ChatRepository;
-  project_service: ProjectService;
-  user_service: UserService;
-  constructor(repo: ChatRepository, project_service: ProjectService, user_service: UserService) {
+  private repo: ChatRepository;
+  private project_service: ProjectService;
+  private user_service: UserService;
+  private notification_service: NotificationService;
+  constructor(
+    repo: ChatRepository,
+    project_service: ProjectService,
+    user_service: UserService,
+    notification_service: NotificationService,
+  ) {
     this.repo = repo;
     this.project_service = project_service;
     this.user_service = user_service;
+    this.notification_service = notification_service;
   }
 
   async getMembers(chatroom_id: number) {
@@ -51,6 +59,31 @@ export class ChatService {
     return await this.repo.getMessages(chatroom_id);
   }
 
+  async sendMessageNotification(message_id: number) {
+    const msg = await this.getMessage(message_id);
+    if (!msg) {
+      throw new Error("Pesan tidak ditemukan!");
+    }
+    const chatroom = await this.getChatroomByID(msg?.chatroom_id);
+    if (!chatroom) {
+      throw new Error("Pesan tidak ditemukan!");
+    }
+
+    const chatroom_users = await this.getMembers(chatroom.chatroom_id);
+
+    await Promise.all(
+      chatroom_users.map((user_id) =>
+        this.notification_service.addNotification({
+          title: `Pesan masuk di "${chatroom.chatroom_name}"`,
+          description: `${msg.message}`,
+          type: chatroom.project_id != null ? "ProjectChat" : "GeneralChat",
+          type_id: chatroom.chatroom_id,
+          user_id: user_id,
+        }),
+      ),
+    );
+  }
+
   async sendMessage(
     chatroom_id: number,
     data: {
@@ -68,7 +101,9 @@ export class ChatService {
       throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
     }
 
-    return await this.repo.addMessage(chatroom_id, data);
+    const res = await this.repo.addMessage(chatroom_id, data);
+    await this.sendMessageNotification(res.id);
+    return res;
   }
 
   async updateMessage(

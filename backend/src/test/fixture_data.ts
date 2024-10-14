@@ -166,13 +166,22 @@ export async function baseCase(db: Kysely<DB>) {
     .returning(["ms_tasks.id", "ms_tasks.name"])
     .execute();
 
-  const chat = await db
+  const chats = await db
     .insertInto("ms_chatrooms")
-    .values({
-      name: "Chatroom Base Case",
-    })
+    .values([
+      {
+        name: "Chatroom Base Case",
+      },
+      {
+        name: "punya proyek",
+        project_id: project.id,
+      },
+    ])
     .returning(["ms_chatrooms.id", "ms_chatrooms.name"])
-    .executeTakeFirstOrThrow();
+    .execute();
+
+  const chat = chats[0];
+  const project_chat = chats[1];
 
   await db
     .insertInto("chatrooms_users")
@@ -325,6 +334,7 @@ export async function baseCase(db: Kysely<DB>) {
   });
 
   return {
+    project_chat,
     org,
     preferences,
     project,
