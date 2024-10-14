@@ -1,3 +1,5 @@
+import { ReadablePreference } from "../preferences/PreferenceRepository.js";
+
 const notification_types = [
   "OrgManage",
   "ProjectManage",
@@ -15,4 +17,18 @@ export function parseNotificationType(type: string): NotificationTypes {
     throw new Error(`Terdapat tipe notifikasi yang invalid: ${type}`);
   }
   return ret;
+}
+
+export function getPreferenceKeyFromNotificationType(notification_type: NotificationTypes) {
+  const map = {
+    ProjectManage: "project_notif",
+    OrgManage: "org_notif",
+    GeneralChat: "msg_notif",
+    ProjectChat: "msg_notif",
+    ReportUpdate: "report_notif",
+    ProjectTask: "task_notif",
+    Friend: "friend_notif",
+  } as Record<NotificationTypes[number], keyof ReadablePreference>;
+
+  return map[notification_type];
 }

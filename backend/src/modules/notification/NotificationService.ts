@@ -1,44 +1,56 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
 import { IEmailService } from "../email/EmailService.js";
+import { PreferenceService } from "../preferences/PreferenceService.js";
 import { UserService } from "../user/UserService.js";
-import { NotificationTypes } from "./NotificationMisc.js";
+import { NotificationTypes, getPreferenceKeyFromNotificationType } from "./NotificationMisc.js";
 import { NotificationRepository } from "./NotificationRepository.js";
 
 export class NotificationService {
   private notificiation_repo: NotificationRepository;
   private email_service: IEmailService;
   private user_service: UserService;
+  private preference_service: PreferenceService;
 
   constructor(
     notification_repo: NotificationRepository,
     email_service: IEmailService,
     user_service: UserService,
+    preference_service: PreferenceService,
   ) {
     this.notificiation_repo = notification_repo;
     this.email_service = email_service;
     this.user_service = user_service;
+    this.preference_service = preference_service;
   }
 
-  async addNotification(
-    opts: {
-      title: string;
-      description: string;
-      user_id: number;
-      type: NotificationTypes; // informasi resource untuk notification ini
-      type_id?: number; // opsional - id resource tersebut
-    },
-    send_mail?: boolean,
-  ) {
-    const { title, description, user_id } = opts;
+  async getNotificationPreference(user_id: number, notification_type: NotificationTypes) {
+    const pref = await this.preference_service.getUserPreference(user_id);
+    const key = getPreferenceKeyFromNotificationType(notification_type);
+    return pref[key];
+  }
+
+  async addNotification(opts: {
+    title: string;
+    description: string;
+    user_id: number;
+    type: NotificationTypes; // informasi resource untuk notification ini
+    type_id?: number; // opsional - id resource tersebut
+  }) {
+    const { title, description, user_id, type } = opts;
 
     const user = await this.user_service.getUserDetail(user_id);
     if (!user) {
       throw new NotFoundError("Gagal menemukan pengguna tersebut!");
     }
 
+    const pref = await this.getNotificationPreference(user_id, type);
+    if (pref === "off") {
+      return;
+    }
+
     const result = await this.notificiation_repo.addNotification(opts);
 
-    if (send_mail && user.user_email) {
+    if (pref === "email" && user.user_email) {
       await this.email_service.send_email({
         sender: "noreply",
         target: user.user_email,

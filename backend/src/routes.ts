@@ -56,10 +56,12 @@ export function registerControllers(app: Application) {
 
   const user_service = new UserService(user_repo);
   const email_service = EmailService.fromEnv();
+  const preference_service = new PreferenceService(preference_repo);
   const notification_service = new NotificationService(
     notification_repo,
     email_service,
     user_service,
+    preference_service,
   );
   const org_service = new OrgService(org_repo, user_service, notification_service);
   const project_service = new ProjectService(
@@ -85,7 +87,6 @@ export function registerControllers(app: Application) {
     notification_service,
   );
   const suspension_service = new SuspensionService(suspension_repo, user_service);
-  const preference_service = new PreferenceService(preference_repo);
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),
