@@ -35,22 +35,24 @@ function ProjectsContribution(props: { project_id: number }) {
           Tambah Kontribusi
         </Button>
       </StyledLink>
-      {contributions.map((x) => (
-        <ListItem key={x.id}>
-          <ListItemButton>
-            <ListItemText
-              primary={x.name}
-              secondary={dayjs(x.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
-            />
-            <ListItemIcon>
-              <Stack direction="row" spacing={2}>
-                {x.contribution_users.map((y) => (
-                  <UserLabel user_id={y.user_id} key={y.user_id} />
-                ))}
-              </Stack>
-            </ListItemIcon>
-          </ListItemButton>
-        </ListItem>
+      {contributions.map((contrib) => (
+        <StyledLink to={`/contribs/${contrib.id}`} key={contrib.id}>
+          <ListItem>
+            <ListItemButton>
+              <ListItemText
+                primary={contrib.name}
+                secondary={dayjs(contrib.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+              />
+              <ListItemIcon>
+                <Stack direction="row" spacing={2}>
+                  {contrib.contribution_users.map((y) => (
+                    <UserLabel user_id={y.user_id} key={y.user_id} />
+                  ))}
+                </Stack>
+              </ListItemIcon>
+            </ListItemButton>
+          </ListItem>
+        </StyledLink>
       ))}
     </Stack>
   );
