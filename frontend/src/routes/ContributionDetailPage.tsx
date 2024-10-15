@@ -1,7 +1,9 @@
-import { Box, Skeleton, Stack, Typography } from "@mui/material";
+import { Divider, Skeleton, Stack, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import dayjs from "dayjs";
 import { useParams } from "wouter";
-import UserCard from "../components/Cards/UserCard.tsx";
+import ProjectCard from "../components/Cards/ProjectCard.tsx";
+import UserLabel from "../components/UserLabel.tsx";
 import { useContributionsDetailGet } from "../queries/contribution_hooks.ts";
 
 function ContributionDetail(props: { contribution_id: number }) {
@@ -15,22 +17,47 @@ function ContributionDetail(props: { contribution_id: number }) {
   }
 
   return (
-    <Stack spacing={2}>
-      <Box>
-        <Typography variant="h5" textAlign="center" fontWeight={"bold"}>
+    <Grid container spacing={2}>
+      <Grid
+        size={{
+          xs: 12,
+          sm: 9,
+        }}
+      >
+        <Typography variant="h4" textAlign="center" fontWeight={"bold"}>
           {contrib.name}
         </Typography>
         <Typography variant="caption" textAlign="center" display="block">
           {dayjs(contrib.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
         </Typography>
-      </Box>
-      <Stack direction="row" justifyContent="center" gap={2}>
-        {contrib.contribution_users.map((x) => (
-          <UserCard user_id={x.user_id} key={x.user_id} />
-        ))}
-      </Stack>
-      <Typography textAlign="center">{contrib.description}</Typography>
-    </Stack>
+        <Divider
+          sx={{
+            marginY: 2,
+          }}
+        />
+        <Typography textAlign="center">{contrib.description}</Typography>
+      </Grid>
+      <Grid
+        size={{
+          xs: 12,
+          sm: 3,
+        }}
+      >
+        <Stack spacing={2}>
+          <Typography variant="h6" fontWeight={"bold"}>
+            Kontributor
+          </Typography>
+          {contrib.contribution_users.map((x) => (
+            <UserLabel user_id={x.user_id} key={x.user_id} />
+          ))}
+          <Divider />
+          <Typography variant="h6" fontWeight={"bold"}>
+            Proyek
+          </Typography>
+          <ProjectCard project_id={contrib.project_id} />
+        </Stack>
+      </Grid>
+    </Grid>
   );
 }
 
