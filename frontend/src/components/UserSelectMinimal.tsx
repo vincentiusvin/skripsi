@@ -15,7 +15,7 @@ function UserSelectMinimal(props: {
     <FormControl>
       <InputLabel>{label}</InputLabel>
       <Select
-        label="Kontributor"
+        label={label}
         multiple
         value={current_users}
         onChange={(e) => {
