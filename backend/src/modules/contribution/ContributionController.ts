@@ -48,7 +48,7 @@ export class ContributionController extends Controller {
 
       const result = await this.cont_service.getContributions({
         user_id: user_id || undefined ? Number(user_id) : undefined,
-        project_id: project_id || undefined ? Number(user_id) : undefined,
+        project_id: project_id || undefined ? Number(project_id) : undefined,
       });
       res.status(200).json(result);
     },

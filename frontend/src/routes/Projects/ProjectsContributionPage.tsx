@@ -1,72 +1,41 @@
-import { Save } from "@mui/icons-material";
-import { Button, Stack, TextField, Typography } from "@mui/material";
-import Grid from "@mui/material/Grid2";
-import { enqueueSnackbar } from "notistack";
-import { useState } from "react";
-import { useLocation, useParams } from "wouter";
-import { useContributionsPost } from "../../queries/contribution_hooks.ts";
+import {
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Skeleton,
+  Stack,
+} from "@mui/material";
+import { useParams } from "wouter";
+import UserLabel from "../../components/UserLabel.tsx";
+import { useContributionsGet } from "../../queries/contribution_hooks.ts";
 import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
 
 function ProjectsContribution(props: { project_id: number }) {
   const { project_id } = props;
-  const [contributionName, setContributionName] = useState("");
-  const [contributionDesc, setContributionDesc] = useState("");
-
-  const [, setLocation] = useLocation();
-
-  const { mutate: postContribution } = useContributionsPost({
-    onSuccess: () => {
-      enqueueSnackbar({
-        message: <Typography>Kontribusi berhasil ditambahkan!</Typography>,
-        variant: "success",
-      });
-      setLocation("/contributions");
-    },
+  const { data: contributions } = useContributionsGet({
+    project_id,
   });
 
-  function addContribution() {
-    postContribution({
-      name: contributionName,
-      description: contributionDesc,
-      project_id,
-      user_id: [1],
-    });
+  if (contributions == undefined) {
+    return <Skeleton />;
   }
 
   return (
-    <Grid container spacing={2}>
-      <Grid size={12}>
-        <Typography variant="h4" fontWeight={"bold"} align="center">
-          Tambah Kontribusi
-        </Typography>
-      </Grid>
-      <Grid size={12}>
-        <Stack spacing={4}>
-          <TextField
-            fullWidth
-            label="Judul"
-            value={contributionName}
-            onChange={(e) => setContributionName(e.target.value)}
-            required
-          />
-          <TextField
-            fullWidth
-            label="Deskripsi"
-            value={contributionDesc}
-            onChange={(e) => setContributionDesc(e.target.value)}
-            required
-            multiline
-            rows={4}
-          />
-          <TextField fullWidth label="Kontributor" required />
-        </Stack>
-      </Grid>
-      <Grid size={12}>
-        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addContribution()}>
-          Simpan
-        </Button>
-      </Grid>
-    </Grid>
+    <Stack>
+      {contributions.map((x) => (
+        <ListItem key={x.id}>
+          <ListItemButton>
+            <ListItemText primary={x.name} secondary={x.description} />
+            <ListItemIcon>
+              {x.contribution_users.map((y) => (
+                <UserLabel user_id={y.user_id} key={y.user_id} />
+              ))}
+            </ListItemIcon>
+          </ListItemButton>
+        </ListItem>
+      ))}
+    </Stack>
   );
 }
 

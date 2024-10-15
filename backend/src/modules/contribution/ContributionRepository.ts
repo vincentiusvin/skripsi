@@ -28,6 +28,7 @@ export class ContributionRepository {
             .whereRef("ms_contributions_users.contributions_id", "=", "ms_contributions.id"),
         ).as("contribution_users"),
       ]);
+
     if (user_id !== undefined) {
       query = query.where((eb) =>
         eb(
