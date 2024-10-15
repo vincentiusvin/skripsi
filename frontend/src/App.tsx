@@ -26,8 +26,10 @@ import OrgsListPage from "./routes/Orgs/OrgsListPage";
 import OrgsManagePage from "./routes/Orgs/OrgsManagePage.tsx";
 import OrgsPeoplePage from "./routes/Orgs/OrgsPeoplePage.tsx";
 import ProjectInfoPage from "./routes/Projects/ProjectDetailPage.tsx";
+import ProjectsAddContributionPage from "./routes/Projects/ProjectsAddContributionPage.tsx";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectsChatroomPage from "./routes/Projects/ProjectsChatroomPage.tsx";
+import ProjectsContributionPage from "./routes/Projects/ProjectsContributionPage.tsx";
 import ProjectsDashboardPage from "./routes/Projects/ProjectsDashboardPage.tsx";
 import ProjectsEditPage from "./routes/Projects/ProjectsEditPage.tsx";
 import ProjectsKanbanPage from "./routes/Projects/ProjectsKanbanPage.tsx";
@@ -128,7 +130,10 @@ function App() {
                     <Route path={"/orgs/:org_id/edit"} component={OrgsEditPage} />
                     <Route path={"/orgs/:org_id/leave"} component={OrgsLeavePage} />
                     <Route path={"/chatrooms"} component={ChatroomPage} />
-                    <Route path={"/chatroom-forwarder/:chatroom_id"} component={ChatroomForwarderPage} />
+                    <Route
+                      path={"/chatroom-forwarder/:chatroom_id"}
+                      component={ChatroomForwarderPage}
+                    />
                     <Route path={"/reports/add"} component={UserReportAddPage} />
                     <Route path={"/reports/:report_id"} component={UserReportDetailPage} />
                     <Route path={"/reports/:report_id/edit"} component={UserReportEditPage} />
@@ -142,6 +147,14 @@ function App() {
                     <Route path={"/projects/:project_id/edit"} component={ProjectsEditPage} />
                     <Route path={"/projects/:project_id/tasks"} component={ProjectsKanbanPage} />
                     <Route path={"/projects/:project_id/chat"} component={ProjectsChatroomPage} />
+                    <Route
+                      path={"/projects/:project_id/contribs"}
+                      component={ProjectsContributionPage}
+                    />
+                    <Route
+                      path={"/projects/:project_id/add-contribs"}
+                      component={ProjectsAddContributionPage}
+                    />
                     <Route path={"/users"} component={FindUsersPage} />
                     <Route path={"/users/:id"} component={UserAccountPage} />
                     <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />

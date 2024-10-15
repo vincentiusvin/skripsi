@@ -7,7 +7,7 @@ import StyledLink from "../../../components/StyledLink.tsx";
 import { APIError } from "../../../helpers/fetch.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
-import ContributionsAddPage from "../../User/UserPage/UserContribution.tsx";
+import ContributionsAddPage from "../../Projects/ProjectsAddContributionPage.tsx";
 import UserFriends from "./UserFriends.tsx";
 import UserProfile from "./UserProfile/UserProfile.tsx";
 
