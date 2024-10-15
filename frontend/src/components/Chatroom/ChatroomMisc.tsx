@@ -20,7 +20,7 @@ import {
   useChatroomsDetailPut,
 } from "../../queries/chat_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
-import UserSelectDialog from "../UserSelect.tsx";
+import UserSelect from "../UserSelect.tsx";
 
 export function AddMembersDialog(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
@@ -38,6 +38,7 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
     },
   });
   const [editRoomMembersOpen, setEditRoomMembersOpen] = useState(false);
+  const [newUsers, setNewUsers] = useState<number[] | undefined>();
 
   if (!chatroom || !users) {
     return <Skeleton />;
@@ -54,18 +55,34 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
         </ListItemIcon>
         <ListItemText>Add Members</ListItemText>
       </MenuItem>
-      <UserSelectDialog
-        current_users={chatroom_users}
-        allowed_users={all_users}
-        open={editRoomMembersOpen}
-        onClose={() => setEditRoomMembersOpen(false)}
-        onSave={(new_users) => {
-          editRoom({
-            user_ids: new_users,
-          });
-          setEditRoomMembersOpen(false);
-        }}
-      />
+      <Dialog open={editRoomMembersOpen} onClose={() => setEditRoomMembersOpen(false)}>
+        <DialogTitle>Tambah pengguna</DialogTitle>
+        <DialogContent
+          sx={{
+            minWidth: 350,
+          }}
+        >
+          <UserSelect
+            current_users={newUsers ?? chatroom_users}
+            allowed_users={all_users}
+            onChange={(newUsers) => {
+              setNewUsers(newUsers);
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              editRoom({
+                user_ids: newUsers,
+              });
+              setEditRoomMembersOpen(false);
+            }}
+          >
+            Simpan
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

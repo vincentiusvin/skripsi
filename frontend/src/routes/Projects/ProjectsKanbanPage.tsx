@@ -38,7 +38,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { ReactNode, useEffect, useState } from "react";
 import { useParams } from "wouter";
-import UserSelectMinimal from "../../components/UserSelectMinimal.tsx";
+import UserSelect from "../../components/UserSelect.tsx";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import {
   useBucketsDetailDelete,
@@ -295,7 +295,7 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
               <DatePicker onChange={(x) => setTaskStartAt(x)} label="Start At"></DatePicker>
               <DatePicker onChange={(x) => setTaskEndAt(x)} label="End At"></DatePicker>
               {project_members != undefined ? (
-                <UserSelectMinimal
+                <UserSelect
                   current_users={taskAssign ?? []}
                   allowed_users={project_members}
                   onChange={(x) => {
@@ -407,7 +407,7 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
                 label="End At"
               ></DatePicker>
               {project_members != undefined ? (
-                <UserSelectMinimal
+                <UserSelect
                   label="Penanggung Jawab"
                   current_users={taskAssign ?? task.users.map((x) => x.user_id)}
                   allowed_users={project_members}

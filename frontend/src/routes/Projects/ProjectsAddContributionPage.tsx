@@ -4,7 +4,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
-import UserSelectMinimal from "../../components/UserSelectMinimal.tsx";
+import UserSelect from "../../components/UserSelect.tsx";
 import { useContributionsPost } from "../../queries/contribution_hooks";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
@@ -66,7 +66,7 @@ function ProjectsAddContribution(props: { project_id: number }) {
             multiline
             minRows={4}
           />
-          <UserSelectMinimal
+          <UserSelect
             label="Kontributor"
             allowed_users={project.project_members
               .filter((x) => x.role === "Dev")
