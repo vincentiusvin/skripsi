@@ -1,6 +1,5 @@
-import { FormControl, InputLabel, MenuItem, Select, Stack } from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Paper, Select, Stack } from "@mui/material";
 import { useState } from "react";
-import UserImage from "./UserImage.tsx";
 import UserLabel from "./UserLabel.tsx";
 
 function UserSelectMinimal(props: {
@@ -27,7 +26,14 @@ function UserSelectMinimal(props: {
         renderValue={(sel) => (
           <Stack direction={"row"} gap={2}>
             {sel.map((x) => (
-              <UserImage key={x} user_id={x} />
+              <Paper
+                key={x}
+                sx={{
+                  padding: 1,
+                }}
+              >
+                <UserLabel user_id={x} disableImage />
+              </Paper>
             ))}
           </Stack>
         )}
