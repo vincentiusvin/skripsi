@@ -35,6 +35,7 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
         variant: "success",
         message: <Typography>Ruangan berhasil diedit!</Typography>,
       });
+      setEditRoomMembersOpen(false);
     },
   });
   const [editRoomMembersOpen, setEditRoomMembersOpen] = useState(false);
@@ -76,7 +77,6 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
               editRoom({
                 user_ids: newUsers,
               });
-              setEditRoomMembersOpen(false);
             }}
           >
             Simpan
