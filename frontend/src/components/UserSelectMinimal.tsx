@@ -2,7 +2,7 @@ import { FormControl, InputLabel, MenuItem, Paper, Select, Stack } from "@mui/ma
 import UserLabel from "./UserLabel.tsx";
 
 function UserSelectMinimal(props: {
-  label: string;
+  label?: string;
   current_users: number[];
   allowed_users: number[];
   onChange?: (x: number[]) => void;
