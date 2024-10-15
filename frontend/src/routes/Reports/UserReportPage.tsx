@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   ListItem,
   ListItemButton,
@@ -38,9 +37,12 @@ function ReportEntry(props: {
             primary={report.title}
             secondary={
               <>
-                <Box>Dibuat: {dayjs(report.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}</Box>
+                Dibuat: {dayjs(report.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
                 {report.resolved_at ? (
-                  <Box>Selesai: {dayjs(report.resolved_at).format("ddd[,] D[/]M[/]YY HH:mm")}</Box>
+                  <>
+                    <br />
+                    Selesai: {dayjs(report.resolved_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+                  </>
                 ) : null}
               </>
             }
