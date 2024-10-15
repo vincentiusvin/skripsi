@@ -1,16 +1,14 @@
 import { FormControl, InputLabel, MenuItem, Paper, Select, Stack } from "@mui/material";
-import { useState } from "react";
 import UserLabel from "./UserLabel.tsx";
 
 function UserSelectMinimal(props: {
   label: string;
   current_users: number[];
   allowed_users: number[];
-  onSave?: (x: number[]) => void;
+  onChange?: (x: number[]) => void;
 }) {
-  const { label, current_users, allowed_users } = props;
+  const { onChange: onChange, label, current_users, allowed_users } = props;
 
-  const [newUsers, setNewUsers] = useState<number[]>(current_users);
   const all = [...new Set([...current_users, ...allowed_users])];
 
   return (
@@ -19,9 +17,11 @@ function UserSelectMinimal(props: {
       <Select
         label="Kontributor"
         multiple
-        value={newUsers}
+        value={current_users}
         onChange={(e) => {
-          setNewUsers(e.target.value as number[]);
+          if (onChange) {
+            onChange(e.target.value as number[]);
+          }
         }}
         renderValue={(sel) => (
           <Stack direction={"row"} gap={2}>

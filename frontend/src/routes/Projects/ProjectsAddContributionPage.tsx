@@ -1,19 +1,22 @@
 import { Save } from "@mui/icons-material";
-import { Button, Stack, TextField, Typography } from "@mui/material";
+import { Button, Skeleton, Stack, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import UserSelectMinimal from "../../components/UserSelectMinimal.tsx";
 import { useContributionsPost } from "../../queries/contribution_hooks";
+import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
 
 function ProjectsAddContribution(props: { project_id: number }) {
   const { project_id } = props;
   const [contributionName, setContributionName] = useState("");
   const [contributionDesc, setContributionDesc] = useState("");
+  const [contributionUsers, setContributionUsers] = useState<number[]>([]);
 
   const [, setLocation] = useLocation();
+  const { data: project } = useProjectsDetailGet({ project_id });
 
   const { mutate: postContribution } = useContributionsPost({
     onSuccess: () => {
@@ -32,6 +35,10 @@ function ProjectsAddContribution(props: { project_id: number }) {
       project_id,
       user_id: [1],
     });
+  }
+
+  if (!project) {
+    return <Skeleton />;
   }
 
   return (
@@ -59,7 +66,16 @@ function ProjectsAddContribution(props: { project_id: number }) {
             multiline
             minRows={4}
           />
-          <UserSelectMinimal label="Kontributor" allowed_users={[1, 2]} current_users={[5, 6]} />
+          <UserSelectMinimal
+            label="Kontributor"
+            allowed_users={project.project_members
+              .filter((x) => x.role === "Dev")
+              .map((x) => x.user_id)}
+            onChange={(x) => {
+              setContributionUsers(x);
+            }}
+            current_users={contributionUsers}
+          />
         </Stack>
       </Grid>
       <Grid size={12}>
