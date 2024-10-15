@@ -31,6 +31,7 @@ export class ContributionController extends Controller {
       ResBody: z
         .object({
           name: z.string(),
+          created_at: z.date(),
           description: z.string(),
           status: z.string(),
           project_id: z.number(),
@@ -63,6 +64,7 @@ export class ContributionController extends Controller {
       ResBody: z.object({
         name: z.string(),
         description: z.string(),
+        created_at: z.date(),
         status: z.string(),
         project_id: z.number(),
         id: z.number(),
@@ -86,6 +88,7 @@ export class ContributionController extends Controller {
       ResBody: z.object({
         name: z.string(),
         description: z.string(),
+        created_at: z.date(),
         status: z.string(),
         project_id: z.number(),
         id: z.number(),
@@ -127,6 +130,7 @@ export class ContributionController extends Controller {
         description: z.string(),
         status: z.string(),
         project_id: z.number(),
+        created_at: z.date(),
         id: z.number(),
         contribution_users: z.array(
           z.object({

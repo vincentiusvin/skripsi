@@ -8,6 +8,7 @@ const defaultContributionFields = [
   "ms_contributions.status",
   "ms_contributions.project_id",
   "ms_contributions.id as id",
+  "ms_contributions.created_at as created_at",
 ] as const;
 
 export class ContributionRepository {
