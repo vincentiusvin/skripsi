@@ -12,6 +12,7 @@ import Grid from "@mui/material/Grid2";
 import dayjs from "dayjs";
 import { useParams } from "wouter";
 import ProjectCard from "../components/Cards/ProjectCard.tsx";
+import StyledLink from "../components/StyledLink.tsx";
 import UserLabel from "../components/UserLabel.tsx";
 import { useContributionsDetailGet } from "../queries/contribution_hooks.ts";
 
@@ -111,7 +112,9 @@ function ContributionDetail(props: { contribution_id: number }) {
             Kontributor
           </Typography>
           {contrib.contribution_users.map((x) => (
-            <UserLabel user_id={x.user_id} key={x.user_id} />
+            <StyledLink to={`/users/${x.user_id}`} key={x.user_id}>
+              <UserLabel user_id={x.user_id} />
+            </StyledLink>
           ))}
           <Divider />
           <Typography variant="h6" fontWeight={"bold"}>
