@@ -4,6 +4,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
+import UserSelectMinimal from "../../components/UserSelectMinimal.tsx";
 import { useContributionsPost } from "../../queries/contribution_hooks";
 import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
 
@@ -58,7 +59,7 @@ function ProjectsAddContribution(props: { project_id: number }) {
             multiline
             minRows={4}
           />
-          <TextField fullWidth label="Kontributor" required />
+          <UserSelectMinimal label="Kontributor" allowed_users={[1, 2]} current_users={[5, 6]} />
         </Stack>
       </Grid>
       <Grid size={12}>

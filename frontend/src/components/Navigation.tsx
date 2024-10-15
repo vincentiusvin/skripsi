@@ -1,28 +1,12 @@
 import { DarkMode, LightMode, Login, Logout } from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { AppBar, Avatar, Box, Button, IconButton, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, IconButton, Toolbar, Typography } from "@mui/material";
 import { useAppTheme } from "../helpers/theme.ts";
 import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks.ts";
-import { useUsersDetailGet } from "../queries/user_hooks.ts";
 import NotificationDialog from "./Notification.tsx";
 import ProgressLine from "./ProgressLine.tsx";
 import StyledLink from "./StyledLink.tsx";
-
-function UserImage(props: { user_id: number }) {
-  const { user_id } = props;
-  const { data: userDetail } = useUsersDetailGet({
-    user_id,
-  });
-  return (
-    <Avatar
-      src={userDetail?.user_image ?? ""}
-      sx={{
-        width: 36,
-        height: 36,
-      }}
-    />
-  );
-}
+import UserImage from "./UserImage.tsx";
 
 function Navigation() {
   const { data } = useSessionGet();
