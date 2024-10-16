@@ -7,20 +7,79 @@ import {
   TimelineSeparator,
   timelineItemClasses,
 } from "@mui/lab";
-import { Divider, Skeleton, Stack, Typography } from "@mui/material";
+import { Button, Divider, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import dayjs from "dayjs";
 import { useParams } from "wouter";
 import ProjectCard from "../components/Cards/ProjectCard.tsx";
 import StyledLink from "../components/StyledLink.tsx";
 import UserLabel from "../components/UserLabel.tsx";
-import { useContributionsDetailGet } from "../queries/contribution_hooks.ts";
+import {
+  useContributionsDetailGet,
+  useContributionsDetailPut,
+} from "../queries/contribution_hooks.ts";
 
-function ContributionApproval() {
+function ContributionApproval(props: { contribution_id: number }) {
+  const { contribution_id } = props;
+  const { mutate: update } = useContributionsDetailPut({
+    contribution_id,
+  });
+
+  return (
+    <>
+      <Typography variant="h6" fontWeight={"bold"}>
+        Persetujuan
+      </Typography>
+      <Typography variant="caption">
+        Pengguna dapat membuat laporan kontribusi yang ditampilkan di profil mereka secara publik.
+      </Typography>
+      <Typography variant="caption">
+        Sebagai pengurus organisasi, anda dapat menyetujui, menolak, atau meminta revisi laporan
+        kontribusi ini.
+      </Typography>
+      <Typography variant="caption">
+        Penolakan hanya diizinkan apabila laporan ini mengandung informasi yang tidak benar atau
+        informasi yang sensitif.
+      </Typography>
+      <Button
+        variant="contained"
+        onClick={() => {
+          update({
+            status: "Approved",
+          });
+        }}
+      >
+        Setuju
+      </Button>
+      <Button
+        variant="contained"
+        onClick={() => {
+          update({
+            status: "Deny",
+          });
+        }}
+      >
+        Tolak
+      </Button>
+      <Button
+        variant="contained"
+        onClick={() => {
+          update({
+            status: "Revision",
+          });
+        }}
+      >
+        Minta Revisi
+      </Button>
+    </>
+  );
+}
+
+function ContributionStatus() {
   const steps = [
     {
       title: "Dikumpul oleh developer.",
-      desc: "Bukti kontribusi dibuat dan diisi oleh developer.",
+      desc: "Laporan kontribusi dibuat dan diisi oleh developer.",
       stat: "pass",
     },
     {
@@ -36,9 +95,8 @@ function ContributionApproval() {
   ];
   return (
     <>
-      <Divider />
       <Typography variant="h6" fontWeight={"bold"}>
-        Persetujuan
+        Status
       </Typography>
       <Timeline
         sx={{
@@ -108,6 +166,8 @@ function ContributionDetail(props: { contribution_id: number }) {
         }}
       >
         <Stack spacing={2}>
+          <ContributionApproval contribution_id={contribution_id} />
+          <Divider />
           <Typography variant="h6" fontWeight={"bold"}>
             Kontributor
           </Typography>
@@ -121,7 +181,8 @@ function ContributionDetail(props: { contribution_id: number }) {
             Proyek
           </Typography>
           <ProjectCard project_id={contrib.project_id} />
-          <ContributionApproval />
+          <Divider />
+          <ContributionStatus />
         </Stack>
       </Grid>
     </Grid>
