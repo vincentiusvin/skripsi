@@ -11,13 +11,13 @@ import { Button, Divider, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import dayjs from "dayjs";
 import { useParams } from "wouter";
-import ProjectCard from "../components/Cards/ProjectCard.tsx";
-import StyledLink from "../components/StyledLink.tsx";
-import UserLabel from "../components/UserLabel.tsx";
+import ProjectCard from "../../components/Cards/ProjectCard.tsx";
+import StyledLink from "../../components/StyledLink.tsx";
+import UserLabel from "../../components/UserLabel.tsx";
 import {
   useContributionsDetailGet,
   useContributionsDetailPut,
-} from "../queries/contribution_hooks.ts";
+} from "../../queries/contribution_hooks.ts";
 
 function ContributionApproval(props: { contribution_id: number }) {
   const { contribution_id } = props;
