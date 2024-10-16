@@ -166,6 +166,15 @@ function ContributionDetail(props: { contribution_id: number }) {
         }}
       >
         <Stack spacing={2}>
+          <Typography variant="h6" fontWeight={"bold"}>
+            Edit
+          </Typography>
+          <StyledLink to={`/contribs/${contribution_id}/edit`}>
+            <Button fullWidth variant="contained">
+              Edit
+            </Button>
+          </StyledLink>
+          <Divider />
           <ContributionApproval contribution_id={contribution_id} />
           <Divider />
           <Typography variant="h6" fontWeight={"bold"}>

@@ -18,6 +18,7 @@ import ManageAccountsPage from "./routes/Admin/ManageAccountsPage.tsx";
 import AuthPage from "./routes/AuthPage";
 import ChatroomForwarderPage from "./routes/ChatroomForwarder.tsx";
 import ContributionDetailPage from "./routes/Contributions/ContributionDetailPage.tsx";
+import ContributionEditPage from "./routes/Contributions/ContributionEditPage.tsx";
 import ProjectsAddContributionPage from "./routes/Contributions/ProjectsAddContributionPage.tsx";
 import HomePage from "./routes/HomePage";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
@@ -157,6 +158,10 @@ function App() {
                       component={ProjectsAddContributionPage}
                     />
                     <Route path={"/contribs/:contribution_id"} component={ContributionDetailPage} />
+                    <Route
+                      path={"/contribs/:contribution_id/edit"}
+                      component={ContributionEditPage}
+                    />
                     <Route path={"/users"} component={FindUsersPage} />
                     <Route path={"/users/:id"} component={UserAccountPage} />
                     <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
