@@ -76,6 +76,7 @@ describe("contribution api", () => {
       name: "Nama contrib",
       project_id: in_proj.id,
       user_id: [in_from.id],
+      status: "Pending",
     };
 
     const cookie = await getLoginCookie(in_from.name, in_from.password);

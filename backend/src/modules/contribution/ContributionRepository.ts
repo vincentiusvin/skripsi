@@ -1,6 +1,7 @@
 import { Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types";
+import { parseContribStatus } from "./ContributionMisc.js";
 
 const defaultContributionFields = [
   "ms_contributions.name",
@@ -46,11 +47,18 @@ export class ContributionRepository {
     if (project_id !== undefined) {
       query = query.where("ms_contributions.project_id", "=", project_id);
     }
-    return await query.execute();
+    const result = await query.execute();
+
+    return result.map((x) => {
+      return {
+        ...x,
+        status: parseContribStatus(x.status),
+      };
+    });
   }
 
   async getContributionsDetail(contribution_id: number) {
-    return await this.db
+    const result = await this.db
       .selectFrom("ms_contributions")
       .select((eb) => [
         ...defaultContributionFields,
@@ -63,6 +71,15 @@ export class ContributionRepository {
       ])
       .where("ms_contributions.id", "=", contribution_id)
       .executeTakeFirst();
+
+    if (result == undefined) {
+      return undefined;
+    }
+
+    return {
+      ...result,
+      status: parseContribStatus(result.status),
+    };
   }
 
   async addContributions(

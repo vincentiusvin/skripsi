@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller";
 import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import { contribution_status } from "./ContributionMisc.js";
 import { ContributionService } from "./ContributionService";
 
 export class ContributionController extends Controller {
@@ -33,7 +34,7 @@ export class ContributionController extends Controller {
           name: z.string(),
           created_at: z.date(),
           description: z.string(),
-          status: z.string(),
+          status: z.enum(contribution_status),
           project_id: z.number(),
           id: z.number(),
           contribution_users: z.array(
@@ -65,7 +66,7 @@ export class ContributionController extends Controller {
         name: z.string(),
         description: z.string(),
         created_at: z.date(),
-        status: z.string(),
+        status: z.enum(contribution_status),
         project_id: z.number(),
         id: z.number(),
         contribution_users: z.array(
@@ -128,7 +129,7 @@ export class ContributionController extends Controller {
       ResBody: z.object({
         name: z.string(),
         description: z.string(),
-        status: z.string(),
+        status: z.enum(contribution_status),
         project_id: z.number(),
         created_at: z.date(),
         id: z.number(),
@@ -146,7 +147,7 @@ export class ContributionController extends Controller {
         description: z.string().min(1, "Deskripsi kontribusi tidak boleh kosong!").optional(),
         project_id: z.number().min(1, "Project ID tidak boleh kosong!").optional(),
         user_id: z.array(z.number(), { message: "User Id invalid!" }).min(1).optional(),
-        status: z.string().min(1, "Status tidak boleh kosong").optional(),
+        status: z.enum(contribution_status).optional(),
       }),
     },
     handler: async (req, res) => {
