@@ -166,9 +166,6 @@ function ContributionDetail(props: { contribution_id: number }) {
         }}
       >
         <Stack spacing={2}>
-          <Typography variant="h6" fontWeight={"bold"}>
-            Edit
-          </Typography>
           <StyledLink to={`/contribs/${contribution_id}/edit`}>
             <Button fullWidth variant="contained">
               Edit
