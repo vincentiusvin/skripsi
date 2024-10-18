@@ -45,7 +45,7 @@ function ProjectsContribution(props: { project_id: number }) {
               />
               <ListItemIcon>
                 <Stack direction="row" spacing={2}>
-                  {contrib.contribution_users.map((y) => (
+                  {contrib.user_ids.map((y) => (
                     <UserLabel user_id={y.user_id} key={y.user_id} />
                   ))}
                 </Stack>

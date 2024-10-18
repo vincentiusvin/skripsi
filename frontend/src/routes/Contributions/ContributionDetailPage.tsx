@@ -55,7 +55,7 @@ function ContributionApproval(props: { contribution_id: number }) {
         variant="contained"
         onClick={() => {
           update({
-            status: "Deny",
+            status: "Rejected",
           });
         }}
       >
@@ -177,7 +177,7 @@ function ContributionDetail(props: { contribution_id: number }) {
           <Typography variant="h6" fontWeight={"bold"}>
             Kontributor
           </Typography>
-          {contrib.contribution_users.map((x) => (
+          {contrib.user_ids.map((x) => (
             <StyledLink to={`/users/${x.user_id}`} key={x.user_id}>
               <UserLabel user_id={x.user_id} />
             </StyledLink>

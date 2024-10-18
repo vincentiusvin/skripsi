@@ -35,14 +35,14 @@ function ContributionEdit(props: { contribution_id: number }) {
     update({
       description: contributionDesc,
       name: contributionName,
-      user_id: contributionUsers,
+      user_ids: contributionUsers,
     });
   }
 
   if (!contribs) {
     return <Skeleton />;
   }
-  const contribs_users = contribs.contribution_users.map((x) => x.user_id);
+  const contribs_users = contribs.user_ids.map((x) => x.user_id);
 
   return (
     <Grid container spacing={2}>

@@ -33,7 +33,7 @@ function ProjectsAddContribution(props: { project_id: number }) {
       name: contributionName,
       description: contributionDesc,
       project_id,
-      user_id: contributionUsers,
+      user_ids: contributionUsers,
     });
   }
 
