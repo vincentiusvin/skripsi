@@ -148,7 +148,7 @@ export class ContributionService {
       throw new AuthError("Anda tidak boleh mengubah kontribusi milik orang lain!");
     }
     if (old_contrib.status !== "Pending" && revision.status == undefined) {
-      throw new AuthError("Anda tidak hanya boleh mengubah kontribusi yang bersifat pending!");
+      throw new AuthError("Anda hanya boleh mengubah kontribusi yang bersifat pending!");
     }
     if (revision.user_ids != undefined && !revision.user_ids.includes(user_id)) {
       throw new AuthError("Anda tidak memiliki akses untuk menambahkan kontribusi orang lain!");
