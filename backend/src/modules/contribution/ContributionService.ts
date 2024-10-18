@@ -145,13 +145,16 @@ export class ContributionService {
     user_id: number,
   ) {
     if (!old_contrib.user_ids.map((x) => x.user_id).includes(user_id)) {
-      throw new Error("Anda tidak boleh mengubah kontribusi milik orang lain!");
+      throw new AuthError("Anda tidak boleh mengubah kontribusi milik orang lain!");
     }
     if (old_contrib.status !== "Pending" && revision.status == undefined) {
       throw new AuthError("Anda tidak hanya boleh mengubah kontribusi yang bersifat pending!");
     }
     if (revision.user_ids != undefined && !revision.user_ids.includes(user_id)) {
       throw new AuthError("Anda tidak memiliki akses untuk menambahkan kontribusi orang lain!");
+    }
+    if (old_contrib.status === "Rejected") {
+      throw new AuthError("Anda tidak dapat mengubah kontribusi yang sudah ditolak!");
     }
     await this.cont_repo.updateContribution(old_contrib.id, revision);
   }

@@ -268,6 +268,20 @@ export async function baseCase(db: Kysely<DB>) {
       status: "Pending",
       user_ids: [contrib_user.id, project_admin_user.id].map((x) => ({ user_id: x })),
     },
+    {
+      name: "bla",
+      description: "bla2",
+      project_id: project.id,
+      status: "Approved",
+      user_ids: [contrib_user.id].map((x) => ({ user_id: x })),
+    },
+    {
+      name: "bla",
+      description: "bla2",
+      project_id: project.id,
+      status: "Rejected",
+      user_ids: [contrib_user.id].map((x) => ({ user_id: x })),
+    },
   ];
 
   const contrib_raw = await db
@@ -297,6 +311,8 @@ export async function baseCase(db: Kysely<DB>) {
   });
   const user_contribution = contributions[0];
   const admin_contribution = contributions[1];
+  const accepted_contribution = contributions[2];
+  const rejected_contribution = contributions[3];
 
   const notifications = await db
     .insertInto("ms_notifications")
@@ -406,6 +422,8 @@ export async function baseCase(db: Kysely<DB>) {
     reports,
     contrib_user,
     report_user,
+    accepted_contribution,
+    rejected_contribution,
     bans,
     banned_user,
   };

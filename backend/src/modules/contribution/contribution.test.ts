@@ -132,7 +132,7 @@ describe.only("contribution api", () => {
     });
   });
 
-  const approve_cases = [
+  const status_cases = [
     {
       sender_key: "contrib_user",
       msg: "shouldn't be able to self approve contribution",
@@ -154,9 +154,30 @@ describe.only("contribution api", () => {
       contribution_key: "admin_contribution",
       ok: false,
     },
+    {
+      sender_key: "contrib_user",
+      msg: "should be able to return contribution to pending if it's already accepted as author",
+      status: "Pending",
+      contribution_key: "accepted_contribution",
+      ok: true,
+    },
+    {
+      sender_key: "contrib_user",
+      msg: "shouldn't be able to return contribution to pending if it's rejected",
+      status: "Pending",
+      contribution_key: "rejected_contribution",
+      ok: false,
+    },
+    {
+      sender_key: "project_admin_user",
+      msg: "shouldn't be able to return contribution to pending as a non-author",
+      status: "Pending",
+      contribution_key: "accepted_contribution",
+      ok: false,
+    },
   ] as const;
 
-  for (const { msg, sender_key, ok, status, contribution_key } of approve_cases) {
+  for (const { msg, sender_key, ok, status, contribution_key } of status_cases) {
     it(msg, async () => {
       const in_from = caseData[sender_key];
       const in_contrib = caseData[contribution_key];
