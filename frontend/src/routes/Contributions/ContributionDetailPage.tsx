@@ -25,8 +25,9 @@ function ContributionApproval(props: {
   user_id: number;
   project_id: number;
   contribution_id: number;
+  status: "Pending" | "Approved" | "Revision" | "Rejected";
 }) {
-  const { user_id, project_id, contribution_id } = props;
+  const { status, user_id, project_id, contribution_id } = props;
   const { mutate: update } = useContributionsDetailPut({
     contribution_id,
   });
@@ -44,6 +45,10 @@ function ContributionApproval(props: {
     return null;
   }
 
+  if (status !== "Pending") {
+    return null;
+  }
+
   return (
     <>
       <Typography variant="h6" fontWeight={"bold"}>
@@ -58,7 +63,7 @@ function ContributionApproval(props: {
       </Typography>
       <Typography variant="caption">
         Penolakan hanya diizinkan apabila laporan ini mengandung informasi yang tidak benar atau
-        informasi yang sensitif.
+        informasi yang rahasia.
       </Typography>
       <Button
         variant="contained"
@@ -94,24 +99,45 @@ function ContributionApproval(props: {
   );
 }
 
-function ContributionStatus() {
-  const steps = [
+function ContributionStatus(props: { status: "Pending" | "Approved" | "Revision" | "Rejected" }) {
+  const { status } = props;
+  const steps: {
+    title: string;
+    desc: string;
+    color: "success" | "warning" | "error";
+  }[] = [
     {
       title: "Dikumpul oleh developer.",
       desc: "Laporan kontribusi dibuat dan diisi oleh developer.",
-      stat: "pass",
+      color: "success",
     },
     {
       title: "Menunggu persetujuan organisasi",
       desc: "Bukti kontribusi perlu disetujui terlebih dahulu oleh pengurus organisasi",
-      stat: "here",
-    },
-    {
-      title: "Disetujui",
-      desc: "Bukti kontribusi sudah disetujui oleh pengurus organisasi dan dapat dilihat secara publik.",
-      stat: "no",
+      color: status === "Pending" ? "warning" : "success",
     },
   ];
+
+  if (status === "Approved") {
+    steps.push({
+      title: "Disetujui",
+      desc: "Bukti kontribusi sudah disetujui oleh pengurus organisasi dan dapat dilihat secara publik.",
+      color: "success",
+    });
+  } else if (status === "Rejected") {
+    steps.push({
+      title: "Ditolak",
+      desc: "Bukti kontribusi anda ditolak oleh pengurus organisasi. Penolakan dapat terjadi apabila laporan mengandung informasi yang tidak benar ataupun rahasia.",
+      color: "error",
+    });
+  } else if (status === "Revision") {
+    steps.push({
+      title: "Revisi",
+      desc: "Pengurus organisasi meminta revisi laporan ini.",
+      color: "warning",
+    });
+  }
+
   return (
     <>
       <Typography variant="h6" fontWeight={"bold"}>
@@ -128,16 +154,11 @@ function ContributionStatus() {
         {steps.map((x, i) => (
           <TimelineItem key={i}>
             <TimelineSeparator>
-              <TimelineDot
-                color={x.stat === "pass" ? "success" : x.stat === "here" ? "warning" : undefined}
-              />
+              <TimelineDot color={x.color} />
               {i !== steps.length - 1 ? <TimelineConnector /> : null}
             </TimelineSeparator>
             <TimelineContent>
-              <Typography variant="body1">
-                {x.title}
-                {x.stat === "here" ? " (anda di sini)" : null}
-              </Typography>
+              <Typography variant="body1">{x.title}</Typography>
               <Typography variant="caption">{x.desc}</Typography>
             </TimelineContent>
           </TimelineItem>
@@ -205,6 +226,7 @@ function ContributionDetail(props: { contribution_id: number }) {
           <Divider />
           {user_id != undefined ? (
             <ContributionApproval
+              status={contrib.status}
               user_id={user_id}
               contribution_id={contribution_id}
               project_id={contrib.project_id}
@@ -225,7 +247,7 @@ function ContributionDetail(props: { contribution_id: number }) {
           </Typography>
           <ProjectCard project_id={contrib.project_id} />
           <Divider />
-          <ContributionStatus />
+          <ContributionStatus status={contrib.status} />
         </Stack>
       </Grid>
     </Grid>
