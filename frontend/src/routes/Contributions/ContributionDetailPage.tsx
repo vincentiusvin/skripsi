@@ -139,7 +139,7 @@ function ContributionStatus(props: { status: "Pending" | "Approved" | "Revision"
   }
 
   return (
-    <>
+    <Stack spacing={2}>
       <Typography variant="h6" fontWeight={"bold"}>
         Status
       </Typography>
@@ -164,7 +164,7 @@ function ContributionStatus(props: { status: "Pending" | "Approved" | "Revision"
           </TimelineItem>
         ))}
       </Timeline>
-    </>
+    </Stack>
   );
 }
 
@@ -181,10 +181,12 @@ function ContributionDetail(props: { contribution_id: number }) {
 
   let user_id: number | undefined;
   let can_edit: boolean = false;
+  let is_author: boolean = false;
   if (session?.logged) {
     user_id = session?.logged ? session.user_id : undefined;
     if (user_id != undefined) {
-      can_edit = session.is_admin || contrib.user_ids.map((x) => x.user_id).includes(user_id);
+      is_author = contrib.user_ids.map((x) => x.user_id).includes(user_id);
+      can_edit = session.is_admin || is_author;
     }
   }
 
@@ -215,7 +217,7 @@ function ContributionDetail(props: { contribution_id: number }) {
           sm: 3,
         }}
       >
-        <Stack spacing={2}>
+        <Stack spacing={2} divider={<Divider />}>
           {can_edit ? (
             <StyledLink to={`/contribs/${contribution_id}/edit`}>
               <Button fullWidth variant="contained">
@@ -223,7 +225,7 @@ function ContributionDetail(props: { contribution_id: number }) {
               </Button>
             </StyledLink>
           ) : null}
-          <Divider />
+          {is_author ? <ContributionStatus status={contrib.status} /> : null}
           {user_id != undefined ? (
             <ContributionApproval
               status={contrib.status}
@@ -232,22 +234,22 @@ function ContributionDetail(props: { contribution_id: number }) {
               project_id={contrib.project_id}
             />
           ) : null}
-          <Divider />
-          <Typography variant="h6" fontWeight={"bold"}>
-            Kontributor
-          </Typography>
-          {contrib.user_ids.map((x) => (
-            <StyledLink to={`/users/${x.user_id}`} key={x.user_id}>
-              <UserLabel user_id={x.user_id} />
-            </StyledLink>
-          ))}
-          <Divider />
-          <Typography variant="h6" fontWeight={"bold"}>
-            Proyek
-          </Typography>
-          <ProjectCard project_id={contrib.project_id} />
-          <Divider />
-          <ContributionStatus status={contrib.status} />
+          <Stack spacing={2}>
+            <Typography variant="h6" fontWeight={"bold"}>
+              Kontributor
+            </Typography>
+            {contrib.user_ids.map((x) => (
+              <StyledLink to={`/users/${x.user_id}`} key={x.user_id}>
+                <UserLabel user_id={x.user_id} />
+              </StyledLink>
+            ))}
+          </Stack>
+          <Stack spacing={2}>
+            <Typography variant="h6" fontWeight={"bold"}>
+              Proyek
+            </Typography>
+            <ProjectCard project_id={contrib.project_id} />
+          </Stack>
         </Stack>
       </Grid>
     </Grid>
