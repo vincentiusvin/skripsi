@@ -19,7 +19,7 @@ describe.only("contribution api", () => {
 
   it("should be able to get all contributions", async () => {
     const in_from = caseData.contrib_user;
-    const expected_contribution = caseData.contributions;
+    const expected_contribution = caseData.user_contribution;
 
     const cookie = await getLoginCookie(in_from.name, in_from.password);
     const read_req = await getContributions({}, cookie);
@@ -33,7 +33,7 @@ describe.only("contribution api", () => {
 
   it("should be able to get individual contributions", async () => {
     const in_from = caseData.contrib_user;
-    const in_contrib = caseData.contributions;
+    const in_contrib = caseData.user_contribution;
 
     const cookie = await getLoginCookie(in_from.name, in_from.password);
     const read_req = await getContributionDetail({ contribution_id: in_contrib.id }, cookie);
@@ -107,15 +107,15 @@ describe.only("contribution api", () => {
   }
 
   it("should be able to update contributions", async () => {
-    const in_from = caseData.project_admin_user;
+    const in_from = caseData.contrib_user;
     const in_proj = caseData.project;
-    const in_contrib = caseData.contributions;
+    const in_contrib = caseData.user_contribution;
     const in_contrib_update = {
       description: "Halo",
       name: "Nama contrib",
       project_id: in_proj.id,
       user_ids: [in_from.id, caseData.plain_user.id],
-      status: "Pending",
+      status: "Pending" as const,
     };
 
     const cookie = await getLoginCookie(in_from.name, in_from.password);
@@ -131,6 +131,51 @@ describe.only("contribution api", () => {
       })),
     });
   });
+
+  const approve_cases = [
+    {
+      sender_key: "contrib_user",
+      msg: "shouldn't be able to self approve contribution",
+      status: "Approved",
+      contribution_key: "user_contribution",
+      ok: false,
+    },
+    {
+      sender_key: "project_admin_user",
+      msg: "should be able to approve people's contribution as admin",
+      status: "Approved",
+      contribution_key: "user_contribution",
+      ok: true,
+    },
+    {
+      sender_key: "project_admin_user",
+      msg: "shouldn't be able to self approve contribution even as admin",
+      status: "Approved",
+      contribution_key: "admin_contribution",
+      ok: false,
+    },
+  ] as const;
+
+  for (const { msg, sender_key, ok, status, contribution_key } of approve_cases) {
+    it(msg, async () => {
+      const in_from = caseData[sender_key];
+      const in_contrib = caseData[contribution_key];
+      const in_contrib_update = {
+        status,
+      };
+
+      const cookie = await getLoginCookie(in_from.name, in_from.password);
+      const read_req = await putContributions(in_contrib.id, in_contrib_update, cookie);
+      const result = await read_req.json();
+
+      if (ok) {
+        expect(read_req.status).eq(200);
+        expect(result).to.deep.include(in_contrib_update);
+      } else {
+        expect(read_req.status).oneOf([401]);
+      }
+    });
+  }
 });
 
 function getContributions(params: { user_id?: number; project_id?: number }, cookie: string) {
@@ -166,10 +211,11 @@ function postContributions(
 function putContributions(
   contrib_id: number,
   obj: {
-    name?: string;
-    project_id?: number;
-    user_ids?: number[];
-    description?: string;
+    description?: string | undefined;
+    status?: "Pending" | "Approved" | "Revision" | "Rejected" | undefined;
+    name?: string | undefined;
+    project_id?: number | undefined;
+    user_ids?: number[] | undefined;
   },
   cookie: string,
 ) {

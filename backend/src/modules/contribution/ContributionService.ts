@@ -150,6 +150,9 @@ export class ContributionService {
     if (old_contrib.status !== "Pending" && revision.status == undefined) {
       throw new AuthError("Anda tidak hanya boleh mengubah kontribusi yang bersifat pending!");
     }
+    if (revision.user_ids != undefined && !revision.user_ids.includes(user_id)) {
+      throw new AuthError("Anda tidak memiliki akses untuk menambahkan kontribusi orang lain!");
+    }
     await this.cont_repo.updateContribution(old_contrib.id, revision);
   }
 }
