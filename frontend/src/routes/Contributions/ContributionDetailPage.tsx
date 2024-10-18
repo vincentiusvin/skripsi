@@ -18,12 +18,31 @@ import {
   useContributionsDetailGet,
   useContributionsDetailPut,
 } from "../../queries/contribution_hooks.ts";
+import { useProjectsDetailMembersGet } from "../../queries/project_hooks.ts";
+import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 
-function ContributionApproval(props: { contribution_id: number }) {
-  const { contribution_id } = props;
+function ContributionApproval(props: {
+  user_id: number;
+  project_id: number;
+  contribution_id: number;
+}) {
+  const { user_id, project_id, contribution_id } = props;
   const { mutate: update } = useContributionsDetailPut({
     contribution_id,
   });
+
+  const { data: contrib } = useProjectsDetailMembersGet({
+    project_id,
+    user_id,
+  });
+
+  if (contrib == undefined) {
+    return <Skeleton />;
+  }
+
+  if (contrib.role !== "Admin") {
+    return null;
+  }
 
   return (
     <>
@@ -133,9 +152,19 @@ function ContributionDetail(props: { contribution_id: number }) {
   const { data: contrib } = useContributionsDetailGet({
     contribution_id,
   });
+  const { data: session } = useSessionGet();
 
   if (!contrib) {
     return <Skeleton />;
+  }
+
+  let user_id: number | undefined;
+  let can_edit: boolean = false;
+  if (session?.logged) {
+    user_id = session?.logged ? session.user_id : undefined;
+    if (user_id != undefined) {
+      can_edit = session.is_admin || contrib.user_ids.map((x) => x.user_id).includes(user_id);
+    }
   }
 
   return (
@@ -166,13 +195,21 @@ function ContributionDetail(props: { contribution_id: number }) {
         }}
       >
         <Stack spacing={2}>
-          <StyledLink to={`/contribs/${contribution_id}/edit`}>
-            <Button fullWidth variant="contained">
-              Edit
-            </Button>
-          </StyledLink>
+          {can_edit ? (
+            <StyledLink to={`/contribs/${contribution_id}/edit`}>
+              <Button fullWidth variant="contained">
+                Edit
+              </Button>
+            </StyledLink>
+          ) : null}
           <Divider />
-          <ContributionApproval contribution_id={contribution_id} />
+          {user_id != undefined ? (
+            <ContributionApproval
+              user_id={user_id}
+              contribution_id={contribution_id}
+              project_id={contrib.project_id}
+            />
+          ) : null}
           <Divider />
           <Typography variant="h6" fontWeight={"bold"}>
             Kontributor
