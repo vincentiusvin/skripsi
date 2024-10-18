@@ -82,7 +82,9 @@ export class ContributionController extends Controller {
     },
     handler: async (req, res) => {
       const id = Number(req.params.id);
-      const result = await this.cont_service.getContributionDetail(id);
+      const sender_id = Number(req.session.user_id);
+
+      const result = await this.cont_service.getContributionDetail(id, sender_id);
       res.status(200).json(result);
     },
   });
@@ -112,6 +114,7 @@ export class ContributionController extends Controller {
     },
     handler: async (req, res) => {
       const { name, description, project_id, user_ids } = req.body;
+      const sender_id = Number(req.session.user_id);
 
       const result = await this.cont_service.addContributions(
         {
@@ -120,9 +123,10 @@ export class ContributionController extends Controller {
           project_id: project_id,
         },
         user_ids,
+        sender_id,
       );
 
-      const resultFinal = await this.cont_service.getContributionDetail(result.id);
+      const resultFinal = await this.cont_service.getContributionDetail(result.id, sender_id);
       res.status(201).json(resultFinal);
     },
   });
@@ -157,14 +161,20 @@ export class ContributionController extends Controller {
     handler: async (req, res) => {
       const id = Number(req.params.id);
       const { name, description, project_id, user_ids, status } = req.body;
-      await this.cont_service.updateContribution(id, {
-        name,
-        description,
-        project_id,
-        user_ids,
-        status,
-      });
-      const result = await this.cont_service.getContributionDetail(id);
+      const sender_id = Number(req.session.user_id);
+
+      await this.cont_service.updateContribution(
+        id,
+        {
+          name,
+          description,
+          project_id,
+          user_ids,
+          status,
+        },
+        sender_id,
+      );
+      const result = await this.cont_service.getContributionDetail(id, sender_id);
       res.status(200).json(result);
     },
   });

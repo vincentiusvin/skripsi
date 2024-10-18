@@ -1,7 +1,7 @@
 import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types";
-import { parseContribStatus } from "./ContributionMisc.js";
+import { ContributionStatus, parseContribStatus } from "./ContributionMisc.js";
 
 const defaultContributionFields = (eb: ExpressionBuilder<DB, "ms_contributions">) =>
   [
@@ -76,10 +76,11 @@ export class ContributionRepository {
       name: string;
       description: string;
       project_id: number;
+      status: ContributionStatus;
     },
     users: number[],
   ) {
-    const { name, description, project_id } = obj;
+    const { status, name, description, project_id } = obj;
     return await this.db.transaction().execute(async (trx) => {
       const cont = await trx
         .insertInto("ms_contributions")
@@ -87,7 +88,7 @@ export class ContributionRepository {
           name: name,
           description: description,
           project_id: project_id,
-          status: "Pending",
+          status: status,
         })
         .returning(["ms_contributions.id"])
         .executeTakeFirst();

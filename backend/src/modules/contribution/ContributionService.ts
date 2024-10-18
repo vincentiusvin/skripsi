@@ -1,4 +1,4 @@
-import { NotFoundError } from "../../helpers/error.js";
+import { AuthError, NotFoundError } from "../../helpers/error.js";
 import { ProjectService } from "../project/ProjectService.js";
 import { ContributionRepository } from "./ContributionRepository";
 
@@ -10,13 +10,13 @@ export class ContributionService {
     this.project_service = project_service;
   }
 
-  async isAllowedToView(contribution_id: number, sender_id: number) {
-    const contrib = await this.getContributionDetail(contribution_id);
+  async isAllowedTo(action: "View" | "Edit", contribution_id: number, sender_id: number) {
+    const contrib = await this.cont_repo.getContributionsDetail(contribution_id);
     if (!contrib) {
       throw new NotFoundError("Gagal menemukan kontribusi!");
     }
 
-    if (contrib.status === "Accepted") {
+    if (contrib.status === "Accepted" && action === "View") {
       return true;
     }
 
@@ -40,14 +40,18 @@ export class ContributionService {
     const result = await this.cont_repo.getContributions(params.user_id, params.project_id);
 
     const filter_result = await Promise.all(
-      result.map(async (contrib) => await this.isAllowedToView(contrib.id, sender_id)),
+      result.map(async (contrib) => await this.isAllowedTo("View", contrib.id, sender_id)),
     );
 
     return result.filter((_, i) => filter_result[i]);
   }
 
-  getContributionDetail(contributions_id: number) {
-    return this.cont_repo.getContributionsDetail(contributions_id);
+  async getContributionDetail(contribution_id: number, sender_id: number) {
+    const allowed = await this.isAllowedTo("View", contribution_id, sender_id);
+    if (!allowed) {
+      throw new AuthError("Anda tidak memiliki akses untuk membaca kontribusi ini!");
+    }
+    return this.cont_repo.getContributionsDetail(contribution_id);
   }
 
   async addContributions(
@@ -57,8 +61,24 @@ export class ContributionService {
       project_id: number;
     },
     users: number[],
+    sender_id: number,
   ) {
-    return await this.cont_repo.addContributions(obj, users);
+    const is_member = await this.project_service.getMemberRole(obj.project_id, sender_id);
+    if (is_member !== "Admin" && is_member !== "Dev") {
+      throw new AuthError(
+        "Anda tidak memiliki akses untuk menambahkan kontribusi pada proyek ini!",
+      );
+    }
+
+    if (is_member === "Dev") {
+      if (!users.includes(sender_id)) {
+        throw new AuthError(
+          "Developer tidak memiliki akses untuk menambahkan kontribusi orang lain!",
+        );
+      }
+    }
+
+    return await this.cont_repo.addContributions({ ...obj, status: "Pending" }, users);
   }
 
   async updateContribution(
@@ -70,7 +90,12 @@ export class ContributionService {
       user_ids?: number[];
       status?: string;
     },
+    sender_id: number,
   ) {
+    const allowed = await this.isAllowedTo("Edit", id, sender_id);
+    if (!allowed) {
+      throw new AuthError("Anda tidak memiliki akses untuk mengubah kontribusi ini!");
+    }
     return await this.cont_repo.updateContribution(id, obj);
   }
 }

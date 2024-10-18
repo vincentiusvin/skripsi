@@ -43,29 +43,44 @@ describe.only("contribution api", () => {
     expect(result).to.deep.include(in_contrib);
   });
 
-  it("should be able to add contributions", async () => {
-    const in_from = caseData.plain_user;
-    const in_proj = caseData.project;
-    const in_contrib = {
-      description: "Halo",
-      name: "Nama contrib",
-      project_id: in_proj.id,
-      user_ids: [in_from.id],
-    };
+  const add_cases = [
+    {
+      sender_key: "dev_user",
+      user_ids: ["dev_user", "plain_user"],
+      msg: "should be able to add self contributions as a dev",
+      ok: true,
+    },
+  ] as const;
 
-    const cookie = await getLoginCookie(in_from.name, in_from.password);
-    const read_req = await postContributions(in_contrib, cookie);
-    const result = await read_req.json();
+  for (const { msg, sender_key, user_ids, ok } of add_cases) {
+    it(msg, async () => {
+      const in_from = caseData[sender_key];
+      const in_proj = caseData.project;
+      const in_contrib = {
+        description: "Halo",
+        name: "Nama contrib",
+        project_id: in_proj.id,
+        user_ids: user_ids.map((x) => caseData[x].id),
+      };
 
-    expect(read_req.status).eq(201);
-    const { user_ids: expected_users, ...expected_output } = in_contrib;
-    expect(result).to.deep.include({
-      ...expected_output,
-      user_ids: expected_users.map((x) => ({
-        user_id: x,
-      })),
+      const cookie = await getLoginCookie(in_from.name, in_from.password);
+      const read_req = await postContributions(in_contrib, cookie);
+      const result = await read_req.json();
+
+      if (ok) {
+        expect(read_req.status).eq(201);
+        const { user_ids: expected_users, ...expected_output } = in_contrib;
+        expect(result).to.deep.include({
+          ...expected_output,
+          user_ids: expected_users.map((x) => ({
+            user_id: x,
+          })),
+        });
+      } else {
+        expect(read_req.status).oneOf([401]);
+      }
     });
-  });
+  }
 
   it("should be able to update contributions", async () => {
     const in_from = caseData.pref_user;
