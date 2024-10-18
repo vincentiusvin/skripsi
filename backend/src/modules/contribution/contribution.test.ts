@@ -5,7 +5,7 @@ import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe.only("contribution api", () => {
+describe("contribution api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -31,17 +31,48 @@ describe.only("contribution api", () => {
     expect(found).to.deep.include(expected_contribution);
   });
 
-  it("should be able to get individual contributions", async () => {
-    const in_from = caseData.contrib_user;
-    const in_contrib = caseData.user_contribution;
+  for (const { msg, user, contrib, ok } of [
+    {
+      user: "contrib_user",
+      contrib: "user_contribution",
+      ok: true,
+      msg: "should be able to get pending contribution as author",
+    },
+    {
+      user: "project_admin_user",
+      contrib: "user_contribution",
+      ok: true,
+      msg: "should be able to get pending contribution as project admin",
+    },
+    {
+      user: "plain_user",
+      contrib: "user_contribution",
+      ok: false,
+      msg: "shouldn't be able to get pending contribution as other people",
+    },
+    {
+      user: "plain_user",
+      contrib: "accepted_contribution",
+      ok: true,
+      msg: "should be able to get accepted contribution as other people",
+    },
+  ] as const) {
+    it(msg, async () => {
+      const in_from = caseData[user];
+      const in_contrib = caseData[contrib];
 
-    const cookie = await getLoginCookie(in_from.name, in_from.password);
-    const read_req = await getContributionDetail({ contribution_id: in_contrib.id }, cookie);
-    const result = await read_req.json();
+      const cookie = await getLoginCookie(in_from.name, in_from.password);
+      const read_req = await getContributionDetail({ contribution_id: in_contrib.id }, cookie);
+      const result = await read_req.json();
 
-    expect(read_req.status).eq(200);
-    expect(result).to.deep.include(in_contrib);
-  });
+      if (ok) {
+        expect(read_req.status).eq(200);
+        expect(result).to.deep.include(in_contrib);
+      } else {
+        expect(read_req.status).oneOf([401]);
+      }
+    });
+  }
 
   const add_cases = [
     {
