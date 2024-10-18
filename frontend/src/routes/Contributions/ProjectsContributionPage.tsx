@@ -13,7 +13,8 @@ import { useParams } from "wouter";
 import StyledLink from "../../components/StyledLink.tsx";
 import UserLabel from "../../components/UserLabel.tsx";
 import { useContributionsGet } from "../../queries/contribution_hooks.ts";
-import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
+import AuthorizeProjects from "../Projects/components/AuthorizeProjects.tsx";
+import ContributionChip from "./components/ContributionChip.tsx";
 
 function ProjectsContribution(props: { project_id: number }) {
   const { project_id } = props;
@@ -44,10 +45,11 @@ function ProjectsContribution(props: { project_id: number }) {
                 secondary={dayjs(contrib.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
               />
               <ListItemIcon>
-                <Stack direction="row" spacing={2}>
+                <Stack direction="row" spacing={2} alignItems={"center"}>
                   {contrib.user_ids.map((y) => (
                     <UserLabel user_id={y.user_id} key={y.user_id} />
                   ))}
+                  <ContributionChip status={contrib.status} />
                 </Stack>
               </ListItemIcon>
             </ListItemButton>
