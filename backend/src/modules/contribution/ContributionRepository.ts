@@ -118,7 +118,7 @@ export class ContributionRepository {
       status?: string;
     },
   ) {
-    const { name, description, project_id, user_id, status } = obj;
+    const { name, description, project_id, user_ids, status } = obj;
     return await this.db.transaction().execute(async (trx) => {
       const cont = await trx
         .updateTable("ms_contributions")
@@ -134,9 +134,9 @@ export class ContributionRepository {
       if (!cont) {
         throw new Error("Data not updated!");
       }
-      if (user_id != undefined) {
+      if (user_ids != undefined) {
         await trx.deleteFrom("ms_contributions_users").where("contributions_id", "=", id).execute();
-        for (const x of user_id) {
+        for (const x of user_ids) {
           await trx
             .insertInto("ms_contributions_users")
             .values({
