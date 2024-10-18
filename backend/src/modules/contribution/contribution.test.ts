@@ -193,6 +193,13 @@ describe("contribution api", () => {
       ok: true,
     },
     {
+      sender_key: "project_admin_user",
+      msg: "shouldn't be able to approve contribution that has been accepted as admin",
+      status: "Rejected",
+      contribution_key: "accepted_contribution",
+      ok: false,
+    },
+    {
       sender_key: "contrib_user",
       msg: "shouldn't be able to return contribution to pending if it's rejected",
       status: "Pending",
