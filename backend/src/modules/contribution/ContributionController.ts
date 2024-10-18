@@ -37,7 +37,7 @@ export class ContributionController extends Controller {
           status: z.enum(contribution_status),
           project_id: z.number(),
           id: z.number(),
-          contribution_users: z.array(
+          user_ids: z.array(
             z.object({
               user_id: z.number(),
             }),
@@ -47,11 +47,15 @@ export class ContributionController extends Controller {
     },
     handler: async (req, res) => {
       const { user_id, project_id } = req.query;
+      const sender_id = Number(req.session.user_id);
 
-      const result = await this.cont_service.getContributions({
-        user_id: user_id || undefined ? Number(user_id) : undefined,
-        project_id: project_id || undefined ? Number(project_id) : undefined,
-      });
+      const result = await this.cont_service.getContributions(
+        {
+          user_id: user_id || undefined ? Number(user_id) : undefined,
+          project_id: project_id || undefined ? Number(project_id) : undefined,
+        },
+        sender_id,
+      );
       res.status(200).json(result);
     },
   });
@@ -69,7 +73,7 @@ export class ContributionController extends Controller {
         status: z.enum(contribution_status),
         project_id: z.number(),
         id: z.number(),
-        contribution_users: z.array(
+        user_ids: z.array(
           z.object({
             user_id: z.number(),
           }),
@@ -93,7 +97,7 @@ export class ContributionController extends Controller {
         status: z.string(),
         project_id: z.number(),
         id: z.number(),
-        contribution_users: z.array(
+        user_ids: z.array(
           z.object({
             user_id: z.number(),
           }),
@@ -103,11 +107,11 @@ export class ContributionController extends Controller {
         name: z.string().min(1, "Nama kontribusi tidak boleh kosong!"),
         description: z.string().min(1, "Deskripsi kontribusi tidak boleh kosong!"),
         project_id: z.number().min(1, "Project ID tidak boleh kosong!"),
-        user_id: z.array(z.number(), { message: "User Id invalid!" }).min(1),
+        user_ids: z.array(z.number(), { message: "User Id invalid!" }).min(1),
       }),
     },
     handler: async (req, res) => {
-      const { name, description, project_id, user_id } = req.body;
+      const { name, description, project_id, user_ids } = req.body;
 
       const result = await this.cont_service.addContributions(
         {
@@ -115,7 +119,7 @@ export class ContributionController extends Controller {
           description: description,
           project_id: project_id,
         },
-        user_id,
+        user_ids,
       );
 
       const resultFinal = await this.cont_service.getContributionDetail(result.id);
@@ -133,7 +137,7 @@ export class ContributionController extends Controller {
         project_id: z.number(),
         created_at: z.date(),
         id: z.number(),
-        contribution_users: z.array(
+        user_ids: z.array(
           z.object({
             user_id: z.number(),
           }),
@@ -146,18 +150,18 @@ export class ContributionController extends Controller {
         name: z.string().min(1, "Nama kontribusi tidak boleh kosong!").optional(),
         description: z.string().min(1, "Deskripsi kontribusi tidak boleh kosong!").optional(),
         project_id: z.number().min(1, "Project ID tidak boleh kosong!").optional(),
-        user_id: z.array(z.number(), { message: "User Id invalid!" }).min(1).optional(),
+        user_ids: z.array(z.number(), { message: "User Id invalid!" }).min(1).optional(),
         status: z.enum(contribution_status).optional(),
       }),
     },
     handler: async (req, res) => {
       const id = Number(req.params.id);
-      const { name, description, project_id, user_id, status } = req.body;
+      const { name, description, project_id, user_ids, status } = req.body;
       await this.cont_service.updateContribution(id, {
         name,
         description,
         project_id,
-        user_id,
+        user_ids,
         status,
       });
       const result = await this.cont_service.getContributionDetail(id);

@@ -1,16 +1,23 @@
-import { Kysely } from "kysely";
+import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types";
 import { parseContribStatus } from "./ContributionMisc.js";
 
-const defaultContributionFields = [
-  "ms_contributions.name",
-  "ms_contributions.description",
-  "ms_contributions.status",
-  "ms_contributions.project_id",
-  "ms_contributions.id as id",
-  "ms_contributions.created_at as created_at",
-] as const;
+const defaultContributionFields = (eb: ExpressionBuilder<DB, "ms_contributions">) =>
+  [
+    "ms_contributions.name",
+    "ms_contributions.description",
+    "ms_contributions.status",
+    "ms_contributions.project_id",
+    "ms_contributions.id as id",
+    "ms_contributions.created_at as created_at",
+    jsonArrayFrom(
+      eb
+        .selectFrom("ms_contributions_users")
+        .select("ms_contributions_users.user_id")
+        .whereRef("ms_contributions_users.contributions_id", "=", "ms_contributions.id"),
+    ).as("user_ids"),
+  ] as const;
 
 export class ContributionRepository {
   private db: Kysely<DB>;
@@ -19,17 +26,7 @@ export class ContributionRepository {
   }
 
   async getContributions(user_id?: number, project_id?: number) {
-    let query = this.db
-      .selectFrom("ms_contributions")
-      .select((eb) => [
-        ...defaultContributionFields,
-        jsonArrayFrom(
-          eb
-            .selectFrom("ms_contributions_users")
-            .select("ms_contributions_users.user_id")
-            .whereRef("ms_contributions_users.contributions_id", "=", "ms_contributions.id"),
-        ).as("contribution_users"),
-      ]);
+    let query = this.db.selectFrom("ms_contributions").select(defaultContributionFields);
 
     if (user_id !== undefined) {
       query = query.where((eb) =>
@@ -60,15 +57,7 @@ export class ContributionRepository {
   async getContributionsDetail(contribution_id: number) {
     const result = await this.db
       .selectFrom("ms_contributions")
-      .select((eb) => [
-        ...defaultContributionFields,
-        jsonArrayFrom(
-          eb
-            .selectFrom("ms_contributions_users")
-            .select("ms_contributions_users.user_id")
-            .whereRef("ms_contributions_users.contributions_id", "=", "ms_contributions.id"),
-        ).as("contribution_users"),
-      ])
+      .select(defaultContributionFields)
       .where("ms_contributions.id", "=", contribution_id)
       .executeTakeFirst();
 
@@ -125,7 +114,7 @@ export class ContributionRepository {
       name?: string;
       description?: string;
       project_id?: number;
-      user_id?: number[];
+      user_ids?: number[];
       status?: string;
     },
   ) {

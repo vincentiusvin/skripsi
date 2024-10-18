@@ -5,7 +5,7 @@ import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("contribution api", () => {
+describe.only("contribution api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -18,8 +18,8 @@ describe("contribution api", () => {
   });
 
   it("should be able to get all contributions", async () => {
-    const in_from = caseData.plain_user;
-    const expected_contribution = caseData.contributions[0];
+    const in_from = caseData.contrib_user;
+    const expected_contribution = caseData.contributions;
 
     const cookie = await getLoginCookie(in_from.name, in_from.password);
     const read_req = await getContributions({}, cookie);
@@ -32,8 +32,8 @@ describe("contribution api", () => {
   });
 
   it("should be able to get individual contributions", async () => {
-    const in_from = caseData.plain_user;
-    const in_contrib = caseData.contributions[0];
+    const in_from = caseData.contrib_user;
+    const in_contrib = caseData.contributions;
 
     const cookie = await getLoginCookie(in_from.name, in_from.password);
     const read_req = await getContributionDetail({ contribution_id: in_contrib.id }, cookie);
@@ -50,7 +50,7 @@ describe("contribution api", () => {
       description: "Halo",
       name: "Nama contrib",
       project_id: in_proj.id,
-      user_id: [in_from.id],
+      user_ids: [in_from.id],
     };
 
     const cookie = await getLoginCookie(in_from.name, in_from.password);
@@ -58,24 +58,24 @@ describe("contribution api", () => {
     const result = await read_req.json();
 
     expect(read_req.status).eq(201);
-    const { user_id: expected_users, ...expected_output } = in_contrib;
+    const { user_ids: expected_users, ...expected_output } = in_contrib;
     expect(result).to.deep.include({
       ...expected_output,
-      contribution_users: expected_users.map((x) => ({
+      user_ids: expected_users.map((x) => ({
         user_id: x,
       })),
     });
   });
 
   it("should be able to update contributions", async () => {
-    const in_from = caseData.plain_user;
+    const in_from = caseData.pref_user;
     const in_proj = caseData.project;
-    const in_contrib = caseData.contributions[0];
+    const in_contrib = caseData.contributions;
     const in_contrib_update = {
       description: "Halo",
       name: "Nama contrib",
       project_id: in_proj.id,
-      user_id: [in_from.id],
+      user_ids: [in_from.id, caseData.plain_user.id],
       status: "Pending",
     };
 
@@ -84,10 +84,10 @@ describe("contribution api", () => {
     const result = await read_req.json();
 
     expect(read_req.status).eq(200);
-    const { user_id: expected_users, ...expected_output } = in_contrib_update;
+    const { user_ids: expected_users, ...expected_output } = in_contrib_update;
     expect(result).to.deep.include({
       ...expected_output,
-      contribution_users: expected_users.map((x) => ({
+      user_ids: expected_users.map((x) => ({
         user_id: x,
       })),
     });
@@ -109,7 +109,7 @@ function postContributions(
   obj: {
     name: string;
     project_id: number;
-    user_id: number[];
+    user_ids: number[];
     description: string;
   },
   cookie: string,
@@ -129,7 +129,7 @@ function putContributions(
   obj: {
     name?: string;
     project_id?: number;
-    user_id?: number[];
+    user_ids?: number[];
     description?: string;
   },
   cookie: string,

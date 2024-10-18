@@ -68,6 +68,10 @@ export async function baseCase(db: Kysely<DB>) {
         name: "pref user",
         password: hashed,
       },
+      {
+        name: "contrib user",
+        password: hashed,
+      },
     ])
     .returning(["id", "name"])
     .execute();
@@ -91,6 +95,7 @@ export async function baseCase(db: Kysely<DB>) {
   const report_user = { ...user_ids[9], password: orig_password };
   const banned_user = { ...user_ids[10], password: orig_password };
   const pref_user = { ...user_ids[11], password: orig_password };
+  const contrib_user = { ...user_ids[12], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -248,16 +253,30 @@ export async function baseCase(db: Kysely<DB>) {
     .returning(["id", "name"])
     .execute();
 
-  const contributions = await db
+  const contrib_raw = await db
     .insertInto("ms_contributions")
     .values({
       name: "bla",
       description: "bla2",
       project_id: project.id,
-      status: "pending",
+      status: "Pending",
     })
     .returning(["id", "name", "description", "project_id", "status"])
+    .executeTakeFirstOrThrow();
+
+  const contrib_user_raw = await db
+    .insertInto("ms_contributions_users")
+    .values({
+      user_id: contrib_user.id,
+      contributions_id: contrib_raw.id,
+    })
+    .returning("user_id")
     .execute();
+
+  const contributions = {
+    ...contrib_raw,
+    user_ids: contrib_user_raw,
+  };
 
   const notifications = await db
     .insertInto("ms_notifications")
@@ -364,6 +383,7 @@ export async function baseCase(db: Kysely<DB>) {
     notifications,
     notif_user,
     reports,
+    contrib_user,
     report_user,
     bans,
     banned_user,
