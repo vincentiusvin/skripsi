@@ -19,6 +19,10 @@ const defaultContributionFields = (eb: ExpressionBuilder<DB, "ms_contributions">
     ).as("user_ids"),
   ] as const;
 
+export type Contribution = NonNullable<
+  Awaited<ReturnType<ContributionRepository["getContributionsDetail"]>>
+>;
+
 export class ContributionRepository {
   private db: Kysely<DB>;
   constructor(db: Kysely<DB>) {
@@ -116,7 +120,7 @@ export class ContributionRepository {
       description?: string;
       project_id?: number;
       user_ids?: number[];
-      status?: string;
+      status?: ContributionStatus;
     },
   ) {
     const { name, description, project_id, user_ids, status } = obj;

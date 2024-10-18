@@ -50,6 +50,30 @@ describe.only("contribution api", () => {
       msg: "should be able to add self contributions as a dev",
       ok: true,
     },
+    {
+      sender_key: "plain_user",
+      user_ids: ["dev_user", "plain_user"],
+      msg: "shouldn't be able to add contributions as a non member",
+      ok: false,
+    },
+    {
+      sender_key: "dev_user",
+      user_ids: ["project_admin_user"],
+      msg: "shouldn't be able to add contributions for other people as a dev",
+      ok: false,
+    },
+    {
+      sender_key: "project_admin_user",
+      user_ids: ["dev_user"],
+      msg: "should be able to add contributions for other people as an admin",
+      ok: true,
+    },
+    {
+      sender_key: "project_admin_user",
+      user_ids: ["plain_user"],
+      msg: "should be able to add contributions for people not involved in the project",
+      ok: true,
+    },
   ] as const;
 
   for (const { msg, sender_key, user_ids, ok } of add_cases) {
@@ -83,7 +107,7 @@ describe.only("contribution api", () => {
   }
 
   it("should be able to update contributions", async () => {
-    const in_from = caseData.pref_user;
+    const in_from = caseData.project_admin_user;
     const in_proj = caseData.project;
     const in_contrib = caseData.contributions;
     const in_contrib_update = {

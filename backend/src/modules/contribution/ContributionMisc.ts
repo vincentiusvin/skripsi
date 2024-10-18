@@ -1,4 +1,4 @@
-export const contribution_status = ["Accepted", "Pending", "Revision"] as const;
+export const contribution_status = ["Approved", "Pending", "Revision", "Rejected"] as const;
 export type ContributionStatus = (typeof contribution_status)[number];
 
 export function parseContribStatus(status: string): ContributionStatus {
