@@ -123,10 +123,10 @@ export class ContributionService {
     }
     const role = await this.project_service.getMemberRole(contrib.project_id, user_id);
     if (role !== "Admin") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan approval!");
+      throw new AuthError("Anda tidak memiliki akses untuk memberikan persetujuan!");
     }
     if (contrib.user_ids.map((x) => x.user_id).includes(user_id)) {
-      throw new AuthError("Anda tidak boleh memberikan approval untuk kontribusi anda sendiri!");
+      throw new AuthError("Anda tidak boleh memberikan persetujuan untuk kontribusi anda sendiri!");
     }
     await this.cont_repo.updateContribution(contrib.id, {
       status,

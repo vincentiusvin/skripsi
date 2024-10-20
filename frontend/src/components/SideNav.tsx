@@ -1,6 +1,7 @@
 import {
   Chat,
   CorporateFare,
+  EmojiEvents,
   Flag,
   Home,
   Language,
@@ -289,7 +290,7 @@ function ContextualDashboard(props: { context: SidenavContext }) {
       {
         link: `/projects/${project_id}/contribs`,
         name: `Kontribusi`,
-        avatar: <Work />,
+        avatar: <EmojiEvents />,
       },
       {
         link: `/projects/${project_id}/manage`,

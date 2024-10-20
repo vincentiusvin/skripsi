@@ -1,3 +1,4 @@
+import { Add } from "@mui/icons-material";
 import {
   Button,
   ListItem,
@@ -32,7 +33,7 @@ function ProjectsContribution(props: { project_id: number }) {
         Kontribusi Terbaru
       </Typography>
       <StyledLink to={`/projects/${project_id}/add-contribs`}>
-        <Button fullWidth variant="contained">
+        <Button fullWidth variant="contained" startIcon={<Add />}>
           Tambah Kontribusi
         </Button>
       </StyledLink>
