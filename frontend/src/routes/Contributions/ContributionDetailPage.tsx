@@ -50,7 +50,7 @@ function ContributionApproval(props: {
   }
 
   return (
-    <>
+    <Stack spacing={2}>
       <Typography variant="h6" fontWeight={"bold"}>
         Persetujuan
       </Typography>
@@ -95,7 +95,7 @@ function ContributionApproval(props: {
       >
         Minta Revisi
       </Button>
-    </>
+    </Stack>
   );
 }
 
