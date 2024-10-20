@@ -1,4 +1,5 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { ProjectRoles } from "../project/ProjectMisc.js";
 import { ProjectService } from "../project/ProjectService.js";
 import { ContributionStatus } from "./ContributionMisc.js";
 import { Contribution, ContributionRepository } from "./ContributionRepository";
@@ -30,10 +31,9 @@ export class ContributionService {
       return true;
     }
 
-    const sender_project_role = await this.project_service.getMemberRole(
-      contrib.project_id,
-      sender_id,
-    );
+    const sender_project_role: ProjectRoles = !Number.isNaN(sender_id)
+      ? await this.project_service.getMemberRole(contrib.project_id, sender_id)
+      : "Not Involved";
 
     if (sender_project_role === "Admin") {
       return true;

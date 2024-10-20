@@ -65,8 +65,8 @@ function UserAccountPage() {
           }}
         >
           <Tab label={"Profil"} value="acc" />
+          <Tab label={"Kontribusi"} value="contrib" />
           {isViewingSelf ? <Tab label={"Teman"} value="conn" /> : null}
-          {isViewingSelf ? <Tab label={"Kontribusi"} value="contrib" /> : null}
         </Tabs>
       </Grid>
       <Grid
