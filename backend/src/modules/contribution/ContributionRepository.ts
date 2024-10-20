@@ -39,7 +39,7 @@ export class ContributionRepository {
           "in",
           eb
             .selectFrom("ms_contributions_users")
-            .select("ms_contributions_users.user_id")
+            .select("ms_contributions_users.contributions_id")
             .where("ms_contributions_users.user_id", "=", user_id),
         ),
       );
