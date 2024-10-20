@@ -27,7 +27,7 @@ function ContributionEdit(props: { contribution_id: number }) {
         variant: "success",
         message: <Typography>Laporan kontribusi berhasil diubah!</Typography>,
       });
-      setLocation(`/contribs/${contribution_id}`);
+      setLocation(`/contributions/${contribution_id}`);
     },
   });
 

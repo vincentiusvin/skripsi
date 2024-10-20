@@ -150,16 +150,19 @@ function App() {
                     <Route path={"/projects/:project_id/tasks"} component={ProjectsKanbanPage} />
                     <Route path={"/projects/:project_id/chat"} component={ProjectsChatroomPage} />
                     <Route
-                      path={"/projects/:project_id/contribs"}
+                      path={"/projects/:project_id/contributions"}
                       component={ProjectsContributionPage}
                     />
                     <Route
                       path={"/projects/:project_id/add-contribs"}
                       component={ProjectsAddContributionPage}
                     />
-                    <Route path={"/contribs/:contribution_id"} component={ContributionDetailPage} />
                     <Route
-                      path={"/contribs/:contribution_id/edit"}
+                      path={"/contributions/:contribution_id"}
+                      component={ContributionDetailPage}
+                    />
+                    <Route
+                      path={"/contributions/:contribution_id/edit"}
                       component={ContributionEditPage}
                     />
                     <Route path={"/users"} component={FindUsersPage} />

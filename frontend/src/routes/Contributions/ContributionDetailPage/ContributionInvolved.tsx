@@ -31,7 +31,7 @@ function ContributionInvolved(props: {
   return (
     <Stack spacing={2} divider={<Divider />}>
       {is_author ? (
-        <StyledLink to={`/contribs/${contribution_id}/edit`}>
+        <StyledLink to={`/contributions/${contribution_id}/edit`}>
           <Button fullWidth variant="contained">
             Edit
           </Button>

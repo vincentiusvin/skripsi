@@ -38,7 +38,7 @@ function ProjectsContribution(props: { project_id: number }) {
         </Button>
       </StyledLink>
       {contributions.map((contrib) => (
-        <StyledLink to={`/contribs/${contrib.id}`} key={contrib.id}>
+        <StyledLink to={`/contributions/${contrib.id}`} key={contrib.id}>
           <ListItem>
             <ListItemButton>
               <ListItemText

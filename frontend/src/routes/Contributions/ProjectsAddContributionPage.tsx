@@ -24,7 +24,7 @@ function ProjectsAddContribution(props: { project_id: number }) {
         message: <Typography>Kontribusi berhasil ditambahkan!</Typography>,
         variant: "success",
       });
-      setLocation(`/projects/${project_id}/contribs`);
+      setLocation(`/projects/${project_id}/contributions`);
     },
   });
 

@@ -27,16 +27,14 @@ export function useContributionsGet(opts?: { user_id?: number; project_id?: numb
 
 export function useContributionsDetailGet(opts: {
   contribution_id: number;
-  enabled?: boolean;
   retry?: (failureCount: number, error: unknown) => boolean;
-}) {
-  const { contribution_id, enabled = true, retry } = opts;
+}){
+  const { contribution_id, retry } = opts;
 
   return useQuery({
     queryKey: contributionKeys.detail(contribution_id), // Cache key based on contribution ID
     queryFn: () =>
       new APIContext("ContributionsDetailGet").fetch(`/api/contributions/${contribution_id}`), // Fetch contribution detail by ID
-    enabled, // Query only if enabled
     retry, // Retry logic
   });
 }

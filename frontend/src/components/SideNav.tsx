@@ -288,7 +288,7 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <Work />,
       },
       {
-        link: `/projects/${project_id}/contribs`,
+        link: `/projects/${project_id}/contributions`,
         name: `Kontribusi`,
         avatar: <EmojiEvents />,
       },
