@@ -1,5 +1,5 @@
 import { Save } from "@mui/icons-material";
-import { Button, Skeleton, Stack, TextField, Typography } from "@mui/material";
+import { Alert, AlertTitle, Button, Skeleton, Stack, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
@@ -52,6 +52,21 @@ function ContributionEdit(props: { contribution_id: number }) {
           Edit Kontribusi
         </Typography>
       </Grid>
+      {contribs.status === "Approved" ? (
+        <Grid
+          size={12}
+          sx={{
+            paddingBottom: 1,
+          }}
+        >
+          <Alert severity="warning">
+            <AlertTitle>Kontribusi ini sudah diterima!</AlertTitle>
+            Laporan kontribusi anda sudah disetujui oleh pengurus organisasi.
+            <br />
+            Apabila anda ingin mengubah isi laporan ini, anda perlu mengulangi proses persetujuan.
+          </Alert>
+        </Grid>
+      ) : null}
       <Grid size={12}>
         <Stack spacing={4}>
           <TextField
