@@ -36,6 +36,7 @@ function ContributionEdit(props: { contribution_id: number }) {
       description: contributionDesc,
       name: contributionName,
       user_ids: contributionUsers,
+      status: "Pending",
     });
   }
 

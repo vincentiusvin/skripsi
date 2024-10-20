@@ -17,7 +17,7 @@ import HandleReportsPage from "./routes/Admin/HandleReportsPage.tsx";
 import ManageAccountsPage from "./routes/Admin/ManageAccountsPage.tsx";
 import AuthPage from "./routes/AuthPage";
 import ChatroomForwarderPage from "./routes/ChatroomForwarder.tsx";
-import ContributionDetailPage from "./routes/Contributions/ContributionDetailPage.tsx";
+import ContributionDetailPage from "./routes/Contributions/ContributionDetailPage/ContributionDetailPage.tsx";
 import ContributionEditPage from "./routes/Contributions/ContributionEditPage.tsx";
 import ProjectsAddContributionPage from "./routes/Contributions/ProjectsAddContributionPage.tsx";
 import ProjectsContributionPage from "./routes/Contributions/ProjectsContributionPage.tsx";
