@@ -159,7 +159,9 @@ function ReportRow(props: {
       <TableRow>
         <TableCell>{report.title}</TableCell>
         <TableCell>
-          <UserLabel user_id={report.sender_id} />
+          <StyledLink to={`/users/${report.sender_id}`}>
+            <UserLabel user_id={report.sender_id} />
+          </StyledLink>
         </TableCell>
         <TableCell>
           <ReportStatusChip status={report.status} />

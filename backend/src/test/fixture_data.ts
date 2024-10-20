@@ -68,6 +68,10 @@ export async function baseCase(db: Kysely<DB>) {
         name: "pref user",
         password: hashed,
       },
+      {
+        name: "contrib user",
+        password: hashed,
+      },
     ])
     .returning(["id", "name"])
     .execute();
@@ -91,6 +95,7 @@ export async function baseCase(db: Kysely<DB>) {
   const report_user = { ...user_ids[9], password: orig_password };
   const banned_user = { ...user_ids[10], password: orig_password };
   const pref_user = { ...user_ids[11], password: orig_password };
+  const contrib_user = { ...user_ids[12], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -248,16 +253,66 @@ export async function baseCase(db: Kysely<DB>) {
     .returning(["id", "name"])
     .execute();
 
-  const contributions = await db
-    .insertInto("ms_contributions")
-    .values({
+  const _contributions = [
+    {
       name: "bla",
       description: "bla2",
       project_id: project.id,
-      status: "pending",
-    })
+      status: "Pending",
+      user_ids: [contrib_user.id].map((x) => ({ user_id: x })),
+    },
+    {
+      name: "bla",
+      description: "bla2",
+      project_id: project.id,
+      status: "Pending",
+      user_ids: [contrib_user.id, project_admin_user.id].map((x) => ({ user_id: x })),
+    },
+    {
+      name: "bla",
+      description: "bla2",
+      project_id: project.id,
+      status: "Approved",
+      user_ids: [contrib_user.id].map((x) => ({ user_id: x })),
+    },
+    {
+      name: "bla",
+      description: "bla2",
+      project_id: project.id,
+      status: "Rejected",
+      user_ids: [contrib_user.id].map((x) => ({ user_id: x })),
+    },
+  ];
+
+  const contrib_raw = await db
+    .insertInto("ms_contributions")
+    .values(_contributions.map((x) => ({ ...x, user_ids: undefined })))
     .returning(["id", "name", "description", "project_id", "status"])
     .execute();
+
+  await db
+    .insertInto("ms_contributions_users")
+    .values(
+      _contributions.flatMap((x, i) => {
+        return x.user_ids.map((y) => ({
+          user_id: y.user_id,
+          contributions_id: contrib_raw[i].id,
+        }));
+      }),
+    )
+    .returning("user_id")
+    .execute();
+
+  const contributions = _contributions.map((x, i) => {
+    return {
+      ...x,
+      id: contrib_raw[i].id,
+    };
+  });
+  const user_contribution = contributions[0];
+  const admin_contribution = contributions[1];
+  const accepted_contribution = contributions[2];
+  const rejected_contribution = contributions[3];
 
   const notifications = await db
     .insertInto("ms_notifications")
@@ -360,11 +415,15 @@ export async function baseCase(db: Kysely<DB>) {
     friend_send_user,
     chat,
     message,
-    contributions,
+    user_contribution,
+    admin_contribution,
     notifications,
     notif_user,
     reports,
+    contrib_user,
     report_user,
+    accepted_contribution,
+    rejected_contribution,
     bans,
     banned_user,
   };

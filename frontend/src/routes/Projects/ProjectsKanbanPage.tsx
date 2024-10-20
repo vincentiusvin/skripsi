@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Add, DragIndicator, ManageAccounts, MoreVert } from "@mui/icons-material";
+import { Add, DragIndicator, MoreVert } from "@mui/icons-material";
 import {
   Box,
   BoxProps,
@@ -38,7 +38,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { ReactNode, useEffect, useState } from "react";
 import { useParams } from "wouter";
-import UserSelectDialog from "../../components/UserSelect.tsx";
+import UserSelect from "../../components/UserSelect.tsx";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import {
   useBucketsDetailDelete,
@@ -254,7 +254,6 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
   const [taskStartAt, setTaskStartAt] = useState<null | Dayjs>(null);
   const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>(null);
   const [taskAssign, setTaskAssign] = useState<number[] | undefined>();
-  const [openManageUsers, setManageUsers] = useState(false);
 
   const { mutate: addTask } = useTasksPost({
     onSuccess: () => {
@@ -295,25 +294,14 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
               />
               <DatePicker onChange={(x) => setTaskStartAt(x)} label="Start At"></DatePicker>
               <DatePicker onChange={(x) => setTaskEndAt(x)} label="End At"></DatePicker>
-              <Button
-                startIcon={<ManageAccounts />}
-                onClick={() => setManageUsers(true)}
-                variant="outlined"
-              >
-                Atur Penanggung Jawab
-              </Button>
               {project_members != undefined ? (
-                <UserSelectDialog
-                  current_users={[]}
+                <UserSelect
+                  current_users={taskAssign ?? []}
                   allowed_users={project_members}
-                  open={openManageUsers}
-                  onClose={() => {
-                    setManageUsers(false);
-                  }}
-                  onSave={(x) => {
+                  onChange={(x) => {
                     setTaskAssign(x);
-                    setManageUsers(false);
                   }}
+                  label="Atur Penanggung Jawab"
                 />
               ) : null}
             </Stack>
@@ -351,7 +339,6 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
   const [taskStartAt, setTaskStartAt] = useState<undefined | null | Dayjs>();
   const [taskEndAt, setTaskEndAt] = useState<undefined | null | Dayjs>();
   const [taskAssign, setTaskAssign] = useState<undefined | number[]>();
-  const [openManageUsers, setManageUsers] = useState(false);
   const { data: project_data } = useProjectsDetailGet({
     project_id,
   });
@@ -419,24 +406,13 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
                 onChange={(x) => setTaskEndAt(x)}
                 label="End At"
               ></DatePicker>
-              <Button
-                startIcon={<ManageAccounts />}
-                onClick={() => setManageUsers(true)}
-                variant="outlined"
-              >
-                Atur Penanggung Jawab
-              </Button>
               {project_members != undefined ? (
-                <UserSelectDialog
-                  current_users={task.users.map((x) => x.user_id)}
+                <UserSelect
+                  label="Penanggung Jawab"
+                  current_users={taskAssign ?? task.users.map((x) => x.user_id)}
                   allowed_users={project_members}
-                  open={openManageUsers}
-                  onClose={() => {
-                    setManageUsers(false);
-                  }}
-                  onSave={(x) => {
+                  onChange={(x) => {
                     setTaskAssign(x);
-                    setManageUsers(false);
                   }}
                 />
               ) : null}

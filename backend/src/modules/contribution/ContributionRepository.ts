@@ -1,14 +1,27 @@
-import { Kysely } from "kysely";
+import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types";
+import { ContributionStatus, parseContribStatus } from "./ContributionMisc.js";
 
-const defaultContributionFields = [
-  "ms_contributions.name",
-  "ms_contributions.description",
-  "ms_contributions.status",
-  "ms_contributions.project_id",
-  "ms_contributions.id as id",
-] as const;
+const defaultContributionFields = (eb: ExpressionBuilder<DB, "ms_contributions">) =>
+  [
+    "ms_contributions.name",
+    "ms_contributions.description",
+    "ms_contributions.status",
+    "ms_contributions.project_id",
+    "ms_contributions.id as id",
+    "ms_contributions.created_at as created_at",
+    jsonArrayFrom(
+      eb
+        .selectFrom("ms_contributions_users")
+        .select("ms_contributions_users.user_id")
+        .whereRef("ms_contributions_users.contributions_id", "=", "ms_contributions.id"),
+    ).as("user_ids"),
+  ] as const;
+
+export type Contribution = NonNullable<
+  Awaited<ReturnType<ContributionRepository["getContributionsDetail"]>>
+>;
 
 export class ContributionRepository {
   private db: Kysely<DB>;
@@ -17,17 +30,8 @@ export class ContributionRepository {
   }
 
   async getContributions(user_id?: number, project_id?: number) {
-    let query = this.db
-      .selectFrom("ms_contributions")
-      .select((eb) => [
-        ...defaultContributionFields,
-        jsonArrayFrom(
-          eb
-            .selectFrom("ms_contributions_users")
-            .select("ms_contributions_users.user_id")
-            .whereRef("ms_contributions_users.contributions_id", "=", "ms_contributions.id"),
-        ).as("contribution_users"),
-      ]);
+    let query = this.db.selectFrom("ms_contributions").select(defaultContributionFields);
+
     if (user_id !== undefined) {
       query = query.where((eb) =>
         eb(
@@ -35,7 +39,7 @@ export class ContributionRepository {
           "in",
           eb
             .selectFrom("ms_contributions_users")
-            .select("ms_contributions_users.user_id")
+            .select("ms_contributions_users.contributions_id")
             .where("ms_contributions_users.user_id", "=", user_id),
         ),
       );
@@ -44,23 +48,31 @@ export class ContributionRepository {
     if (project_id !== undefined) {
       query = query.where("ms_contributions.project_id", "=", project_id);
     }
-    return await query.execute();
+    const result = await query.execute();
+
+    return result.map((x) => {
+      return {
+        ...x,
+        status: parseContribStatus(x.status),
+      };
+    });
   }
 
   async getContributionsDetail(contribution_id: number) {
-    return await this.db
+    const result = await this.db
       .selectFrom("ms_contributions")
-      .select((eb) => [
-        ...defaultContributionFields,
-        jsonArrayFrom(
-          eb
-            .selectFrom("ms_contributions_users")
-            .select("ms_contributions_users.user_id")
-            .whereRef("ms_contributions_users.contributions_id", "=", "ms_contributions.id"),
-        ).as("contribution_users"),
-      ])
+      .select(defaultContributionFields)
       .where("ms_contributions.id", "=", contribution_id)
       .executeTakeFirst();
+
+    if (result == undefined) {
+      return undefined;
+    }
+
+    return {
+      ...result,
+      status: parseContribStatus(result.status),
+    };
   }
 
   async addContributions(
@@ -68,10 +80,11 @@ export class ContributionRepository {
       name: string;
       description: string;
       project_id: number;
+      status: ContributionStatus;
     },
     users: number[],
   ) {
-    const { name, description, project_id } = obj;
+    const { status, name, description, project_id } = obj;
     return await this.db.transaction().execute(async (trx) => {
       const cont = await trx
         .insertInto("ms_contributions")
@@ -79,7 +92,7 @@ export class ContributionRepository {
           name: name,
           description: description,
           project_id: project_id,
-          status: "Pending",
+          status: status,
         })
         .returning(["ms_contributions.id"])
         .executeTakeFirst();
@@ -106,11 +119,11 @@ export class ContributionRepository {
       name?: string;
       description?: string;
       project_id?: number;
-      user_id?: number[];
-      status?: string;
+      user_ids?: number[];
+      status?: ContributionStatus;
     },
   ) {
-    const { name, description, project_id, user_id, status } = obj;
+    const { name, description, project_id, user_ids, status } = obj;
     return await this.db.transaction().execute(async (trx) => {
       const cont = await trx
         .updateTable("ms_contributions")
@@ -126,9 +139,9 @@ export class ContributionRepository {
       if (!cont) {
         throw new Error("Data not updated!");
       }
-      if (user_id != undefined) {
+      if (user_ids != undefined) {
         await trx.deleteFrom("ms_contributions_users").where("contributions_id", "=", id).execute();
-        for (const x of user_id) {
+        for (const x of user_ids) {
           await trx
             .insertInto("ms_contributions_users")
             .values({

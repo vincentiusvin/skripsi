@@ -26,6 +26,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
+import StyledLink from "../../components/StyledLink.tsx";
 import UserLabel from "../../components/UserLabel.tsx";
 import {
   useSuspensionsDetailDelete,
@@ -269,7 +270,9 @@ function AccountRow(props: {
     <>
       <TableRow key={user.user_id}>
         <TableCell>
-          <UserLabel user_id={user.user_id} />
+          <StyledLink to={`/users/${user.user_id}`}>
+            <UserLabel user_id={user.user_id} />
+          </StyledLink>
         </TableCell>
         <TableCell>{status}</TableCell>
         <TableCell>{created_string}</TableCell>

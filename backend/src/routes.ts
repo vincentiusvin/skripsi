@@ -80,7 +80,7 @@ export function registerControllers(app: Application) {
     preference_service,
   );
   const friend_service = new FriendService(friend_repo, user_service, notification_service);
-  const contribution_service = new ContributionService(contribution_repo);
+  const contribution_service = new ContributionService(contribution_repo, project_service);
   const article_service = new ArticleService(article_repo);
   const report_service = new ReportService(
     report_repo,
