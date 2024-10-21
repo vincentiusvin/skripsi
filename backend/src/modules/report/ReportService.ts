@@ -124,7 +124,7 @@ export class ReportService {
     await this.chat_service.updateChatroom(
       chatroom_id,
       {
-        user_ids: [admin_id, filer_id],
+        user_ids: admin_id !== filer_id ? [admin_id, filer_id] : [admin_id],
       },
       admin_id,
     );
