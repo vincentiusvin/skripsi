@@ -94,7 +94,7 @@ export function registerControllers(app: Application) {
     new ChatController(app.express_server, app.socket_server, chat_service),
     new OrgController(app.express_server, org_service),
     new ProjectController(app.express_server, project_service),
-    new SessionController(app.express_server, app.db),
+    new SessionController(app.express_server, user_service, suspension_service),
     new UserController(app.express_server, user_service),
     new TaskController(app.express_server, task_service),
     new FriendController(app.express_server, friend_service),

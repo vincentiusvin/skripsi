@@ -63,6 +63,14 @@ export class UserRepository {
       .executeTakeFirst();
   }
 
+  async getLoginCredentials(user_name: string) {
+    return await this.db
+      .selectFrom("ms_users")
+      .select(["name", "password", "id"])
+      .where("ms_users.name", "=", user_name)
+      .executeTakeFirst();
+  }
+
   async getUserDetail(id: number) {
     return await this.db
       .selectFrom("ms_users")

@@ -1,4 +1,4 @@
-import { hashSync } from "bcryptjs";
+import { compareSync, hashSync } from "bcryptjs";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { UserRepository } from "./UserRepository.js";
 
@@ -28,8 +28,8 @@ export class UserService {
     return await this.user_repo.findUserByEmail(email);
   }
 
-  async findUserByName(email: string) {
-    return await this.user_repo.findUserByName(email);
+  async findUserByName(name: string) {
+    return await this.user_repo.findUserByName(name);
   }
 
   async addUser(user_name: string, user_password: string) {
@@ -44,6 +44,19 @@ export class UserService {
 
   async getUserDetail(user_id: number) {
     return await this.user_repo.getUserDetail(user_id);
+  }
+
+  async findUserByCredentials(user_name: string, user_password: string) {
+    const user = await this.user_repo.getLoginCredentials(user_name);
+    if (!user) {
+      return undefined;
+    }
+    const is_valid = compareSync(user_password, user.password);
+    if (is_valid) {
+      return { id: user.id, name: user.name };
+    } else {
+      return undefined;
+    }
   }
 
   async getUsers(opts?: { is_admin?: boolean; keyword?: string }) {

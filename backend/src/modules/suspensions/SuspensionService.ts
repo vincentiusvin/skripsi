@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { AuthError } from "../../helpers/error.js";
 import { UserService } from "../user/UserService.js";
 import { SuspensionRepository } from "./SuspensionRepository.js";
@@ -12,6 +13,29 @@ export class SuspensionService {
 
   async isAllowedToManage(user_id: number) {
     return await this.user_service.isAdminUser(user_id);
+  }
+
+  async getLongestActiveSuspension(user_id: number) {
+    const res = await this.getSuspension(
+      {
+        user_id,
+        expired_after: new Date(),
+      },
+      "system",
+    );
+
+    let worst: (typeof res)[0] | undefined = undefined;
+    for (const susp of res) {
+      if (worst == undefined) {
+        worst = susp;
+      }
+      const old_until = dayjs(worst.suspended_until);
+      const new_until = dayjs(susp.suspended_until);
+      if (new_until.isAfter(old_until)) {
+        worst = susp;
+      }
+    }
+    return worst;
   }
 
   async addSuspension(
@@ -51,9 +75,15 @@ export class SuspensionService {
       expired_before?: Date;
       expired_after?: Date;
     },
-    sender_id: number,
+    sender_id: number | "system",
   ) {
-    const allowed = await this.isAllowedToManage(sender_id);
+    let allowed = false;
+    if (sender_id === "system") {
+      allowed = true;
+    } else {
+      allowed = await this.isAllowedToManage(sender_id);
+    }
+
     if (!allowed) {
       throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
     }
