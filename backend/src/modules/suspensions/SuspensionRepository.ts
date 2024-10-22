@@ -15,6 +15,13 @@ export class SuspensionRepository {
     this.db = db;
   }
 
+  async purgeSession(user_id: number) {
+    return await this.db
+      .deleteFrom("session")
+      .where((eb) => eb(eb.cast("sess", "jsonb"), "@@", `$[*].user_id == ${user_id}`))
+      .execute();
+  }
+
   async getLongestActiveSuspension(opts: { user_id: number }) {
     const { user_id } = opts;
     return await this.db

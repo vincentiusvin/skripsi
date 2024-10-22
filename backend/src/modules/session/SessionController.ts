@@ -61,6 +61,7 @@ export class SessionController extends Controller {
       }
     },
   });
+
   SessionPut = new Route({
     method: "put",
     path: "/api/session",
