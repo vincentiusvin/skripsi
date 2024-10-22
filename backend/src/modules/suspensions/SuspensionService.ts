@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { AuthError } from "../../helpers/error.js";
 import { UserService } from "../user/UserService.js";
 import { SuspensionRepository } from "./SuspensionRepository.js";
@@ -18,6 +19,18 @@ export class SuspensionService {
     return await this.suspension_repo.getLongestActiveSuspension({ user_id });
   }
 
+  async purgeSessionIfActive(suspension_id: number) {
+    const susp = await this.suspension_repo.getSuspensionByID(suspension_id);
+    if (susp == undefined) {
+      return;
+    }
+    const is_active = dayjs(susp.suspended_until).isAfter(dayjs());
+    if (!is_active) {
+      return;
+    }
+    await this.suspension_repo.purgeSession(susp.user_id);
+  }
+
   async addSuspension(
     opts: { reason: string; user_id: number; suspended_until: Date },
     sender_id: number,
@@ -26,7 +39,13 @@ export class SuspensionService {
     if (!allowed) {
       throw new AuthError("Anda tidak diperbolehkan untuk mengatur suspensi!");
     }
-    return await this.suspension_repo.addSuspension(opts);
+    const res = await this.suspension_repo.addSuspension(opts);
+    if (res == undefined) {
+      throw new Error("Gagal memasukkan data penangguhan!");
+    }
+
+    await this.purgeSessionIfActive(res.id);
+    return res;
   }
 
   async deleteSuspension(suspension_id: number, sender_id: number) {
@@ -46,7 +65,11 @@ export class SuspensionService {
     if (!allowed) {
       throw new AuthError("Anda tidak diperbolehkan untuk mengatur suspensi!");
     }
-    return await this.suspension_repo.updateSuspension(suspension_id, opts);
+    const res = await this.suspension_repo.updateSuspension(suspension_id, opts);
+
+    await this.purgeSessionIfActive(suspension_id);
+
+    return res;
   }
 
   async getSuspension(

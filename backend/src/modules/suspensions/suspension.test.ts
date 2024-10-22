@@ -5,7 +5,7 @@ import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe.only("suspension api", () => {
+describe("suspension api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -52,7 +52,7 @@ describe.only("suspension api", () => {
 
   it("should be able to read bans as admin", async () => {
     const in_admin = caseData.admin_user;
-    const in_ban = caseData.bans[0];
+    const in_ban = caseData.active_ban;
 
     const cookie = await getLoginCookie(in_admin.name, in_admin.password);
     const send_req = await getSuspensions(cookie);
@@ -69,7 +69,7 @@ describe.only("suspension api", () => {
 
   it("should be able to read ban detail as admin", async () => {
     const in_admin = caseData.admin_user;
-    const in_ban = caseData.bans[0];
+    const in_ban = caseData.active_ban;
 
     const cookie = await getLoginCookie(in_admin.name, in_admin.password);
     const send_req = await getSuspensionDetail(in_ban.id, cookie);
@@ -85,7 +85,7 @@ describe.only("suspension api", () => {
 
   it("should be able to delete ban as admin", async () => {
     const in_admin = caseData.admin_user;
-    const in_ban = caseData.bans[0];
+    const in_ban = caseData.active_ban;
 
     const cookie = await getLoginCookie(in_admin.name, in_admin.password);
     const send_req = await deleteSuspension(in_ban.id, cookie);
@@ -97,7 +97,7 @@ describe.only("suspension api", () => {
     expect(read_req.status).to.eq(404);
   });
 
-  it("should log out user when banned", async () => {
+  it("should log out user when newly banned", async () => {
     const in_admin = caseData.admin_user;
     const in_user = caseData.plain_user;
     const in_data = {
@@ -111,15 +111,18 @@ describe.only("suspension api", () => {
     const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
     const send_req = await addSuspension(in_data, admin_cookie);
     await send_req.json();
+    const user_check_req = await getSession(user_cookie);
+    const user_check = await user_check_req.json();
+    const admin_check_req = await getSession(admin_cookie);
+    const admin_check = await admin_check_req.json();
 
-    const check_req = await getSession(user_cookie);
-    const check_res = await check_req.json();
-    expect(check_res.logged).to.eq(false);
+    expect(user_check.logged).to.eq(false);
+    expect(admin_check.logged).to.eq(true);
   });
 
   it("should be able to update ban as admin", async () => {
     const in_admin = caseData.admin_user;
-    const in_ban = caseData.bans[0];
+    const in_ban = caseData.active_ban;
     const in_data = {
       reason: "Reason baru",
     };
@@ -130,6 +133,30 @@ describe.only("suspension api", () => {
 
     expect(send_req.status).to.eq(200);
     expect(result).to.deep.include(in_data);
+  });
+
+  it("should log out user when ban is modified", async () => {
+    const in_admin = caseData.admin_user;
+    const in_user = caseData.expired_banned_user;
+    const in_ban = caseData.expired_ban;
+
+    const user_cookie = await getLoginCookie(in_user.name, in_user.password);
+    const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
+    const send_req = await updateSuspension(
+      in_ban.id,
+      {
+        suspended_until: dayjs().add(1, "day").toISOString(),
+      },
+      admin_cookie,
+    );
+    await send_req.json();
+    const user_check_req = await getSession(user_cookie);
+    const user_check = await user_check_req.json();
+    const admin_check_req = await getSession(admin_cookie);
+    const admin_check = await admin_check_req.json();
+
+    expect(user_check.logged).to.eq(false);
+    expect(admin_check.logged).to.eq(true);
   });
 });
 

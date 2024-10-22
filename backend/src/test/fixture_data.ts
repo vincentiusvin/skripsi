@@ -72,6 +72,10 @@ export async function baseCase(db: Kysely<DB>) {
         name: "contrib user",
         password: hashed,
       },
+      {
+        name: "expired ban user",
+        password: hashed,
+      },
     ])
     .returning(["id", "name"])
     .execute();
@@ -96,6 +100,7 @@ export async function baseCase(db: Kysely<DB>) {
   const banned_user = { ...user_ids[10], password: orig_password };
   const pref_user = { ...user_ids[11], password: orig_password };
   const contrib_user = { ...user_ids[12], password: orig_password };
+  const expired_banned_user = { ...user_ids[13], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -352,9 +357,16 @@ export async function baseCase(db: Kysely<DB>) {
         suspended_until: dayjs().add(100, "day").toDate(),
         user_id: banned_user.id,
       },
+      {
+        reason: "Sudah expired",
+        suspended_until: dayjs().subtract(100, "day").toDate(),
+        user_id: expired_banned_user.id,
+      },
     ])
     .returning(["id", "ms_suspensions.reason", "ms_suspensions.suspended_until"])
     .execute();
+  const active_ban = bans[0];
+  const expired_ban = bans[1];
 
   const pref_map = await db
     .selectFrom("ms_preferences")
@@ -422,9 +434,11 @@ export async function baseCase(db: Kysely<DB>) {
     reports,
     contrib_user,
     report_user,
+    expired_banned_user,
     accepted_contribution,
     rejected_contribution,
-    bans,
+    active_ban,
+    expired_ban,
     banned_user,
   };
 }
