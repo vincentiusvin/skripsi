@@ -1,12 +1,12 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
-import { TransactionManager } from "../../helpers/service.js";
+import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { ProjectRoles } from "../project/ProjectMisc.js";
 import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
 import { ContributionStatus } from "./ContributionMisc.js";
 import { Contribution, ContributionRepository } from "./ContributionRepository";
 
 export function contributionServiceFactory(transaction_manager: TransactionManager) {
-  const db = transaction_manager.db;
+  const db = transaction_manager.getDB();
   const contribution_repo = new ContributionRepository(db);
   const project_service = projectServiceFactory(transaction_manager);
 

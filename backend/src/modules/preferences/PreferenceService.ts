@@ -1,8 +1,8 @@
-import { TransactionManager } from "../../helpers/service.js";
+import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { PreferenceRepository, WritablePreference } from "./PreferenceRepository.js";
 
 export function preferenceServiceFactory(transaction_manager: TransactionManager) {
-  const db = transaction_manager.db;
+  const db = transaction_manager.getDB();
   const preference_repo = new PreferenceRepository(db);
   const preference_service = new PreferenceService(preference_repo);
   return preference_service;

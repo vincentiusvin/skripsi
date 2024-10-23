@@ -1,5 +1,5 @@
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
-import { TransactionManager } from "../../helpers/service.js";
+import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { ChatService, chatServiceFactory } from "../chatroom/ChatroomService.js";
 import {
   NotificationService,
@@ -10,7 +10,7 @@ import { ReportStatus } from "./ReportMisc.js";
 import { ReportRepository } from "./ReportRepository.js";
 
 export function reportServiceFactory(transaction_manager: TransactionManager) {
-  const db = transaction_manager.db;
+  const db = transaction_manager.getDB();
   const report_repo = new ReportRepository(db);
   const user_service = userServiceFactory(transaction_manager);
   const notification_service = notificationServiceFactory(transaction_manager);

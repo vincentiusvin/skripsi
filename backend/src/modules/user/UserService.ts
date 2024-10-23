@@ -1,10 +1,10 @@
 import { compareSync, hashSync } from "bcryptjs";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
-import { TransactionManager } from "../../helpers/service.js";
+import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { UserRepository } from "./UserRepository.js";
 
 export function userServiceFactory(transaction_manager: TransactionManager) {
-  const db = transaction_manager.db;
+  const db = transaction_manager.getDB();
   const user_repo = new UserRepository(db);
   const user_service = new UserService(user_repo);
   return user_service;

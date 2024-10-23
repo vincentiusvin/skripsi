@@ -1,6 +1,6 @@
 import { Application } from "./app.js";
 import { Route } from "./helpers/controller.js";
-import { TransactionManager } from "./helpers/service.js";
+import { TransactionManager } from "./helpers/transaction/transaction.js";
 import { TypesFromSchema, UnionToIntersection } from "./helpers/types";
 import { ArticleController } from "./modules/article/ArticleController.js";
 import { articleServiceFactory } from "./modules/article/ArticleService.js";

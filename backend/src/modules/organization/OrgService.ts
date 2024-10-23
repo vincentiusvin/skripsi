@@ -1,5 +1,5 @@
 import { AuthError, ClientError } from "../../helpers/error.js";
-import { TransactionManager } from "../../helpers/service.js";
+import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
   notificationServiceFactory,
@@ -9,7 +9,7 @@ import { OrgRoles } from "./OrgMisc.js";
 import { OrgRepository } from "./OrgRepository.js";
 
 export function orgServiceFactory(transaction_manager: TransactionManager) {
-  const db = transaction_manager.db;
+  const db = transaction_manager.getDB();
   const org_repo = new OrgRepository(db);
   const user_service = userServiceFactory(transaction_manager);
   const notification_service = notificationServiceFactory(transaction_manager);

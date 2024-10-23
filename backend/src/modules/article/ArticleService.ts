@@ -1,9 +1,9 @@
 import { AuthError } from "../../helpers/error";
-import { TransactionManager } from "../../helpers/service.js";
+import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { ArticleRepository } from "./ArticleRepository";
 
 export function articleServiceFactory(transaction_manager: TransactionManager) {
-  const db = transaction_manager.db;
+  const db = transaction_manager.getDB();
   const article_repo = new ArticleRepository(db);
   const article_service = new ArticleService(article_repo);
   return article_service;

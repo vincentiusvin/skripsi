@@ -1,5 +1,5 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
-import { Transactable, TransactionManager } from "../../helpers/service.js";
+import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
   notificationServiceFactory,
@@ -8,7 +8,7 @@ import { ProjectService, projectServiceFactory } from "../project/ProjectService
 import { TaskRepository } from "./TaskRepository.js";
 
 export function taskServiceFactory(transaction_manager: TransactionManager) {
-  const db = transaction_manager.db;
+  const db = transaction_manager.getDB();
   const task_repo = new TaskRepository(db);
   const notification_service = notificationServiceFactory(transaction_manager);
   const project_service = projectServiceFactory(transaction_manager);
@@ -46,27 +46,31 @@ export class TaskService implements Transactable<TaskService> {
   }
 
   async getProjectIdFromTask(task_id: number) {
-    const task = await this.task_repo.getTaskByID(task_id);
-    if (task == undefined) {
-      return undefined;
-    }
-    const bucket = await this.task_repo.getBucketByID(task.bucket_id);
-    if (bucket == undefined) {
-      return undefined;
-    }
-    return bucket.project_id;
+    return await this.transaction_manager.transaction(this as TaskService, async (serv) => {
+      const task = await serv.task_repo.getTaskByID(task_id);
+      if (task == undefined) {
+        return undefined;
+      }
+      const bucket = await serv.task_repo.getBucketByID(task.bucket_id);
+      if (bucket == undefined) {
+        return undefined;
+      }
+      return bucket.project_id;
+    });
   }
 
   async deleteTask(task_id: number, sender_id: number) {
-    const project_id = await this.getProjectIdFromTask(task_id);
-    if (project_id == undefined) {
-      throw new Error("Gagal menemukan tugas tersebut!");
-    }
-    const sender_role = await this.project_service.getMemberRole(project_id, sender_id);
-    if (sender_role !== "Admin" && sender_role !== "Dev") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
-    }
-    return await this.task_repo.deleteTask(task_id);
+    return await this.transaction_manager.transaction(this as TaskService, async (serv) => {
+      const project_id = await serv.getProjectIdFromTask(task_id);
+      if (project_id == undefined) {
+        throw new Error("Gagal menemukan tugas tersebut!");
+      }
+      const sender_role = await serv.project_service.getMemberRole(project_id, sender_id);
+      if (sender_role !== "Admin" && sender_role !== "Dev") {
+        throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+      }
+      return await serv.task_repo.deleteTask(task_id);
+    });
   }
 
   async getBucketByID(bucket_id: number) {
@@ -74,21 +78,21 @@ export class TaskService implements Transactable<TaskService> {
   }
 
   async updateBucket(bucket_id: number, data: { name?: string }, sender_id: number) {
-    const bucket = await this.getBucketByID(bucket_id);
-    if (!bucket) {
-      throw new Error("Gagal menemukan kelompok tugas tersebut!");
-    }
-    const sender_role = await this.project_service.getMemberRole(bucket.project_id, sender_id);
-    if (sender_role !== "Admin" && sender_role !== "Dev") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
-    }
-    return this.task_repo.updateBucket(bucket_id, data);
+    return await this.transaction_manager.transaction(this as TaskService, async (serv) => {
+      const bucket = await serv.getBucketByID(bucket_id);
+      if (!bucket) {
+        throw new Error("Gagal menemukan kelompok tugas tersebut!");
+      }
+      const sender_role = await serv.project_service.getMemberRole(bucket.project_id, sender_id);
+      if (sender_role !== "Admin" && sender_role !== "Dev") {
+        throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+      }
+      return serv.task_repo.updateBucket(bucket_id, data);
+    });
   }
 
   async deleteBucket(bucket_id: number) {
-    await this.transaction_manager.transaction(this as TaskService, async (serv) => {
-      return serv.task_repo.deleteBucket(bucket_id);
-    });
+    return this.task_repo.deleteBucket(bucket_id);
   }
 
   async updateTask(
@@ -104,12 +108,14 @@ export class TaskService implements Transactable<TaskService> {
     },
     sender_id: number,
   ) {
+    const { users, bucket_id, name, description, start_at, end_at, before_id } = data;
+    let project_id;
     await this.transaction_manager.transaction(this as TaskService, async (serv) => {
-      const { users, bucket_id, name, description, start_at, end_at, before_id } = data;
-      const project_id = await serv.getProjectIdFromTask(task_id);
+      project_id = await serv.getProjectIdFromTask(task_id);
       if (project_id == undefined) {
         throw new Error("Gagal menemukan tugas tersebut!");
       }
+
       const sender_role = await serv.project_service.getMemberRole(project_id, sender_id);
       if (sender_role !== "Admin" && sender_role !== "Dev") {
         throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
@@ -153,13 +159,12 @@ export class TaskService implements Transactable<TaskService> {
         order: updateOrder,
         start_at,
       });
-
-      if (users != undefined) {
-        for (const user_id of users) {
-          await serv.sendTaskNotification(task_id, project_id, user_id);
-        }
-      }
     });
+    if (users != undefined && project_id != undefined) {
+      for (const user_id of users) {
+        await this.sendTaskNotification(task_id, project_id, user_id);
+      }
+    }
   }
 
   async addTask(
@@ -173,26 +178,28 @@ export class TaskService implements Transactable<TaskService> {
     },
     sender_id: number,
   ) {
-    const { bucket_id } = data;
+    return await this.transaction_manager.transaction(this as TaskService, async (serv) => {
+      const { bucket_id } = data;
 
-    const bucket = await this.getBucketByID(bucket_id);
-    if (!bucket) {
-      throw new Error("Gagal menemukan kelompok tugas tersebut!");
-    }
-    const sender_role = await this.project_service.getMemberRole(bucket.project_id, sender_id);
-    if (sender_role !== "Admin" && sender_role !== "Dev") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
-    }
+      const bucket = await serv.getBucketByID(bucket_id);
+      if (!bucket) {
+        throw new Error("Gagal menemukan kelompok tugas tersebut!");
+      }
+      const sender_role = await serv.project_service.getMemberRole(bucket.project_id, sender_id);
+      if (sender_role !== "Admin" && sender_role !== "Dev") {
+        throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+      }
 
-    const order = await this.task_repo.getMaxOrder(bucket_id);
+      const order = await serv.task_repo.getMaxOrder(bucket_id);
 
-    const result = await this.task_repo.addTask({
-      ...data,
-      order: order ?? 1,
+      const result = await serv.task_repo.addTask({
+        ...data,
+        order: order ?? 1,
+      });
+
+      await serv.addTaskEvent(bucket.project_id, result.id);
+      return result;
     });
-
-    await this.addTaskEvent(bucket.project_id, result.id);
-    return result;
   }
 
   async getTasks(opts: { bucket_id?: number; user_id?: number }) {
@@ -204,12 +211,14 @@ export class TaskService implements Transactable<TaskService> {
   }
 
   async addBucket(project_id: number, name: string, sender_id: number) {
-    const sender_role = await this.project_service.getMemberRole(project_id, sender_id);
-    if (sender_role !== "Admin" && sender_role !== "Dev") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
-    }
+    return await this.transaction_manager.transaction(this as TaskService, async (serv) => {
+      const sender_role = await serv.project_service.getMemberRole(project_id, sender_id);
+      if (sender_role !== "Admin" && sender_role !== "Dev") {
+        throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+      }
 
-    return await this.task_repo.addBucket(project_id, name);
+      return await serv.task_repo.addBucket(project_id, name);
+    });
   }
 
   private async addTaskEvent(project_id: number, task_id: number) {

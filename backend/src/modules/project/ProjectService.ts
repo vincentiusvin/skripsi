@@ -1,5 +1,5 @@
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
-import { TransactionManager } from "../../helpers/service.js";
+import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
   notificationServiceFactory,
@@ -11,7 +11,7 @@ import { ProjectRoles } from "./ProjectMisc.js";
 import { ProjectRepository } from "./ProjectRepository.js";
 
 export function projectServiceFactory(transaction_manager: TransactionManager) {
-  const db = transaction_manager.db;
+  const db = transaction_manager.getDB();
   const project_repo = new ProjectRepository(db);
   const user_service = userServiceFactory(transaction_manager);
   const preference_service = preferenceServiceFactory(transaction_manager);

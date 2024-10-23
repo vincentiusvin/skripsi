@@ -1,5 +1,5 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
-import { TransactionManager } from "../../helpers/service.js";
+import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { EmailService, IEmailService } from "../email/EmailService.js";
 import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
 import { UserService, userServiceFactory } from "../user/UserService.js";
@@ -7,7 +7,7 @@ import { NotificationTypes, getPreferenceKeyFromNotificationType } from "./Notif
 import { NotificationRepository } from "./NotificationRepository.js";
 
 export function notificationServiceFactory(transaction_manager: TransactionManager) {
-  const db = transaction_manager.db;
+  const db = transaction_manager.getDB();
   const notification_repo = new NotificationRepository(db);
   const user_service = userServiceFactory(transaction_manager);
   const email_service = EmailService.fromEnv();
