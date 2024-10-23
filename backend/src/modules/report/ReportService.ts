@@ -1,5 +1,5 @@
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
-import { TransactionManager } from "../../helpers/transaction/transaction.js";
+import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import { ChatService, chatServiceFactory } from "../chatroom/ChatroomService.js";
 import {
   NotificationService,
@@ -21,26 +21,91 @@ export function reportServiceFactory(transaction_manager: TransactionManager) {
     user_service,
     chat_service,
     notification_service,
+    transaction_manager,
   );
   return report_service;
 }
 
-export class ReportService {
+export class ReportService implements Transactable<ReportService> {
   private report_repo: ReportRepository;
   private user_service: UserService;
   private chat_service: ChatService;
   private notification_service: NotificationService;
+  private transaction_manager: TransactionManager;
 
   constructor(
     report_repo: ReportRepository,
     user_service: UserService,
     chat_service: ChatService,
     notification_service: NotificationService,
+    transaction_manager: TransactionManager,
   ) {
     this.report_repo = report_repo;
     this.user_service = user_service;
     this.chat_service = chat_service;
     this.notification_service = notification_service;
+    this.transaction_manager = transaction_manager;
+  }
+  factory = reportServiceFactory;
+
+  async updateReport(
+    report_id: number,
+    opts: {
+      title?: string;
+      description?: string;
+      status?: ReportStatus;
+      resolution?: string;
+      chatroom?: boolean;
+    },
+    sender_id: number,
+  ) {
+    return await this.transaction_manager.transaction(this as ReportService, async (serv) => {
+      const old_data = await serv.report_repo.getReportByID(report_id);
+      if (!old_data) {
+        throw new NotFoundError("Laporan gagal ditemukan!");
+      }
+
+      const is_admin = await serv.user_service.isAdminUser(sender_id);
+      if (!is_admin && old_data.sender_id !== sender_id) {
+        throw new AuthError("Anda hanya boleh mengedit laporan buatan anda sendiri!");
+      }
+
+      const { status, resolution, chatroom, ...rest } = opts;
+      await serv.report_repo.updateReport(report_id, rest);
+
+      const refreshed_data = await serv.report_repo.getReportByID(report_id);
+      if (!refreshed_data) {
+        throw new Error("Laporan gagal ditemukan setelah diupdate!");
+      }
+
+      if (status != undefined || resolution != undefined) {
+        if (!is_admin) {
+          throw new AuthError("Anda tidak boleh menangani laporan apabila anda bukan admin!");
+        }
+        await serv.updateReportStatus(
+          report_id,
+          status != undefined ? status : refreshed_data.status,
+          resolution,
+        );
+      }
+
+      if (chatroom == true) {
+        if (!is_admin) {
+          throw new AuthError(
+            "Anda tidak boleh menambah ruang percakapan apabila anda bukan admin!",
+          );
+        }
+        if (refreshed_data.chatroom_id != null) {
+          throw new ClientError("Laporan ini sudah memiliki ruang percakapan!");
+        }
+        await serv.createReportChatroom(
+          report_id,
+          refreshed_data.title,
+          sender_id,
+          refreshed_data.sender_id,
+        );
+      }
+    });
   }
 
   async getReports(
@@ -68,7 +133,9 @@ export class ReportService {
   }
 
   async createReport(opts: { title: string; description: string; sender_id: number }) {
-    return await this.report_repo.addReport({ ...opts, status: "Pending" });
+    return await this.transaction_manager.transaction(this as ReportService, async (serv) => {
+      return await serv.report_repo.addReport({ ...opts, status: "Pending" });
+    });
   }
 
   private async sendReportResolutionNotification(
@@ -110,7 +177,7 @@ export class ReportService {
     });
   }
 
-  async updateReportStatus(report_id: number, status: ReportStatus, resolution?: string) {
+  private async updateReportStatus(report_id: number, status: ReportStatus, resolution?: string) {
     if (status === "Pending") {
       await this.report_repo.updateReport(report_id, {
         status,
@@ -130,7 +197,7 @@ export class ReportService {
     }
   }
 
-  async createReportChatroom(
+  private async createReportChatroom(
     report_id: number,
     report_name: string,
     admin_id: number,
@@ -152,61 +219,5 @@ export class ReportService {
       chatroom_id,
     });
     await this.sendReportChatroomCreatedNotification(report_id);
-  }
-
-  async updateReport(
-    report_id: number,
-    opts: {
-      title?: string;
-      description?: string;
-      status?: ReportStatus;
-      resolution?: string;
-      chatroom?: boolean;
-    },
-    sender_id: number,
-  ) {
-    const old_data = await this.report_repo.getReportByID(report_id);
-    if (!old_data) {
-      throw new NotFoundError("Laporan gagal ditemukan!");
-    }
-
-    const is_admin = await this.user_service.isAdminUser(sender_id);
-    if (!is_admin && old_data.sender_id !== sender_id) {
-      throw new AuthError("Anda hanya boleh mengedit laporan buatan anda sendiri!");
-    }
-
-    const { status, resolution, chatroom, ...rest } = opts;
-    await this.report_repo.updateReport(report_id, rest);
-
-    const refreshed_data = await this.report_repo.getReportByID(report_id);
-    if (!refreshed_data) {
-      throw new Error("Laporan gagal ditemukan setelah diupdate!");
-    }
-
-    if (status != undefined || resolution != undefined) {
-      if (!is_admin) {
-        throw new AuthError("Anda tidak boleh menangani laporan apabila anda bukan admin!");
-      }
-      await this.updateReportStatus(
-        report_id,
-        status != undefined ? status : refreshed_data.status,
-        resolution,
-      );
-    }
-
-    if (chatroom == true) {
-      if (!is_admin) {
-        throw new AuthError("Anda tidak boleh menambah ruang percakapan apabila anda bukan admin!");
-      }
-      if (refreshed_data.chatroom_id != null) {
-        throw new ClientError("Laporan ini sudah memiliki ruang percakapan!");
-      }
-      await this.createReportChatroom(
-        report_id,
-        refreshed_data.title,
-        sender_id,
-        refreshed_data.sender_id,
-      );
-    }
   }
 }
