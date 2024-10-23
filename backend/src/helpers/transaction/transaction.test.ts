@@ -24,18 +24,7 @@ class TransactionTest implements Transactable<TransactionTest> {
   }
 }
 
-describe.only("TransactionManager", () => {
-  it("should be able to handle nested transactions", async () => {
-    const tm = new TransactionManager(db);
-    const tinst = new TransactionTest(tm);
-    const dat = await tinst.query2();
-    const res = dat.rows[0];
-
-    expect(res).to.deep.equal({
-      txt: "hello world",
-    });
-  });
-
+describe("transaction manager", () => {
   it("should be able to handle nested transactions", async () => {
     const tm = new TransactionManager(db);
     const tinst = new TransactionTest(tm);
