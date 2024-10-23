@@ -1,6 +1,15 @@
 import { compareSync, hashSync } from "bcryptjs";
+import { Kysely } from "kysely";
+import { DB } from "../../db/db_types.js";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { UserRepository } from "./UserRepository.js";
+
+export function userServiceFactory(db: Kysely<DB>) {
+  const user_repo = new UserRepository(db);
+
+  const user_service = new UserService(user_repo);
+  return user_service;
+}
 
 export class UserService {
   private user_repo: UserRepository;

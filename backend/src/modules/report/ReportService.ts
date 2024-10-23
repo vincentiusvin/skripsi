@@ -1,9 +1,29 @@
+import { Kysely } from "kysely";
+import { DB } from "../../db/db_types.js";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
-import { ChatService } from "../chatroom/ChatroomService.js";
-import { NotificationService } from "../notification/NotificationService.js";
-import { UserService } from "../user/UserService.js";
+import { ChatService, chatServiceFactory } from "../chatroom/ChatroomService.js";
+import {
+  NotificationService,
+  notificationServiceFactory,
+} from "../notification/NotificationService.js";
+import { UserService, userServiceFactory } from "../user/UserService.js";
 import { ReportStatus } from "./ReportMisc.js";
 import { ReportRepository } from "./ReportRepository.js";
+
+export function reportServiceFactory(db: Kysely<DB>) {
+  const report_repo = new ReportRepository(db);
+  const user_service = userServiceFactory(db);
+  const notification_service = notificationServiceFactory(db);
+  const chat_service = chatServiceFactory(db);
+
+  const report_service = new ReportService(
+    report_repo,
+    user_service,
+    chat_service,
+    notification_service,
+  );
+  return report_service;
+}
 
 export class ReportService {
   private report_repo: ReportRepository;

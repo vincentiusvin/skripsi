@@ -1,9 +1,30 @@
+import { Kysely } from "kysely";
+import { DB } from "../../db/db_types.js";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
-import { NotificationService } from "../notification/NotificationService.js";
-import { PreferenceService } from "../preferences/PreferenceService.js";
-import { ProjectService } from "../project/ProjectService.js";
-import { UserService } from "../user/UserService.js";
+import {
+  NotificationService,
+  notificationServiceFactory,
+} from "../notification/NotificationService.js";
+import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
+import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
+import { UserService, userServiceFactory } from "../user/UserService.js";
 import { ChatRepository } from "./ChatroomRepository.js";
+
+export function chatServiceFactory(db: Kysely<DB>) {
+  const chat_repo = new ChatRepository(db);
+  const user_service = userServiceFactory(db);
+  const preference_service = preferenceServiceFactory(db);
+  const notification_service = notificationServiceFactory(db);
+  const project_service = projectServiceFactory(db);
+  const chat_service = new ChatService(
+    chat_repo,
+    project_service,
+    user_service,
+    notification_service,
+    preference_service,
+  );
+  return chat_service;
+}
 
 // Kalau chatroomnya berkaitan dengan projek, validasi pakai daftar member projek.
 // Kalau chatroomnya bukan, validasi pakai daftar member chatroom

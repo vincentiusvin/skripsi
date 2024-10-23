@@ -1,7 +1,20 @@
+import { Kysely } from "kysely";
+import { DB } from "../../db/db_types.js";
 import { AuthError, NotFoundError } from "../../helpers/error.js";
-import { NotificationService } from "../notification/NotificationService.js";
-import { ProjectService } from "../project/ProjectService.js";
+import {
+  NotificationService,
+  notificationServiceFactory,
+} from "../notification/NotificationService.js";
+import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
 import { TaskRepository } from "./TaskRepository.js";
+
+export function taskServiceFactory(db: Kysely<DB>) {
+  const task_repo = new TaskRepository(db);
+  const notification_service = notificationServiceFactory(db);
+  const project_service = projectServiceFactory(db);
+  const task_service = new TaskService(task_repo, project_service, notification_service);
+  return task_service;
+}
 
 export class TaskService {
   private task_repo: TaskRepository;

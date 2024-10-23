@@ -1,9 +1,25 @@
+import { Kysely } from "kysely";
+import { DB } from "../../db/db_types.js";
 import { AuthError, NotFoundError } from "../../helpers/error.js";
-import { IEmailService } from "../email/EmailService.js";
-import { PreferenceService } from "../preferences/PreferenceService.js";
-import { UserService } from "../user/UserService.js";
+import { EmailService, IEmailService } from "../email/EmailService.js";
+import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
+import { UserService, userServiceFactory } from "../user/UserService.js";
 import { NotificationTypes, getPreferenceKeyFromNotificationType } from "./NotificationMisc.js";
 import { NotificationRepository } from "./NotificationRepository.js";
+
+export function notificationServiceFactory(db: Kysely<DB>) {
+  const notification_repo = new NotificationRepository(db);
+  const user_service = userServiceFactory(db);
+  const email_service = EmailService.fromEnv();
+  const preference_service = preferenceServiceFactory(db);
+  const notification_service = new NotificationService(
+    notification_repo,
+    email_service,
+    user_service,
+    preference_service,
+  );
+  return notification_service;
+}
 
 export class NotificationService {
   private notificiation_repo: NotificationRepository;

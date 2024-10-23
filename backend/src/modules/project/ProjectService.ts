@@ -1,10 +1,32 @@
+import { Kysely } from "kysely";
+import { DB } from "../../db/db_types.js";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
-import { NotificationService } from "../notification/NotificationService.js";
-import { OrgService } from "../organization/OrgService.js";
-import { PreferenceService } from "../preferences/PreferenceService.js";
-import { UserService } from "../user/UserService.js";
+import {
+  NotificationService,
+  notificationServiceFactory,
+} from "../notification/NotificationService.js";
+import { OrgService, orgServiceFactory } from "../organization/OrgService.js";
+import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
+import { UserService, userServiceFactory } from "../user/UserService.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 import { ProjectRepository } from "./ProjectRepository.js";
+
+export function projectServiceFactory(db: Kysely<DB>) {
+  const project_repo = new ProjectRepository(db);
+
+  const user_service = userServiceFactory(db);
+  const preference_service = preferenceServiceFactory(db);
+  const notification_service = notificationServiceFactory(db);
+  const org_service = orgServiceFactory(db);
+  const project_service = new ProjectService(
+    project_repo,
+    org_service,
+    user_service,
+    notification_service,
+    preference_service,
+  );
+  return project_service;
+}
 
 export class ProjectService {
   private project_repo: ProjectRepository;

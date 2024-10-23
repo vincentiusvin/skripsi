@@ -1,8 +1,18 @@
+import { Kysely } from "kysely";
+import { DB } from "../../db/db_types.js";
 import { AuthError, NotFoundError } from "../../helpers/error.js";
 import { ProjectRoles } from "../project/ProjectMisc.js";
-import { ProjectService } from "../project/ProjectService.js";
+import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
 import { ContributionStatus } from "./ContributionMisc.js";
 import { Contribution, ContributionRepository } from "./ContributionRepository";
+
+export function contributionServiceFactory(db: Kysely<DB>) {
+  const contribution_repo = new ContributionRepository(db);
+  const project_service = projectServiceFactory(db);
+
+  const contribution_service = new ContributionService(contribution_repo, project_service);
+  return contribution_service;
+}
 
 // Flow status:
 // pending -> approved, revision, rejected

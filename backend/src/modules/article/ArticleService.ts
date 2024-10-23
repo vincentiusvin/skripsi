@@ -1,5 +1,13 @@
+import { Kysely } from "kysely";
+import { DB } from "../../db/db_types.js";
 import { AuthError } from "../../helpers/error";
 import { ArticleRepository } from "./ArticleRepository";
+
+export function articleServiceFactory(db: Kysely<DB>) {
+  const article_repo = new ArticleRepository(db);
+  const article_service = new ArticleService(article_repo);
+  return article_service;
+}
 
 export class ArticleService {
   private article_repo: ArticleRepository;
