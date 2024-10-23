@@ -8,6 +8,7 @@ import {
   Logout,
   ManageAccounts,
   Message,
+  Newspaper,
   People,
   Settings,
   Shield,
@@ -257,6 +258,11 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         link: `/settings`,
         name: `Preferensi`,
         avatar: <Settings />,
+      },
+      {
+        link: `/articles`,
+        name: `Artikel`,
+        avatar: <Newspaper />,
       },
     ];
   } else if (parsedContext.type === "project") {
