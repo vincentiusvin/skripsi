@@ -1,5 +1,5 @@
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
-import { TransactionManager } from "../../helpers/transaction/transaction.js";
+import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
   notificationServiceFactory,
@@ -22,18 +22,21 @@ export function chatServiceFactory(transaction_manager: TransactionManager) {
     user_service,
     notification_service,
     preference_service,
+    transaction_manager,
   );
   return chat_service;
 }
 
 // Kalau chatroomnya berkaitan dengan projek, validasi pakai daftar member projek.
 // Kalau chatroomnya bukan, validasi pakai daftar member chatroom
-export class ChatService {
+export class ChatService implements Transactable<ChatService> {
   private repo: ChatRepository;
   private project_service: ProjectService;
   private user_service: UserService;
   private notification_service: NotificationService;
   private preference_service: PreferenceService;
+  private transaction_manager: TransactionManager;
+  factory = chatServiceFactory;
 
   constructor(
     repo: ChatRepository,
@@ -41,34 +44,40 @@ export class ChatService {
     user_service: UserService,
     notification_service: NotificationService,
     preference_service: PreferenceService,
+    transaction_manager: TransactionManager,
   ) {
     this.repo = repo;
     this.project_service = project_service;
     this.user_service = user_service;
     this.notification_service = notification_service;
     this.preference_service = preference_service;
+    this.transaction_manager = transaction_manager;
   }
 
-  async getMembers(chatroom_id: number) {
-    const chatroom = await this.repo.getChatroomByID(chatroom_id);
-    if (!chatroom) {
-      throw new NotFoundError("Chatroom gagal ditemukan!");
-    }
-    if (chatroom.project_id != null) {
-      const project = await this.project_service.getProjectByID(chatroom.project_id);
-      if (!project) {
-        throw new Error("Chatroom tidak memiliki proyek!");
+  private async getMembers(chatroom_id: number) {
+    return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
+      const chatroom = await serv.repo.getChatroomByID(chatroom_id);
+      if (!chatroom) {
+        throw new NotFoundError("Chatroom gagal ditemukan!");
       }
-      return project.project_members.map((x) => x.user_id);
-    } else {
-      return chatroom.chatroom_users.map((x) => x.user_id);
-    }
+      if (chatroom.project_id != null) {
+        const project = await serv.project_service.getProjectByID(chatroom.project_id);
+        if (!project) {
+          throw new Error("Chatroom tidak memiliki proyek!");
+        }
+        return project.project_members.map((x) => x.user_id);
+      } else {
+        return chatroom.chatroom_users.map((x) => x.user_id);
+      }
+    });
   }
 
   async getAllowedListeners(chatroom_id: number) {
-    const members = await this.getMembers(chatroom_id);
-    const admins = await this.user_service.getUsers({ is_admin: true });
-    return [...members, ...admins.map((x) => x.user_id)];
+    return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
+      const members = await serv.getMembers(chatroom_id);
+      const admins = await serv.user_service.getUsers({ is_admin: true });
+      return [...members, ...admins.map((x) => x.user_id)];
+    });
   }
 
   async isAllowed(chatroom_id: number, user_id: number) {
@@ -85,7 +94,7 @@ export class ChatService {
     return await this.repo.getMessages(chatroom_id);
   }
 
-  async sendMessageNotification(message_id: number) {
+  private async sendMessageNotification(message_id: number) {
     const msg = await this.getMessage(message_id);
     if (!msg) {
       throw new Error("Pesan tidak ditemukan!");
@@ -121,15 +130,17 @@ export class ChatService {
       }[];
     },
   ) {
-    const { sender_id } = data;
-    const val = await this.isAllowed(chatroom_id, sender_id);
-    if (!val) {
-      throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
-    }
+    return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
+      const { sender_id } = data;
+      const val = await serv.isAllowed(chatroom_id, sender_id);
+      if (!val) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
+      }
 
-    const res = await this.repo.addMessage(chatroom_id, data);
-    await this.sendMessageNotification(res.id);
-    return res;
+      const res = await serv.repo.addMessage(chatroom_id, data);
+      await serv.sendMessageNotification(res.id);
+      return res;
+    });
   }
 
   async updateMessage(
@@ -143,18 +154,20 @@ export class ChatService {
     },
     sender_id: number,
   ) {
-    const old_message = await this.getMessage(message_id);
-    if (!old_message) {
-      throw new NotFoundError("Pesan tidak ditemukan!");
-    }
+    return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
+      const old_message = await serv.getMessage(message_id);
+      if (!old_message) {
+        throw new NotFoundError("Pesan tidak ditemukan!");
+      }
 
-    if (old_message.user_id !== sender_id) {
-      throw new AuthError("Anda tidak memiliki akses untuk mengubah pesan ini!");
-    }
+      if (old_message.user_id !== sender_id) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengubah pesan ini!");
+      }
 
-    return await this.repo.updateMessage(message_id, {
-      ...data,
-      is_edited: true,
+      return await serv.repo.updateMessage(message_id, {
+        ...data,
+        is_edited: true,
+      });
     });
   }
 
@@ -171,12 +184,14 @@ export class ChatService {
   }
 
   async addProjectChatroom(project_id: number, chatroom_name: string, sender_id: number) {
-    const member_role = await this.project_service.getMemberRole(project_id, sender_id);
-    if (member_role !== "Admin" && member_role !== "Dev") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
-    }
+    return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
+      const member_role = await serv.project_service.getMemberRole(project_id, sender_id);
+      if (member_role !== "Admin" && member_role !== "Dev") {
+        throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
+      }
 
-    return await this.repo.addProjectChatroom(project_id, chatroom_name);
+      return await serv.repo.addProjectChatroom(project_id, chatroom_name);
+    });
   }
 
   async getUserChatrooms(user_id: number) {
@@ -184,21 +199,23 @@ export class ChatService {
   }
 
   async getFile(file_id: number, sender_id: number) {
-    const chatroom_id = await this.repo.findChatroomByFileID(file_id);
-    if (chatroom_id == undefined) {
-      throw new NotFoundError("File gagal ditemukan!");
-    }
+    return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
+      const chatroom_id = await serv.repo.findChatroomByFileID(file_id);
+      if (chatroom_id == undefined) {
+        throw new NotFoundError("File gagal ditemukan!");
+      }
 
-    const allowed = await this.isAllowed(chatroom_id.id, sender_id);
-    if (!allowed) {
-      throw new AuthError("Anda tidak memiliki akses untuk membaca file ini!");
-    }
+      const allowed = await serv.isAllowed(chatroom_id.id, sender_id);
+      if (!allowed) {
+        throw new AuthError("Anda tidak memiliki akses untuk membaca file ini!");
+      }
 
-    const file = await this.repo.getFile(file_id);
-    if (!file) {
-      throw new NotFoundError("File gagal ditemukan!");
-    }
-    return file;
+      const file = await serv.repo.getFile(file_id);
+      if (!file) {
+        throw new NotFoundError("File gagal ditemukan!");
+      }
+      return file;
+    });
   }
 
   async addUserChatroom(user_id: number, chatroom_name: string, sender_id: number) {
@@ -214,50 +231,54 @@ export class ChatService {
     opts: { name?: string; user_ids?: number[] },
     sender_id: number,
   ) {
-    const { user_ids } = opts;
-    const val = await this.isAllowed(chatroom_id, sender_id);
-    if (!val) {
-      throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
-    }
-
-    const chatroom = await this.getChatroomByID(chatroom_id);
-    if (chatroom == undefined) {
-      throw new NotFoundError("Gagal menemukan ruangan tersebut!");
-    }
-
-    if (user_ids != undefined) {
-      if (chatroom.project_id != undefined) {
-        throw new ClientError(
-          "Anda tidak dapat mengkonfigurasi anggota untuk ruang diskusi proyek!",
-        );
+    return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
+      const { user_ids } = opts;
+      const val = await serv.isAllowed(chatroom_id, sender_id);
+      if (!val) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
       }
 
-      const old_members = chatroom.chatroom_users.map((x) => x.user_id);
-      for (const user_id of user_ids) {
-        if (old_members.includes(user_id)) {
-          continue;
-        }
-        const pref = await this.preference_service.getUserPreference(user_id);
-        if (pref.friend_invite === "off") {
-          const user_data = await this.user_service.getUserDetail(user_id);
-          if (user_data == undefined) {
-            throw new Error("Gagal menemukan pengguna tersebut!");
-          }
+      const chatroom = await serv.getChatroomByID(chatroom_id);
+      if (chatroom == undefined) {
+        throw new NotFoundError("Gagal menemukan ruangan tersebut!");
+      }
+
+      if (user_ids != undefined) {
+        if (chatroom.project_id != undefined) {
           throw new ClientError(
-            `Pengguna "${user_data.user_name}" tidak menerima pesan dari orang asing!`,
+            "Anda tidak dapat mengkonfigurasi anggota untuk ruang diskusi proyek!",
           );
         }
-      }
-    }
 
-    await this.repo.updateChatroom(chatroom_id, opts);
+        const old_members = chatroom.chatroom_users.map((x) => x.user_id);
+        for (const user_id of user_ids) {
+          if (old_members.includes(user_id)) {
+            continue;
+          }
+          const pref = await serv.preference_service.getUserPreference(user_id);
+          if (pref.friend_invite === "off") {
+            const user_data = await serv.user_service.getUserDetail(user_id);
+            if (user_data == undefined) {
+              throw new Error("Gagal menemukan pengguna tersebut!");
+            }
+            throw new ClientError(
+              `Pengguna "${user_data.user_name}" tidak menerima pesan dari orang asing!`,
+            );
+          }
+        }
+      }
+
+      await serv.repo.updateChatroom(chatroom_id, opts);
+    });
   }
 
   async deleteChatroom(chatroom_id: number, sender_id: number) {
-    const val = await this.isAllowed(chatroom_id, sender_id);
-    if (!val) {
-      throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
-    }
-    await this.repo.deleteChatroom(chatroom_id);
+    return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
+      const val = await serv.isAllowed(chatroom_id, sender_id);
+      if (!val) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
+      }
+      await serv.repo.deleteChatroom(chatroom_id);
+    });
   }
 }
