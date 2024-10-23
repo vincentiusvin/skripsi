@@ -1,6 +1,5 @@
-import { Kysely } from "kysely";
-import { DB } from "../../db/db_types.js";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
+import { TransactionManager } from "../../helpers/service.js";
 import {
   NotificationService,
   notificationServiceFactory,
@@ -11,12 +10,12 @@ import { UserService, userServiceFactory } from "../user/UserService.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 import { ProjectRepository } from "./ProjectRepository.js";
 
-export function projectServiceFactory(db: Kysely<DB>) {
+export function projectServiceFactory(transaction_manager: TransactionManager) {
+  const db = transaction_manager.db;
   const project_repo = new ProjectRepository(db);
-
   const user_service = userServiceFactory(db);
   const preference_service = preferenceServiceFactory(db);
-  const notification_service = notificationServiceFactory(db);
+  const notification_service = notificationServiceFactory(transaction_manager);
   const org_service = orgServiceFactory(db);
   const project_service = new ProjectService(
     project_repo,

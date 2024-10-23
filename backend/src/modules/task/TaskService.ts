@@ -1,7 +1,5 @@
-import { Kysely } from "kysely";
-import { db } from "../../db/db.js";
-import { DB } from "../../db/db_types.js";
 import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { Transactable, TransactionManager } from "../../helpers/service.js";
 import {
   NotificationService,
   notificationServiceFactory,
@@ -9,41 +7,39 @@ import {
 import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
 import { TaskRepository } from "./TaskRepository.js";
 
-export function taskServiceFactory(db: Kysely<DB>) {
+export function taskServiceFactory(transaction_manager: TransactionManager) {
+  const db = transaction_manager.db;
   const task_repo = new TaskRepository(db);
-  const notification_service = notificationServiceFactory(db);
-  const project_service = projectServiceFactory(db);
-  const task_service = new TaskService(task_repo, project_service, notification_service);
+  const notification_service = notificationServiceFactory(transaction_manager);
+  const project_service = projectServiceFactory(transaction_manager);
+  const task_service = new TaskService(
+    task_repo,
+    project_service,
+    notification_service,
+    transaction_manager,
+  );
   return task_service;
 }
 
-interface Transactable<T> {
-  factory: (db: Kysely<DB>) => T;
-}
-
-async function transaction<T extends Transactable<T>, R>(obj: T, cb: (x: T) => R) {
-  return await db.transaction().execute(async (trx) => {
-    const serviceWrappedInTransaction = obj.factory(trx);
-    return await cb(serviceWrappedInTransaction);
-  });
-}
-
 export class TaskService implements Transactable<TaskService> {
+  factory = taskServiceFactory;
+
   private task_repo: TaskRepository;
   private project_service: ProjectService;
   private notification_service: NotificationService;
+  private transaction_manager: TransactionManager;
 
   constructor(
     repo: TaskRepository,
     project_service: ProjectService,
     notification_service: NotificationService,
+    transaction_manager: TransactionManager,
   ) {
     this.task_repo = repo;
     this.project_service = project_service;
     this.notification_service = notification_service;
+    this.transaction_manager = transaction_manager;
   }
-
-  factory = taskServiceFactory;
 
   async getTaskByID(task_id: number) {
     return this.task_repo.getTaskByID(task_id);
@@ -90,7 +86,9 @@ export class TaskService implements Transactable<TaskService> {
   }
 
   async deleteBucket(bucket_id: number) {
-    return this.task_repo.deleteBucket(bucket_id);
+    await this.transaction_manager.transaction(this as TaskService, async (serv) => {
+      return serv.task_repo.deleteBucket(bucket_id);
+    });
   }
 
   async updateTask(
@@ -106,7 +104,7 @@ export class TaskService implements Transactable<TaskService> {
     },
     sender_id: number,
   ) {
-    await transaction(this as TaskService, async (serv) => {
+    await this.transaction_manager.transaction(this as TaskService, async (serv) => {
       const { users, bucket_id, name, description, start_at, end_at, before_id } = data;
       const project_id = await serv.getProjectIdFromTask(task_id);
       if (project_id == undefined) {

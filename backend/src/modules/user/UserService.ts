@@ -1,12 +1,11 @@
 import { compareSync, hashSync } from "bcryptjs";
-import { Kysely } from "kysely";
-import { DB } from "../../db/db_types.js";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
+import { TransactionManager } from "../../helpers/service.js";
 import { UserRepository } from "./UserRepository.js";
 
-export function userServiceFactory(db: Kysely<DB>) {
+export function userServiceFactory(transaction_manager: TransactionManager) {
+  const db = transaction_manager.db;
   const user_repo = new UserRepository(db);
-
   const user_service = new UserService(user_repo);
   return user_service;
 }

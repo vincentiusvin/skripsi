@@ -1,17 +1,17 @@
-import { Kysely } from "kysely";
-import { DB } from "../../db/db_types.js";
 import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { TransactionManager } from "../../helpers/service.js";
 import { EmailService, IEmailService } from "../email/EmailService.js";
 import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
 import { UserService, userServiceFactory } from "../user/UserService.js";
 import { NotificationTypes, getPreferenceKeyFromNotificationType } from "./NotificationMisc.js";
 import { NotificationRepository } from "./NotificationRepository.js";
 
-export function notificationServiceFactory(db: Kysely<DB>) {
+export function notificationServiceFactory(transaction_manager: TransactionManager) {
+  const db = transaction_manager.db;
   const notification_repo = new NotificationRepository(db);
-  const user_service = userServiceFactory(db);
+  const user_service = userServiceFactory(transaction_manager);
   const email_service = EmailService.fromEnv();
-  const preference_service = preferenceServiceFactory(db);
+  const preference_service = preferenceServiceFactory(transaction_manager);
   const notification_service = new NotificationService(
     notification_repo,
     email_service,
