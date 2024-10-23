@@ -1,6 +1,5 @@
-import { Kysely } from "kysely";
-import { DB } from "../../db/db_types.js";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
+import { TransactionManager } from "../../helpers/service.js";
 import { ChatService, chatServiceFactory } from "../chatroom/ChatroomService.js";
 import {
   NotificationService,
@@ -10,11 +9,12 @@ import { UserService, userServiceFactory } from "../user/UserService.js";
 import { ReportStatus } from "./ReportMisc.js";
 import { ReportRepository } from "./ReportRepository.js";
 
-export function reportServiceFactory(db: Kysely<DB>) {
+export function reportServiceFactory(transaction_manager: TransactionManager) {
+  const db = transaction_manager.db;
   const report_repo = new ReportRepository(db);
-  const user_service = userServiceFactory(db);
-  const notification_service = notificationServiceFactory(db);
-  const chat_service = chatServiceFactory(db);
+  const user_service = userServiceFactory(transaction_manager);
+  const notification_service = notificationServiceFactory(transaction_manager);
+  const chat_service = chatServiceFactory(transaction_manager);
 
   const report_service = new ReportService(
     report_repo,

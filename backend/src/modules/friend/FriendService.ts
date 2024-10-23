@@ -1,6 +1,5 @@
-import { Kysely } from "kysely";
-import { DB } from "../../db/db_types.js";
 import { AuthError, ClientError } from "../../helpers/error.js";
+import { TransactionManager } from "../../helpers/service.js";
 import {
   NotificationService,
   notificationServiceFactory,
@@ -9,10 +8,11 @@ import { UserService, userServiceFactory } from "../user/UserService.js";
 import { FriendStatus } from "./FriendMisc.js";
 import { FriendRepository } from "./FriendRepository.js";
 
-export function friendServiceFactory(db: Kysely<DB>) {
+export function friendServiceFactory(transaction_manager: TransactionManager) {
+  const db = transaction_manager.db;
   const friend_repo = new FriendRepository(db);
-  const user_service = userServiceFactory(db);
-  const notification_service = notificationServiceFactory(db);
+  const user_service = userServiceFactory(transaction_manager);
+  const notification_service = notificationServiceFactory(transaction_manager);
 
   const friend_service = new FriendService(friend_repo, user_service, notification_service);
   return friend_service;

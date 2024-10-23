@@ -1,5 +1,6 @@
 import { Application } from "./app.js";
 import { Route } from "./helpers/controller.js";
+import { TransactionManager } from "./helpers/service.js";
 import { TypesFromSchema, UnionToIntersection } from "./helpers/types";
 import { ArticleController } from "./modules/article/ArticleController.js";
 import { articleServiceFactory } from "./modules/article/ArticleService.js";
@@ -28,18 +29,20 @@ import { UserController } from "./modules/user/UserController.js";
 import { userServiceFactory } from "./modules/user/UserService.js";
 
 export function registerControllers(app: Application) {
-  const user_service = userServiceFactory(app.db);
-  const preference_service = preferenceServiceFactory(app.db);
-  const notification_service = notificationServiceFactory(app.db);
-  const org_service = orgServiceFactory(app.db);
-  const project_service = projectServiceFactory(app.db);
-  const task_service = taskServiceFactory(app.db);
-  const chat_service = chatServiceFactory(app.db);
-  const friend_service = friendServiceFactory(app.db);
-  const contribution_service = contributionServiceFactory(app.db);
-  const article_service = articleServiceFactory(app.db);
-  const report_service = reportServiceFactory(app.db);
-  const suspension_service = suspensionServiceFactory(app.db);
+  const tm = new TransactionManager(app.db);
+
+  const user_service = userServiceFactory(tm);
+  const preference_service = preferenceServiceFactory(tm);
+  const notification_service = notificationServiceFactory(tm);
+  const org_service = orgServiceFactory(tm);
+  const project_service = projectServiceFactory(tm);
+  const task_service = taskServiceFactory(tm);
+  const chat_service = chatServiceFactory(tm);
+  const friend_service = friendServiceFactory(tm);
+  const contribution_service = contributionServiceFactory(tm);
+  const article_service = articleServiceFactory(tm);
+  const report_service = reportServiceFactory(tm);
+  const suspension_service = suspensionServiceFactory(tm);
 
   const controllers = [
     new ChatController(app.express_server, app.socket_server, chat_service),

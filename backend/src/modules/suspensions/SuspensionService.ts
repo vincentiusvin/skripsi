@@ -1,13 +1,13 @@
 import dayjs from "dayjs";
-import { Kysely } from "kysely";
-import { DB } from "../../db/db_types.js";
 import { AuthError } from "../../helpers/error.js";
+import { TransactionManager } from "../../helpers/service.js";
 import { UserService, userServiceFactory } from "../user/UserService.js";
 import { SuspensionRepository } from "./SuspensionRepository.js";
 
-export function suspensionServiceFactory(db: Kysely<DB>) {
-  const user_service = userServiceFactory(db);
+export function suspensionServiceFactory(transaction_manager: TransactionManager) {
+  const db = transaction_manager.db;
   const suspension_repo = new SuspensionRepository(db);
+  const user_service = userServiceFactory(transaction_manager);
   const suspension_service = new SuspensionService(suspension_repo, user_service);
   return suspension_service;
 }

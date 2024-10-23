@@ -1,14 +1,14 @@
-import { Kysely } from "kysely";
-import { DB } from "../../db/db_types.js";
 import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { TransactionManager } from "../../helpers/service.js";
 import { ProjectRoles } from "../project/ProjectMisc.js";
 import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
 import { ContributionStatus } from "./ContributionMisc.js";
 import { Contribution, ContributionRepository } from "./ContributionRepository";
 
-export function contributionServiceFactory(db: Kysely<DB>) {
+export function contributionServiceFactory(transaction_manager: TransactionManager) {
+  const db = transaction_manager.db;
   const contribution_repo = new ContributionRepository(db);
-  const project_service = projectServiceFactory(db);
+  const project_service = projectServiceFactory(transaction_manager);
 
   const contribution_service = new ContributionService(contribution_repo, project_service);
   return contribution_service;

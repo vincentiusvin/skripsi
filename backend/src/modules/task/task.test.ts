@@ -34,7 +34,7 @@ describe("task api", () => {
     expect(found).to.not.eq(undefined);
   });
 
-  it.only("should be able to update task", async () => {
+  it("should be able to update task", async () => {
     const in_user = caseData.dev_user;
     const in_assignees = [caseData.project_admin_user, caseData.dev_user];
     const in_task = caseData.task[0];
