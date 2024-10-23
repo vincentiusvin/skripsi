@@ -56,37 +56,35 @@ export class PreferenceRepository {
   async saveUserPreference(user_id: number, pref: WritablePreference) {
     const res = optionalPreferenceValidator.parse(pref);
 
-    await this.db.transaction().execute(async (trx) => {
-      const modified_keys = Object.keys(res);
-      const key_refs = await trx
-        .selectFrom("ms_preferences")
-        .select(["id", "name"])
-        .where("ms_preferences.name", "in", modified_keys)
-        .execute();
-      const key_map: Record<string, number> = {};
-      key_refs.forEach((x) => {
-        key_map[x.name] = x.id;
-      });
-
-      const to_insert = Object.entries(res)
-        .map(([key, val]) => {
-          return {
-            preference_id: key_map[key],
-            user_id,
-            value: val,
-          };
-        })
-        .filter((x) => x.value != undefined);
-
-      await trx
-        .insertInto("preferences_users")
-        .values(to_insert)
-        .onConflict((oc) =>
-          oc.columns(["user_id", "preference_id"]).doUpdateSet((eb) => ({
-            value: eb.ref("excluded.value"),
-          })),
-        )
-        .execute();
+    const modified_keys = Object.keys(res);
+    const key_refs = await this.db
+      .selectFrom("ms_preferences")
+      .select(["id", "name"])
+      .where("ms_preferences.name", "in", modified_keys)
+      .execute();
+    const key_map: Record<string, number> = {};
+    key_refs.forEach((x) => {
+      key_map[x.name] = x.id;
     });
+
+    const to_insert = Object.entries(res)
+      .map(([key, val]) => {
+        return {
+          preference_id: key_map[key],
+          user_id,
+          value: val,
+        };
+      })
+      .filter((x) => x.value != undefined);
+
+    await this.db
+      .insertInto("preferences_users")
+      .values(to_insert)
+      .onConflict((oc) =>
+        oc.columns(["user_id", "preference_id"]).doUpdateSet((eb) => ({
+          value: eb.ref("excluded.value"),
+        })),
+      )
+      .execute();
   }
 }

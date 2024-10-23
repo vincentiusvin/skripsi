@@ -3,15 +3,14 @@ import { Kysely } from "kysely";
 import { before, beforeEach, describe } from "mocha";
 import { Application } from "../../app.js";
 import { DB } from "../../db/db_types.js";
+import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { getNotifications } from "../../test/NotificationTester.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { MockedEmailService } from "../email/MockedEmailService.js";
-import { PreferenceRepository } from "../preferences/PreferenceRepository.js";
-import { PreferenceService } from "../preferences/PreferenceService.js";
-import { UserRepository } from "../user/UserRepository.js";
-import { UserService } from "../user/UserService.js";
+import { preferenceServiceFactory } from "../preferences/PreferenceService.js";
+import { userServiceFactory } from "../user/UserService.js";
 import { NotificationTypes } from "./NotificationMisc.js";
 import { NotificationRepository } from "./NotificationRepository.js";
 import { NotificationService } from "./NotificationService.js";
@@ -113,10 +112,9 @@ function putNotifications(notification_id: number, read: boolean, cookie: string
 }
 
 function getMockedEmailNotificationService(db: Kysely<DB>) {
+  const tm = new TransactionManager(db);
   const notif_repo = new NotificationRepository(db);
-  const user_repo = new UserRepository(db);
-  const pref_repo = new PreferenceRepository(db);
-  const pref_service = new PreferenceService(pref_repo);
-  const user_service = new UserService(user_repo);
+  const user_service = userServiceFactory(tm);
+  const pref_service = preferenceServiceFactory(tm);
   return new NotificationService(notif_repo, new MockedEmailService(), user_service, pref_service);
 }
