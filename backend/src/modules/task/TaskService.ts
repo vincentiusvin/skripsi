@@ -1,4 +1,5 @@
 import { Kysely } from "kysely";
+import { db } from "../../db/db.js";
 import { DB } from "../../db/db_types.js";
 import { AuthError, NotFoundError } from "../../helpers/error.js";
 import {
@@ -16,7 +17,18 @@ export function taskServiceFactory(db: Kysely<DB>) {
   return task_service;
 }
 
-export class TaskService {
+interface Transactable<T> {
+  factory: (db: Kysely<DB>) => T;
+}
+
+async function transaction<T extends Transactable<T>, R>(obj: T, cb: (x: T) => R) {
+  return await db.transaction().execute(async (trx) => {
+    const serviceWrappedInTransaction = obj.factory(trx);
+    return await cb(serviceWrappedInTransaction);
+  });
+}
+
+export class TaskService implements Transactable<TaskService> {
   private task_repo: TaskRepository;
   private project_service: ProjectService;
   private notification_service: NotificationService;
@@ -30,6 +42,8 @@ export class TaskService {
     this.project_service = project_service;
     this.notification_service = notification_service;
   }
+
+  factory = taskServiceFactory;
 
   async getTaskByID(task_id: number) {
     return this.task_repo.getTaskByID(task_id);
@@ -92,60 +106,62 @@ export class TaskService {
     },
     sender_id: number,
   ) {
-    const { users, bucket_id, name, description, start_at, end_at, before_id } = data;
-    const project_id = await this.getProjectIdFromTask(task_id);
-    if (project_id == undefined) {
-      throw new Error("Gagal menemukan tugas tersebut!");
-    }
-    const sender_role = await this.project_service.getMemberRole(project_id, sender_id);
-    if (sender_role !== "Admin" && sender_role !== "Dev") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
-    }
-
-    let target_bucket: number;
-    const old_data = await this.task_repo.getTaskByID(task_id);
-    if (old_data == undefined) {
-      throw new NotFoundError("Gagal menemukan pekerjaan tersebut!");
-    }
-
-    if (bucket_id) {
-      target_bucket = bucket_id;
-    } else {
-      target_bucket = old_data.bucket_id;
-    }
-
-    let updateOrder: number | undefined;
-    if (before_id != undefined) {
-      const insert_before_this = await this.task_repo.getTaskByID(before_id);
-      if (!insert_before_this) {
-        throw new Error("Gagal mengurutkan pekerjaan!");
+    await transaction(this as TaskService, async (serv) => {
+      const { users, bucket_id, name, description, start_at, end_at, before_id } = data;
+      const project_id = await serv.getProjectIdFromTask(task_id);
+      if (project_id == undefined) {
+        throw new Error("Gagal menemukan tugas tersebut!");
       }
-      updateOrder = insert_before_this.order;
-      await this.task_repo.bumpOrderBiggerThan(target_bucket, updateOrder);
-    } else if (before_id === null || target_bucket != old_data.bucket_id) {
-      const data_after = await this.task_repo.getMaxOrder(target_bucket);
-      if (data_after == undefined) {
-        updateOrder = 1;
+      const sender_role = await serv.project_service.getMemberRole(project_id, sender_id);
+      if (sender_role !== "Admin" && sender_role !== "Dev") {
+        throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+      }
+
+      let target_bucket: number;
+      const old_data = await serv.task_repo.getTaskByID(task_id);
+      if (old_data == undefined) {
+        throw new NotFoundError("Gagal menemukan pekerjaan tersebut!");
+      }
+
+      if (bucket_id) {
+        target_bucket = bucket_id;
       } else {
-        updateOrder = data_after + 1;
+        target_bucket = old_data.bucket_id;
       }
-    }
 
-    await this.task_repo.editTask(task_id, {
-      bucket_id,
-      description,
-      end_at,
-      users,
-      name,
-      order: updateOrder,
-      start_at,
+      let updateOrder: number | undefined;
+      if (before_id != undefined) {
+        const insert_before_this = await serv.task_repo.getTaskByID(before_id);
+        if (!insert_before_this) {
+          throw new Error("Gagal mengurutkan pekerjaan!");
+        }
+        updateOrder = insert_before_this.order;
+        await serv.task_repo.bumpOrderBiggerThan(target_bucket, updateOrder);
+      } else if (before_id === null || target_bucket != old_data.bucket_id) {
+        const data_after = await serv.task_repo.getMaxOrder(target_bucket);
+        if (data_after == undefined) {
+          updateOrder = 1;
+        } else {
+          updateOrder = data_after + 1;
+        }
+      }
+
+      await serv.task_repo.editTask(task_id, {
+        bucket_id,
+        description,
+        end_at,
+        users,
+        name,
+        order: updateOrder,
+        start_at,
+      });
+
+      if (users != undefined) {
+        for (const user_id of users) {
+          await serv.sendTaskNotification(task_id, project_id, user_id);
+        }
+      }
     });
-
-    if (users != undefined) {
-      for (const user_id of users) {
-        await this.sendTaskNotification(task_id, project_id, user_id);
-      }
-    }
   }
 
   async addTask(
