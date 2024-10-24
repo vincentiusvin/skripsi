@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { before, beforeEach, describe, it } from "mocha";
 import { Application } from "../../app.js";
+import { NotificationTester } from "../../test/NotificationTester.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
@@ -235,6 +236,77 @@ describe("contribution api", () => {
       }
     });
   }
+
+  describe("notifications", () => {
+    it("should send notification on status update", async () => {
+      const in_user = caseData.contrib_user;
+      const in_admin = caseData.project_admin_user;
+      const in_contrib = caseData.user_contribution;
+      const in_contrib_update = {
+        status: "Approved",
+      } as const;
+
+      const nt = await NotificationTester.fromLoginInfo(in_user.id, in_user.name, in_user.password);
+      await nt.start();
+      const cookie = await getLoginCookie(in_admin.name, in_admin.password);
+      const read_req = await putContributions(in_contrib.id, in_contrib_update, cookie);
+      await read_req.json();
+      await nt.finish();
+      const diff = nt.diff();
+
+      expect(diff.length).to.eq(1);
+    });
+
+    it("should send notification to admins when contribution becomes pending", async () => {
+      const in_user = caseData.contrib_user;
+      const in_admin = caseData.project_admin_user;
+      const in_contrib = caseData.accepted_contribution;
+      const in_contrib_update = {
+        status: "Pending",
+      } as const;
+
+      const nt = await NotificationTester.fromLoginInfo(
+        in_admin.id,
+        in_admin.name,
+        in_admin.password,
+      );
+      await nt.start();
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const read_req = await putContributions(in_contrib.id, in_contrib_update, cookie);
+      await read_req.json();
+      await nt.finish();
+      const diff = nt.diff();
+
+      expect(diff.length).to.eq(1);
+    });
+
+    it("should send notification to admins when contribution is added", async () => {
+      const in_user = caseData.dev_user;
+      const in_proj = caseData.project;
+      const in_admin = caseData.project_admin_user;
+      const in_contrib = {
+        description: "Halo",
+        name: "Nama contrib",
+        project_id: in_proj.id,
+        user_ids: [in_user.id],
+      };
+
+      const nt = await NotificationTester.fromLoginInfo(
+        in_admin.id,
+        in_admin.name,
+        in_admin.password,
+      );
+
+      await nt.start();
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const read_req = await postContributions(in_contrib, cookie);
+      await read_req.json();
+      await nt.finish();
+      const diff = nt.diff();
+
+      expect(diff.length).to.eq(1);
+    });
+  });
 });
 
 function getContributions(params: { user_id?: number; project_id?: number }, cookie: string) {

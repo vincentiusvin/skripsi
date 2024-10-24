@@ -123,7 +123,9 @@ export class ContributionService implements Transactable<ContributionService> {
       }
 
       await serv.project_service.getProjectByID(obj.project_id);
-      return await serv.cont_repo.addContributions({ ...obj, status: "Pending" }, users);
+      const res = await serv.cont_repo.addContributions({ ...obj, status: "Pending" }, users);
+      await serv.sendNewContributionNotification(res.id);
+      return res;
     });
   }
 
@@ -171,6 +173,7 @@ export class ContributionService implements Transactable<ContributionService> {
     await this.cont_repo.updateContribution(contrib.id, {
       status,
     });
+    await this.sendStatusUpdateNotification(contrib.id);
   }
 
   private async reviseContribution(
@@ -197,5 +200,78 @@ export class ContributionService implements Transactable<ContributionService> {
       throw new AuthError("Anda tidak dapat mengubah kontribusi yang sudah ditolak!");
     }
     await this.cont_repo.updateContribution(old_contrib.id, revision);
+    if (old_contrib.status !== "Pending") {
+      await this.sendStatusUpdateNotification(old_contrib.id);
+    }
+  }
+
+  private async sendStatusUpdateNotification(contribution_id: number) {
+    const contrib = await this.cont_repo.getContributionsDetail(contribution_id);
+    if (!contrib) {
+      return;
+    }
+    let message = "diubah";
+    if (contrib.status === "Approved") {
+      message = "Diterima";
+    } else if (contrib.status === "Pending") {
+      message = "Diubah Menjadi Pending";
+    } else if (contrib.status === "Rejected") {
+      message = "Ditolak";
+    } else if (contrib.status === "Revision") {
+      message = "Diminta Revisi";
+    }
+
+    await Promise.all(
+      contrib.user_ids.map(async ({ user_id }) => {
+        return await this.notification_service.addNotification({
+          title: `Kontribusi "${contrib.name}" ${message}`,
+          user_id,
+          description: `Terdapat perkembangan pada laporan kontribusi "${
+            contrib.name
+          } yang anda buat. Kontribusi tersebut ${message.toLocaleLowerCase()}"`,
+          type: "ContributionUpdate",
+          type_id: contribution_id,
+        });
+      }),
+    );
+
+    if (contrib.status === "Pending") {
+      const project = await this.project_service.getProjectByID(contrib.project_id);
+      const admins = project?.project_members.filter((x) => x.role === "Admin") ?? [];
+      await Promise.all(
+        admins.map(async ({ user_id }) => {
+          return await this.notification_service.addNotification({
+            title: `Kontribusi "${contrib.name}" ${message}`,
+            user_id,
+            description: `Terdapat perkembangan pada laporan kontribusi "${contrib.name}. Anda dapat mengevaluasi ulang kontribusi tersebut."`,
+            type: "ContributionUpdate",
+            type_id: contribution_id,
+          });
+        }),
+      );
+    }
+  }
+  private async sendNewContributionNotification(contribution_id: number) {
+    const contrib = await this.cont_repo.getContributionsDetail(contribution_id);
+    if (!contrib) {
+      return;
+    }
+
+    const project = await this.project_service.getProjectByID(contrib.project_id);
+    if (!project) {
+      throw new Error(`Gagal menemukan proyek ${contrib.project_id}`);
+    }
+    const admins = project.project_members.filter((x) => x.role === "Admin") ?? [];
+    await Promise.all(
+      admins.map(async ({ user_id }) => {
+        return await this.notification_service.addNotification({
+          title: `Kontribusi "${contrib.name}" membutuhkan persetujuan anda!`,
+          user_id,
+          description: `Pengguna menambahkan laporan kontribusi "${contrib.name} di proyek "${project.project_name}". Anda dapat mengevaluasi kontribusi tersebut."`,
+          type: "ContributionUpdate",
+          type_id: contribution_id,
+        });
+      }),
+    );
   }
 }

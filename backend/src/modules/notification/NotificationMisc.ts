@@ -8,6 +8,7 @@ const notification_types = [
   "GeneralChat",
   "ReportUpdate",
   "Friend",
+  "ContributionUpdate",
 ] as const;
 export type NotificationTypes = (typeof notification_types)[number];
 
