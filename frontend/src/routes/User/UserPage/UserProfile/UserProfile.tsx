@@ -2,6 +2,7 @@ import { Email, School } from "@mui/icons-material";
 import { Avatar, Paper, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useLocation } from "wouter";
+import avatarFallback from "../../../../helpers/avatar_fallback.tsx";
 import { APIError } from "../../../../helpers/fetch.ts";
 import { useUsersDetailGet } from "../../../../queries/user_hooks.ts";
 import UserFriendList from "./UserProfileFriend.tsx";
@@ -28,6 +29,10 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
     return <Skeleton />;
   }
 
+  const image =
+    userDetail.user_image ??
+    avatarFallback({ label: userDetail.user_name, seed: userDetail.user_id });
+
   return (
     <Grid container rowGap={2}>
       <Grid
@@ -37,7 +42,7 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
         }}
       >
         <Stack alignItems={"center"} spacing={2}>
-          <Avatar src={userDetail.user_image ?? ""} sx={{ width: 256, height: 256 }}></Avatar>
+          <Avatar src={image} sx={{ width: 256, height: 256 }}></Avatar>
           {our_id != undefined ? (
             <FriendShortcut our_user_id={our_id} viewed_user_id={userDetail.user_id} />
           ) : null}

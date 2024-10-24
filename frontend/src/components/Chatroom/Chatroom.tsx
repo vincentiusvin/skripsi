@@ -23,6 +23,7 @@ import {
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
 import type { MessageData } from "../../../../backend/src/sockets";
+import avatarFallback from "../../helpers/avatar_fallback.tsx";
 import { fileToBase64DataURL } from "../../helpers/file.ts";
 import {
   useChatroomsDetailMessagesGet,
@@ -215,9 +216,18 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
   } else {
     return (
       <Stack direction={"row"} spacing={2} alignItems={"center"}>
-        <StyledLink to={`/users/${user_data?.user_id}`}>
-          <Avatar src={user_data?.user_image ?? ""}></Avatar>
-        </StyledLink>
+        {user_data != null ? (
+          <StyledLink to={`/users/${user_data.user_id}`}>
+            <Avatar
+              src={
+                user_data.user_image ??
+                avatarFallback({ label: user_data.user_name, seed: user_data.user_id })
+              }
+            ></Avatar>
+          </StyledLink>
+        ) : (
+          <Avatar />
+        )}
         <Stack direction={"column"} alignItems={"flex-start"}>
           <Typography fontWeight={"bold"}>{user_data?.user_name}</Typography>
           <Paper

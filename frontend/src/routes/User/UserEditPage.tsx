@@ -9,6 +9,7 @@ import {
   IconButton,
   InputAdornment,
   Paper,
+  Skeleton,
   Stack,
   TextField,
   Typography,
@@ -18,6 +19,7 @@ import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
+import avatarFallback from "../../helpers/avatar_fallback.tsx";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { useUsersDetailGet, useUsersDetailUpdate } from "../../queries/user_hooks";
@@ -87,183 +89,184 @@ function UserAccountPageEdit() {
     });
   };
 
-  if (data) {
-    return (
-      <>
-        <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
-          <DialogTitle>Add Image</DialogTitle>
-          <DialogContent>
-            <ImageDropzone
-              sx={{
-                cursor: "pointer",
-              }}
-              onChange={async (file) => {
-                const b64 = file ? await fileToBase64DataURL(file) : undefined;
-                setUserImage(b64);
-                setModalOpen(false);
-              }}
-            >
-              {userImage ? (
-                <Avatar
-                  src={userImage || (data.user_image ?? "")}
-                  variant="rounded"
+  if (!data) {
+    return <Skeleton />;
+  }
+  const old_image =
+    data.user_image ?? avatarFallback({ label: data.user_name, seed: data.user_id });
+
+  return (
+    <>
+      <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
+        <DialogTitle>Add Image</DialogTitle>
+        <DialogContent>
+          <ImageDropzone
+            sx={{
+              cursor: "pointer",
+            }}
+            onChange={async (file) => {
+              const b64 = file ? await fileToBase64DataURL(file) : undefined;
+              setUserImage(b64);
+              setModalOpen(false);
+            }}
+          >
+            {userImage ? (
+              <Avatar
+                src={userImage ?? old_image}
+                variant="rounded"
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                }}
+              ></Avatar>
+            ) : (
+              <Stack
+                alignItems={"center"}
+                minHeight={250}
+                justifyContent={"center"}
+                sx={{
+                  cursor: "pointer",
+                }}
+              >
+                <AddAPhoto
                   sx={{
-                    width: "100%",
-                    height: "100%",
+                    width: 100,
+                    height: 100,
                   }}
-                ></Avatar>
-              ) : (
-                <Stack
-                  alignItems={"center"}
-                  minHeight={250}
-                  justifyContent={"center"}
-                  sx={{
-                    cursor: "pointer",
+                />
+                <Typography>Drag and Drop or Click to upload an image!</Typography>
+              </Stack>
+            )}
+          </ImageDropzone>
+        </DialogContent>
+      </Dialog>
+      <Grid container rowGap={2}>
+        <Grid
+          size={{
+            xs: 12,
+            md: 4,
+          }}
+        >
+          <Stack alignItems={"center"}>
+            <Badge
+              overlap="circular"
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              badgeContent={
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setModalOpen(true);
                   }}
                 >
-                  <AddAPhoto
-                    sx={{
-                      width: 100,
-                      height: 100,
-                    }}
-                  />
-                  <Typography>Drag and Drop or Click to upload an image!</Typography>
-                </Stack>
-              )}
-            </ImageDropzone>
-          </DialogContent>
-        </Dialog>
-        <Grid container rowGap={2}>
-          <Grid
-            size={{
-              xs: 12,
-              md: 4,
-            }}
-          >
-            <Stack alignItems={"center"}>
-              <Badge
-                overlap="circular"
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                badgeContent={
-                  <Button
-                    variant="contained"
-                    onClick={() => {
-                      setModalOpen(true);
-                    }}
-                  >
-                    <Edit />
-                  </Button>
-                }
-              >
-                <Avatar
-                  src={userImage || (data.user_image ?? "")}
-                  sx={{ width: 256, height: 256 }}
-                ></Avatar>
-              </Badge>
-            </Stack>
-          </Grid>
-          <Grid
-            size={{
-              xs: 12,
-              md: 8,
-            }}
-          >
-            <Stack gap={4}>
-              <Paper
-                sx={{
-                  px: 4,
-                  py: 2,
-                }}
-              >
-                <Stack gap={1}>
-                  <TextField
-                    label="Username"
-                    required
-                    variant="standard"
-                    value={userName ?? data.user_name}
-                    onChange={(e) => setUserName(e.target.value)}
-                    fullWidth
-                  />
-                  <TextField
-                    type={showPassword ? "text" : "password"}
-                    value={userPassword ?? ""}
-                    onChange={(e) => setUserPassword(e.target.value)}
-                    variant="standard"
-                    label="Password"
-                    fullWidth
-                    slotProps={{
-                      input: {
-                        endAdornment: (
-                          <InputAdornment position="start">
-                            <IconButton
-                              aria-label="toggle password visibility"
-                              onClick={handleClickShowPassword}
-                              onMouseDown={handleMouseDownPassword}
-                            >
-                              {showPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      },
-                    }}
-                  />
-                  <TextField
-                    required
-                    label="Confirm Password"
-                    fullWidth
-                    value={userConfirmPassword ?? ""}
-                    onChange={(e) => setUserConfirmPassword(e.target.value)}
-                    type="password"
-                    variant="standard"
-                  />
-                  <TextField
-                    required
-                    label="Email"
-                    variant="standard"
-                    fullWidth
-                    onChange={(e) => setUserEmail(e.target.value)}
-                    value={userEmail ?? data.user_email}
-                  />
-                  <TextField
-                    label="Education Level"
-                    fullWidth
-                    variant="standard"
-                    onChange={(e) => setUserEducationLevel(e.target.value)}
-                    value={userEducationLevel ?? data.user_education_level}
-                  />
-                  <TextField
-                    label="School"
-                    fullWidth
-                    variant="standard"
-                    onChange={(e) => setUserSchool(e.target.value)}
-                    value={userSchool ?? data.user_school}
-                  />
-                </Stack>
-              </Paper>
-
-              <Paper
-                sx={{
-                  px: 4,
-                  py: 2,
-                }}
-              >
+                  <Edit />
+                </Button>
+              }
+            >
+              <Avatar src={userImage ?? old_image} sx={{ width: 256, height: 256 }}></Avatar>
+            </Badge>
+          </Stack>
+        </Grid>
+        <Grid
+          size={{
+            xs: 12,
+            md: 8,
+          }}
+        >
+          <Stack gap={4}>
+            <Paper
+              sx={{
+                px: 4,
+                py: 2,
+              }}
+            >
+              <Stack gap={1}>
                 <TextField
-                  label="About Me"
+                  label="Username"
+                  required
+                  variant="standard"
+                  value={userName ?? data.user_name}
+                  onChange={(e) => setUserName(e.target.value)}
+                  fullWidth
+                />
+                <TextField
+                  type={showPassword ? "text" : "password"}
+                  value={userPassword ?? ""}
+                  onChange={(e) => setUserPassword(e.target.value)}
+                  variant="standard"
+                  label="Password"
+                  fullWidth
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="start">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            onMouseDown={handleMouseDownPassword}
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+                <TextField
+                  required
+                  label="Confirm Password"
+                  fullWidth
+                  value={userConfirmPassword ?? ""}
+                  onChange={(e) => setUserConfirmPassword(e.target.value)}
+                  type="password"
+                  variant="standard"
+                />
+                <TextField
+                  required
+                  label="Email"
                   variant="standard"
                   fullWidth
-                  onChange={(e) => setUserAboutMe(e.target.value)}
-                  value={userAboutMe ?? data.user_about_me}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  value={userEmail ?? data.user_email}
                 />
-              </Paper>
-              <Button endIcon={<Save />} variant="contained" onClick={handleUpdateClick}>
-                Simpan
-              </Button>
-            </Stack>
-          </Grid>
+                <TextField
+                  label="Education Level"
+                  fullWidth
+                  variant="standard"
+                  onChange={(e) => setUserEducationLevel(e.target.value)}
+                  value={userEducationLevel ?? data.user_education_level}
+                />
+                <TextField
+                  label="School"
+                  fullWidth
+                  variant="standard"
+                  onChange={(e) => setUserSchool(e.target.value)}
+                  value={userSchool ?? data.user_school}
+                />
+              </Stack>
+            </Paper>
+
+            <Paper
+              sx={{
+                px: 4,
+                py: 2,
+              }}
+            >
+              <TextField
+                label="About Me"
+                variant="standard"
+                fullWidth
+                onChange={(e) => setUserAboutMe(e.target.value)}
+                value={userAboutMe ?? data.user_about_me}
+              />
+            </Paper>
+            <Button endIcon={<Save />} variant="contained" onClick={handleUpdateClick}>
+              Simpan
+            </Button>
+          </Stack>
         </Grid>
-      </>
-    );
-  }
+      </Grid>
+    </>
+  );
 }
 
 export default UserAccountPageEdit;

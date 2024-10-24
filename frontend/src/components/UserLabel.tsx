@@ -1,4 +1,5 @@
 import { Avatar, Skeleton, Stack, Typography } from "@mui/material";
+import avatarFallback from "../helpers/avatar_fallback.tsx";
 import { useUsersDetailGet } from "../queries/user_hooks.ts";
 
 function UserLabel(props: { user_id: number; disableImage?: boolean; disableName?: boolean }) {
@@ -7,10 +8,11 @@ function UserLabel(props: { user_id: number; disableImage?: boolean; disableName
   if (!user) {
     return <Skeleton />;
   }
+  const fallback_img = avatarFallback({ label: user.user_name, seed: user.user_id });
 
   return (
     <Stack direction={"row"} textOverflow={"ellipsis"} alignItems={"center"} spacing={2}>
-      {!disableImage ? <Avatar src={user.user_image ?? undefined} /> : null}
+      {!disableImage ? <Avatar src={user.user_image ?? fallback_img} /> : null}
       {!disableName ? <Typography>{user.user_name}</Typography> : null}
     </Stack>
   );
