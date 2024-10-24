@@ -1,6 +1,6 @@
 import { ReadablePreference } from "../preferences/PreferenceRepository.js";
 
-const notification_types = [
+export const notification_types = [
   "OrgManage",
   "ProjectManage",
   "ProjectTask",
@@ -29,6 +29,7 @@ export function getPreferenceKeyFromNotificationType(notification_type: Notifica
     ReportUpdate: "report_notif",
     ProjectTask: "task_notif",
     Friend: "friend_notif",
+    ContributionUpdate: "contrib_notif",
   } as Record<NotificationTypes[number], keyof ReadablePreference>;
 
   return map[notification_type];

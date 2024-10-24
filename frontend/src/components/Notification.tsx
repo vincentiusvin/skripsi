@@ -38,6 +38,9 @@ function resolveNotificationLink(type: NotificationData["type"], type_id: number
   if (type === "Friend") {
     return `/users/${type_id}`;
   }
+  if (type === "ContributionUpdate") {
+    return `/contributions/${type_id}`;
+  }
 }
 
 function NotificationEntry(props: { notification_data: NotificationData; onClick?: () => void }) {

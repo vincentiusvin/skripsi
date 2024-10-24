@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { validateLogged } from "../../helpers/validate.js";
 import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import { notification_types } from "./NotificationMisc.js";
 import { NotificationService } from "./NotificationService.js";
 
 export class NotificationController extends Controller {
@@ -31,15 +32,7 @@ export class NotificationController extends Controller {
       }),
       ResBody: z
         .object({
-          type: z.enum([
-            "OrgManage",
-            "ProjectManage",
-            "ProjectTask",
-            "ProjectChat",
-            "GeneralChat",
-            "ReportUpdate",
-            "Friend",
-          ]),
+          type: z.enum(notification_types),
           read: z.boolean(),
           user_id: z.number(),
           id: z.number(),
@@ -74,15 +67,7 @@ export class NotificationController extends Controller {
         read: z.boolean(),
       }),
       ResBody: z.object({
-        type: z.enum([
-          "OrgManage",
-          "ProjectManage",
-          "ProjectTask",
-          "ProjectChat",
-          "GeneralChat",
-          "ReportUpdate",
-          "Friend",
-        ]),
+        type: z.enum(notification_types),
         read: z.boolean(),
         user_id: z.number(),
         id: z.number(),
