@@ -1,5 +1,9 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
-import { TransactionManager } from "../../helpers/transaction/transaction.js";
+import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
+import {
+  NotificationService,
+  notificationServiceFactory,
+} from "../notification/NotificationService.js";
 import { ProjectRoles } from "../project/ProjectMisc.js";
 import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
 import { ContributionStatus } from "./ContributionMisc.js";
@@ -9,8 +13,14 @@ export function contributionServiceFactory(transaction_manager: TransactionManag
   const db = transaction_manager.getDB();
   const contribution_repo = new ContributionRepository(db);
   const project_service = projectServiceFactory(transaction_manager);
+  const notification_service = notificationServiceFactory(transaction_manager);
 
-  const contribution_service = new ContributionService(contribution_repo, project_service);
+  const contribution_service = new ContributionService(
+    contribution_repo,
+    project_service,
+    notification_service,
+    transaction_manager,
+  );
   return contribution_service;
 }
 
@@ -19,55 +29,71 @@ export function contributionServiceFactory(transaction_manager: TransactionManag
 // approved, revision -> pending (boleh balik pending kalau udah approved)
 // rejected -> end
 
-export class ContributionService {
+export class ContributionService implements Transactable<ContributionService> {
   private cont_repo: ContributionRepository;
   private project_service: ProjectService;
-  constructor(cont_repo: ContributionRepository, project_service: ProjectService) {
+  private notification_service: NotificationService;
+  private transaction_manager: TransactionManager;
+  constructor(
+    cont_repo: ContributionRepository,
+    project_service: ProjectService,
+    notification_service: NotificationService,
+    transaction_manager: TransactionManager,
+  ) {
     this.cont_repo = cont_repo;
     this.project_service = project_service;
+    this.notification_service = notification_service;
+    this.transaction_manager = transaction_manager;
   }
+  factory = contributionServiceFactory;
 
   async isAllowedToView(contribution_id: number, sender_id: number) {
-    const contrib = await this.cont_repo.getContributionsDetail(contribution_id);
-    if (!contrib) {
-      throw new NotFoundError("Gagal menemukan kontribusi!");
-    }
+    return await this.transaction_manager.transaction(this as ContributionService, async (serv) => {
+      const contrib = await serv.cont_repo.getContributionsDetail(contribution_id);
+      if (!contrib) {
+        throw new NotFoundError("Gagal menemukan kontribusi!");
+      }
 
-    if (contrib.status === "Approved") {
-      return true;
-    }
+      if (contrib.status === "Approved") {
+        return true;
+      }
 
-    if (contrib.user_ids.map((x) => x.user_id).includes(sender_id)) {
-      return true;
-    }
+      if (contrib.user_ids.map((x) => x.user_id).includes(sender_id)) {
+        return true;
+      }
 
-    const sender_project_role: ProjectRoles = !Number.isNaN(sender_id)
-      ? await this.project_service.getMemberRole(contrib.project_id, sender_id)
-      : "Not Involved";
+      const sender_project_role: ProjectRoles = !Number.isNaN(sender_id)
+        ? await serv.project_service.getMemberRole(contrib.project_id, sender_id)
+        : "Not Involved";
 
-    if (sender_project_role === "Admin") {
-      return true;
-    }
+      if (sender_project_role === "Admin") {
+        return true;
+      }
 
-    return false;
+      return false;
+    });
   }
 
   async getContributions(params: { user_id?: number; project_id?: number }, sender_id: number) {
-    const result = await this.cont_repo.getContributions(params.user_id, params.project_id);
+    return await this.transaction_manager.transaction(this as ContributionService, async (serv) => {
+      const result = await serv.cont_repo.getContributions(params.user_id, params.project_id);
 
-    const filter_result = await Promise.all(
-      result.map(async (contrib) => await this.isAllowedToView(contrib.id, sender_id)),
-    );
+      const filter_result = await Promise.all(
+        result.map(async (contrib) => await serv.isAllowedToView(contrib.id, sender_id)),
+      );
 
-    return result.filter((_, i) => filter_result[i]);
+      return result.filter((_, i) => filter_result[i]);
+    });
   }
 
   async getContributionDetail(contribution_id: number, sender_id: number) {
-    const allowed = await this.isAllowedToView(contribution_id, sender_id);
-    if (!allowed) {
-      throw new AuthError("Anda tidak memiliki akses untuk membaca kontribusi ini!");
-    }
-    return this.cont_repo.getContributionsDetail(contribution_id);
+    return await this.transaction_manager.transaction(this as ContributionService, async (serv) => {
+      const allowed = await serv.isAllowedToView(contribution_id, sender_id);
+      if (!allowed) {
+        throw new AuthError("Anda tidak memiliki akses untuk membaca kontribusi ini!");
+      }
+      return serv.cont_repo.getContributionsDetail(contribution_id);
+    });
   }
 
   async addContributions(
@@ -79,24 +105,26 @@ export class ContributionService {
     users: number[],
     sender_id: number,
   ) {
-    // Harus dibuat sama orang projek, tapi boleh include orang di luar.
-    const is_member = await this.project_service.getMemberRole(obj.project_id, sender_id);
-    if (is_member !== "Admin" && is_member !== "Dev") {
-      throw new AuthError(
-        "Anda tidak memiliki akses untuk menambahkan kontribusi pada proyek ini!",
-      );
-    }
-
-    if (is_member === "Dev") {
-      if (!users.includes(sender_id)) {
+    return await this.transaction_manager.transaction(this as ContributionService, async (serv) => {
+      // Harus dibuat sama orang projek, tapi boleh include orang di luar.
+      const is_member = await serv.project_service.getMemberRole(obj.project_id, sender_id);
+      if (is_member !== "Admin" && is_member !== "Dev") {
         throw new AuthError(
-          "Developer tidak memiliki akses untuk menambahkan kontribusi orang lain!",
+          "Anda tidak memiliki akses untuk menambahkan kontribusi pada proyek ini!",
         );
       }
-    }
 
-    await this.project_service.getProjectByID(obj.project_id);
-    return await this.cont_repo.addContributions({ ...obj, status: "Pending" }, users);
+      if (is_member === "Dev") {
+        if (!users.includes(sender_id)) {
+          throw new AuthError(
+            "Developer tidak memiliki akses untuk menambahkan kontribusi orang lain!",
+          );
+        }
+      }
+
+      await serv.project_service.getProjectByID(obj.project_id);
+      return await serv.cont_repo.addContributions({ ...obj, status: "Pending" }, users);
+    });
   }
 
   async updateContribution(
@@ -110,17 +138,19 @@ export class ContributionService {
     },
     sender_id: number,
   ) {
-    const old_data = await this.getContributionDetail(id, sender_id);
-    if (old_data == undefined) {
-      throw new NotFoundError("Gagal menemukan kontribusi tersebut!");
-    }
+    return await this.transaction_manager.transaction(this as ContributionService, async (serv) => {
+      const old_data = await serv.getContributionDetail(id, sender_id);
+      if (old_data == undefined) {
+        throw new NotFoundError("Gagal menemukan kontribusi tersebut!");
+      }
 
-    const { status } = obj;
-    if (status === "Approved" || status === "Rejected" || status === "Revision") {
-      await this.approveContribution(status, old_data, sender_id);
-    } else {
-      await this.reviseContribution(old_data, { ...obj, status }, sender_id);
-    }
+      const { status } = obj;
+      if (status === "Approved" || status === "Rejected" || status === "Revision") {
+        await serv.approveContribution(status, old_data, sender_id);
+      } else {
+        await serv.reviseContribution(old_data, { ...obj, status }, sender_id);
+      }
+    });
   }
 
   private async approveContribution(
