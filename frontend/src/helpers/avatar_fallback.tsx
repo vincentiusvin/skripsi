@@ -1,17 +1,24 @@
-function fnv(num: number) {
-  const arr = new Uint8Array([num & 0xff, num & 0xff00, num & 0xff0000, num & 0xff000000]);
+function fnv1a(num: number) {
+  const arr = new Uint8Array([
+    (num >>> 24) & 0xff,
+    (num >>> 16) & 0xff,
+    (num >>> 8) & 0xff,
+    (num >>> 0) & 0xff,
+  ]);
 
-  let hash = 2166136261;
-
+  let hash = 2166136261n;
   for (const byte of arr) {
-    hash = hash ^ byte;
-    hash = hash * 16777619;
+    hash = hash ^ BigInt(byte);
+    hash = BigInt.asUintN(32, hash * 16777619n);
   }
-  return hash;
+  return Number(hash);
 }
 
 function getColorPair(num: number) {
-  const hue = fnv(num) % 360;
+  const hash = fnv1a(num);
+  const mainHue = 30 + (hash % 6) * 60;
+  const secHue = (hash % 61) - 30;
+  const hue = mainHue + secHue;
   return [`hsl(${hue - 5}, 80%, 20%)`, `hsl(${hue + 5}, 35%, 60%)`];
 }
 
