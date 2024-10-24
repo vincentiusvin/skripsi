@@ -200,13 +200,15 @@ function EditBucketDialog(props: { bucket_id: number }) {
   return (
     <>
       <Dialog open={active} onClose={() => setActive(false)}>
-        <DialogTitle>Edit task</DialogTitle>
+        <DialogTitle>Edit bucket</DialogTitle>
         <DialogContent>
-          <TextField
-            label="Insert name"
-            value={newName ?? bucket.name}
-            onChange={(x) => setNewName(x.target.value)}
-          ></TextField>
+          <Box my={1}>
+            <TextField
+              label="Insert name"
+              value={newName ?? bucket.name}
+              onChange={(x) => setNewName(x.target.value)}
+            ></TextField>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button
@@ -215,7 +217,7 @@ function EditBucketDialog(props: { bucket_id: number }) {
               setActive(false);
             }}
           >
-            Delete Bucket
+            Hapus Kelompok Tugas
           </Button>
           <Button
             onClick={() => {
@@ -227,24 +229,13 @@ function EditBucketDialog(props: { bucket_id: number }) {
               setActive(false);
             }}
           >
-            Edit Bucket
+            Simpan Nama
           </Button>
         </DialogActions>
       </Dialog>
-      <Box maxWidth={256}>
-        <Typography
-          display={"inline"}
-          variant="h6"
-          sx={{
-            wordBreak: "break-word",
-          }}
-        >
-          {bucket.name}
-        </Typography>
-        <IconButton onClick={() => setActive(true)}>
-          <MoreVert />
-        </IconButton>
-      </Box>
+      <IconButton onClick={() => setActive(true)}>
+        <MoreVert />
+      </IconButton>
     </>
   );
 }
@@ -639,9 +630,20 @@ function Kanban(props: { project_id: number }) {
           }}
         >
           {tempTasksData.map(({ bucket, tasks }, i) => (
-            <Box key={bucket.id}>
-              <EditBucketDialog bucket_id={extractID(bucket.id)!} />
-              <AddNewTaskDialog bucket_id={extractID(bucket.id)!} project_id={project_id} />
+            <Box key={bucket.id} width={"250px"}>
+              <Stack spacing={1} direction={"row"} alignItems={"center"}>
+                <Typography
+                  flexGrow={1}
+                  variant="h6"
+                  sx={{
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {bucket.name}
+                </Typography>
+                <EditBucketDialog bucket_id={extractID(bucket.id)!} />
+                <AddNewTaskDialog bucket_id={extractID(bucket.id)!} project_id={project_id} />
+              </Stack>
               <Column
                 position={"relative"}
                 sx={{
@@ -658,7 +660,7 @@ function Kanban(props: { project_id: number }) {
                 id={bucket.id}
                 items={tasks?.map((x) => x.id) ?? []}
               >
-                <Stack spacing={5} width={"250px"} height={1}>
+                <Stack spacing={5} height={1}>
                   {tasks?.map((task) => (
                     <DraggableTask
                       key={task.id}
@@ -679,7 +681,7 @@ function Kanban(props: { project_id: number }) {
             </DragOverlay>
           </Box>
           <Box>
-            <Stack direction={"row"} alignItems={"top"}>
+            <Stack direction={"row"} alignItems={"top"} width={"250px"}>
               <TextField
                 label="Add Bucket"
                 value={newBucketName}
