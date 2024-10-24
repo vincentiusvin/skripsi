@@ -119,47 +119,53 @@ function Task(props: {
       {...fullProps}
       sx={{
         opacity: isDragged ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        paddingX: 1,
       }}
     >
-      <CardHeader
-        action={
-          <>
-            <EditTaskDialog task_id={task_id} project_id={project_id} />
-            <IconButton
-              {...handleProps}
-              sx={{
-                touchAction: "none",
-              }}
-            >
-              <DragIndicator />
-            </IconButton>
-          </>
-        }
+      <IconButton
+        size="small"
+        {...handleProps}
         sx={{
-          wordBreak: "break-word",
+          touchAction: "none",
         }}
-        title={
-          <Typography variant="h5" fontWeight={"bold"}>
-            {task.name}
-          </Typography>
-        }
-        subheader={<Typography variant="body1">{task.description}</Typography>}
-      />
-      <CardContent>
-        {task.start_at && (
-          <>
-            <Typography variant="caption">
-              Mulai: {dayjs(task.start_at).format("ddd, DD/MM/YY")}
+      >
+        <DragIndicator />
+      </IconButton>
+      <Box flexGrow={1}>
+        <CardHeader
+          action={
+            <>
+              <EditTaskDialog task_id={task_id} project_id={project_id} />
+            </>
+          }
+          sx={{
+            wordBreak: "break-word",
+          }}
+          title={
+            <Typography variant="h5" fontWeight={"bold"}>
+              {task.name}
             </Typography>
-            <br />
-          </>
-        )}
-        {task.end_at && (
-          <Typography variant="caption">
-            Berakhir: {dayjs(task.end_at).format("ddd, DD/MM/YY")}
-          </Typography>
-        )}
-      </CardContent>
+          }
+          subheader={<Typography variant="body1">{task.description}</Typography>}
+        />
+        <CardContent>
+          {task.start_at && (
+            <>
+              <Typography variant="caption">
+                Mulai: {dayjs(task.start_at).format("ddd, DD/MM/YY")}
+              </Typography>
+              <br />
+            </>
+          )}
+          {task.end_at && (
+            <Typography variant="caption">
+              Berakhir: {dayjs(task.end_at).format("ddd, DD/MM/YY")}
+            </Typography>
+          )}
+        </CardContent>
+      </Box>
     </Card>
   );
 }
@@ -468,8 +474,10 @@ type TempTasks = {
 
 function Kanban(props: { project_id: number }) {
   const { project_id } = props;
+  const [newBucketName, setNewBucketName] = useState("");
   const { mutate: addBucket } = useBucketsPost({
     onSuccess: () => {
+      setNewBucketName("");
       enqueueSnackbar({
         message: <Typography>Task created!</Typography>,
         variant: "success",
@@ -504,7 +512,6 @@ function Kanban(props: { project_id: number }) {
     setTempTasksData(reshaped);
   }, [tasksData, isFetching]);
 
-  const [newBucketName, setNewBucketName] = useState("");
   const [activeDragID, setActiveDragID] = useState<string | null>();
 
   function findLocation(cell_id: string) {
@@ -664,11 +671,13 @@ function Kanban(props: { project_id: number }) {
               </Column>
             </Box>
           ))}
-          <DragOverlay>
-            {activelyDragged != undefined ? (
-              <Task project_id={project_id} task_id={extractID(activelyDragged.id)!}></Task>
-            ) : null}
-          </DragOverlay>
+          <Box>
+            <DragOverlay>
+              {activelyDragged != undefined ? (
+                <Task project_id={project_id} task_id={extractID(activelyDragged.id)!}></Task>
+              ) : null}
+            </DragOverlay>
+          </Box>
           <Box>
             <Stack direction={"row"} alignItems={"top"}>
               <TextField

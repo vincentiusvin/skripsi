@@ -85,7 +85,7 @@ function DownloadableFile(props: { filename: string; file_id: number }) {
         </Typography>
         {/* Pake yang MUI punya, yang wouter gabisa buka di new tab */}
         <Link href={`/api/files/${file_id}`} target="_blank">
-          <IconButton color="default">
+          <IconButton variant="outlined" color="default">
             <Download />
           </IconButton>
         </Link>
@@ -154,10 +154,11 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
                 {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
               </Typography>
             </Box>
-            <IconButton onClick={update}>
+            <IconButton variant="outlined" onClick={update}>
               <Check />
             </IconButton>
             <IconButton
+              variant="outlined"
               onClick={() => {
                 setIsEditing(false);
                 setEditMsg(undefined);
@@ -199,6 +200,7 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
             </Stack>
             <Box>
               <IconButton
+                variant="outlined"
                 onClick={() => {
                   setIsEditing(true);
                 }}
@@ -388,7 +390,7 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
             ]);
           }}
         >
-          <IconButton>
+          <IconButton variant="outlined">
             <AttachFile />
           </IconButton>
         </FileDropzone>

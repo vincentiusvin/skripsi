@@ -135,12 +135,12 @@ function NotificationDialog(props: { user_id: number }) {
     <>
       {unread != undefined ? (
         <Badge badgeContent={unread} color="primary">
-          <IconButton onClick={() => setOpenNotification(true)}>
+          <IconButton variant="outlined" onClick={() => setOpenNotification(true)}>
             <Notifications />
           </IconButton>
         </Badge>
       ) : (
-        <IconButton onClick={() => setOpenNotification(true)}>
+        <IconButton variant="outlined" onClick={() => setOpenNotification(true)}>
           <Notifications />
         </IconButton>
       )}

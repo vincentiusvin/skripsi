@@ -157,7 +157,7 @@ function EditSuspension(props: { suspension_id: number }) {
           </Button>
         </DialogActions>
       </Dialog>
-      <IconButton onClick={() => setOpen(true)}>
+      <IconButton variant="outlined" onClick={() => setOpen(true)}>
         <Edit />
       </IconButton>
     </>
@@ -170,7 +170,7 @@ function DeleteSuspension(props: { suspension_id: number }) {
     suspension_id,
   });
   return (
-    <IconButton onClick={() => deleteBan()}>
+    <IconButton variant="outlined" onClick={() => deleteBan()}>
       <Delete />
     </IconButton>
   );
@@ -279,11 +279,11 @@ function AccountRow(props: {
         <TableCell>{suspended_string}</TableCell>
         <TableCell>
           {open ? (
-            <IconButton size="small" onClick={() => setOpen(false)}>
+            <IconButton variant="outlined" size="small" onClick={() => setOpen(false)}>
               <KeyboardArrowUp />
             </IconButton>
           ) : (
-            <IconButton size="small" onClick={() => setOpen(true)}>
+            <IconButton variant="outlined" size="small" onClick={() => setOpen(true)}>
               <KeyboardArrowDown />
             </IconButton>
           )}

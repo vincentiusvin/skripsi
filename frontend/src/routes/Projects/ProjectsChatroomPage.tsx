@@ -144,11 +144,11 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
               <Paper>
                 <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
                   {sideOpen ? (
-                    <IconButton onClick={() => setSideOpen(() => false)}>
+                    <IconButton variant="outlined" onClick={() => setSideOpen(() => false)}>
                       <ArrowLeft />
                     </IconButton>
                   ) : (
-                    <IconButton onClick={() => setSideOpen(() => true)}>
+                    <IconButton variant="outlined" onClick={() => setSideOpen(() => true)}>
                       <ArrowRight />
                     </IconButton>
                   )}
@@ -178,7 +178,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
                     />
                     <ChangeNameDialog chatroom_id={selectedChatroom.chatroom_id} />
                   </Menu>
-                  <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)}>
+                  <IconButton variant="outlined" onClick={(e) => setMenuAnchor(e.currentTarget)}>
                     <MoreVert />
                   </IconButton>
                 </Stack>

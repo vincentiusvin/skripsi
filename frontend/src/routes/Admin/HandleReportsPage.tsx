@@ -174,11 +174,11 @@ function ReportRow(props: {
         </TableCell>
         <TableCell>
           {open ? (
-            <IconButton size="small" onClick={() => setOpen(false)}>
+            <IconButton variant="outlined" size="small" onClick={() => setOpen(false)}>
               <KeyboardArrowUp />
             </IconButton>
           ) : (
-            <IconButton size="small" onClick={() => setOpen(true)}>
+            <IconButton variant="outlined" size="small" onClick={() => setOpen(true)}>
               <KeyboardArrowDown />
             </IconButton>
           )}

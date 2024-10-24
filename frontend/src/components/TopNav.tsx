@@ -43,7 +43,7 @@ function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) =>
             },
           }}
         >
-          <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
+          <IconButton variant="outlined" onClick={() => setDrawerOpen(!drawerOpen)}>
             <MenuIcon />
           </IconButton>
         </Box>
@@ -67,6 +67,7 @@ function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) =>
             </StyledLink>
             {data?.logged ? <NotificationDialog user_id={data.user_id} /> : null}
             <IconButton
+              variant="outlined"
               sx={{
                 display: {
                   xs: "inline-flex",
@@ -99,11 +100,11 @@ function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) =>
           </StyledLink>
         )}
         {theme === "dark" ? (
-          <IconButton onClick={() => setTheme("light")}>
+          <IconButton onClick={() => setTheme("light")} variant="outlined">
             <LightMode />
           </IconButton>
         ) : (
-          <IconButton onClick={() => setTheme("dark")}>
+          <IconButton onClick={() => setTheme("dark")} variant="outlined">
             <DarkMode />
           </IconButton>
         )}
