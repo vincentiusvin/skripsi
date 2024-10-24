@@ -1,12 +1,17 @@
-function getColorPair(num: number) {
-  const limit = 360;
-  let hue: number;
-  if (num * 2 < limit) {
-    hue = (num * num) % limit;
-  } else {
-    hue = limit - ((num * num) % limit);
-  }
+function fnv(num: number) {
+  const arr = new Uint8Array([num & 0xff, num & 0xff00, num & 0xff0000, num & 0xff000000]);
 
+  let hash = 2166136261;
+
+  for (const byte of arr) {
+    hash = hash ^ byte;
+    hash = hash * 16777619;
+  }
+  return hash;
+}
+
+function getColorPair(num: number) {
+  const hue = fnv(num) % 360;
   return [`hsl(${hue - 5}, 80%, 20%)`, `hsl(${hue + 5}, 35%, 60%)`];
 }
 
