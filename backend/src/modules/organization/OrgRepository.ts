@@ -105,45 +105,43 @@ export class OrgRepository {
     firstUser: number,
   ) {
     const { org_name, org_address, org_description, org_phone, org_categories, org_image } = obj;
-    return await this.db.transaction().execute(async (trx) => {
-      const org = await trx
-        .insertInto("ms_orgs")
-        .values({
-          name: org_name,
-          description: org_description,
-          address: org_address,
-          phone: org_phone,
-          ...(org_image && { image: org_image }),
-        })
-        .returning(["ms_orgs.id"])
-        .executeTakeFirst();
+    const org = await this.db
+      .insertInto("ms_orgs")
+      .values({
+        name: org_name,
+        description: org_description,
+        address: org_address,
+        phone: org_phone,
+        ...(org_image && { image: org_image }),
+      })
+      .returning(["ms_orgs.id"])
+      .executeTakeFirst();
 
-      if (!org) {
-        throw new Error("Data not inserted!");
-      }
+    if (!org) {
+      throw new Error("Data not inserted!");
+    }
 
-      if (org_categories && org_categories.length) {
-        await trx
-          .insertInto("categories_orgs")
-          .values(
-            org_categories.map((cat_id) => ({
-              org_id: org.id,
-              category_id: cat_id,
-            })),
-          )
-          .execute();
-      }
-
-      await trx
-        .insertInto("orgs_users")
-        .values({
-          user_id: firstUser,
-          org_id: org.id,
-          role: "Admin",
-        })
+    if (org_categories && org_categories.length) {
+      await this.db
+        .insertInto("categories_orgs")
+        .values(
+          org_categories.map((cat_id) => ({
+            org_id: org.id,
+            category_id: cat_id,
+          })),
+        )
         .execute();
-      return org;
-    });
+    }
+
+    await this.db
+      .insertInto("orgs_users")
+      .values({
+        user_id: firstUser,
+        org_id: org.id,
+        role: "Admin",
+      })
+      .execute();
+    return org;
   }
 
   async getCategories() {
@@ -166,56 +164,48 @@ export class OrgRepository {
   ) {
     const { org_name, org_description, org_address, org_phone, org_image, org_category } = obj;
 
-    await this.db.transaction().execute(async (trx) => {
-      if (
-        org_name != undefined ||
-        org_description != undefined ||
-        org_address != undefined ||
-        org_phone != undefined ||
-        org_image != undefined
-      ) {
-        const org = await trx
-          .updateTable("ms_orgs")
-          .set({
-            name: org_name,
-            description: org_description,
-            address: org_address,
-            phone: org_phone,
-            ...(org_image && { image: org_image }),
-          })
-          .where("id", "=", id)
-          .executeTakeFirst();
+    if (
+      org_name != undefined ||
+      org_description != undefined ||
+      org_address != undefined ||
+      org_phone != undefined ||
+      org_image != undefined
+    ) {
+      const org = await this.db
+        .updateTable("ms_orgs")
+        .set({
+          name: org_name,
+          description: org_description,
+          address: org_address,
+          phone: org_phone,
+          ...(org_image && { image: org_image }),
+        })
+        .where("id", "=", id)
+        .executeTakeFirst();
 
-        if (!org) {
-          throw new Error("Data tidak update!");
-        }
+      if (!org) {
+        throw new Error("Data tidak update!");
       }
+    }
 
-      if (org_category) {
-        await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
+    if (org_category) {
+      await this.db.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
 
-        if (org_category.length) {
-          await trx
-            .insertInto("categories_orgs")
-            .values(
-              org_category.map((cat_id) => ({
-                org_id: id,
-                category_id: cat_id,
-              })),
-            )
-            .execute();
-        }
+      if (org_category.length) {
+        await this.db
+          .insertInto("categories_orgs")
+          .values(
+            org_category.map((cat_id) => ({
+              org_id: id,
+              category_id: cat_id,
+            })),
+          )
+          .execute();
       }
-    });
+    }
   }
   async deleteOrg(id: number) {
-    await this.db.transaction().execute(async (trx) => {
-      await trx.deleteFrom("ms_task_buckets").where("id", "=", id).execute();
-      await trx.deleteFrom("ms_projects").where("org_id", "=", id).execute();
-      await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
-      await trx.deleteFrom("orgs_users").where("org_id", "=", id).execute();
-      await trx.deleteFrom("ms_orgs").where("id", "=", id).execute();
-    });
+    await this.db.deleteFrom("ms_orgs").where("id", "=", id).execute();
   }
   async getMemberRole(org_id: number, user_id: number): Promise<OrgRoles> {
     const res = await this.db

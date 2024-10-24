@@ -166,34 +166,32 @@ export class ProjectRepository {
   }) {
     const { project_name, org_id, project_desc, category_id } = obj;
 
-    return await this.db.transaction().execute(async (trx) => {
-      const prj = await trx
-        .insertInto("ms_projects")
-        .values({
-          description: project_desc,
-          name: project_name,
-          org_id,
-        })
-        .returning("id")
-        .executeTakeFirst();
+    const prj = await this.db
+      .insertInto("ms_projects")
+      .values({
+        description: project_desc,
+        name: project_name,
+        org_id,
+      })
+      .returning("id")
+      .executeTakeFirst();
 
-      if (!prj) {
-        throw new Error("Failed to insert project");
-      }
+    if (!prj) {
+      throw new Error("Failed to insert project");
+    }
 
-      if (category_id && category_id.length) {
-        await trx
-          .insertInto("categories_projects")
-          .values(
-            category_id.map((cat_id) => ({
-              project_id: prj.id,
-              category_id: cat_id,
-            })),
-          )
-          .execute();
-      }
-      return prj.id;
-    });
+    if (category_id && category_id.length) {
+      await this.db
+        .insertInto("categories_projects")
+        .values(
+          category_id.map((cat_id) => ({
+            project_id: prj.id,
+            category_id: cat_id,
+          })),
+        )
+        .execute();
+    }
+    return prj.id;
   }
 
   async updateProject(
@@ -206,34 +204,35 @@ export class ProjectRepository {
   ) {
     const { project_name, project_desc, category_id } = obj;
 
-    return await this.db.transaction().execute(async (trx) => {
-      if (project_name != undefined || project_desc != undefined) {
-        await trx
-          .updateTable("ms_projects")
-          .set({
-            description: project_desc,
-            name: project_name,
-          })
-          .where("ms_projects.id", "=", project_id)
-          .executeTakeFirst();
-      }
+    if (project_name != undefined || project_desc != undefined) {
+      await this.db
+        .updateTable("ms_projects")
+        .set({
+          description: project_desc,
+          name: project_name,
+        })
+        .where("ms_projects.id", "=", project_id)
+        .executeTakeFirst();
+    }
 
-      if (category_id) {
-        await trx.deleteFrom("categories_projects").where("project_id", "=", project_id).execute();
+    if (category_id) {
+      await this.db
+        .deleteFrom("categories_projects")
+        .where("project_id", "=", project_id)
+        .execute();
 
-        if (category_id.length) {
-          await trx
-            .insertInto("categories_projects")
-            .values(
-              category_id.map((cat_id) => ({
-                project_id,
-                category_id: cat_id,
-              })),
-            )
-            .execute();
-        }
+      if (category_id.length) {
+        await this.db
+          .insertInto("categories_projects")
+          .values(
+            category_id.map((cat_id) => ({
+              project_id,
+              category_id: cat_id,
+            })),
+          )
+          .execute();
       }
-    });
+    }
   }
 
   async deleteProject(project_id: number) {

@@ -60,13 +60,14 @@ export class SuspensionController extends Controller {
       );
 
       if (!created_id) {
-        throw new Error("Organisasi gagal dibuat!");
+        throw new Error("Suspensi gagal dibuat!");
       }
 
       const created = await this.suspension_service.getSuspensionByID(created_id.id, sender_id);
       if (!created) {
-        throw new Error("Organisasi gagal dibuat!");
+        throw new Error("Suspensi gagal dibuat!");
       }
+
       res.status(201).json(created);
     },
   });
@@ -112,7 +113,7 @@ export class SuspensionController extends Controller {
 
       const created = await this.suspension_service.getSuspensionByID(suspension_id, sender_id);
       if (!created) {
-        throw new Error("Organisasi gagal dibuat!");
+        throw new Error("Suspensi gagal dibuat!");
       }
       res.status(200).json(created);
     },

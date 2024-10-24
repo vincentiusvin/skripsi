@@ -1,6 +1,14 @@
-import { hashSync } from "bcryptjs";
+import { compareSync, hashSync } from "bcryptjs";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
+import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { UserRepository } from "./UserRepository.js";
+
+export function userServiceFactory(transaction_manager: TransactionManager) {
+  const db = transaction_manager.getDB();
+  const user_repo = new UserRepository(db);
+  const user_service = new UserService(user_repo);
+  return user_service;
+}
 
 export class UserService {
   private user_repo: UserRepository;
@@ -28,8 +36,8 @@ export class UserService {
     return await this.user_repo.findUserByEmail(email);
   }
 
-  async findUserByName(email: string) {
-    return await this.user_repo.findUserByName(email);
+  async findUserByName(name: string) {
+    return await this.user_repo.findUserByName(name);
   }
 
   async addUser(user_name: string, user_password: string) {
@@ -44,6 +52,19 @@ export class UserService {
 
   async getUserDetail(user_id: number) {
     return await this.user_repo.getUserDetail(user_id);
+  }
+
+  async findUserByCredentials(user_name: string, user_password: string) {
+    const user = await this.user_repo.getLoginCredentials(user_name);
+    if (!user) {
+      return undefined;
+    }
+    const is_valid = compareSync(user_password, user.password);
+    if (is_valid) {
+      return { id: user.id, name: user.name };
+    } else {
+      return undefined;
+    }
   }
 
   async getUsers(opts?: { is_admin?: boolean; keyword?: string }) {

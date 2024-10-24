@@ -88,48 +88,46 @@ export class ChatRepository {
   ) {
     const { message, files, sender_id, is_edited } = data;
 
-    return await this.db.transaction().execute(async (trx) => {
-      const res = await trx
-        .insertInto("ms_messages")
-        .values({
-          chatroom_id: chatroom_id,
-          message: message,
-          user_id: sender_id,
-          is_edited,
-        })
-        .returning("id")
-        .executeTakeFirst();
+    const res = await this.db
+      .insertInto("ms_messages")
+      .values({
+        chatroom_id: chatroom_id,
+        message: message,
+        user_id: sender_id,
+        is_edited,
+      })
+      .returning("id")
+      .executeTakeFirst();
 
-      if (!res) {
-        throw new Error("Pesan gagal dimasukkan!");
-      }
+    if (!res) {
+      throw new Error("Pesan gagal dimasukkan!");
+    }
 
-      if (files != undefined && files.length) {
-        const files_cleaned = files.flatMap((x) => {
-          const b64_data = x.content.split(",")[1];
-          if (b64_data == undefined) {
-            return [];
-          }
-          const buf = Buffer.from(b64_data, "base64");
-
-          return [
-            {
-              content: buf,
-              message_id: res.id,
-              filename: x.filename,
-            },
-          ];
-        });
-
-        if (files_cleaned.length == 0) {
-          throw new ClientError("Ditemukan file yang invalid!");
+    if (files != undefined && files.length) {
+      const files_cleaned = files.flatMap((x) => {
+        const b64_data = x.content.split(",")[1];
+        if (b64_data == undefined) {
+          return [];
         }
+        const buf = Buffer.from(b64_data, "base64");
 
-        await trx.insertInto("ms_chatroom_files").values(files_cleaned).execute();
+        return [
+          {
+            content: buf,
+            message_id: res.id,
+            filename: x.filename,
+          },
+        ];
+      });
+
+      if (files_cleaned.length == 0) {
+        throw new ClientError("Ditemukan file yang invalid!");
       }
 
-      return res;
-    });
+      await this.db.insertInto("ms_chatroom_files").values(files_cleaned).execute();
+    }
+
+    return res;
   }
 
   async getFile(file_id: number) {
@@ -164,50 +162,48 @@ export class ChatRepository {
       return;
     }
 
-    return await this.db.transaction().execute(async (trx) => {
-      const res = await trx
-        .updateTable("ms_messages")
-        .set({
-          chatroom_id: chatroom_id,
-          message: message,
-          user_id: sender_id,
-          is_edited,
-        })
-        .where("id", "=", message_id)
-        .executeTakeFirst();
+    const res = await this.db
+      .updateTable("ms_messages")
+      .set({
+        chatroom_id: chatroom_id,
+        message: message,
+        user_id: sender_id,
+        is_edited,
+      })
+      .where("id", "=", message_id)
+      .executeTakeFirst();
 
-      if (!res) {
-        throw new Error("Pesan gagal dimasukkan!");
-      }
+    if (!res) {
+      throw new Error("Pesan gagal dimasukkan!");
+    }
 
-      if (files != undefined && files.length) {
-        await trx.deleteFrom("ms_chatroom_files").where("id", "=", message_id).execute();
+    if (files != undefined && files.length) {
+      await this.db.deleteFrom("ms_chatroom_files").where("id", "=", message_id).execute();
 
-        const files_cleaned = files.flatMap((x) => {
-          const b64_data = x.content.split(",")[1];
-          if (b64_data == undefined) {
-            return [];
-          }
-          const buf = Buffer.from(b64_data, "base64url");
-
-          return [
-            {
-              content: buf,
-              message_id: message_id,
-              filename: x.filename,
-            },
-          ];
-        });
-
-        if (files_cleaned.length == 0) {
-          throw new ClientError("Ditemukan file yang invalid!");
+      const files_cleaned = files.flatMap((x) => {
+        const b64_data = x.content.split(",")[1];
+        if (b64_data == undefined) {
+          return [];
         }
+        const buf = Buffer.from(b64_data, "base64url");
 
-        await trx.insertInto("ms_chatroom_files").values(files_cleaned).execute();
+        return [
+          {
+            content: buf,
+            message_id: message_id,
+            filename: x.filename,
+          },
+        ];
+      });
+
+      if (files_cleaned.length == 0) {
+        throw new ClientError("Ditemukan file yang invalid!");
       }
 
-      return res;
-    });
+      await this.db.insertInto("ms_chatroom_files").values(files_cleaned).execute();
+    }
+
+    return res;
   }
 
   async getMessage(message_id: number) {
@@ -247,29 +243,27 @@ export class ChatRepository {
   }
 
   async addUserChatroom(user_id: number, chatroom_name: string) {
-    return await this.db.transaction().execute(async (trx) => {
-      const room_id = await trx
-        .insertInto("ms_chatrooms")
-        .values({
-          name: chatroom_name,
-        })
-        .returning(["id"])
-        .executeTakeFirst();
+    const room_id = await this.db
+      .insertInto("ms_chatrooms")
+      .values({
+        name: chatroom_name,
+      })
+      .returning(["id"])
+      .executeTakeFirst();
 
-      if (!room_id) {
-        throw new Error("Data not inserted!");
-      }
+    if (!room_id) {
+      throw new Error("Data not inserted!");
+    }
 
-      await trx
-        .insertInto("chatrooms_users")
-        .values({
-          chatroom_id: room_id.id,
-          user_id: user_id,
-        })
-        .execute();
+    await this.db
+      .insertInto("chatrooms_users")
+      .values({
+        chatroom_id: room_id.id,
+        user_id: user_id,
+      })
+      .execute();
 
-      return room_id.id;
-    });
+    return room_id.id;
   }
 
   async addProjectChatroom(project_id: number, chatroom_name: string) {
@@ -294,21 +288,19 @@ export class ChatRepository {
     }
 
     if (user_ids != undefined) {
-      await this.db.transaction().execute(async (trx) => {
-        await trx.deleteFrom("chatrooms_users").where("chatroom_id", "=", chatroom_id).execute();
+      await this.db.deleteFrom("chatrooms_users").where("chatroom_id", "=", chatroom_id).execute();
 
-        if (user_ids.length) {
-          await trx
-            .insertInto("chatrooms_users")
-            .values(
-              user_ids.map((user_id) => ({
-                chatroom_id: chatroom_id,
-                user_id: user_id,
-              })),
-            )
-            .execute();
-        }
-      });
+      if (user_ids.length) {
+        await this.db
+          .insertInto("chatrooms_users")
+          .values(
+            user_ids.map((user_id) => ({
+              chatroom_id: chatroom_id,
+              user_id: user_id,
+            })),
+          )
+          .execute();
+      }
     }
   }
 

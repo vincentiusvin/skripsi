@@ -1,9 +1,25 @@
 import { AuthError, NotFoundError } from "../../helpers/error.js";
-import { IEmailService } from "../email/EmailService.js";
-import { PreferenceService } from "../preferences/PreferenceService.js";
-import { UserService } from "../user/UserService.js";
+import { TransactionManager } from "../../helpers/transaction/transaction.js";
+import { EmailService, IEmailService } from "../email/EmailService.js";
+import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
+import { UserService, userServiceFactory } from "../user/UserService.js";
 import { NotificationTypes, getPreferenceKeyFromNotificationType } from "./NotificationMisc.js";
 import { NotificationRepository } from "./NotificationRepository.js";
+
+export function notificationServiceFactory(transaction_manager: TransactionManager) {
+  const db = transaction_manager.getDB();
+  const notification_repo = new NotificationRepository(db);
+  const user_service = userServiceFactory(transaction_manager);
+  const email_service = EmailService.fromEnv();
+  const preference_service = preferenceServiceFactory(transaction_manager);
+  const notification_service = new NotificationService(
+    notification_repo,
+    email_service,
+    user_service,
+    preference_service,
+  );
+  return notification_service;
+}
 
 export class NotificationService {
   private notificiation_repo: NotificationRepository;

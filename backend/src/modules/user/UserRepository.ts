@@ -63,6 +63,14 @@ export class UserRepository {
       .executeTakeFirst();
   }
 
+  async getLoginCredentials(user_name: string) {
+    return await this.db
+      .selectFrom("ms_users")
+      .select(["name", "password", "id"])
+      .where("ms_users.name", "=", user_name)
+      .executeTakeFirst();
+  }
+
   async getUserDetail(id: number) {
     return await this.db
       .selectFrom("ms_users")
@@ -93,33 +101,31 @@ export class UserRepository {
       user_image,
     } = obj;
 
-    await this.db.transaction().execute(async (trx) => {
-      if (
-        user_name != undefined ||
-        user_password != undefined ||
-        user_email != undefined ||
-        user_education_level != undefined ||
-        user_school != undefined ||
-        user_about_me != undefined ||
-        user_image != undefined
-      ) {
-        const user = await trx
-          .updateTable("ms_users")
-          .set({
-            name: user_name,
-            password: user_password,
-            email: user_email,
-            education_level: user_education_level,
-            school: user_school,
-            about_me: user_about_me,
-            ...(user_image && { image: user_image }),
-          })
-          .where("id", "=", id)
-          .executeTakeFirst();
-        if (!user) {
-          throw new Error("Data tidak di update");
-        }
+    if (
+      user_name != undefined ||
+      user_password != undefined ||
+      user_email != undefined ||
+      user_education_level != undefined ||
+      user_school != undefined ||
+      user_about_me != undefined ||
+      user_image != undefined
+    ) {
+      const user = await this.db
+        .updateTable("ms_users")
+        .set({
+          name: user_name,
+          password: user_password,
+          email: user_email,
+          education_level: user_education_level,
+          school: user_school,
+          about_me: user_about_me,
+          ...(user_image && { image: user_image }),
+        })
+        .where("id", "=", id)
+        .executeTakeFirst();
+      if (!user) {
+        throw new Error("Data tidak di update");
       }
-    });
+    }
   }
 }

@@ -16,7 +16,7 @@ describe("projects api", () => {
   });
 
   beforeEach(async () => {
-    await clearDB(app);
+    await clearDB(app.db);
     caseData = await baseCase(app.db);
   });
 

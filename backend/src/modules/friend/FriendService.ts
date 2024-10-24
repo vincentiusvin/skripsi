@@ -1,25 +1,58 @@
 import { AuthError, ClientError } from "../../helpers/error.js";
-import { NotificationService } from "../notification/NotificationService.js";
-import { UserService } from "../user/UserService.js";
+import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
+import {
+  NotificationService,
+  notificationServiceFactory,
+} from "../notification/NotificationService.js";
+import { UserService, userServiceFactory } from "../user/UserService.js";
 import { FriendStatus } from "./FriendMisc.js";
 import { FriendRepository } from "./FriendRepository.js";
 
-export class FriendService {
+export function friendServiceFactory(transaction_manager: TransactionManager) {
+  const db = transaction_manager.getDB();
+  const friend_repo = new FriendRepository(db);
+  const user_service = userServiceFactory(transaction_manager);
+  const notification_service = notificationServiceFactory(transaction_manager);
+
+  const friend_service = new FriendService(
+    friend_repo,
+    user_service,
+    notification_service,
+    transaction_manager,
+  );
+  return friend_service;
+}
+
+export class FriendService implements Transactable<FriendService> {
   private repo: FriendRepository;
   private user_service: UserService;
   private notification_service: NotificationService;
+  private transaction_manager: TransactionManager;
   constructor(
     repo: FriendRepository,
     user_service: UserService,
     notification_service: NotificationService,
+    transaction_manager: TransactionManager,
   ) {
     this.repo = repo;
     this.user_service = user_service;
     this.notification_service = notification_service;
+    this.transaction_manager = transaction_manager;
+  }
+  factory = friendServiceFactory;
+
+  async getFriends(user_id: number) {
+    return await this.repo.getFriends(user_id);
   }
 
-  getFriends(user_id: number) {
-    return this.repo.getFriends(user_id);
+  async deleteFriend(user1: number, user2: number) {
+    return await this.transaction_manager.transaction(this as FriendService, async (serv) => {
+      const current_status = await serv.getFriendStatus(user1, user2);
+      if (current_status === "None") {
+        throw new ClientError("Anda tidak memiliki relasi dengan orang ini!");
+      }
+      return serv.repo.deleteFriend(user1, user2);
+    });
   }
 
   async getFriendStatus(from_user_id: number, to_user_id: number): Promise<FriendStatus> {
@@ -37,15 +70,17 @@ export class FriendService {
     status: "Accepted" | "Sent" | "Pending",
     sender_id: number,
   ) {
-    if (from_user_id != sender_id) {
-      throw new AuthError("Anda tidak memiliki akses untuk mengubah koneksi orang lain!");
-    }
+    return await this.transaction_manager.transaction(this as FriendService, async (serv) => {
+      if (from_user_id != sender_id) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengubah koneksi orang lain!");
+      }
 
-    if (status === "Accepted") {
-      await this.acceptFriend(from_user_id, to_user_id);
-    } else if (status === "Sent") {
-      await this.addFriend(from_user_id, to_user_id);
-    }
+      if (status === "Accepted") {
+        await serv.acceptFriend(from_user_id, to_user_id);
+      } else if (status === "Sent") {
+        await serv.addFriend(from_user_id, to_user_id);
+      }
+    });
   }
 
   private async sendFriendInviteNotification(recv_user_id: number, sender_user_id: number) {
@@ -98,13 +133,5 @@ export class FriendService {
     } else {
       throw new ClientError("Anda tidak memiliki permintaan teman dari orang ini!");
     }
-  }
-
-  async deleteFriend(user1: number, user2: number) {
-    const current_status = await this.getFriendStatus(user1, user2);
-    if (current_status === "None") {
-      throw new ClientError("Anda tidak memiliki relasi dengan orang ini!");
-    }
-    return this.repo.deleteFriend(user1, user2);
   }
 }

@@ -1,17 +1,40 @@
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
-import { NotificationService } from "../notification/NotificationService.js";
-import { OrgService } from "../organization/OrgService.js";
-import { PreferenceService } from "../preferences/PreferenceService.js";
-import { UserService } from "../user/UserService.js";
+import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
+import {
+  NotificationService,
+  notificationServiceFactory,
+} from "../notification/NotificationService.js";
+import { OrgService, orgServiceFactory } from "../organization/OrgService.js";
+import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
+import { UserService, userServiceFactory } from "../user/UserService.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 import { ProjectRepository } from "./ProjectRepository.js";
 
-export class ProjectService {
+export function projectServiceFactory(transaction_manager: TransactionManager) {
+  const db = transaction_manager.getDB();
+  const project_repo = new ProjectRepository(db);
+  const user_service = userServiceFactory(transaction_manager);
+  const preference_service = preferenceServiceFactory(transaction_manager);
+  const notification_service = notificationServiceFactory(transaction_manager);
+  const org_service = orgServiceFactory(transaction_manager);
+  const project_service = new ProjectService(
+    project_repo,
+    org_service,
+    user_service,
+    notification_service,
+    preference_service,
+    transaction_manager,
+  );
+  return project_service;
+}
+
+export class ProjectService implements Transactable<ProjectService> {
   private project_repo: ProjectRepository;
   private org_service: OrgService;
   private user_service: UserService;
   private notification_service: NotificationService;
   private preference_service: PreferenceService;
+  private transaction_manager: TransactionManager;
 
   constructor(
     repo: ProjectRepository,
@@ -19,20 +42,25 @@ export class ProjectService {
     user_service: UserService,
     notification_service: NotificationService,
     preference_service: PreferenceService,
+    transaction_manager: TransactionManager,
   ) {
     this.project_repo = repo;
     this.org_service = org_service;
     this.user_service = user_service;
     this.notification_service = notification_service;
     this.preference_service = preference_service;
+    this.transaction_manager = transaction_manager;
   }
+  factory = projectServiceFactory;
 
   async getMemberRole(project_id: number, user_id: number) {
-    const is_app_admin = await this.user_service.isAdminUser(user_id);
-    if (is_app_admin) {
-      return "Admin";
-    }
-    return await this.project_repo.getMemberRole(project_id, user_id);
+    return await this.transaction_manager.transaction(this as ProjectService, async (serv) => {
+      const is_app_admin = await serv.user_service.isAdminUser(user_id);
+      if (is_app_admin) {
+        return "Admin";
+      }
+      return await serv.project_repo.getMemberRole(project_id, user_id);
+    });
   }
 
   /**
@@ -50,42 +78,44 @@ export class ProjectService {
     sender_id: number,
     target_role: ProjectRoles,
   ) {
-    const sender_role = await this.getMemberRole(project_id, sender_id);
-    const project = await this.project_repo.getProjectByID(project_id);
-    if (!project) {
-      throw new NotFoundError("Gagal menemukan projek tersebut!");
-    }
+    return await this.transaction_manager.transaction(this as ProjectService, async (serv) => {
+      const sender_role = await serv.getMemberRole(project_id, sender_id);
+      const project = await serv.project_repo.getProjectByID(project_id);
+      if (!project) {
+        throw new NotFoundError("Gagal menemukan projek tersebut!");
+      }
 
-    const org = await this.org_service.getOrgByID(project.org_id);
-    if (!org) {
-      throw new NotFoundError("Gagal menemukan organisasi projek!");
-    }
-    const target_user_role = await this.getMemberRole(project_id, user_id);
+      const org = await serv.org_service.getOrgByID(project.org_id);
+      if (!org) {
+        throw new NotFoundError("Gagal menemukan organisasi projek!");
+      }
+      const target_user_role = await serv.getMemberRole(project_id, user_id);
 
-    if (sender_id === user_id) {
-      if (target_role === "Pending" && target_user_role === "Not Involved") {
-        const user_org_role = await this.org_service.getMemberRole(org.org_id, user_id);
-        if (user_org_role === "Admin") {
-          return await this.promoteOrgAdminAsProjectAdmin(project_id, user_id);
-        } else {
-          return await this.storePendingDevRequest(project_id, user_id);
+      if (sender_id === user_id) {
+        if (target_role === "Pending" && target_user_role === "Not Involved") {
+          const user_org_role = await serv.org_service.getMemberRole(org.org_id, user_id);
+          if (user_org_role === "Admin") {
+            return await serv.promoteOrgAdminAsProjectAdmin(project_id, user_id);
+          } else {
+            return await serv.storePendingDevRequest(project_id, user_id);
+          }
+        }
+        if (target_role === "Dev" && target_user_role === "Invited") {
+          return await serv.promoteInvitedDev(project_id, user_id);
         }
       }
-      if (target_role === "Dev" && target_user_role === "Invited") {
-        return await this.promoteInvitedDev(project_id, user_id);
-      }
-    }
 
-    if (sender_role === "Admin") {
-      if (target_role === "Dev" && target_user_role === "Pending") {
-        return await this.acceptPendingDevRequest(project_id, user_id);
+      if (sender_role === "Admin") {
+        if (target_role === "Dev" && target_user_role === "Pending") {
+          return await serv.acceptPendingDevRequest(project_id, user_id);
+        }
+        if (target_role === "Invited" && target_user_role === "Not Involved") {
+          return await serv.inviteDevToJoin(project_id, user_id);
+        }
       }
-      if (target_role === "Invited" && target_user_role === "Not Involved") {
-        return await this.inviteDevToJoin(project_id, user_id);
-      }
-    }
 
-    throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+    });
   }
 
   async tryUnassignMember(project_id: number, user_id: number, sender_id: number) {
@@ -113,11 +143,13 @@ export class ProjectService {
     },
     sender_id: number,
   ) {
-    const sender_role = await this.org_service.getMemberRole(obj.org_id, sender_id);
-    if (sender_role !== "Admin") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
-    }
-    return await this.project_repo.addProject(obj);
+    return await this.transaction_manager.transaction(this as ProjectService, async (serv) => {
+      const sender_role = await serv.org_service.getMemberRole(obj.org_id, sender_id);
+      if (sender_role !== "Admin") {
+        throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+      }
+      return await serv.project_repo.addProject(obj);
+    });
   }
 
   async updateProject(
@@ -125,19 +157,23 @@ export class ProjectService {
     obj: { project_name?: string; project_desc?: string; category_id?: number[] },
     sender_id: number,
   ) {
-    const sender_role = await this.getMemberRole(project_id, sender_id);
-    if (sender_role !== "Admin") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
-    }
-    return await this.project_repo.updateProject(project_id, obj);
+    return await this.transaction_manager.transaction(this as ProjectService, async (serv) => {
+      const sender_role = await serv.getMemberRole(project_id, sender_id);
+      if (sender_role !== "Admin") {
+        throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+      }
+      return await serv.project_repo.updateProject(project_id, obj);
+    });
   }
 
   async deleteProject(project_id: number, sender_id: number) {
-    const sender_role = await this.getMemberRole(project_id, sender_id);
-    if (sender_role !== "Admin") {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
-    }
-    return this.project_repo.deleteProject(project_id);
+    return await this.transaction_manager.transaction(this as ProjectService, async (serv) => {
+      const sender_role = await serv.getMemberRole(project_id, sender_id);
+      if (sender_role !== "Admin") {
+        throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+      }
+      return serv.project_repo.deleteProject(project_id);
+    });
   }
 
   async getCategories() {
