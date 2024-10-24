@@ -175,68 +175,70 @@ function UserAccountPageEdit() {
                   py: 2,
                 }}
               >
-                <TextField
-                  label="Username"
-                  required
-                  variant="standard"
-                  value={userName ?? data.user_name}
-                  onChange={(e) => setUserName(e.target.value)}
-                  fullWidth
-                />
-                <TextField
-                  type={showPassword ? "text" : "password"}
-                  value={userPassword ?? ""}
-                  onChange={(e) => setUserPassword(e.target.value)}
-                  variant="standard"
-                  label="Password"
-                  fullWidth
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment position="start">
-                          <IconButton
-                            aria-label="toggle password visibility"
-                            onClick={handleClickShowPassword}
-                            onMouseDown={handleMouseDownPassword}
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                />
-                <TextField
-                  required
-                  label="Confirm Password"
-                  fullWidth
-                  value={userConfirmPassword ?? ""}
-                  onChange={(e) => setUserConfirmPassword(e.target.value)}
-                  type="password"
-                  variant="standard"
-                />
-                <TextField
-                  required
-                  label="Email"
-                  variant="standard"
-                  fullWidth
-                  onChange={(e) => setUserEmail(e.target.value)}
-                  value={userEmail ?? data.user_email}
-                />
-                <TextField
-                  label="Education Level"
-                  fullWidth
-                  variant="standard"
-                  onChange={(e) => setUserEducationLevel(e.target.value)}
-                  value={userEducationLevel ?? data.user_education_level}
-                />
-                <TextField
-                  label="School"
-                  fullWidth
-                  variant="standard"
-                  onChange={(e) => setUserSchool(e.target.value)}
-                  value={userSchool ?? data.user_school}
-                />
+                <Stack gap={1}>
+                  <TextField
+                    label="Username"
+                    required
+                    variant="standard"
+                    value={userName ?? data.user_name}
+                    onChange={(e) => setUserName(e.target.value)}
+                    fullWidth
+                  />
+                  <TextField
+                    type={showPassword ? "text" : "password"}
+                    value={userPassword ?? ""}
+                    onChange={(e) => setUserPassword(e.target.value)}
+                    variant="standard"
+                    label="Password"
+                    fullWidth
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="start">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowPassword}
+                              onMouseDown={handleMouseDownPassword}
+                            >
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                  <TextField
+                    required
+                    label="Confirm Password"
+                    fullWidth
+                    value={userConfirmPassword ?? ""}
+                    onChange={(e) => setUserConfirmPassword(e.target.value)}
+                    type="password"
+                    variant="standard"
+                  />
+                  <TextField
+                    required
+                    label="Email"
+                    variant="standard"
+                    fullWidth
+                    onChange={(e) => setUserEmail(e.target.value)}
+                    value={userEmail ?? data.user_email}
+                  />
+                  <TextField
+                    label="Education Level"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => setUserEducationLevel(e.target.value)}
+                    value={userEducationLevel ?? data.user_education_level}
+                  />
+                  <TextField
+                    label="School"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => setUserSchool(e.target.value)}
+                    value={userSchool ?? data.user_school}
+                  />
+                </Stack>
               </Paper>
 
               <Paper
