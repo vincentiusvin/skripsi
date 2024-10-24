@@ -7,7 +7,7 @@ function getColorPair(num: number) {
     hue = limit - ((num * num) % limit);
   }
 
-  return [`hsl(${hue - 5}, 80%, 20%)`, `hsl(${hue + 5}, 35%, 50%)`];
+  return [`hsl(${hue - 5}, 80%, 20%)`, `hsl(${hue + 5}, 35%, 60%)`];
 }
 
 function avatarFallback(opts: { seed: number; label: string }) {
