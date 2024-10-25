@@ -1,14 +1,14 @@
 import { DarkMode, LightMode, Login, Logout } from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { AppBar, Box, Button, IconButton, Toolbar, Typography } from "@mui/material";
-import { useAppTheme } from "../helpers/theme.ts";
-import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks.ts";
-import NotificationDialog from "./Notification.tsx";
-import ProgressLine from "./ProgressLine.tsx";
-import StyledLink from "./StyledLink.tsx";
-import UserLabel from "./UserLabel.tsx";
+import { useAppTheme } from "../../helpers/theme.ts";
+import { useSessionDelete, useSessionGet } from "../../queries/sesssion_hooks.ts";
+import NotificationDialog from "../Notification.tsx";
+import ProgressLine from "../ProgressLine.tsx";
+import StyledLink from "../StyledLink.tsx";
+import UserLabel from "../UserLabel.tsx";
 
-function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) => void }) {
+function TopNav(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) => void }) {
   const { drawerOpen, setDrawerOpen } = props;
   const { data } = useSessionGet();
   const { mutate: logout } = useSessionDelete();
@@ -114,4 +114,4 @@ function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) =>
   );
 }
 
-export default Navigation;
+export default TopNav;

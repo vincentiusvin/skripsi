@@ -30,11 +30,11 @@ import {
 } from "@mui/material";
 import { ReactNode, useState } from "react";
 import { useLocation } from "wouter";
-import { useOrgsGet } from "../queries/org_hooks.ts";
-import { useProjectsGet } from "../queries/project_hooks.ts";
-import { useSessionGet } from "../queries/sesssion_hooks.ts";
-import { useUsersDetailGet } from "../queries/user_hooks.ts";
-import StyledLink from "./StyledLink.tsx";
+import { useOrgsGet } from "../../queries/org_hooks.ts";
+import { useProjectsGet } from "../../queries/project_hooks.ts";
+import { useSessionGet } from "../../queries/sesssion_hooks.ts";
+import { useUsersDetailGet } from "../../queries/user_hooks.ts";
+import StyledLink from "../StyledLink.tsx";
 
 type SidenavContext = "browse" | `project-${number}` | `orgs-${number}` | "admin";
 

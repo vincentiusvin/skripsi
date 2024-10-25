@@ -1,5 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, CssBaseline, IconButton, Stack } from "@mui/material";
+import { CssBaseline, IconButton } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -9,8 +9,7 @@ import { SnackbarProvider, closeSnackbar } from "notistack";
 import { useState } from "react";
 import { Route, Switch } from "wouter";
 import "./App.css";
-import SideNav from "./components/SideNav.tsx";
-import Navigation from "./components/TopNav.tsx";
+import Navigation from "./components/Navigation/Navigation.tsx";
 import { queryClient } from "./helpers/queryclient";
 import { ThemeContext } from "./helpers/theme.ts";
 import HandleReportsPage from "./routes/Admin/HandleReportsPage.tsx";
@@ -21,7 +20,7 @@ import ContributionDetailPage from "./routes/Contributions/ContributionDetailPag
 import ContributionEditPage from "./routes/Contributions/ContributionEditPage.tsx";
 import ProjectsAddContributionPage from "./routes/Contributions/ProjectsAddContributionPage.tsx";
 import ProjectsContributionPage from "./routes/Contributions/ProjectsContributionPage.tsx";
-import HomePage from "./routes/DashboardPage.tsx";
+import DashboardPage from "./routes/DashboardPage.tsx";
 import LandingPage from "./routes/LandingPage.tsx";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
 import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage";
@@ -69,7 +68,7 @@ function useColorMode() {
 
 function App() {
   const [theme, setTheme] = useColorMode();
-  const [drawerOpen, setDrawerOpen] = useState(false);
+
   return (
     <ThemeContext.Provider value={[theme, setTheme]}>
       <ThemeProvider theme={theme === "dark" ? darkTheme : lightTheme}>
@@ -98,84 +97,61 @@ function App() {
             <ReactQueryDevtools />
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <CssBaseline />
-              <Navigation drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-              <Stack direction={"row"} flexGrow={1} mt={2}>
-                <Box
-                  sx={{
-                    display: {
-                      xs: "none",
-                      md: "block",
-                    },
-                  }}
-                >
-                  <SideNav />
-                </Box>
-                <Box
-                  sx={{
-                    display: {
-                      md: "none",
-                      xs: "block",
-                    },
-                  }}
-                >
-                  <SideNav responsive open={drawerOpen} setDrawerOpen={setDrawerOpen} />
-                </Box>
-                <Box flexGrow={1} paddingX={2} width={"100%"}>
-                  <Switch>
-                    <Route path={"/"} component={HomePage} />
-                    <Route path={"/landing"} component={LandingPage} />
-                    <Route path={"/auth"} component={AuthPage} />
-                    <Route path={"/orgs"} component={OrgsListPage} />
-                    <Route path={"/orgs/add"} component={OrgsAddPage} />
-                    <Route path={"/orgs/:org_id"} component={OrgsDetailPage} />
-                    <Route path={"/orgs/:org_id/add-projects"} component={ProjectsAddPage} />
-                    <Route path={"/orgs/:org_id/manage"} component={OrgsManagePage} />
-                    <Route path={"/orgs/:org_id/people"} component={OrgsPeoplePage} />
-                    <Route path={"/orgs/:org_id/edit"} component={OrgsEditPage} />
-                    <Route path={"/orgs/:org_id/leave"} component={OrgsLeavePage} />
-                    <Route path={"/chatrooms"} component={ChatroomPage} />
-                    <Route
-                      path={"/chatroom-forwarder/:chatroom_id"}
-                      component={ChatroomForwarderPage}
-                    />
-                    <Route path={"/reports/add"} component={UserReportAddPage} />
-                    <Route path={"/reports/:report_id"} component={UserReportDetailPage} />
-                    <Route path={"/reports/:report_id/edit"} component={UserReportEditPage} />
-                    <Route path={"/reports"} component={UserReportPage} />
-                    <Route path={"/projects"} component={ProjectListPage} />
-                    <Route path={"/projects/:project_id"} component={ProjectInfoPage} />
-                    <Route path={"/projects/:project_id/home"} component={ProjectsDashboardPage} />
-                    <Route path={"/projects/:project_id/people"} component={ProjectsPeoplePage} />
-                    <Route path={"/projects/:project_id/manage"} component={ProjectsManagePage} />
-                    <Route path={"/projects/:project_id/leave"} component={ProjectsLeavePage} />
-                    <Route path={"/projects/:project_id/edit"} component={ProjectsEditPage} />
-                    <Route path={"/projects/:project_id/tasks"} component={ProjectsKanbanPage} />
-                    <Route path={"/projects/:project_id/chat"} component={ProjectsChatroomPage} />
-                    <Route
-                      path={"/projects/:project_id/contributions"}
-                      component={ProjectsContributionPage}
-                    />
-                    <Route
-                      path={"/projects/:project_id/add-contribs"}
-                      component={ProjectsAddContributionPage}
-                    />
-                    <Route
-                      path={"/contributions/:contribution_id"}
-                      component={ContributionDetailPage}
-                    />
-                    <Route
-                      path={"/contributions/:contribution_id/edit"}
-                      component={ContributionEditPage}
-                    />
-                    <Route path={"/users"} component={FindUsersPage} />
-                    <Route path={"/users/:id"} component={UserAccountPage} />
-                    <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
-                    <Route path={"/manage-reports"} component={HandleReportsPage} />
-                    <Route path={"/manage-accounts"} component={ManageAccountsPage} />
-                    <Route path={"/settings"} component={SettingsPage} />
-                  </Switch>
-                </Box>
-              </Stack>
+              <Navigation>
+                <Switch>
+                  <Route path={"/"} component={DashboardPage} />
+                  <Route path={"/landing"} component={LandingPage} />
+                  <Route path={"/auth"} component={AuthPage} />
+                  <Route path={"/orgs"} component={OrgsListPage} />
+                  <Route path={"/orgs/add"} component={OrgsAddPage} />
+                  <Route path={"/orgs/:org_id"} component={OrgsDetailPage} />
+                  <Route path={"/orgs/:org_id/add-projects"} component={ProjectsAddPage} />
+                  <Route path={"/orgs/:org_id/manage"} component={OrgsManagePage} />
+                  <Route path={"/orgs/:org_id/people"} component={OrgsPeoplePage} />
+                  <Route path={"/orgs/:org_id/edit"} component={OrgsEditPage} />
+                  <Route path={"/orgs/:org_id/leave"} component={OrgsLeavePage} />
+                  <Route path={"/chatrooms"} component={ChatroomPage} />
+                  <Route
+                    path={"/chatroom-forwarder/:chatroom_id"}
+                    component={ChatroomForwarderPage}
+                  />
+                  <Route path={"/reports/add"} component={UserReportAddPage} />
+                  <Route path={"/reports/:report_id"} component={UserReportDetailPage} />
+                  <Route path={"/reports/:report_id/edit"} component={UserReportEditPage} />
+                  <Route path={"/reports"} component={UserReportPage} />
+                  <Route path={"/projects"} component={ProjectListPage} />
+                  <Route path={"/projects/:project_id"} component={ProjectInfoPage} />
+                  <Route path={"/projects/:project_id/home"} component={ProjectsDashboardPage} />
+                  <Route path={"/projects/:project_id/people"} component={ProjectsPeoplePage} />
+                  <Route path={"/projects/:project_id/manage"} component={ProjectsManagePage} />
+                  <Route path={"/projects/:project_id/leave"} component={ProjectsLeavePage} />
+                  <Route path={"/projects/:project_id/edit"} component={ProjectsEditPage} />
+                  <Route path={"/projects/:project_id/tasks"} component={ProjectsKanbanPage} />
+                  <Route path={"/projects/:project_id/chat"} component={ProjectsChatroomPage} />
+                  <Route
+                    path={"/projects/:project_id/contributions"}
+                    component={ProjectsContributionPage}
+                  />
+                  <Route
+                    path={"/projects/:project_id/add-contribs"}
+                    component={ProjectsAddContributionPage}
+                  />
+                  <Route
+                    path={"/contributions/:contribution_id"}
+                    component={ContributionDetailPage}
+                  />
+                  <Route
+                    path={"/contributions/:contribution_id/edit"}
+                    component={ContributionEditPage}
+                  />
+                  <Route path={"/users"} component={FindUsersPage} />
+                  <Route path={"/users/:id"} component={UserAccountPage} />
+                  <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
+                  <Route path={"/manage-reports"} component={HandleReportsPage} />
+                  <Route path={"/manage-accounts"} component={ManageAccountsPage} />
+                  <Route path={"/settings"} component={SettingsPage} />
+                </Switch>
+              </Navigation>
             </LocalizationProvider>
           </QueryClientProvider>
         </SnackbarProvider>

@@ -429,12 +429,15 @@ function AuthenticatedHomePage(props: { user_id: number }) {
   );
 }
 
-function HomePage() {
+function DashboardPage() {
   const { data: session_data } = useSessionGet();
-  if (session_data?.logged) {
+  if (session_data == undefined) {
+    return <Skeleton />;
+  }
+  if (session_data.logged) {
     return <AuthenticatedHomePage user_id={session_data.user_id} />;
   }
   return <Redirect to={"/landing"} />;
 }
 
-export default HomePage;
+export default DashboardPage;
