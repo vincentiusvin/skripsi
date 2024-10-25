@@ -385,15 +385,14 @@ function SideNav(props: {
           setDrawerOpen(false);
         }
       }}
-      variant={responsive ? "temporary" : "permanent"}
+      variant={responsive ? "temporary" : "persistent"}
       anchor="left"
       sx={{
-        width: 240,
+        width: open ? 240 : 0,
       }}
     >
       <Box
         sx={{
-          width: 240,
           overflow: "auto",
           marginY: 4,
           marginTop: 12,
