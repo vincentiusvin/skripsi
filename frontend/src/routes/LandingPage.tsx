@@ -3,7 +3,7 @@ import Grid from "@mui/material/Grid2";
 import devImg from "../assets/dev.jpg";
 import helpImg from "../assets/help.jpg";
 import schedImg from "../assets/sched.jpg";
-import ContribCard from "../components/Cards/ContribCard.tsx";
+import ContribList from "../components/Cards/ContribList.tsx";
 import ProjectCard from "../components/Cards/ProjectCard.tsx";
 import { useContributionsGet } from "../queries/contribution_hooks.ts";
 import { useProjectsGet } from "../queries/project_hooks.ts";
@@ -54,13 +54,11 @@ function NewestContributions() {
       <Typography marginBottom={2} variant="caption">
         Terima kasih telah membantu organisasi-organisasi ini ❤️
       </Typography>
-      <Grid container marginTop={4} spacing={2}>
+      <Box marginTop={4}>
         {contribs.map((x) => (
-          <Grid key={x.id} size={2}>
-            <ContribCard contribution_id={x.id} />
-          </Grid>
+          <ContribList key={x.id} contribution_id={x.id} hideStatus />
         ))}
-      </Grid>
+      </Box>
     </Box>
   );
 }
