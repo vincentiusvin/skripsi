@@ -8,7 +8,7 @@ function Navigation(props: { children: ReactNode }) {
   const { children } = props;
 
   return (
-    <Box position={"relative"} display={"flex"} flexDirection={"column"} flexGrow={1}>
+    <Box display={"flex"} flexDirection={"column"} flexGrow={1}>
       <TopNav drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
       <Stack direction={"row"} mt={2} spacing={2} flexGrow={1}>
         <SideNav open={drawerOpen} setDrawerOpen={setDrawerOpen} />
