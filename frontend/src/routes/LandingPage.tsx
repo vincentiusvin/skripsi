@@ -1,4 +1,13 @@
-import { Avatar, Box, Button, Skeleton, Stack, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  Skeleton,
+  Stack,
+  Theme,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import devImg from "../assets/dev.jpg";
 import helpImg from "../assets/help.jpg";
@@ -107,6 +116,7 @@ function NewestProjects() {
 }
 
 function LandingPage() {
+  const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
   return (
     <Stack height={"100%"} paddingX={`calc(20vw - 48px)`}>
       <Grid container justifyContent={"center"} alignItems={"center"} rowGap={8} columnSpacing={16}>
@@ -151,7 +161,7 @@ function LandingPage() {
             </Grid>
           );
 
-          const order = align_left ? [desc, img] : [img, desc];
+          const order = !responsive ? (align_left ? [desc, img] : [img, desc]) : desc;
 
           return order;
         })}
