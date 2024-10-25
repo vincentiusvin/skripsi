@@ -36,17 +36,9 @@ function TopNav(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) => voi
           },
         }}
       >
-        <Box
-          sx={{
-            display: {
-              md: "none",
-            },
-          }}
-        >
-          <IconButton variant="outlined" onClick={() => setDrawerOpen(!drawerOpen)}>
-            <MenuIcon />
-          </IconButton>
-        </Box>
+        <IconButton variant="outlined" onClick={() => setDrawerOpen(!drawerOpen)}>
+          <MenuIcon />
+        </IconButton>
         <Box flexGrow={1}></Box>
         {data?.logged ? (
           <>
