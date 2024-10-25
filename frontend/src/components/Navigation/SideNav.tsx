@@ -27,6 +27,8 @@ import {
   MenuItem,
   Select,
   Skeleton,
+  Theme,
+  useMediaQuery,
 } from "@mui/material";
 import { ReactNode, useState } from "react";
 import { useOrgsGet } from "../../queries/org_hooks.ts";
@@ -371,7 +373,9 @@ function SideNav(props: {
 }) {
   const { data: session } = useSessionGet();
   const [activeDashboard, setActiveDashboard] = useState<SidenavContext>("browse");
-  const { responsive, setDrawerOpen, open } = props;
+  const { setDrawerOpen, open } = props;
+
+  const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
 
   if (session == undefined) {
     return <Skeleton />;
