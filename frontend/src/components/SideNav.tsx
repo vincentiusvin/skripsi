@@ -26,8 +26,10 @@ import {
   ListSubheader,
   MenuItem,
   Select,
+  Skeleton,
 } from "@mui/material";
 import { ReactNode, useState } from "react";
+import { useLocation } from "wouter";
 import { useOrgsGet } from "../queries/org_hooks.ts";
 import { useProjectsGet } from "../queries/project_hooks.ts";
 import { useSessionGet } from "../queries/sesssion_hooks.ts";
@@ -371,6 +373,16 @@ function SideNav(props: {
   const { data: session } = useSessionGet();
   const [activeDashboard, setActiveDashboard] = useState<SidenavContext>("browse");
   const { responsive, setDrawerOpen, open } = props;
+
+  const [location] = useLocation();
+
+  if (session == undefined) {
+    return <Skeleton />;
+  }
+
+  if (location === "/" && session.logged == false) {
+    return null;
+  }
 
   return (
     <Drawer
