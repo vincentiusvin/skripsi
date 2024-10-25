@@ -380,7 +380,7 @@ function SideNav(props: {
     return <Skeleton />;
   }
 
-  if (location === "/" && session.logged == false) {
+  if (location === "/landing") {
     return null;
   }
 

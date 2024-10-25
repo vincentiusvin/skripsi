@@ -21,7 +21,8 @@ import ContributionDetailPage from "./routes/Contributions/ContributionDetailPag
 import ContributionEditPage from "./routes/Contributions/ContributionEditPage.tsx";
 import ProjectsAddContributionPage from "./routes/Contributions/ProjectsAddContributionPage.tsx";
 import ProjectsContributionPage from "./routes/Contributions/ProjectsContributionPage.tsx";
-import HomePage from "./routes/HomePage";
+import HomePage from "./routes/DashboardPage.tsx";
+import LandingPage from "./routes/LandingPage.tsx";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
 import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage";
 import OrgsEditPage from "./routes/Orgs/OrgsEditPage";
@@ -122,6 +123,7 @@ function App() {
                 <Box flexGrow={1} paddingX={2} width={"100%"}>
                   <Switch>
                     <Route path={"/"} component={HomePage} />
+                    <Route path={"/landing"} component={LandingPage} />
                     <Route path={"/auth"} component={AuthPage} />
                     <Route path={"/orgs"} component={OrgsListPage} />
                     <Route path={"/orgs/add"} component={OrgsAddPage} />
