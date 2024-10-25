@@ -78,7 +78,7 @@ function ProjectCard(props: { project_id: number }) {
             <Stack spacing={2} direction="column">
               <Typography variant="body2">{project.project_desc}</Typography>
               <Divider />
-              <Stack direction={"row"} spacing={2}>
+              <Stack direction={"row"} gap={2} flexWrap={"wrap"}>
                 {project.project_categories.map((category, index) => (
                   <Chip key={index} label={category.category_name} />
                 ))}

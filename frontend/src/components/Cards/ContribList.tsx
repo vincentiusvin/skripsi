@@ -5,6 +5,8 @@ import {
   ListItemText,
   Skeleton,
   Stack,
+  Theme,
+  useMediaQuery,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { useContributionsDetailGet } from "../../queries/contribution_hooks.ts";
@@ -17,6 +19,8 @@ function ContribList(props: { contribution_id: number; hideStatus?: boolean }) {
   const { data: contrib } = useContributionsDetailGet({
     contribution_id,
   });
+
+  const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
 
   if (contrib == undefined) {
     return <Skeleton />;
@@ -31,9 +35,9 @@ function ContribList(props: { contribution_id: number; hideStatus?: boolean }) {
             secondary={dayjs(contrib.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
           />
           <ListItemIcon>
-            <Stack direction="row" spacing={2} alignItems={"center"}>
+            <Stack direction="row" spacing={!responsive ? 2 : 1} alignItems={"center"}>
               {contrib.user_ids.map((y) => (
-                <UserLabel user_id={y.user_id} key={y.user_id} />
+                <UserLabel disableName={responsive} user_id={y.user_id} key={y.user_id} />
               ))}
               {!hideStatus ? <ContributionChip status={contrib.status} /> : null}
             </Stack>

@@ -90,7 +90,14 @@ function NewestProjects() {
       </Typography>
       <Grid container marginTop={4} spacing={2}>
         {projects.map((x) => (
-          <Grid key={x.project_id} size={4}>
+          <Grid
+            key={x.project_id}
+            size={{
+              xs: 12,
+              sm: 6,
+              lg: 4,
+            }}
+          >
             <ProjectCard project_id={x.project_id} />
           </Grid>
         ))}
@@ -101,13 +108,19 @@ function NewestProjects() {
 
 function LandingPage() {
   return (
-    <Stack height={"100%"} paddingX={24}>
+    <Stack height={"100%"} paddingX={`calc(20vw - 48px)`}>
       <Grid container justifyContent={"center"} alignItems={"center"} rowGap={8} columnSpacing={16}>
         {landingData.map((x, i) => {
           const align_left = i % 2 === 0;
 
           const desc = (
-            <Grid size={7} textAlign={align_left ? "left" : "right"}>
+            <Grid
+              size={{
+                xs: 12,
+                md: 7,
+              }}
+              textAlign={align_left ? "left" : "right"}
+            >
               <Typography marginBottom={2} variant="h4" fontWeight="bold">
                 {x.title}
               </Typography>
@@ -121,7 +134,12 @@ function LandingPage() {
           );
 
           const img = (
-            <Grid size={5}>
+            <Grid
+              size={{
+                xs: 12,
+                md: 5,
+              }}
+            >
               <Avatar
                 sx={{
                   width: "100%",
