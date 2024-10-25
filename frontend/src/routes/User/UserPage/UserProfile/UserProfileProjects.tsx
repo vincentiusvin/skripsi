@@ -32,7 +32,7 @@ function UserProjectsList(props: { user_id: number }) {
         <DialogContent>
           <Stack gap={2}>
             {projects.map((x) => (
-              <ProjectCard project_id={x.project_id} key={x.org_id} />
+              <ProjectCard project_id={x.project_id} key={x.project_id} />
             ))}
           </Stack>
         </DialogContent>

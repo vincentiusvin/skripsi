@@ -1,52 +1,82 @@
+import { Code, Shield } from "@mui/icons-material";
 import {
   Card,
   CardActionArea,
-  CardActions,
-  Paper,
+  CardContent,
+  CardHeader,
   Skeleton,
-  Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
-import { ReactNode } from "react";
+import { useOrgDetailGet } from "../../queries/org_hooks.ts";
+import { useProjectsDetailMembersGet } from "../../queries/project_hooks";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
+import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import StyledLink from "../StyledLink.tsx";
 
-function ProjectCard(props: { project_id: number; subtitle?: ReactNode; sidebar?: ReactNode }) {
-  const { project_id, sidebar, subtitle } = props;
-  const { data: project_data } = useProjectsDetailGet({ project_id });
+function RoleInfo(props: { project_id: number; user_id: number }) {
+  const { project_id, user_id } = props;
+  const { data: role_data } = useProjectsDetailMembersGet({
+    project_id,
+    user_id,
+  });
 
-  if (!project_data) {
-    return (
-      <Paper>
-        <Stack direction="row" spacing={4} alignItems="center" height="100%" width={"100%"}>
-          <Skeleton width={"100%"}></Skeleton>
-        </Stack>
-      </Paper>
-    );
+  return role_data?.role === "Admin" ? (
+    <Tooltip title="Joined as administrator">
+      <Shield />
+    </Tooltip>
+  ) : role_data?.role === "Dev" ? (
+    <Tooltip title="Joined as developer">
+      <Code />
+    </Tooltip>
+  ) : null;
+}
+
+function OrgName(props: { org_id: number }) {
+  const { org_id } = props;
+  const { data: org_data } = useOrgDetailGet({
+    id: org_id,
+  });
+
+  if (org_data == undefined) {
+    return <Skeleton />;
+  }
+
+  return <Typography variant="body1">by {org_data.org_name}</Typography>;
+}
+
+function ProjectCard(props: { project_id: number }) {
+  const { project_id } = props;
+  const { data: project } = useProjectsDetailGet({ project_id });
+  const { data: session_data } = useSessionGet();
+
+  if (project == undefined) {
+    return <Skeleton />;
   }
 
   return (
-    <Card>
-      <CardActionArea
-        sx={{
-          padding: 2,
-        }}
-      >
-        <StyledLink to={`/projects/${project_id}`}>
-          <Typography variant="h6">{project_data.project_name}</Typography>
-          <Typography variant="body2">{subtitle}</Typography>
-        </StyledLink>
-      </CardActionArea>
-      {sidebar ? (
-        <CardActions
-          sx={{
-            paddingX: 2,
-          }}
-        >
-          {sidebar}
-        </CardActions>
-      ) : null}
-    </Card>
+    <StyledLink to={`/projects/${project.project_id}`}>
+      <Card>
+        <CardActionArea>
+          <CardHeader
+            title={
+              <Typography variant="h5" fontWeight={"bold"}>
+                {project.project_name}
+              </Typography>
+            }
+            action={
+              session_data?.logged ? (
+                <RoleInfo project_id={project.project_id} user_id={session_data.user_id} />
+              ) : null
+            }
+            subheader={<OrgName org_id={project.org_id} />}
+          />
+          <CardContent>
+            <Typography variant="body2">{project.project_desc}</Typography>
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    </StyledLink>
   );
 }
 

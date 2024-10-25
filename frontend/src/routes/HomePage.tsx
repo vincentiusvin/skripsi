@@ -23,7 +23,9 @@ import dayjs from "dayjs";
 import devImg from "../assets/dev.jpg";
 import helpImg from "../assets/help.jpg";
 import schedImg from "../assets/sched.jpg";
+import ProjectCard from "../components/Cards/ProjectCard.tsx";
 import StyledLink from "../components/StyledLink.tsx";
+import { useContributionsGet } from "../queries/contribution_hooks.ts";
 import { useOrgDetailGet, useOrgsDetailMembersGet, useOrgsGet } from "../queries/org_hooks.ts";
 import {
   useProjectsDetailGet,
@@ -454,11 +456,35 @@ const landingData = [
 ];
 
 function NewestContributions() {
+  const { data: contribs } = useContributionsGet();
+
+  if (contribs == undefined) {
+    return (
+      <Box>
+        <Typography variant="h4" fontWeight="bold">
+          Kontribusi Terbaru
+        </Typography>
+        <Typography marginBottom={2} variant="caption">
+          Terima kasih telah membantu organisasi-organisasi ini ❤️
+        </Typography>
+        <Skeleton />
+      </Box>
+    );
+  }
+
   return (
     <Box>
-      <Typography marginBottom={2} variant="h4" fontWeight="bold">
-        Pengembangan Terbaru
+      <Typography variant="h4" fontWeight="bold">
+        Kontribusi Terbaru
       </Typography>
+      <Typography marginBottom={2} variant="caption">
+        Terima kasih telah membantu organisasi-organisasi ini ❤️
+      </Typography>
+      <Stack direction="row" marginTop={4}>
+        {contribs.map((x) => (
+          <Typography key={x.id}>{x.name}</Typography>
+        ))}
+      </Stack>
     </Box>
   );
 }
@@ -469,8 +495,11 @@ function NewestProjects() {
   if (projects == undefined) {
     return (
       <Box>
-        <Typography marginBottom={2} variant="h4" fontWeight="bold">
+        <Typography variant="h4" fontWeight="bold">
           Proyek Terbaru
+        </Typography>
+        <Typography variant="caption">
+          Proyek-proyek ini baru dimulai dan membutuhkan bantuan anda
         </Typography>
         <Skeleton />
       </Box>
@@ -479,14 +508,15 @@ function NewestProjects() {
 
   return (
     <Box>
-      <Typography marginBottom={2} variant="h4" fontWeight="bold">
+      <Typography variant="h4" fontWeight="bold">
         Proyek Terbaru
       </Typography>
-      <Stack direction="row">
+      <Typography variant="caption">
+        Proyek-proyek ini baru dimulai dan membutuhkan bantuan anda
+      </Typography>
+      <Stack direction="row" marginTop={4}>
         {projects.map((x) => (
-          <Box key={x.project_id}>
-            <Typography>{x.project_name}</Typography>
-          </Box>
+          <ProjectCard project_id={x.project_id} key={x.project_id} />
         ))}
       </Stack>
     </Box>
