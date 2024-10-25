@@ -23,7 +23,6 @@ import {
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
 import type { MessageData } from "../../../../backend/src/sockets";
-import avatarFallback from "../../helpers/avatar_fallback.tsx";
 import { fileToBase64DataURL } from "../../helpers/file.ts";
 import {
   useChatroomsDetailMessagesGet,
@@ -34,6 +33,7 @@ import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../queries/user_hooks.ts";
 import FileDropzone from "../FileDropzone.tsx";
 import StyledLink from "../StyledLink.tsx";
+import UserAvatar from "../UserAvatar.tsx";
 
 function DownloadableFile(props: { filename: string; file_id: number }) {
   const { filename, file_id } = props;
@@ -218,12 +218,7 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
       <Stack direction={"row"} spacing={2} alignItems={"center"}>
         {user_data != null ? (
           <StyledLink to={`/users/${user_data.user_id}`}>
-            <Avatar
-              src={
-                user_data.user_image ??
-                avatarFallback({ label: user_data.user_name, seed: user_data.user_id })
-              }
-            ></Avatar>
+            <UserAvatar user_id={user_data.user_id} />
           </StyledLink>
         ) : (
           <Avatar />

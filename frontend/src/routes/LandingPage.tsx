@@ -54,11 +54,13 @@ function NewestContributions() {
       <Typography marginBottom={2} variant="caption">
         Terima kasih telah membantu organisasi-organisasi ini ❤️
       </Typography>
-      <Stack direction="row" marginTop={4}>
+      <Grid container marginTop={4} spacing={2}>
         {contribs.map((x) => (
-          <ContribCard key={x.id} contribution_id={x.id} />
+          <Grid key={x.id} size={2}>
+            <ContribCard contribution_id={x.id} />
+          </Grid>
         ))}
-      </Stack>
+      </Grid>
     </Box>
   );
 }
@@ -88,11 +90,13 @@ function NewestProjects() {
       <Typography variant="caption">
         Proyek-proyek ini baru dimulai dan membutuhkan bantuan anda
       </Typography>
-      <Stack direction="row" marginTop={4}>
+      <Grid container marginTop={4} spacing={2}>
         {projects.map((x) => (
-          <ProjectCard project_id={x.project_id} key={x.project_id} />
+          <Grid key={x.project_id} size={4}>
+            <ProjectCard project_id={x.project_id} />
+          </Grid>
         ))}
-      </Stack>
+      </Grid>
     </Box>
   );
 }

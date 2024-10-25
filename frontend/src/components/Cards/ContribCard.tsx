@@ -1,6 +1,15 @@
-import { Box, Card, CardActionArea, CardContent, Skeleton, Stack, Typography } from "@mui/material";
+import {
+  Card,
+  CardActionArea,
+  CardActions,
+  CardContent,
+  Skeleton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useContributionsDetailGet } from "../../queries/contribution_hooks.ts";
 import StyledLink from "../StyledLink.tsx";
+import UserAvatar from "../UserAvatar.tsx";
 
 function ContribCard(props: { contribution_id: number }) {
   const { contribution_id } = props;
@@ -13,22 +22,33 @@ function ContribCard(props: { contribution_id: number }) {
   }
 
   return (
-    <StyledLink to={`/contributions/${contribution_id}`}>
-      <Card>
+    <Card>
+      <StyledLink to={`/contributions/${contribution_id}`}>
         <CardActionArea>
           <CardContent>
-            <Stack direction={"row"} alignItems={"center"} spacing={2}>
-              <Box>
-                <Typography variant="h5" fontWeight={"bold"}>
-                  {contrib_data.name}
-                </Typography>
-                <Typography>{contrib_data.description}</Typography>
-              </Box>
-            </Stack>
+            <Typography fontWeight={"bold"} variant="h6">
+              {contrib_data.name}
+            </Typography>
+            <Typography>{contrib_data.description}</Typography>
           </CardContent>
         </CardActionArea>
-      </Card>
-    </StyledLink>
+      </StyledLink>
+      <CardActions>
+        <Stack direction="row" spacing={1}>
+          {contrib_data.user_ids.map((x) => (
+            <StyledLink key={x.user_id} to={`/users/${x.user_id}`}>
+              <UserAvatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                }}
+                user_id={x.user_id}
+              />
+            </StyledLink>
+          ))}
+        </Stack>
+      </CardActions>
+    </Card>
   );
 }
 

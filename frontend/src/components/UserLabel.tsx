@@ -1,6 +1,6 @@
-import { Avatar, Skeleton, Stack, Typography } from "@mui/material";
-import avatarFallback from "../helpers/avatar_fallback.tsx";
+import { Skeleton, Stack, Typography } from "@mui/material";
 import { useUsersDetailGet } from "../queries/user_hooks.ts";
+import UserAvatar from "./UserAvatar.tsx";
 
 function UserLabel(props: { user_id: number; disableImage?: boolean; disableName?: boolean }) {
   const { user_id, disableImage, disableName } = props;
@@ -8,11 +8,10 @@ function UserLabel(props: { user_id: number; disableImage?: boolean; disableName
   if (!user) {
     return <Skeleton />;
   }
-  const fallback_img = avatarFallback({ label: user.user_name, seed: user.user_id });
 
   return (
     <Stack direction={"row"} textOverflow={"ellipsis"} alignItems={"center"} spacing={2}>
-      {!disableImage ? <Avatar src={user.user_image ?? fallback_img} /> : null}
+      {!disableImage ? <UserAvatar user_id={user_id} /> : null}
       {!disableName ? <Typography>{user.user_name}</Typography> : null}
     </Stack>
   );

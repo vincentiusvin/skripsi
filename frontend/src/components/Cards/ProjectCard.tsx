@@ -4,7 +4,10 @@ import {
   CardActionArea,
   CardContent,
   CardHeader,
+  Chip,
+  Divider,
   Skeleton,
+  Stack,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -22,11 +25,11 @@ function RoleInfo(props: { project_id: number; user_id: number }) {
   });
 
   return role_data?.role === "Admin" ? (
-    <Tooltip title="Joined as administrator">
+    <Tooltip title="Tergabung sebagai administrator">
       <Shield />
     </Tooltip>
   ) : role_data?.role === "Dev" ? (
-    <Tooltip title="Joined as developer">
+    <Tooltip title="Tergabung sebagai developer">
       <Code />
     </Tooltip>
   ) : null;
@@ -42,7 +45,7 @@ function OrgName(props: { org_id: number }) {
     return <Skeleton />;
   }
 
-  return <Typography variant="body1">by {org_data.org_name}</Typography>;
+  return <Typography variant="body1">oleh {org_data.org_name}</Typography>;
 }
 
 function ProjectCard(props: { project_id: number }) {
@@ -72,7 +75,15 @@ function ProjectCard(props: { project_id: number }) {
             subheader={<OrgName org_id={project.org_id} />}
           />
           <CardContent>
-            <Typography variant="body2">{project.project_desc}</Typography>
+            <Stack spacing={2} direction="column">
+              <Typography variant="body2">{project.project_desc}</Typography>
+              <Divider />
+              <Stack direction={"row"} spacing={2}>
+                {project.project_categories.map((category, index) => (
+                  <Chip key={index} label={category.category_name} />
+                ))}
+              </Stack>
+            </Stack>
           </CardContent>
         </CardActionArea>
       </Card>
