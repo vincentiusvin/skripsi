@@ -23,6 +23,7 @@ import dayjs from "dayjs";
 import devImg from "../assets/dev.jpg";
 import helpImg from "../assets/help.jpg";
 import schedImg from "../assets/sched.jpg";
+import ContribCard from "../components/Cards/ContribCard.tsx";
 import ProjectCard from "../components/Cards/ProjectCard.tsx";
 import StyledLink from "../components/StyledLink.tsx";
 import { useContributionsGet } from "../queries/contribution_hooks.ts";
@@ -482,7 +483,7 @@ function NewestContributions() {
       </Typography>
       <Stack direction="row" marginTop={4}>
         {contribs.map((x) => (
-          <Typography key={x.id}>{x.name}</Typography>
+          <ContribCard key={x.id} contribution_id={x.id} />
         ))}
       </Stack>
     </Box>

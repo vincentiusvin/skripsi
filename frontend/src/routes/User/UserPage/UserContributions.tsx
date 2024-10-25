@@ -1,6 +1,5 @@
-import { Box, Card, CardActionArea, CardContent, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import StyledLink from "../../../components/StyledLink";
+import ContribCard from "../../../components/Cards/ContribCard.tsx";
 import { useContributionsGet } from "../../../queries/contribution_hooks";
 
 function UserContributions(props: { user_id: number }) {
@@ -19,22 +18,7 @@ function UserContributions(props: { user_id: number }) {
             md: 3,
           }}
         >
-          <StyledLink to={`/contributions/${x.id}`}>
-            <Card>
-              <CardActionArea>
-                <CardContent>
-                  <Stack direction={"row"} alignItems={"center"} spacing={2}>
-                    <Box>
-                      <Typography variant="h5" fontWeight={"bold"}>
-                        {x.name}
-                      </Typography>
-                      <Typography>{x.description}</Typography>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </StyledLink>
+          <ContribCard contribution_id={x.id} />
         </Grid>
       ))}
     </Grid>
