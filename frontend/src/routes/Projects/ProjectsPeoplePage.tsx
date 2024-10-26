@@ -110,7 +110,6 @@ function ProjectPeople(props: { project_id: number }) {
               {x.members.map((m) => (
                 <Grid
                   key={m.user_id}
-                  justifyContent={"center"}
                   size={{
                     xs: 12,
                     md: 4,
