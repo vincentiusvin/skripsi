@@ -25,8 +25,7 @@ function OrgsListPage() {
       </Typography>
       <Paper
         sx={{
-          paddingY: 8,
-          paddingX: 4,
+          padding: 4,
         }}
       >
         <Grid
