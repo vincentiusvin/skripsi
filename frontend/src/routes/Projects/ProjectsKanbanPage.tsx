@@ -533,104 +533,104 @@ function Kanban(props: { project_id: number }) {
   );
 
   return (
-    <Stack height={"100%"} width={"100%"}>
+    <Stack height={"100%"}>
       <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
         Tugas
       </Typography>
-      <Stack direction={"row"} spacing={5} flexGrow={1} pb={8} overflow={"auto"} width={"100%"}>
-        <DndContext
-          sensors={sensors}
-          onDragStart={(x) => setActiveDragID(x.active.id.toString())}
-          onDragEnd={({ active }) => {
-            setActiveDragID(null);
+      <DndContext
+        sensors={sensors}
+        onDragStart={(x) => setActiveDragID(x.active.id.toString())}
+        onDragEnd={({ active }) => {
+          setActiveDragID(null);
 
-            if (typeof active.id === "number") {
-              return;
+          if (typeof active.id === "number") {
+            return;
+          }
+
+          const loc = findLocation(active.id);
+          if (loc?.cellIdx == undefined) {
+            return;
+          }
+
+          const bucket = tempTasksData[loc.ctrIdx].bucket;
+          const tasks = tempTasksData[loc.ctrIdx].tasks;
+          const task = tasks?.[loc.cellIdx];
+
+          if (bucket == undefined || tasks == undefined || task == undefined) {
+            return;
+          }
+
+          const bucket_id = extractID(bucket.id);
+          const task_id = extractID(task.id);
+
+          if (bucket_id == undefined || task_id == undefined) {
+            return;
+          }
+
+          const next_task = tasks[loc.cellIdx + 1];
+          let next_id: number | null = null;
+
+          if (next_task !== undefined) {
+            next_id = extractID(next_task.id) ?? null;
+          }
+
+          updateTask({
+            bucket_id,
+            task_id,
+            before_id: next_id,
+          });
+        }}
+        onDragCancel={() => setActiveDragID(null)}
+        onDragOver={({ over, active }) => {
+          // move between containers...
+          setTempTasksData((x) => {
+            if (
+              over == null ||
+              typeof over.id === "number" ||
+              typeof active.id === "number" ||
+              over.id === active.id // kadang bisa collide sama diri sendiri
+            ) {
+              return x;
+            }
+            const overLoc = findLocation(over.id);
+            const activeLoc = findLocation(active.id.toString());
+
+            if (overLoc == null || activeLoc == null || activeLoc.cellIdx == undefined) {
+              return x;
             }
 
-            const loc = findLocation(active.id);
-            if (loc?.cellIdx == undefined) {
-              return;
+            const cloned = structuredClone(x);
+            const overCtr = cloned[overLoc.ctrIdx];
+            const activeCtr = cloned[activeLoc.ctrIdx];
+            const activeCell = activeCtr.tasks?.[activeLoc.cellIdx];
+
+            if (activeCell == undefined) {
+              return x;
             }
 
-            const bucket = tempTasksData[loc.ctrIdx].bucket;
-            const tasks = tempTasksData[loc.ctrIdx].tasks;
-            const task = tasks?.[loc.cellIdx];
+            cloned[activeLoc.ctrIdx].tasks = activeCtr.tasks?.filter((x) => x.id !== active.id);
 
-            if (bucket == undefined || tasks == undefined || task == undefined) {
-              return;
+            const cutIdx = overLoc.cellIdx;
+            if (cutIdx != undefined) {
+              // insert to array
+              cloned[overLoc.ctrIdx].tasks = [
+                ...(overCtr.tasks?.slice(0, cutIdx) ?? []),
+                activeCell,
+                ...(overCtr.tasks?.slice(cutIdx) ?? []),
+              ];
+            } else {
+              // append
+              cloned[overLoc.ctrIdx].tasks?.push(activeCell);
             }
 
-            const bucket_id = extractID(bucket.id);
-            const task_id = extractID(task.id);
-
-            if (bucket_id == undefined || task_id == undefined) {
-              return;
-            }
-
-            const next_task = tasks[loc.cellIdx + 1];
-            let next_id: number | null = null;
-
-            if (next_task !== undefined) {
-              next_id = extractID(next_task.id) ?? null;
-            }
-
-            updateTask({
-              bucket_id,
-              task_id,
-              before_id: next_id,
-            });
-          }}
-          onDragCancel={() => setActiveDragID(null)}
-          onDragOver={({ over, active }) => {
-            // move between containers...
-            setTempTasksData((x) => {
-              if (
-                over == null ||
-                typeof over.id === "number" ||
-                typeof active.id === "number" ||
-                over.id === active.id // kadang bisa collide sama diri sendiri
-              ) {
-                return x;
-              }
-              const overLoc = findLocation(over.id);
-              const activeLoc = findLocation(active.id.toString());
-
-              if (overLoc == null || activeLoc == null || activeLoc.cellIdx == undefined) {
-                return x;
-              }
-
-              const cloned = structuredClone(x);
-              const overCtr = cloned[overLoc.ctrIdx];
-              const activeCtr = cloned[activeLoc.ctrIdx];
-              const activeCell = activeCtr.tasks?.[activeLoc.cellIdx];
-
-              if (activeCell == undefined) {
-                return x;
-              }
-
-              cloned[activeLoc.ctrIdx].tasks = activeCtr.tasks?.filter((x) => x.id !== active.id);
-
-              const cutIdx = overLoc.cellIdx;
-              if (cutIdx != undefined) {
-                // insert to array
-                cloned[overLoc.ctrIdx].tasks = [
-                  ...(overCtr.tasks?.slice(0, cutIdx) ?? []),
-                  activeCell,
-                  ...(overCtr.tasks?.slice(cutIdx) ?? []),
-                ];
-              } else {
-                // append
-                cloned[overLoc.ctrIdx].tasks?.push(activeCell);
-              }
-
-              return cloned;
-            });
-          }}
-        >
+            return cloned;
+          });
+        }}
+      >
+        <Stack direction={"row"} spacing={5} flexGrow={1} pb={8} overflow={"scroll"}>
           {tempTasksData.map(({ bucket, tasks }, i) => (
-            <Box key={bucket.id} width={"250px"}>
-              <Stack spacing={1} direction={"row"} alignItems={"center"}>
+            <Box key={bucket.id}>
+              <Stack spacing={1} width={"250px"} direction={"row"} alignItems={"center"}>
                 <Typography
                   flexGrow={1}
                   variant="h6"
@@ -692,8 +692,8 @@ function Kanban(props: { project_id: number }) {
               </Button>
             </Stack>
           </Box>
-        </DndContext>
-      </Stack>
+        </Stack>
+      </DndContext>
     </Stack>
   );
 }

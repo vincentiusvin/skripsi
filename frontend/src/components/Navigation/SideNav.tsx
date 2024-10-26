@@ -203,7 +203,13 @@ function UserSideNavSelector(props: {
         <ListSubheader key={cat.title}>{cat.title}</ListSubheader>,
         cat.entries.map((entry) => (
           <MenuItem key={entry.primary} value={entry.value} dense>
-            <ListItem component={"div"} dense>
+            <ListItem
+              component={"div"}
+              dense
+              sx={{
+                width: 240,
+              }}
+            >
               <ListItemAvatar>
                 <Avatar>{cat.icon}</Avatar>
               </ListItemAvatar>
@@ -408,6 +414,7 @@ function SideNav(props: {
           marginY: 4,
           marginTop: 12,
           paddingX: 2,
+          width: 240,
         }}
       >
         {session?.logged ? (
