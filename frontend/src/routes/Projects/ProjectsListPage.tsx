@@ -1,5 +1,5 @@
 import { SearchOutlined } from "@mui/icons-material";
-import { InputAdornment, Tab, Tabs, TextField } from "@mui/material";
+import { InputAdornment, Tab, Tabs, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useDebounce } from "use-debounce";
 import ProjectCard from "../../components/Cards/ProjectCard.tsx";
@@ -26,6 +26,11 @@ function ProjectListPage() {
 
   return (
     <Grid container spacing={2}>
+      <Grid size={12}>
+        <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>
+          Daftar Proyek
+        </Typography>
+      </Grid>
       <Grid
         size={{
           xs: 0,
@@ -52,8 +57,8 @@ function ProjectListPage() {
             }
           }}
         >
-          <Tab label={"All Projects"} value={"all"} />
-          <Tab label={"My Projects"} value={"personal"} />
+          <Tab label={"Semua Proyek"} value={"all"} />
+          <Tab label={"Proyek Saya"} value={"personal"} />
         </Tabs>
       </Grid>
       <Grid
@@ -64,14 +69,16 @@ function ProjectListPage() {
       >
         <TextField
           fullWidth
-          label={"Search"}
+          label={"Cari organisasi"}
           value={keyword ?? ""}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="start">
-                <SearchOutlined />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="start">
+                  <SearchOutlined />
+                </InputAdornment>
+              ),
+            },
           }}
           onChange={(e) => {
             const keyword = e.currentTarget.value;

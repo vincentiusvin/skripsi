@@ -6,6 +6,7 @@ import {
   ListItemText,
   Skeleton,
   Stack,
+  Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { Redirect } from "wouter";
@@ -68,6 +69,9 @@ function UserReport(props: { user_id: number }) {
 
   return (
     <Stack spacing={2}>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>
+        Laporan Anda
+      </Typography>
       <StyledLink to={"/reports/add"}>
         <Button fullWidth variant="contained">
           Buat Laporan Baru

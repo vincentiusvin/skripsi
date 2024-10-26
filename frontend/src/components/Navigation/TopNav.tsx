@@ -53,7 +53,7 @@ function TopNav(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) => voi
                 },
               }}
             >
-              <Typography>Hello, {data.user_name}</Typography>
+              <Typography>Halo, {data.user_name}</Typography>
             </Box>
             <StyledLink to={`/users/${data.user_id}`}>
               <Button>

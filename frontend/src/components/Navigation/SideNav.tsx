@@ -1,6 +1,7 @@
 import {
   Chat,
   CorporateFare,
+  Dashboard,
   EmojiEvents,
   Flag,
   Home,
@@ -11,6 +12,7 @@ import {
   People,
   Settings,
   Shield,
+  Update,
   Work,
 } from "@mui/icons-material";
 import {
@@ -227,9 +229,14 @@ function ContextualDashboard(props: { context: SidenavContext }) {
   if (!parsedContext || parsedContext.type === "browse") {
     links = [
       {
-        link: `/`,
+        link: `/landing`,
         name: `Beranda`,
         avatar: <Home />,
+      },
+      {
+        link: `/`,
+        name: `Dashboard`,
+        avatar: <Dashboard />,
       },
       {
         link: `/orgs`,
@@ -271,9 +278,9 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <People />,
       },
       {
-        link: `/projects/${project_id}/home`,
-        name: `Beranda`,
-        avatar: <Home />,
+        link: `/projects/${project_id}/activity`,
+        name: `Aktivitas`,
+        avatar: <Update />,
       },
       {
         link: `/projects/${project_id}/chat`,
@@ -311,8 +318,8 @@ function ContextualDashboard(props: { context: SidenavContext }) {
     links = [
       {
         link: `/orgs/${org_id}`,
-        name: `Beranda`,
-        avatar: <Home />,
+        name: `Profil`,
+        avatar: <People />,
       },
       {
         link: `/orgs/${org_id}/people`,

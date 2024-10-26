@@ -99,19 +99,19 @@ function OrgsInfo(props: { org_id: number }) {
         }}
       >
         <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
-          About Us
+          Tentang Kami
         </Typography>
         <Typography textAlign={"center"}>{data.org_description}</Typography>
         <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
-          Our Address
+          Alamat
         </Typography>
         <Typography textAlign={"center"}>{data.org_address}</Typography>
         <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
-          Contact Us
+          Hubungi Kami
         </Typography>
         <Typography textAlign={"center"}>{data.org_phone}</Typography>
         <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
-          Our Members
+          Anggota
         </Typography>
         <Grid container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
           {data.org_users
@@ -131,7 +131,7 @@ function OrgsInfo(props: { org_id: number }) {
             ))}
         </Grid>
         <Typography textAlign={"center"} variant="h4" fontWeight={"bold"}>
-          Categories
+          Kategori
         </Typography>
         <Stack spacing={1} direction={"row"} justifyContent={"center"}>
           {data.org_categories.map((category) => (

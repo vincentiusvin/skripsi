@@ -125,6 +125,7 @@ function LandingPage() {
 
           const desc = (
             <Grid
+              key={i + "d"}
               size={{
                 xs: 12,
                 md: 7,
@@ -145,6 +146,7 @@ function LandingPage() {
 
           const img = (
             <Grid
+              key={i + "i"}
               size={{
                 xs: 12,
                 md: 5,

@@ -17,9 +17,12 @@ function OrgsListPage() {
   const { data } = useOrgsGet();
   return (
     <Box>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
+        Daftar Organisasi
+      </Typography>
       <StyledLink to={"/orgs/add"}>
         <Button startIcon={<Add />} variant="contained" fullWidth>
-          Add Organization
+          Tambah Organisasi
         </Button>
       </StyledLink>
       <Grid container spacing={2} mt={2}>

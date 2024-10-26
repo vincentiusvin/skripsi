@@ -25,8 +25,8 @@ function ProjectTimeline(props: { project_id: number }) {
 
   return (
     <Box>
-      <Typography variant="h5" fontWeight={"bold"} textAlign={"center"}>
-        Perkembangan Terakhir
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>
+        Aktivitas
       </Typography>
       <Timeline>
         {reversed.map((x, i) => {

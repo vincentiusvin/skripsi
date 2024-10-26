@@ -121,7 +121,10 @@ function App() {
                   <Route path={"/reports"} component={UserReportPage} />
                   <Route path={"/projects"} component={ProjectListPage} />
                   <Route path={"/projects/:project_id"} component={ProjectInfoPage} />
-                  <Route path={"/projects/:project_id/home"} component={ProjectsDashboardPage} />
+                  <Route
+                    path={"/projects/:project_id/activity"}
+                    component={ProjectsDashboardPage}
+                  />
                   <Route path={"/projects/:project_id/people"} component={ProjectsPeoplePage} />
                   <Route path={"/projects/:project_id/manage"} component={ProjectsManagePage} />
                   <Route path={"/projects/:project_id/leave"} component={ProjectsLeavePage} />

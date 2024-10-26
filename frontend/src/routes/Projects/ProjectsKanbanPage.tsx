@@ -538,6 +538,9 @@ function Kanban(props: { project_id: number }) {
 
   return (
     <Stack height={"100%"} width={"100%"} overflow={"scroll"}>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
+        Tugas
+      </Typography>
       <Stack direction={"row"} spacing={5} flexGrow={1} pb={8}>
         <DndContext
           sensors={sensors}

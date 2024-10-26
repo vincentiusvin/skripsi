@@ -18,7 +18,7 @@ function ProjectsContribution(props: { project_id: number }) {
 
   return (
     <Stack>
-      <Typography textAlign={"center"} variant="h6">
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
         Kontribusi Terbaru
       </Typography>
       <StyledLink to={`/projects/${project_id}/add-contribs`}>

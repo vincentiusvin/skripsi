@@ -82,6 +82,9 @@ function OrgsPeople(props: { org_id: number }) {
 
   return (
     <Stack gap={2}>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>
+        Pengurus Organisasi
+      </Typography>
       <InviteMembersDialog project_id={org_id} />
       {memberTypes.map((x, i) => (
         <Fragment key={i}>

@@ -1,4 +1,4 @@
-import { Skeleton, Stack, TextField } from "@mui/material";
+import { Skeleton, Stack, TextField, Typography } from "@mui/material";
 import UserCard from "../../components/Cards/UserCard.tsx";
 import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
@@ -12,9 +12,12 @@ function FindUsers() {
 
   return (
     <Stack spacing={2}>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>
+        Daftar Pengguna
+      </Typography>
       <TextField
         value={keyword ?? ""}
-        label="Username"
+        label="Nama pengguna"
         onChange={(e) => {
           setKeyword(e.target.value);
         }}
