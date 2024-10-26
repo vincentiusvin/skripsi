@@ -118,7 +118,7 @@ function NewestProjects() {
 function LandingPage() {
   const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
   return (
-    <Stack height={"100%"} paddingX={`calc(20vw - 48px)`}>
+    <Stack height={"100%"} paddingX={`calc(15% - 48px)`}>
       <Grid container justifyContent={"center"} alignItems={"center"} rowGap={8} columnSpacing={16}>
         {landingData.map((x, i) => {
           const align_left = i % 2 === 0;

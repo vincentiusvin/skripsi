@@ -321,24 +321,29 @@ function ManageAccounts() {
   }
 
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Pengguna</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Aktif Sejak</TableCell>
-            <TableCell>Ditangguhkan Hingga</TableCell>
-            <TableCell />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {users.map((user) => (
-            <AccountRow user={user} key={user.user_id} />
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Box>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
+        Atur Pengguna
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Pengguna</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Aktif Sejak</TableCell>
+              <TableCell>Ditangguhkan Hingga</TableCell>
+              <TableCell />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((user) => (
+              <AccountRow user={user} key={user.user_id} />
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 }
 

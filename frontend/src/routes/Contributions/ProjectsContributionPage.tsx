@@ -19,7 +19,7 @@ function ProjectsContribution(props: { project_id: number }) {
   return (
     <Stack>
       <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
-        Kontribusi Terbaru
+        Kontribusi
       </Typography>
       <StyledLink to={`/projects/${project_id}/add-contribs`}>
         <Button fullWidth variant="contained" startIcon={<Add />}>
