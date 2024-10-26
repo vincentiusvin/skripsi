@@ -14,6 +14,7 @@ import helpImg from "../assets/help.png";
 import schedImg from "../assets/sched.png";
 import ContribList from "../components/Cards/ContribList.tsx";
 import ProjectCard from "../components/Cards/ProjectCard.tsx";
+import StyledLink from "../components/StyledLink.tsx";
 import { useContributionsGet } from "../queries/contribution_hooks.ts";
 import { useProjectsGet } from "../queries/project_hooks.ts";
 
@@ -23,18 +24,21 @@ const landingData = [
     subtitle:
       "Temukan organisasi yang membutuhkan bantuan software dan ikut terlibat langsung dalam proses pengembangan. Kontribusi anda akan tercatat secara publik.",
     img: helpImg,
+    link: "/projects",
   },
   {
     title: " Butuh bantuan developer? Dapatkan disini",
     subtitle:
       "Apabila anda merupakan organisasi nirlaba yang membutuhkan bantuan pengembangan software, anda dapat memepelajari cara untuk bergabung disini.",
     img: devImg,
+    link: "/orgs",
   },
   {
     title: "Gunakan fitur manajemen proyek secara gratis.",
     subtitle:
       "Jalin komunikasi dan lakukan koordinasi dengan mudah menggunakan fitur kanban board dan chat dari kami. Gratis untuk organisasi nirlaba.",
     img: schedImg,
+    link: null,
   },
 ];
 
@@ -138,9 +142,13 @@ function LandingPage() {
               <Typography variant="body1" marginBottom={4}>
                 {x.subtitle}
               </Typography>
-              <Button size="large" variant="contained">
-                Mulai Sekarang
-              </Button>
+              {x.link ? (
+                <StyledLink to={x.link}>
+                  <Button size="large" variant="contained">
+                    Mulai Sekarang
+                  </Button>
+                </StyledLink>
+              ) : null}
             </Grid>
           );
 

@@ -28,7 +28,7 @@ function ProjectListPage() {
     <Grid container spacing={2}>
       <Grid size={12}>
         <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>
-          Daftar Proyek
+          Proyek
         </Typography>
       </Grid>
       <Grid
@@ -69,7 +69,7 @@ function ProjectListPage() {
       >
         <TextField
           fullWidth
-          label={"Cari organisasi"}
+          label={"Cari proyek"}
           value={keyword ?? ""}
           slotProps={{
             input: {

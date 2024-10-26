@@ -19,9 +19,9 @@ import { useOrgsGet } from "../../queries/org_hooks";
 function OrgsListPage() {
   const { data } = useOrgsGet();
   return (
-    <Box>
-      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
-        Daftar Organisasi
+    <Stack spacing={2}>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>
+        Organisasi
       </Typography>
       <Paper
         sx={{
@@ -43,11 +43,11 @@ function OrgsListPage() {
             }}
           >
             <Typography marginBottom={4}>
-              Anda dapat mencari organisasi yang terdaftar di sini.
+              Anda dapat mencari organisasi yang terdaftar di website ini.
             </Typography>
             <Typography marginBottom={2}>
               Apabila anda merupakan pengurus organisasi nirlaba yang membutuhkan bantuan teknologi,
-              anda juga dapat mendaftarkan organisasi anda disini.
+              anda juga dapat mendaftarkan organisasi anda.
             </Typography>
             <StyledLink to={"/orgs/add"}>
               <Button startIcon={<Add />} variant="contained">
@@ -67,6 +67,7 @@ function OrgsListPage() {
           </Grid>
         </Grid>
       </Paper>
+      <Typography variant="h6">Daftar Organisasi</Typography>
       <Grid container spacing={2} mt={2}>
         {data?.map((x) => (
           <Grid
@@ -97,7 +98,7 @@ function OrgsListPage() {
           </Grid>
         ))}
       </Grid>
-    </Box>
+    </Stack>
   );
 }
 
