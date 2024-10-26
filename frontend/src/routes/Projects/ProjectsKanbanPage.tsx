@@ -200,11 +200,11 @@ function EditBucketDialog(props: { bucket_id: number }) {
   return (
     <>
       <Dialog open={active} onClose={() => setActive(false)}>
-        <DialogTitle>Edit bucket</DialogTitle>
+        <DialogTitle>Edit Kategori</DialogTitle>
         <DialogContent>
           <Box my={1}>
             <TextField
-              label="Insert name"
+              label="Nama"
               value={newName ?? bucket.name}
               onChange={(x) => setNewName(x.target.value)}
             ></TextField>
@@ -255,7 +255,7 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
   const { mutate: addTask } = useTasksPost({
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Task created!</Typography>,
+        message: <Typography>Tugas ditambahkan!</Typography>,
         variant: "success",
       });
       setSelectedBucketEdit(null);
@@ -279,18 +279,14 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
           <DialogTitle>Tambah tugas baru</DialogTitle>
           <DialogContent>
             <Stack spacing={2} my={2}>
-              <TextField
-                fullWidth
-                onChange={(e) => setTaskName(e.target.value)}
-                label="Task name"
-              />
+              <TextField fullWidth onChange={(e) => setTaskName(e.target.value)} label="Judul" />
               <TextField
                 fullWidth
                 onChange={(e) => setTaskDescription(e.target.value)}
-                label="Task description"
+                label="Deskripsi"
               />
-              <DatePicker onChange={(x) => setTaskStartAt(x)} label="Start At"></DatePicker>
-              <DatePicker onChange={(x) => setTaskEndAt(x)} label="End At"></DatePicker>
+              <DatePicker onChange={(x) => setTaskStartAt(x)} label="Mulai"></DatePicker>
+              <DatePicker onChange={(x) => setTaskEndAt(x)} label="Selesai"></DatePicker>
               {project_members != undefined ? (
                 <UserSelect
                   current_users={taskAssign ?? []}
@@ -378,30 +374,30 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
       </IconButton>
       {dialogOpen && task != null && (
         <Dialog open={dialogOpen != null} onClose={() => setDialogOpen(false)}>
-          <DialogTitle>Edit task</DialogTitle>
+          <DialogTitle>Edit Tugas</DialogTitle>
           <DialogContent>
             <Stack spacing={2} my={2}>
               <TextField
                 fullWidth
                 onChange={(e) => setTaskName(e.target.value)}
-                label="Task name"
+                label="Judul"
                 value={taskName ?? task.name}
               />
               <TextField
                 fullWidth
                 onChange={(e) => setTaskDescription(e.target.value)}
-                label="Task description"
+                label="Deskripsi"
                 value={taskDescription ?? task.description ?? ""}
               />
               <DatePicker
                 onChange={(x) => setTaskStartAt(x)}
-                label="Start At"
+                label="Mulai"
                 value={taskStartAt ?? task.start_at != null ? dayjs(task.start_at) : null}
               ></DatePicker>
               <DatePicker
                 value={taskEndAt ?? task.end_at != null ? dayjs(task.end_at) : null}
                 onChange={(x) => setTaskEndAt(x)}
-                label="End At"
+                label="Selesai"
               ></DatePicker>
               {project_members != undefined ? (
                 <UserSelect
@@ -470,7 +466,7 @@ function Kanban(props: { project_id: number }) {
     onSuccess: () => {
       setNewBucketName("");
       enqueueSnackbar({
-        message: <Typography>Task created!</Typography>,
+        message: <Typography>Kategori ditambahkan!</Typography>,
         variant: "success",
       });
     },
@@ -537,11 +533,11 @@ function Kanban(props: { project_id: number }) {
   );
 
   return (
-    <Stack height={"100%"} width={"100%"} overflow={"scroll"}>
+    <Stack height={"100%"} width={"100%"}>
       <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
         Tugas
       </Typography>
-      <Stack direction={"row"} spacing={5} flexGrow={1} pb={8}>
+      <Stack direction={"row"} spacing={5} flexGrow={1} pb={8} overflow={"auto"} width={"100%"}>
         <DndContext
           sensors={sensors}
           onDragStart={(x) => setActiveDragID(x.active.id.toString())}
@@ -685,9 +681,9 @@ function Kanban(props: { project_id: number }) {
             </DragOverlay>
           </Box>
           <Box>
-            <Stack direction={"row"} alignItems={"top"} width={"250px"}>
+            <Stack direction={"row"} alignItems={"top"} width={"300px"}>
               <TextField
-                label="Add Bucket"
+                label="Tambah Kategori"
                 value={newBucketName}
                 onChange={(e) => setNewBucketName(e.target.value)}
               ></TextField>

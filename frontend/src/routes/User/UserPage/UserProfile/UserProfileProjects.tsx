@@ -1,5 +1,13 @@
 import { Work } from "@mui/icons-material";
-import { Button, Dialog, DialogContent, DialogTitle, Skeleton, Stack } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Skeleton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 import ProjectCard from "../../../../components/Cards/ProjectCard.tsx";
 import { useProjectsGet } from "../../../../queries/project_hooks.ts";
@@ -25,16 +33,22 @@ function UserProjectsList(props: { user_id: number }) {
         variant="outlined"
         startIcon={<Work />}
       >
-        Terlibat dalam {projects.length} projek
+        Terlibat dalam {projects.length} proyek
       </Button>
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
-        <DialogTitle>Daftar Projek</DialogTitle>
+        <DialogTitle>Daftar Proyek</DialogTitle>
         <DialogContent>
-          <Stack gap={2}>
-            {projects.map((x) => (
-              <ProjectCard project_id={x.project_id} key={x.project_id} />
-            ))}
-          </Stack>
+          {projects.length !== 0 ? (
+            <Stack gap={2}>
+              {projects.map((x) => (
+                <ProjectCard project_id={x.project_id} key={x.project_id} />
+              ))}
+            </Stack>
+          ) : (
+            <Typography variant="body1">
+              Pengguna ini tidak terlibat dalam proyek anapun.
+            </Typography>
+          )}
         </DialogContent>
       </Dialog>
     </>
