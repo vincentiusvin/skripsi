@@ -1,6 +1,6 @@
 import { DarkMode, LightMode, Login, Logout } from "@mui/icons-material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { AppBar, Box, Button, IconButton, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, IconButton, Toolbar, Typography, alpha } from "@mui/material";
 import { useAppTheme } from "../../helpers/theme.ts";
 import { useSessionDelete, useSessionGet } from "../../queries/sesssion_hooks.ts";
 import NotificationDialog from "../Notification.tsx";
@@ -20,6 +20,9 @@ function TopNav(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) => voi
       variant="elevation"
       elevation={0}
       sx={{
+        height: 64,
+        background: (theme) => alpha(theme.palette.background.default, 0.7),
+        backdropFilter: "blur(8px)",
         zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
