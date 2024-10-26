@@ -654,11 +654,12 @@ function Kanban(props: { project_id: number }) {
                   transitionDuration: "250ms",
                   border: 3,
                   borderStyle: "dashed",
-                  borderColor: activeDragID
-                    ? activeLoc?.ctrIdx === i
-                      ? "green"
-                      : "white"
-                    : "transparent",
+                  borderColor: (theme) =>
+                    activeDragID
+                      ? activeLoc?.ctrIdx === i
+                        ? theme.palette.success.main
+                        : theme.palette.warning.light
+                      : "transparent",
                 }}
                 id={bucket.id}
                 items={tasks?.map((x) => x.id) ?? []}
