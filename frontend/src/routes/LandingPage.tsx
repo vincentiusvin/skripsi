@@ -9,9 +9,9 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import devImg from "../assets/dev.jpg";
-import helpImg from "../assets/help.jpg";
-import schedImg from "../assets/sched.jpg";
+import devImg from "../assets/dev.png";
+import helpImg from "../assets/help.png";
+import schedImg from "../assets/sched.png";
 import ContribList from "../components/Cards/ContribList.tsx";
 import ProjectCard from "../components/Cards/ProjectCard.tsx";
 import { useContributionsGet } from "../queries/contribution_hooks.ts";
