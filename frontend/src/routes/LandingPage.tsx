@@ -9,6 +9,8 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import blobDark from "../assets/blobdark.svg";
+import blobLight from "../assets/bloblight.svg";
 import devImg from "../assets/dev.png";
 import helpImg from "../assets/help.png";
 import schedImg from "../assets/sched.png";
@@ -82,6 +84,18 @@ function NewestProjects() {
   if (projects == undefined) {
     return (
       <Box>
+        <Box
+          sx={{
+            backgroundImage: `url(${blobDark})`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "contain",
+            position: "absolute",
+            height: "100%",
+            width: "100vw",
+            zIndex: -1,
+            overflow: "hidden",
+          }}
+        ></Box>
         <Typography variant="h4" fontWeight="bold">
           Proyek Terbaru
         </Typography>
@@ -94,27 +108,50 @@ function NewestProjects() {
   }
 
   return (
-    <Box>
-      <Typography variant="h4" fontWeight="bold">
-        Proyek Terbaru
-      </Typography>
-      <Typography variant="caption">
-        Proyek-proyek ini baru dimulai dan membutuhkan bantuan anda
-      </Typography>
-      <Grid container marginTop={4} spacing={2}>
-        {projects.map((x) => (
-          <Grid
-            key={x.project_id}
-            size={{
-              xs: 12,
-              sm: 6,
-              lg: 4,
-            }}
-          >
-            <ProjectCard project_id={x.project_id} />
-          </Grid>
-        ))}
-      </Grid>
+    <Box
+      sx={{
+        position: "relative",
+      }}
+    >
+      <Box
+        sx={{
+          position: "absolute",
+          height: "100%",
+          width: "200vw",
+          backgroundImage: (theme) =>
+            theme.palette.mode === "dark" ? `url(${blobDark})` : `url(${blobLight})`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          left: "-20%",
+          zIndex: -1,
+        }}
+      ></Box>
+      <Box
+        sx={{
+          paddingY: 16,
+        }}
+      >
+        <Typography variant="h4" fontWeight="bold">
+          Proyek Terbaru
+        </Typography>
+        <Typography variant="caption">
+          Proyek-proyek ini baru dimulai dan membutuhkan bantuan anda
+        </Typography>
+        <Grid container marginTop={4} spacing={2}>
+          {projects.map((x) => (
+            <Grid
+              key={x.project_id}
+              size={{
+                xs: 12,
+                sm: 6,
+                lg: 4,
+              }}
+            >
+              <ProjectCard project_id={x.project_id} />
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
     </Box>
   );
 }
@@ -123,7 +160,13 @@ function LandingPage() {
   const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
   return (
     <Stack height={"100%"} paddingX={`calc(15% - 48px)`}>
-      <Grid container justifyContent={"center"} alignItems={"center"} rowGap={8} columnSpacing={16}>
+      <Grid
+        container
+        justifyContent={"center"}
+        alignItems={"center"}
+        rowSpacing={8}
+        columnSpacing={16}
+      >
         {landingData.map((x, i) => {
           const align_left = i % 2 === 0;
 
