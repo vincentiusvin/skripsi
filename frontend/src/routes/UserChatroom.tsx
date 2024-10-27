@@ -86,7 +86,7 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
   const { user_id } = props;
   const searchHook = useSearchParams();
 
-  let activeRoom: undefined | number = undefined;
+  let activeRoom: false | number = false;
 
   const [activeRoomRaw, setActiveRoom] = useStateSearch("room", searchHook);
   const tryNumber = Number(activeRoomRaw);

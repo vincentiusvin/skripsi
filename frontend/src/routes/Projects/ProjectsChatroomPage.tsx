@@ -39,7 +39,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
 
   const searchHook = useSearchParams();
 
-  let activeRoom: undefined | number = undefined;
+  let activeRoom: false | number = false;
 
   const [activeRoomRaw, setActiveRoom] = useStateSearch("room", searchHook);
   const tryNumber = Number(activeRoomRaw);
