@@ -8,19 +8,19 @@ const helps = [
     entries: [
       {
         text: "Membuat akun",
-        link: "def",
+        link: "/guides/account",
       },
       {
         text: "Pengerjaan proyek",
-        link: "def",
+        link: "/guides/project-features",
       },
       {
         text: "Menambahkan teman",
-        link: "def",
+        link: "/guides/friend",
       },
       {
         text: "Mengajukan laporan",
-        link: "def",
+        link: "/guides/report",
       },
     ],
   },
@@ -29,11 +29,11 @@ const helps = [
     entries: [
       {
         text: "Menjadi anggota proyek",
-        link: "def",
+        link: "/guides/dev-project",
       },
       {
         text: "Mengajukan laporan kontribusi",
-        link: "def",
+        link: "/guides/dev-contribs",
       },
     ],
   },
@@ -42,15 +42,19 @@ const helps = [
     entries: [
       {
         text: "Membuat organisasi",
-        link: "def",
+        link: "/guides/org-create",
       },
       {
         text: "Membuat proyek",
-        link: "def",
+        link: "/guides/org-project",
       },
       {
         text: "Menambah anggota proyek",
-        link: "def",
+        link: "/guides/org-project-members",
+      },
+      {
+        text: "Menambah pengurus organisasi",
+        link: "/guides/org-org-members",
       },
     ],
   },
