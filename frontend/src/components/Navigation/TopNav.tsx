@@ -21,7 +21,7 @@ function TopNav(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) => voi
       elevation={0}
       sx={{
         height: 64,
-        background: (theme) => alpha(theme.palette.background.default, 0.7),
+        background: (theme) => alpha(theme.palette.background.default, 0.6),
         backdropFilter: "blur(8px)",
         zIndex: (theme) => theme.zIndex.drawer + 1,
       }}

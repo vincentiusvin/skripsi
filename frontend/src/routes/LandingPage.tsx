@@ -159,8 +159,8 @@ function HugeTitle() {
           sx={{
             background: (theme) =>
               theme.palette.mode === "dark"
-                ? "linear-gradient(110deg, hsl(222, 70%, 30%) 20%, hsl(277, 70%, 60%) 90%)"
-                : "linear-gradient(110deg, hsl(277, 100%, 80%) 10%, hsl(222, 100%, 30%) 90%)",
+                ? "linear-gradient(110deg, hsl(200, 70%, 30%) 20%, hsl(270, 70%, 60%) 90%)"
+                : "linear-gradient(110deg, hsl(280, 100%, 80%) 10%, hsl(200, 100%, 30%) 90%)",
             backgroundClip: "text",
             WebkitTextFillColor: "transparent",
           }}
