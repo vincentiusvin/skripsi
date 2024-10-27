@@ -159,7 +159,7 @@ function ProjectInfoCard(props: { user_id: number }) {
                   textAlign: "center",
                 }}
               >
-                Anda belum terlibat dalam proyek apapun. Temukan projek yang tersedia di sini.
+                Anda belum terlibat dalam proyek apapun.
               </Typography>
               <Box flexGrow={1}></Box>
             </>
