@@ -81,32 +81,6 @@ function NewestContributions() {
 function NewestProjects() {
   const { data: projects } = useProjectsGet();
 
-  if (projects == undefined) {
-    return (
-      <Box>
-        <Box
-          sx={{
-            backgroundImage: `url(${blobDark})`,
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "contain",
-            position: "absolute",
-            height: "100%",
-            width: "100vw",
-            zIndex: -1,
-            overflow: "hidden",
-          }}
-        ></Box>
-        <Typography variant="h4" fontWeight="bold">
-          Proyek Terbaru
-        </Typography>
-        <Typography variant="caption">
-          Proyek-proyek ini baru dimulai dan membutuhkan bantuan anda
-        </Typography>
-        <Skeleton />
-      </Box>
-    );
-  }
-
   return (
     <Box
       sx={{
@@ -138,7 +112,7 @@ function NewestProjects() {
           Proyek-proyek ini baru dimulai dan membutuhkan bantuan anda
         </Typography>
         <Grid container marginTop={4} spacing={2}>
-          {projects.map((x) => (
+          {projects?.map((x) => (
             <Grid
               key={x.project_id}
               size={{
@@ -156,6 +130,76 @@ function NewestProjects() {
   );
 }
 
+function HugeTitle() {
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        marginTop: -2,
+      }}
+    >
+      <Box
+        sx={{
+          position: "absolute",
+          height: "100%",
+          width: "200vw",
+          backgroundImage: (theme) =>
+            theme.palette.mode === "dark" ? `url(${blobDark})` : `url(${blobLight})`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          left: "-20%",
+          zIndex: -1,
+        }}
+      ></Box>
+      <Stack spacing={4} paddingY={20}>
+        <Typography
+          variant="h2"
+          fontWeight={"bold"}
+          textAlign={"center"}
+          sx={{
+            background: (theme) =>
+              theme.palette.mode === "dark"
+                ? "linear-gradient(110deg, hsl(222, 80%, 30%) 20%, hsl(277, 75%, 65%) 90%)"
+                : "linear-gradient(110deg, hsl(277, 100%, 80%) 10%, hsl(222, 100%, 30%) 90%)",
+            backgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          Dev4You
+        </Typography>
+        <Typography variant="h6" fontWeight={"light"} textAlign={"center"}>
+          Di mana <b>developer relawan</b> dan <b>organisasi nirlaba</b> bertemu
+        </Typography>
+        <Stack direction="row" justifyContent={"center"} spacing={4}>
+          <Button
+            variant="contained"
+            sx={{
+              fontSize: 16,
+              paddingX: 8,
+              paddingY: 1,
+              backgroundColor: "white",
+            }}
+          >
+            Masuk
+          </Button>
+          <Button
+            sx={{
+              fontSize: 16,
+              paddingX: 8,
+              paddingY: 1,
+              background:
+                "radial-gradient(274px at 7.4% 17.9%, rgb(82, 107, 248) 0.3%, rgb(167, 139, 252) 90.5%)",
+            }}
+            variant="contained"
+          >
+            Daftar
+          </Button>
+        </Stack>
+      </Stack>
+    </Box>
+  );
+}
+
 function LandingPage() {
   const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
   return (
@@ -167,6 +211,9 @@ function LandingPage() {
         rowSpacing={8}
         columnSpacing={16}
       >
+        <Grid size={12}>
+          <HugeTitle />
+        </Grid>
         {landingData.map((x, i) => {
           const align_left = i % 2 === 0;
 
