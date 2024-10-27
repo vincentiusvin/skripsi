@@ -61,21 +61,34 @@ function Footer() {
     <Grid
       container
       mt={4}
+      mx={-2}
       sx={{
         paddingY: 8,
         backgroundColor: (theme) =>
           theme.palette.mode === "dark" ? theme.palette.primary.dark : theme.palette.primary.main,
-        paddingX: `calc(15% - 48px)`,
+        paddingX: `calc(15% - 24px)`,
       }}
       spacing={2}
     >
-      <Grid size={6} alignSelf={"center"}>
+      <Grid
+        size={{
+          xs: 12,
+          md: 6,
+        }}
+        alignSelf={"center"}
+      >
         <Typography variant="h4" fontWeight={"bold"}>
           Dev4You
         </Typography>
       </Grid>
       {helps.map((x, i) => (
-        <Grid size={2} key={i}>
+        <Grid
+          size={{
+            xs: 12,
+            md: 2,
+          }}
+          key={i}
+        >
           <Typography variant="h6" marginBottom={1} fontWeight={"bold"}>
             {x.name}
           </Typography>

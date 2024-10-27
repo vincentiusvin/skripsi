@@ -333,7 +333,9 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
 
   useEffect(() => {
     if (bottomRef.current !== null) {
-      bottomRef.current.scrollIntoView(true);
+      bottomRef.current.scrollIntoView({
+        block: "end",
+      });
     }
   }, [messages?.length]);
 
