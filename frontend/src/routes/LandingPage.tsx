@@ -203,7 +203,7 @@ function HugeTitle() {
 function LandingPage() {
   const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
   return (
-    <Stack height={"100%"} paddingX={`calc(15% - 24px)`}>
+    <Stack paddingX={`calc(15% - 24px)`}>
       <Grid
         container
         justifyContent={"center"}
