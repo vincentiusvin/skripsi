@@ -39,7 +39,7 @@ function AuthPage() {
   }
 
   return (
-    <Grid container height={"100%"} alignItems={"center"}>
+    <Grid container minHeight={"inherit"} alignItems={"center"}>
       <Grid
         size={{
           md: 6,

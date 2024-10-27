@@ -202,7 +202,7 @@ function UserSideNavSelector(props: {
       {options.map((cat) => [
         <ListSubheader key={cat.title}>{cat.title}</ListSubheader>,
         cat.entries.map((entry) => (
-          <MenuItem key={entry.primary} value={entry.value} dense>
+          <MenuItem key={entry.value} value={entry.value} dense>
             <ListItem
               component={"div"}
               dense
@@ -385,7 +385,7 @@ function SideNav(props: {
   setDrawerOpen?: (x: boolean) => void;
 }) {
   const { data: session } = useSessionGet();
-  const [activeDashboard, setActiveDashboard] = useState<SidenavContext>("browse");
+  const [_activeDashboard, setActiveDashboard] = useState<SidenavContext>("browse");
   const { setDrawerOpen, open } = props;
 
   const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
@@ -393,6 +393,8 @@ function SideNav(props: {
   if (session == undefined) {
     return <Skeleton />;
   }
+
+  const activeDashboard: SidenavContext = session.logged ? _activeDashboard : "browse";
 
   return (
     <Drawer

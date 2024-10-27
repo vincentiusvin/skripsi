@@ -78,7 +78,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | undefined>();
 
   return (
-    <Box height={"100%"}>
+    <Box minHeight={"inherit"}>
       <Snackbar open={!connected}>
         <Alert severity="error">
           <Typography>You are not connected!</Typography>
@@ -101,7 +101,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
           </Button>
         </DialogActions>
       </Dialog>
-      <Grid container height={"100%"} spacing={1}>
+      <Grid container minHeight={"inherit"} spacing={1}>
         {sideOpen || selectedChatroom == undefined ? (
           <Grid
             size={{

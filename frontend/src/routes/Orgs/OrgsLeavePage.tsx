@@ -22,10 +22,10 @@ function OrgLeave(props: { org_id: number; user_id: number }) {
     <Stack
       direction={"column"}
       justifyContent={"center"}
-      height={"100%"}
+      minHeight={"inherit"}
+      padding={16}
       textAlign={"center"}
       spacing={8}
-      width={"75%"}
       margin={"auto"}
     >
       <Box>

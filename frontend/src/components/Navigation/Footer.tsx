@@ -93,7 +93,14 @@ function Footer() {
           }}
           key={i}
         >
-          <Typography variant="h6" marginBottom={1} fontWeight={"bold"}>
+          <Typography
+            variant="h6"
+            marginBottom={1}
+            fontWeight={"bold"}
+            sx={{
+              wordBreak: "break-word",
+            }}
+          >
             {x.name}
           </Typography>
           {x.entries.map((y, j) => (
@@ -103,6 +110,7 @@ function Footer() {
                   "&:hover": {
                     textDecoration: "underline",
                   },
+                  wordBreak: "break-word",
                 }}
                 variant="body2"
               >

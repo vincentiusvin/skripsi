@@ -533,7 +533,7 @@ function Kanban(props: { project_id: number }) {
   );
 
   return (
-    <Stack height={"100%"}>
+    <Stack minHeight={"inherit"}>
       <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
         Tugas
       </Typography>

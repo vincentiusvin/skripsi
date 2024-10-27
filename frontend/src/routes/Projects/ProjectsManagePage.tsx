@@ -20,7 +20,7 @@ function ProjectsManage(props: { project_id: number }) {
   });
 
   return (
-    <Grid container spacing={2} height={"100%"}>
+    <Grid container spacing={2} minHeight={"inherit"}>
       <Grid
         size={{
           xs: 12,

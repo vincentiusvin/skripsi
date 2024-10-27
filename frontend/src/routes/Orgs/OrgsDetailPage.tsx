@@ -1,9 +1,5 @@
 import {
-  Box,
   Button,
-  Card,
-  CardActionArea,
-  CardContent,
   Chip,
   Dialog,
   DialogActions,
@@ -18,7 +14,7 @@ import {
 import Grid from "@mui/material/Grid2";
 import { useState } from "react";
 import { useParams } from "wouter";
-import StyledLink from "../../components/StyledLink.tsx";
+import ProjectCard from "../../components/Cards/ProjectCard.tsx";
 import {
   useOrgDetailGet,
   useOrgsDetailMembersDelete,
@@ -140,9 +136,9 @@ function OrgsInfo(props: { org_id: number }) {
         </Stack>
       </Paper>
       <Typography variant="h6" fontWeight={"bold"}>
-        Projects
+        Proyek
       </Typography>
-      <Grid container>
+      <Grid container spacing={2}>
         {projectData?.map((x, i) => (
           <Grid
             key={i}
@@ -152,22 +148,7 @@ function OrgsInfo(props: { org_id: number }) {
               lg: 4,
             }}
           >
-            <StyledLink to={`/projects/${x.project_id}`}>
-              <Card>
-                <CardActionArea>
-                  <CardContent>
-                    <Stack direction={"row"} alignItems={"center"} spacing={2}>
-                      <Box>
-                        <Typography variant="h5" fontWeight={"bold"}>
-                          {x.project_name}
-                        </Typography>
-                        <Typography>{x.org_id}</Typography>
-                      </Box>
-                    </Stack>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </StyledLink>
+            <ProjectCard project_id={x.project_id} />
           </Grid>
         ))}
       </Grid>
