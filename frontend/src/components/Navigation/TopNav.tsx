@@ -1,5 +1,4 @@
-import { DarkMode, LightMode, Login, Logout } from "@mui/icons-material";
-import MenuIcon from "@mui/icons-material/Menu";
+import { DarkMode, LightMode, Login, Logout, ViewSidebar } from "@mui/icons-material";
 import { AppBar, Box, Button, IconButton, Toolbar, Typography, alpha } from "@mui/material";
 import { useAppTheme } from "../../helpers/theme.ts";
 import { useSessionDelete, useSessionGet } from "../../queries/sesssion_hooks.ts";
@@ -40,8 +39,11 @@ function TopNav(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) => voi
         }}
       >
         <IconButton variant="outlined" onClick={() => setDrawerOpen(!drawerOpen)}>
-          <MenuIcon />
+          <ViewSidebar />
         </IconButton>
+        <StyledLink to="/landing">
+          <Typography fontWeight={"bold"}>Dev4You</Typography>
+        </StyledLink>
         <Box flexGrow={1}></Box>
         {data?.logged ? (
           <>
