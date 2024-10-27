@@ -1,5 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import { ReactNode, useState } from "react";
+import Footer from "./Footer.tsx";
 import SideNav from "./SideNav.tsx";
 import TopNav from "./TopNav.tsx";
 
@@ -16,6 +17,7 @@ function Navigation(props: { children: ReactNode }) {
           {children}
         </Box>
       </Stack>
+      <Footer />
     </Box>
   );
 }
