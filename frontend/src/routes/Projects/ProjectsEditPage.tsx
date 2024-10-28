@@ -14,7 +14,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
-import MarkdownEditor from "../../components/MarkdownEditor.tsx";
+import MarkdownEditor from "../../components/MarkdownEditor";
 import {
   useProjectsCategoriesGet,
   useProjectsDetailGet,

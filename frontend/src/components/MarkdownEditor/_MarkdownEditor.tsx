@@ -24,9 +24,9 @@ import {
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 import { useTheme } from "@mui/material/styles";
-import { fileToBase64DataURL } from "../helpers/file.ts";
+import { fileToBase64DataURL } from "../../helpers/file.ts";
 
-function MarkdownEditor(props: { oldValue?: string; onChange?: (x: string) => void }) {
+function _MarkdownEditor(props: { oldValue?: string; onChange?: (x: string) => void }) {
   const { oldValue, onChange } = props;
   const theme = useTheme();
   return (
@@ -75,4 +75,4 @@ function MarkdownEditor(props: { oldValue?: string; onChange?: (x: string) => vo
   );
 }
 
-export default MarkdownEditor;
+export default _MarkdownEditor;
