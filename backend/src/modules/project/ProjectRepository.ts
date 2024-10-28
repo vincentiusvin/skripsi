@@ -9,6 +9,7 @@ const defaultProjectFields = [
   "ms_projects.org_id",
   "ms_projects.description as project_desc",
   "ms_projects.archived as project_archived",
+  "ms_projects.content as project_content",
 ] as const;
 
 const defaultProjectEventFields = ["id", "project_id", "event", "created_at"] as const;
@@ -180,14 +181,16 @@ export class ProjectRepository {
     org_id: number;
     project_desc: string;
     category_id?: number[];
+    project_content?: string;
   }) {
-    const { project_name, org_id, project_desc, category_id } = obj;
+    const { project_name, org_id, project_desc, category_id, project_content } = obj;
 
     const prj = await this.db
       .insertInto("ms_projects")
       .values({
         description: project_desc,
         name: project_name,
+        content: project_content,
         org_id,
       })
       .returning("id")
@@ -218,17 +221,24 @@ export class ProjectRepository {
       project_desc?: string;
       category_id?: number[];
       project_archived?: boolean;
+      project_content?: string;
     },
   ) {
-    const { project_archived, project_name, project_desc, category_id } = obj;
+    const { project_content, project_archived, project_name, project_desc, category_id } = obj;
 
-    if (project_name != undefined || project_desc != undefined || project_archived != undefined) {
+    if (
+      project_content != undefined ||
+      project_name != undefined ||
+      project_desc != undefined ||
+      project_archived != undefined
+    ) {
       await this.db
         .updateTable("ms_projects")
         .set({
           description: project_desc,
           name: project_name,
           archived: project_archived,
+          content: project_content,
         })
         .where("ms_projects.id", "=", project_id)
         .executeTakeFirst();

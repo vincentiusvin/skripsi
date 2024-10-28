@@ -27,23 +27,6 @@ export class ProjectController extends Controller {
     };
   }
   ProjectsPost = new Route({
-    handler: async (req, res) => {
-      const { project_name, org_id, project_desc, category_id } = req.body;
-      const sender_id = req.session.user_id!;
-
-      const project_id = await this.project_service.addProject(
-        {
-          org_id,
-          project_desc,
-          project_name,
-          category_id,
-        },
-        sender_id,
-      );
-
-      const result = await this.project_service.getProjectByID(project_id);
-      res.status(201).json(result);
-    },
     method: "post",
     path: "/api/projects",
     schema: {
@@ -54,11 +37,16 @@ export class ProjectController extends Controller {
           .string({ message: "Deskripsi invalid!" })
           .min(1, "Deskripsi tidak boleh kosong!"),
         category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
+        project_content: z
+          .string({ message: "Penjelasan invalid!" })
+          .min(1, "Penjelasan invalid!")
+          .optional(),
       }),
       ResBody: z.object({
         org_id: z.number(),
         project_id: z.number(),
         project_archived: z.boolean(),
+        project_content: z.string().nullable(),
         project_name: z.string(),
         project_desc: z.string(),
         project_members: z
@@ -74,6 +62,24 @@ export class ProjectController extends Controller {
           })
           .array(),
       }),
+    },
+    handler: async (req, res) => {
+      const { project_content, project_name, org_id, project_desc, category_id } = req.body;
+      const sender_id = req.session.user_id!;
+
+      const project_id = await this.project_service.addProject(
+        {
+          org_id,
+          project_content,
+          project_desc,
+          project_name,
+          category_id,
+        },
+        sender_id,
+      );
+
+      const result = await this.project_service.getProjectByID(project_id);
+      res.status(201).json(result);
     },
   });
   ProjectsGet = new Route({
@@ -91,6 +97,7 @@ export class ProjectController extends Controller {
           org_id: z.number(),
           project_id: z.number(),
           project_archived: z.boolean(),
+          project_content: z.string().nullable(),
           project_name: z.string(),
           project_desc: z.string(),
           project_members: z
@@ -132,6 +139,7 @@ export class ProjectController extends Controller {
       ResBody: z.object({
         org_id: z.number(),
         project_id: z.number(),
+        project_content: z.string().nullable(),
         project_name: z.string(),
         project_archived: z.boolean(),
         project_desc: z.string(),
@@ -200,6 +208,10 @@ export class ProjectController extends Controller {
           .string({ message: "Deskripsi invalid!" })
           .min(1, "Deskripsi tidak boleh kosong!")
           .optional(),
+        project_content: z
+          .string({ message: "Penjelasan invalid!" })
+          .min(1, "Penjelasan invalid!")
+          .optional(),
         category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
         project_archived: z.boolean().optional(),
       }),
@@ -207,6 +219,7 @@ export class ProjectController extends Controller {
         org_id: z.number(),
         project_id: z.number(),
         project_name: z.string(),
+        project_content: z.string().nullable(),
         project_desc: z.string(),
         project_archived: z.boolean(),
         project_members: z
