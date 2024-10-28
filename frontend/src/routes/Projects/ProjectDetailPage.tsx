@@ -1,5 +1,6 @@
 import { Check } from "@mui/icons-material";
 import {
+  Alert,
   Box,
   Button,
   Chip,
@@ -37,6 +38,12 @@ function ProjectInfo(props: { project_id: number }) {
 
   return (
     <Stack gap={2}>
+      {project.project_archived ? (
+        <Alert severity="warning">
+          Proyek ini sudah diarsipkan oleh administrator organisasi. Anda tidak dapat bergabung ke
+          dalam proyek ini tanpa diundang.
+        </Alert>
+      ) : null}
       <Typography
         variant="h4"
         fontWeight={"bold"}
