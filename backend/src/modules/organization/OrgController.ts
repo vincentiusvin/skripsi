@@ -21,7 +21,6 @@ export class OrgController extends Controller {
       OrgsDetailGet: this.OrgsDetailGet,
       OrgsCategoriesGet: this.OrgsCategoriesGet,
       OrgsUpdate: this.OrgsUpdate,
-      OrgsDelete: this.OrgsDelete,
       OrgsDetailMembersDetailGet: this.OrgsDetailMembersDetailGet,
       OrgsDetailMembersDetailPut: this.OrgsDetailMembersDetailPut,
       OrgsDetailMembersDetailDelete: this.OrgsDetailMembersDetailDelete,
@@ -258,25 +257,6 @@ export class OrgController extends Controller {
       const updated = await this.org_service.getOrgByID(Number(org_id));
 
       res.status(200).json(updated);
-    },
-  });
-  OrgsDelete = new Route({
-    method: "delete",
-    path: "/api/orgs/:org_id",
-    schema: {
-      ResBody: z.object({
-        msg: z.string(),
-      }),
-      Params: z.object({
-        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
-      }),
-    },
-    handler: async (req, res) => {
-      const org_id = Number(req.params.org_id);
-      const sender_id = req.session.user_id!;
-
-      await this.org_service.deleteOrg(org_id, sender_id);
-      res.status(200).json({ msg: "Organisasi berhasil di hapus" });
     },
   });
   OrgsDetailMembersDetailGet = new Route({

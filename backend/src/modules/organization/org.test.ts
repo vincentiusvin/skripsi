@@ -91,21 +91,6 @@ describe("organization api", () => {
     expect(result.org_categories.map((x) => x.category_id)).to.deep.eq(in_category);
   });
 
-  it("should be able to delete", async () => {
-    const in_org = caseData.org;
-    const in_admin = caseData.org_user;
-
-    const cookie = await getLoginCookie(in_admin.name, in_admin.password);
-    const send_req = await deleteOrg(in_org.id, cookie);
-    const read_req = await getOrgs(cookie);
-    const result = await read_req.json();
-    const found_org = result.find((x) => x.org_id === caseData.org.id);
-
-    expect(send_req.status).to.eq(200);
-    expect(read_req.status).eq(200);
-    expect(found_org).to.eq(undefined);
-  });
-
   it("should be able to invite new org member", async () => {
     const in_org = caseData.org;
     const in_new_member = caseData.plain_user;
@@ -246,16 +231,6 @@ function getOrgDetail(org_id: number, cookie: string) {
     },
     credentials: "include",
     method: "get",
-  });
-}
-
-function deleteOrg(org_id: number, cookie: string) {
-  return new APIContext("OrgsDelete").fetch(`/api/orgs/${org_id}`, {
-    headers: {
-      cookie: cookie,
-    },
-    credentials: "include",
-    method: "delete",
   });
 }
 

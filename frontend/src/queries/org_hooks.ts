@@ -106,22 +106,6 @@ export function useOrgsUpdate(opts: {
   });
 }
 
-export function useOrgsDelete(opts: { id: number; onSuccess?: () => void }) {
-  const { id, onSuccess } = opts;
-  return useMutation({
-    mutationFn: () =>
-      new APIContext("OrgsDelete").fetch(`/api/orgs/${id}`, {
-        method: "DELETE",
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orgKeys.all() });
-      if (onSuccess) {
-        onSuccess();
-      }
-    },
-  });
-}
-
 export function useOrgsDetailMembersGet(opts: { org_id: number; user_id: number }) {
   const { org_id, user_id } = opts;
   return useQuery({
