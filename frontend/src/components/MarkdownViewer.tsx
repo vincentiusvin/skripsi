@@ -1,8 +1,13 @@
 import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function MarkdownViewer(props: { children: string }) {
   const { children } = props;
-  return <Markdown skipHtml>{children}</Markdown>;
+  return (
+    <Markdown skipHtml remarkPlugins={[remarkGfm]}>
+      {children}
+    </Markdown>
+  );
 }
 
 export default MarkdownViewer;

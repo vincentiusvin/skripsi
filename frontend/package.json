@@ -32,6 +32,7 @@
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.3",
     "react-markdown": "^9.0.1",
+    "remark-gfm": "^4.0.0",
     "remove": "^0.1.5",
     "socket.io-client": "^4.7.5",
     "use-debounce": "^10.0.3",
