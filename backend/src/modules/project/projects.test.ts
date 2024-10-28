@@ -8,7 +8,7 @@ import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 
-describe("projects api", () => {
+describe.only("projects api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -59,6 +59,27 @@ describe("projects api", () => {
 
     expect(res.status).eq(200);
     expect(result.role).eq(expected_role);
+  });
+
+  it("shouldn't allow non org member to apply to archived projects", async () => {
+    const in_admin = caseData.project_admin_user;
+    const in_user = caseData.plain_user;
+    const in_project = caseData.project;
+    const in_role = "Pending";
+
+    const admin_cookie = await getLoginCookie(in_admin.name, in_admin.password);
+    const archive_req = await updateProject(
+      in_project.id,
+      {
+        project_archived: true,
+      },
+      admin_cookie,
+    );
+    await archive_req.json();
+    const user_cookie = await getLoginCookie(in_user.name, in_user.password);
+    const join_req = await assignMember(in_project.id, in_user.id, in_role, user_cookie);
+
+    expect(join_req.status).eq(401);
   });
 
   it("should allow admin to approve members", async () => {
@@ -202,6 +223,7 @@ describe("projects api", () => {
     const in_proj = caseData.project;
     const in_name = "new project name after edit";
     const in_desc = "new project description";
+    const in_archive = true;
     const in_category = caseData.project_categories.slice(0, 2).map((x) => x.id);
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
@@ -211,6 +233,7 @@ describe("projects api", () => {
         project_desc: in_desc,
         project_name: in_name,
         category_id: in_category,
+        project_archived: in_archive,
       },
       cookie,
     );
@@ -222,6 +245,7 @@ describe("projects api", () => {
     expect(read_req.status).eq(200);
     expect(read_result.project_name).to.eq(in_name);
     expect(read_result.project_desc).to.eq(in_desc);
+    expect(read_result.project_archived).to.eq(in_archive);
     expect(read_result.project_categories.map((x) => x.category_id)).to.deep.eq(in_category);
   });
 
@@ -360,6 +384,7 @@ function updateProject(
     project_name?: string;
     project_desc?: string;
     category_id?: number[] | undefined;
+    project_archived?: boolean;
   },
   cookie: string,
 ) {

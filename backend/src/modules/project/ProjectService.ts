@@ -97,7 +97,11 @@ export class ProjectService implements Transactable<ProjectService> {
           if (user_org_role === "Admin") {
             return await serv.promoteOrgAdminAsProjectAdmin(project_id, user_id);
           } else {
-            return await serv.storePendingDevRequest(project_id, user_id);
+            if (!project.project_archived) {
+              return await serv.storePendingDevRequest(project_id, user_id);
+            } else {
+              throw new AuthError("Proyek ini sudah diarsipkan dan tidak dapat dilamar!");
+            }
           }
         }
         if (target_role === "Dev" && target_user_role === "Invited") {
@@ -160,7 +164,12 @@ export class ProjectService implements Transactable<ProjectService> {
 
   async updateProject(
     project_id: number,
-    obj: { project_name?: string; project_desc?: string; category_id?: number[] },
+    obj: {
+      project_name?: string;
+      project_desc?: string;
+      category_id?: number[];
+      project_archived?: boolean;
+    },
     sender_id: number,
   ) {
     return await this.transaction_manager.transaction(this as ProjectService, async (serv) => {

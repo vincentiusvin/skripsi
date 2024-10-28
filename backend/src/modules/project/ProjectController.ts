@@ -201,7 +201,7 @@ export class ProjectController extends Controller {
           .min(1, "Deskripsi tidak boleh kosong!")
           .optional(),
         category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
-        archive: z.boolean().optional(),
+        project_archived: z.boolean().optional(),
       }),
       ResBody: z.object({
         org_id: z.number(),

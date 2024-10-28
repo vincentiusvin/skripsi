@@ -217,18 +217,18 @@ export class ProjectRepository {
       project_name?: string;
       project_desc?: string;
       category_id?: number[];
-      archive?: boolean;
+      project_archived?: boolean;
     },
   ) {
-    const { archive, project_name, project_desc, category_id } = obj;
+    const { project_archived, project_name, project_desc, category_id } = obj;
 
-    if (project_name != undefined || project_desc != undefined || archive != undefined) {
+    if (project_name != undefined || project_desc != undefined || project_archived != undefined) {
       await this.db
         .updateTable("ms_projects")
         .set({
           description: project_desc,
           name: project_name,
-          archived: archive,
+          archived: project_archived,
         })
         .where("ms_projects.id", "=", project_id)
         .executeTakeFirst();
