@@ -18,6 +18,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useParams } from "wouter";
 import OrgCard from "../../components/Cards/OrgCard.tsx";
+import MarkdownViewer from "../../components/MarkdownViewer.tsx";
 import {
   useProjectsDetailGet,
   useProjectsDetailMembersDelete,
@@ -53,7 +54,7 @@ function ProjectInfo(props: { project_id: number }) {
       >
         {project.project_name}
       </Typography>
-      <Typography align="center">{project.project_desc}</Typography>
+      <MarkdownViewer>{project.project_desc}</MarkdownViewer>
       <Stack direction={"row"} justifyContent={"center"} spacing={2}>
         {project.project_categories.map((category, index) => (
           <Chip key={index} label={category.category_name} />

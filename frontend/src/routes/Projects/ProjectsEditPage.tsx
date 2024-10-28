@@ -14,6 +14,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
+import MarkdownEditor from "../../components/MarkdownEditor.tsx";
 import {
   useProjectsCategoriesGet,
   useProjectsDetailGet,
@@ -74,12 +75,6 @@ function ProjectsEdit(props: { project_id: number }) {
             label="Name"
             value={projectName ?? oldData.project_name}
           ></TextField>
-          <TextField
-            fullWidth
-            onChange={(e) => setProjectDesc(e.target.value)}
-            label="Description"
-            value={projectDesc ?? oldData.project_desc}
-          ></TextField>
           <FormControl>
             <InputLabel>Category</InputLabel>
             <Select
@@ -96,6 +91,11 @@ function ProjectsEdit(props: { project_id: number }) {
                 ))}
             </Select>
           </FormControl>
+          <Typography>Deskripsi</Typography>
+          <MarkdownEditor
+            onChange={(x) => setProjectDesc(x)}
+            oldValue={projectDesc ?? oldData.project_desc}
+          />
         </Stack>
       </Grid>
       <Grid size={12}>
