@@ -1,7 +1,10 @@
+import { ArrowRightAlt } from "@mui/icons-material";
 import {
   Avatar,
   Box,
   Button,
+  Card,
+  CardActionArea,
   Skeleton,
   Stack,
   Theme,
@@ -79,7 +82,10 @@ function NewestContributions() {
 }
 
 function NewestProjects() {
-  const { data: projects } = useProjectsGet();
+  const { data: projects } = useProjectsGet({
+    limit: 5,
+    page: 1,
+  });
 
   return (
     <Box
@@ -124,6 +130,37 @@ function NewestProjects() {
               <ProjectCard project_id={x.project_id} />
             </Grid>
           ))}
+          <Grid
+            size={{
+              xs: 12,
+              sm: 6,
+              lg: 4,
+            }}
+          >
+            <Card
+              sx={{
+                height: "100%",
+              }}
+            >
+              <CardActionArea
+                sx={{
+                  height: "100%",
+                }}
+              >
+                <StyledLink to={"/projects"}>
+                  <Stack
+                    justifyContent={"center"}
+                    direction="column"
+                    height={"100%"}
+                    alignItems={"center"}
+                  >
+                    <ArrowRightAlt />
+                    <Typography variant="h6">Lihat lebih lengkap</Typography>
+                  </Stack>
+                </StyledLink>
+              </CardActionArea>
+            </Card>
+          </Grid>
         </Grid>
       </Box>
     </Box>

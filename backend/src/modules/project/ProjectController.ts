@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import { zodPagination, zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { ProjectRoles, parseRole, project_roles } from "./ProjectMisc.js";
 import { ProjectService } from "./ProjectService.js";
 
@@ -84,6 +84,7 @@ export class ProjectController extends Controller {
         org_id: zodStringReadableAsNumber("Organisasi yang dimasukkan tidak valid!").optional(),
         user_id: zodStringReadableAsNumber("Pengguna yang dimasukkan tidak valid!").optional(),
         keyword: z.string().optional(),
+        ...zodPagination(),
       }),
       ResBody: z
         .object({
@@ -107,11 +108,13 @@ export class ProjectController extends Controller {
         .array(),
     },
     handler: async (req, res) => {
-      const { org_id, user_id, keyword } = req.query;
+      const { limit, org_id, user_id, keyword, page } = req.query;
 
       const result = await this.project_service.getProjects({
         org_id: org_id != undefined ? Number(org_id) : undefined,
         user_id: user_id != undefined ? Number(user_id) : undefined,
+        limit: limit != undefined ? Number(limit) : undefined,
+        page: limit != undefined ? Number(page) : undefined,
         keyword,
       });
 

@@ -33,17 +33,25 @@ export function useProjectsDetailGet(opts: {
   });
 }
 
-export function useProjectsGet(opts?: { org_id?: number; user_id?: number; keyword?: string }) {
-  const { org_id, user_id, keyword } = opts || {};
+export function useProjectsGet(opts?: {
+  limit?: number;
+  page?: number;
+  org_id?: number;
+  user_id?: number;
+  keyword?: string;
+}) {
+  const { org_id, user_id, keyword, limit, page } = opts || {};
 
   return useQuery({
     queryKey: projectKeys.list(opts),
     queryFn: () =>
       new APIContext("ProjectsGet").fetch("/api/projects", {
         query: {
-          ...(org_id && { org_id: org_id.toString() }),
-          ...(user_id && { user_id: user_id.toString() }),
-          ...(keyword && { keyword }),
+          keyword: keyword,
+          org_id: org_id != undefined ? org_id.toString() : undefined,
+          user_id: user_id != undefined ? user_id.toString() : undefined,
+          limit: limit != undefined ? limit.toString() : undefined,
+          page: page != undefined ? page.toString() : undefined,
         },
       }),
   });
