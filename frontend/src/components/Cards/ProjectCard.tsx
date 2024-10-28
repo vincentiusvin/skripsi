@@ -15,6 +15,7 @@ import { useOrgDetailGet } from "../../queries/org_hooks.ts";
 import { useProjectsDetailMembersGet } from "../../queries/project_hooks";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
+import MarkdownTextViewer from "../MarkdownTextView.tsx";
 import StyledLink from "../StyledLink.tsx";
 
 function RoleInfo(props: { project_id: number; user_id: number }) {
@@ -76,7 +77,9 @@ function ProjectCard(props: { project_id: number }) {
           />
           <CardContent>
             <Stack spacing={2} direction="column">
-              <Typography variant="body2">{project.project_desc}</Typography>
+              <Typography variant="body2" component={"div"}>
+                <MarkdownTextViewer>{project.project_desc}</MarkdownTextViewer>
+              </Typography>
               <Divider />
               <Stack direction={"row"} gap={2} flexWrap={"wrap"}>
                 {project.project_categories.map((category, index) => (
