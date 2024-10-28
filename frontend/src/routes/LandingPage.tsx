@@ -48,7 +48,11 @@ const landingData = [
 ];
 
 function NewestContributions() {
-  const { data: contribs } = useContributionsGet();
+  const { data: contribs } = useContributionsGet({
+    page: 1,
+    status: "Approved",
+    limit: 8,
+  });
 
   if (contribs == undefined) {
     return (
@@ -155,7 +159,7 @@ function NewestProjects() {
                     alignItems={"center"}
                   >
                     <ArrowRightAlt />
-                    <Typography variant="h6">Lihat lebih lengkap</Typography>
+                    <Typography variant="h6">Lihat lebih banyak</Typography>
                   </Stack>
                 </StyledLink>
               </CardActionArea>

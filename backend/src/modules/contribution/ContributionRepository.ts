@@ -29,10 +29,20 @@ export class ContributionRepository {
     this.db = db;
   }
 
-  async getContributions(user_id?: number, project_id?: number) {
-    let query = this.db.selectFrom("ms_contributions").select(defaultContributionFields);
+  async getContributions(opts: {
+    status?: ContributionStatus;
+    page?: number;
+    limit?: number;
+    user_id?: number;
+    project_id?: number;
+  }) {
+    const { user_id, project_id, status, limit, page } = opts;
+    let query = this.db
+      .selectFrom("ms_contributions")
+      .select(defaultContributionFields)
+      .orderBy("created_at desc");
 
-    if (user_id !== undefined) {
+    if (user_id != undefined) {
       query = query.where((eb) =>
         eb(
           "ms_contributions.id",
@@ -45,9 +55,23 @@ export class ContributionRepository {
       );
     }
 
-    if (project_id !== undefined) {
+    if (project_id != undefined) {
       query = query.where("ms_contributions.project_id", "=", project_id);
     }
+
+    if (status != undefined) {
+      query = query.where("ms_contributions.status", "=", status);
+    }
+
+    if (limit != undefined) {
+      query = query.limit(limit);
+    }
+
+    if (page != undefined && limit != undefined) {
+      const offset = (page - 1) * limit;
+      query = query.offset(offset);
+    }
+
     const result = await query.execute();
 
     return result.map((x) => {
