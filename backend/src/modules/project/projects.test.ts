@@ -225,22 +225,6 @@ describe("projects api", () => {
     expect(read_result.project_categories.map((x) => x.category_id)).to.deep.eq(in_category);
   });
 
-  it("should be able to delete projects", async () => {
-    const in_proj = caseData.project;
-    const in_user = caseData.project_admin_user;
-
-    const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const send_req = await deleteProject(in_proj.id, cookie);
-    const read_req = await getProjects();
-    const read_result = await read_req.json();
-    const find_project = read_result.find((x) => x.project_id === in_proj.id);
-
-    expect(send_req.status).to.eq(200);
-
-    expect(read_req.status).eq(200);
-    expect(find_project).eq(undefined);
-  });
-
   describe("notifications", () => {
     it("should send notification on user acceptance", async () => {
       const in_dev = caseData.plain_user;
@@ -347,16 +331,6 @@ describe("projects api", () => {
     });
   });
 });
-
-function deleteProject(project_id: number, cookie: string) {
-  return new APIContext("ProjectsGet").fetch(`/api/projects/${project_id}`, {
-    method: "delete",
-    headers: {
-      cookie: cookie,
-    },
-    credentials: "include",
-  });
-}
 
 function getProjects() {
   return new APIContext("ProjectsGet").fetch(`/api/projects`, {

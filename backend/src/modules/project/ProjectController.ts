@@ -19,7 +19,6 @@ export class ProjectController extends Controller {
       ProjectsGet: this.ProjectsGet,
       ProjectsDetailGet: this.ProjectsDetailGet,
       ProjectsDetailPut: this.ProjectsDetailPut,
-      ProjectsDetailDelete: this.ProjectsDetailDelete,
       ProjectsDetailMembersGet: this.ProjectsDetailMembersGet,
       ProjectsDetailMembersPut: this.ProjectsDetailMembersPut,
       ProjectsDetailMembersDelete: this.ProjectsDetailMembersDelete,
@@ -59,6 +58,7 @@ export class ProjectController extends Controller {
       ResBody: z.object({
         org_id: z.number(),
         project_id: z.number(),
+        project_archived: z.boolean(),
         project_name: z.string(),
         project_desc: z.string(),
         project_members: z
@@ -90,6 +90,7 @@ export class ProjectController extends Controller {
         .object({
           org_id: z.number(),
           project_id: z.number(),
+          project_archived: z.boolean(),
           project_name: z.string(),
           project_desc: z.string(),
           project_members: z
@@ -132,6 +133,7 @@ export class ProjectController extends Controller {
         org_id: z.number(),
         project_id: z.number(),
         project_name: z.string(),
+        project_archived: z.boolean(),
         project_desc: z.string(),
         project_members: z
           .object({
@@ -199,12 +201,14 @@ export class ProjectController extends Controller {
           .min(1, "Deskripsi tidak boleh kosong!")
           .optional(),
         category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
+        archive: z.boolean().optional(),
       }),
       ResBody: z.object({
         org_id: z.number(),
         project_id: z.number(),
         project_name: z.string(),
         project_desc: z.string(),
+        project_archived: z.boolean(),
         project_members: z
           .object({
             user_id: z.number(),
@@ -229,26 +233,6 @@ export class ProjectController extends Controller {
       const result = await this.project_service.getProjectByID(project_id);
 
       res.status(200).json(result);
-    },
-  });
-  ProjectsDetailDelete = new Route({
-    method: "delete",
-    path: "/api/projects/:project_id",
-    schema: {
-      Params: z.object({
-        project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
-      }),
-      ResBody: z.object({
-        msg: z.string(),
-      }),
-    },
-    handler: async (req, res) => {
-      const project_id = Number(req.params.project_id);
-      const sender_id = req.session.user_id!;
-
-      await this.project_service.deleteProject(project_id, sender_id);
-
-      res.status(200).json({ msg: "Projek berhasil dihapus!" });
     },
   });
 
