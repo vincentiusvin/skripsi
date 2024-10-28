@@ -1,23 +1,85 @@
-import { Button, Typography } from "@mui/material";
+import { Button, Skeleton, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useParams } from "wouter";
 import StyledLink from "../../components/StyledLink.tsx";
-import { useProjectsDetailDelete } from "../../queries/project_hooks.ts";
+import { useProjectsDetailGet, useProjectsDetailPut } from "../../queries/project_hooks.ts";
 import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
 
-function ProjectsManage(props: { project_id: number }) {
+function ArchiveProject(props: { project_id: number }) {
   const { project_id } = props;
 
-  const { mutate: deleteProject } = useProjectsDetailDelete({
+  const { mutate: _putProject } = useProjectsDetailPut({
     project_id: project_id,
     onSuccess: () => {
       enqueueSnackbar({
         variant: "success",
-        message: <Typography>Berhasil menghapus projek!</Typography>,
+        message: <Typography>Berhasil mengarsipkan projek!</Typography>,
       });
     },
   });
+
+  const { data: project } = useProjectsDetailGet({
+    project_id,
+  });
+
+  function archiveProject(archived: boolean) {
+    _putProject({
+      project_archived: archived,
+    });
+  }
+
+  if (project == undefined) {
+    return <Skeleton />;
+  }
+
+  if (project.project_archived === true) {
+    return (
+      <>
+        <Typography variant="h5">Aktifkan Proyek</Typography>
+        <Typography variant="body1">
+          Proyek akan diaktifkan kembali dan dapat menerima anggota baru.
+        </Typography>
+        <Button
+          variant="contained"
+          color="warning"
+          fullWidth
+          onClick={() => archiveProject(false)}
+          sx={{
+            margin: "auto",
+            mt: 4,
+          }}
+        >
+          Aktifkan Proyek
+        </Button>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <Typography variant="h5">Arsipkan Proyek</Typography>
+        <Typography variant="body1">
+          Proyek akan diarsipkan dan tidak dapat menerima developer baru.
+        </Typography>
+        <Button
+          variant="contained"
+          color="error"
+          fullWidth
+          onClick={() => archiveProject(true)}
+          sx={{
+            margin: "auto",
+            mt: 4,
+          }}
+        >
+          Arsipkan Proyek
+        </Button>
+      </>
+    );
+  }
+}
+
+function ProjectsManage(props: { project_id: number }) {
+  const { project_id } = props;
 
   return (
     <Grid container spacing={2} minHeight={"inherit"}>
@@ -53,22 +115,7 @@ function ProjectsManage(props: { project_id: number }) {
         margin="auto"
         textAlign={"center"}
       >
-        <Typography variant="h5">Hapus Proyek</Typography>
-        <Typography variant="body1">
-          Proyek akan dihapus. Tindakan ini tidak dapat diurungkan
-        </Typography>
-        <Button
-          variant="contained"
-          color="error"
-          fullWidth
-          onClick={() => deleteProject()}
-          sx={{
-            margin: "auto",
-            mt: 4,
-          }}
-        >
-          Hapus Proyek
-        </Button>
+        <ArchiveProject project_id={project_id} />
       </Grid>
     </Grid>
   );

@@ -1,5 +1,6 @@
 import { Check } from "@mui/icons-material";
 import {
+  Alert,
   Box,
   Button,
   Chip,
@@ -37,6 +38,11 @@ function ProjectInfo(props: { project_id: number }) {
 
   return (
     <Stack gap={2}>
+      {project.project_archived ? (
+        <Alert severity="warning">
+          Proyek ini sudah diarsipkan oleh pengurus dan tidak lagi menerima lamaran anggota baru.
+        </Alert>
+      ) : null}
       <Typography
         variant="h4"
         fontWeight={"bold"}
@@ -143,7 +149,9 @@ function InvitedDialog(props: { project_id: number; user_id: number }) {
 
 function ApplyButton(props: { project_id: number; user_id: number; role: MemberRoles }) {
   const { project_id, user_id, role } = props;
-
+  const { data: project } = useProjectsDetailGet({
+    project_id,
+  });
   const { mutate: addMember } = useProjectsDetailMembersPut({
     project_id: project_id,
     user_id: user_id,
@@ -155,6 +163,10 @@ function ApplyButton(props: { project_id: number; user_id: number; role: MemberR
     },
   });
 
+  if (project == undefined) {
+    return <Skeleton />;
+  }
+
   if (role !== "Not Involved" && role !== "Pending") {
     return null;
   }
@@ -163,7 +175,7 @@ function ApplyButton(props: { project_id: number; user_id: number; role: MemberR
     <Button
       endIcon={<Check />}
       variant="contained"
-      disabled={role === "Pending"}
+      disabled={role === "Pending" || project.project_archived}
       fullWidth
       onClick={() => {
         if (role === "Not Involved") {
@@ -185,7 +197,8 @@ function ProjectLoggedIn(props: { project_id: number; user_id: number }) {
     user_id: user_id,
   });
   const role = membership?.role;
-  if (!role) {
+
+  if (role == undefined) {
     return <Skeleton />;
   }
 

@@ -157,22 +157,6 @@ export function useProjectsDetailPut(opts: { project_id: number; onSuccess?: () 
   });
 }
 
-export function useProjectsDetailDelete(opts: { project_id: number; onSuccess?: () => void }) {
-  const { onSuccess, project_id } = opts;
-  return useMutation({
-    mutationFn: () =>
-      new APIContext("ProjectsDetailDelete").fetch(`/api/projects/${project_id}`, {
-        method: "DELETE",
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: projectKeys.all() });
-      if (onSuccess) {
-        onSuccess();
-      }
-    },
-  });
-}
-
 export function useProjectsCategoriesGet() {
   return useQuery({
     queryKey: projectKeys.projectCategories(),

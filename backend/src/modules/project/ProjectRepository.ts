@@ -8,6 +8,7 @@ const defaultProjectFields = [
   "ms_projects.name as project_name",
   "ms_projects.org_id",
   "ms_projects.description as project_desc",
+  "ms_projects.archived as project_archived",
 ] as const;
 
 const defaultProjectEventFields = ["id", "project_id", "event", "created_at"] as const;
@@ -216,16 +217,18 @@ export class ProjectRepository {
       project_name?: string;
       project_desc?: string;
       category_id?: number[];
+      project_archived?: boolean;
     },
   ) {
-    const { project_name, project_desc, category_id } = obj;
+    const { project_archived, project_name, project_desc, category_id } = obj;
 
-    if (project_name != undefined || project_desc != undefined) {
+    if (project_name != undefined || project_desc != undefined || project_archived != undefined) {
       await this.db
         .updateTable("ms_projects")
         .set({
           description: project_desc,
           name: project_name,
+          archived: project_archived,
         })
         .where("ms_projects.id", "=", project_id)
         .executeTakeFirst();
