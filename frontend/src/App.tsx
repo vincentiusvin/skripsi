@@ -9,7 +9,6 @@ import { SnackbarProvider, closeSnackbar } from "notistack";
 import { useState } from "react";
 import { Route, Switch } from "wouter";
 import "./App.css";
-import MarkdownTest from "./Markdowntest.tsx";
 import Navigation from "./components/Navigation/Navigation.tsx";
 import { queryClient } from "./helpers/queryclient";
 import { ThemeContext } from "./helpers/theme.ts";
@@ -100,7 +99,6 @@ function App() {
               <CssBaseline />
               <Navigation>
                 <Switch>
-                  <Route path={"/mdx"} component={MarkdownTest} />
                   <Route path={"/"} component={DashboardPage} />
                   <Route path={"/landing"} component={LandingPage} />
                   <Route path={"/auth"} component={AuthPage} />

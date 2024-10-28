@@ -22,16 +22,18 @@ import {
   thematicBreakPlugin,
   toolbarPlugin,
 } from "@mdxeditor/editor";
-
 import "@mdxeditor/editor/style.css";
 import { useTheme } from "@mui/material/styles";
+import { fileToBase64DataURL } from "../helpers/file.ts";
 
-function MarkdownTest() {
+function MarkdownEditor(props: { oldValue?: string; onChange?: (x: string) => void }) {
+  const { oldValue, onChange } = props;
   const theme = useTheme();
   return (
     <MDXEditor
       className={theme.palette.mode === "dark" ? "dark-theme" : undefined}
-      markdown="hi"
+      markdown={oldValue ?? ""}
+      onChange={onChange}
       plugins={[
         toolbarPlugin({
           toolbarContents: () => (
@@ -60,7 +62,11 @@ function MarkdownTest() {
         headingsPlugin(),
         linkPlugin(),
         linkDialogPlugin(),
-        imagePlugin({ imageUploadHandler: async () => "sample-image.png" }),
+        imagePlugin({
+          imageUploadHandler: async (x) => {
+            return await fileToBase64DataURL(x);
+          },
+        }),
         thematicBreakPlugin(),
         diffSourcePlugin({ viewMode: "rich-text" }),
         markdownShortcutPlugin(),
@@ -69,4 +75,4 @@ function MarkdownTest() {
   );
 }
 
-export default MarkdownTest;
+export default MarkdownEditor;
