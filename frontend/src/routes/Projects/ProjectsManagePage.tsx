@@ -25,7 +25,7 @@ function ArchiveProject(props: { project_id: number }) {
 
   function archiveProject(archived: boolean) {
     _putProject({
-      archive: archived,
+      project_archived: archived,
     });
   }
 
