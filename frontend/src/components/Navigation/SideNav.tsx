@@ -1,6 +1,7 @@
 import {
   Chat,
   CorporateFare,
+  Dashboard,
   EmojiEvents,
   Flag,
   Home,
@@ -11,6 +12,7 @@ import {
   People,
   Settings,
   Shield,
+  Update,
   Work,
 } from "@mui/icons-material";
 import {
@@ -26,13 +28,16 @@ import {
   ListSubheader,
   MenuItem,
   Select,
+  Skeleton,
+  Theme,
+  useMediaQuery,
 } from "@mui/material";
 import { ReactNode, useState } from "react";
-import { useOrgsGet } from "../queries/org_hooks.ts";
-import { useProjectsGet } from "../queries/project_hooks.ts";
-import { useSessionGet } from "../queries/sesssion_hooks.ts";
-import { useUsersDetailGet } from "../queries/user_hooks.ts";
-import StyledLink from "./StyledLink.tsx";
+import { useOrgsGet } from "../../queries/org_hooks.ts";
+import { useProjectsGet } from "../../queries/project_hooks.ts";
+import { useSessionGet } from "../../queries/sesssion_hooks.ts";
+import { useUsersDetailGet } from "../../queries/user_hooks.ts";
+import StyledLink from "../StyledLink.tsx";
 
 type SidenavContext = "browse" | `project-${number}` | `orgs-${number}` | "admin";
 
@@ -197,8 +202,14 @@ function UserSideNavSelector(props: {
       {options.map((cat) => [
         <ListSubheader key={cat.title}>{cat.title}</ListSubheader>,
         cat.entries.map((entry) => (
-          <MenuItem key={entry.primary} value={entry.value} dense>
-            <ListItem component={"div"} dense>
+          <MenuItem key={entry.value} value={entry.value} dense>
+            <ListItem
+              component={"div"}
+              dense
+              sx={{
+                width: 240,
+              }}
+            >
               <ListItemAvatar>
                 <Avatar>{cat.icon}</Avatar>
               </ListItemAvatar>
@@ -224,9 +235,14 @@ function ContextualDashboard(props: { context: SidenavContext }) {
   if (!parsedContext || parsedContext.type === "browse") {
     links = [
       {
-        link: `/`,
+        link: `/landing`,
         name: `Beranda`,
         avatar: <Home />,
+      },
+      {
+        link: `/`,
+        name: `Dashboard`,
+        avatar: <Dashboard />,
       },
       {
         link: `/orgs`,
@@ -268,9 +284,9 @@ function ContextualDashboard(props: { context: SidenavContext }) {
         avatar: <People />,
       },
       {
-        link: `/projects/${project_id}/home`,
-        name: `Beranda`,
-        avatar: <Home />,
+        link: `/projects/${project_id}/activity`,
+        name: `Aktivitas`,
+        avatar: <Update />,
       },
       {
         link: `/projects/${project_id}/chat`,
@@ -308,8 +324,8 @@ function ContextualDashboard(props: { context: SidenavContext }) {
     links = [
       {
         link: `/orgs/${org_id}`,
-        name: `Beranda`,
-        avatar: <Home />,
+        name: `Profil`,
+        avatar: <People />,
       },
       {
         link: `/orgs/${org_id}/people`,
@@ -369,8 +385,16 @@ function SideNav(props: {
   setDrawerOpen?: (x: boolean) => void;
 }) {
   const { data: session } = useSessionGet();
-  const [activeDashboard, setActiveDashboard] = useState<SidenavContext>("browse");
-  const { responsive, setDrawerOpen, open } = props;
+  const [_activeDashboard, setActiveDashboard] = useState<SidenavContext>("browse");
+  const { setDrawerOpen, open } = props;
+
+  const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
+
+  if (session == undefined) {
+    return <Skeleton />;
+  }
+
+  const activeDashboard: SidenavContext = session.logged ? _activeDashboard : "browse";
 
   return (
     <Drawer
@@ -380,19 +404,19 @@ function SideNav(props: {
           setDrawerOpen(false);
         }
       }}
-      variant={responsive ? "temporary" : "permanent"}
+      variant={responsive ? "temporary" : "persistent"}
       anchor="left"
       sx={{
-        width: 240,
+        width: open ? 240 : 0,
       }}
     >
       <Box
         sx={{
-          width: 240,
           overflow: "auto",
           marginY: 4,
           marginTop: 12,
           paddingX: 2,
+          width: 240,
         }}
       >
         {session?.logged ? (

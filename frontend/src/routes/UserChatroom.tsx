@@ -86,7 +86,7 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
   const { user_id } = props;
   const searchHook = useSearchParams();
 
-  let activeRoom: undefined | number = undefined;
+  let activeRoom: false | number = false;
 
   const [activeRoomRaw, setActiveRoom] = useStateSearch("room", searchHook);
   const tryNumber = Number(activeRoomRaw);
@@ -121,7 +121,7 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | undefined>();
 
   return (
-    <Grid container height={"100%"} spacing={1}>
+    <Grid container minHeight={"inherit"} spacing={1}>
       <Snackbar open={!connected}>
         <Alert severity="error">
           <Typography>You are not connected!</Typography>
@@ -162,11 +162,11 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
             <Paper>
               <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
                 {sideOpen ? (
-                  <IconButton onClick={() => setSideOpen(() => false)}>
+                  <IconButton variant="outlined" onClick={() => setSideOpen(() => false)}>
                     <ArrowLeft />
                   </IconButton>
                 ) : (
-                  <IconButton onClick={() => setSideOpen(() => true)}>
+                  <IconButton variant="outlined" onClick={() => setSideOpen(() => true)}>
                     <ArrowRight />
                   </IconButton>
                 )}
@@ -198,7 +198,7 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
                     }}
                   />
                 </Menu>
-                <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)}>
+                <IconButton variant="outlined" onClick={(e) => setMenuAnchor(e.currentTarget)}>
                   <MoreVert />
                 </IconButton>
               </Stack>

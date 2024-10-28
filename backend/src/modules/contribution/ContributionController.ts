@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import { zodPagination, zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { contribution_status } from "./ContributionMisc.js";
 import { ContributionService } from "./ContributionService";
 
@@ -28,6 +28,8 @@ export class ContributionController extends Controller {
       ReqQuery: z.object({
         user_id: zodStringReadableAsNumber("ID pengguna tidak valid!").optional(),
         project_id: zodStringReadableAsNumber("ID proyek tidak valid!").optional(),
+        status: z.enum(contribution_status).optional(),
+        ...zodPagination(),
       }),
       ResBody: z
         .object({
@@ -46,13 +48,16 @@ export class ContributionController extends Controller {
         .array(),
     },
     handler: async (req, res) => {
-      const { user_id, project_id } = req.query;
+      const { page, limit, status, user_id, project_id } = req.query;
       const sender_id = Number(req.session.user_id);
 
       const result = await this.cont_service.getContributions(
         {
-          user_id: user_id || undefined ? Number(user_id) : undefined,
-          project_id: project_id || undefined ? Number(project_id) : undefined,
+          status: status,
+          user_id: user_id != undefined ? Number(user_id) : undefined,
+          project_id: project_id != undefined ? Number(project_id) : undefined,
+          page: page != undefined ? Number(page) : undefined,
+          limit: limit != undefined ? Number(limit) : undefined,
         },
         sender_id,
       );

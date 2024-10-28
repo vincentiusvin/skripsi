@@ -19,6 +19,7 @@ import {
 import Grid from "@mui/material/Grid2";
 import { DateCalendar, PickersDay } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
+import { Redirect } from "wouter";
 import StyledLink from "../components/StyledLink.tsx";
 import { useOrgDetailGet, useOrgsDetailMembersGet, useOrgsGet } from "../queries/org_hooks.ts";
 import {
@@ -158,7 +159,7 @@ function ProjectInfoCard(props: { user_id: number }) {
                   textAlign: "center",
                 }}
               >
-                Anda belum terlibat dalam proyek apapun. Temukan projek yang tersedia di sini.
+                Anda belum terlibat dalam proyek apapun.
               </Typography>
               <Box flexGrow={1}></Box>
             </>
@@ -428,22 +429,15 @@ function AuthenticatedHomePage(props: { user_id: number }) {
   );
 }
 
-function UnauthenticatedHomePage() {
-  return (
-    <Box display={"flex"} justifyContent={"center"} alignItems={"center"} height={"100%"}>
-      <Typography variant="h4" fontWeight="bold" align="center">
-        Welcome to our app!
-      </Typography>
-    </Box>
-  );
-}
-
-function HomePage() {
+function DashboardPage() {
   const { data: session_data } = useSessionGet();
-  if (session_data?.logged) {
+  if (session_data == undefined) {
+    return <Skeleton />;
+  }
+  if (session_data.logged) {
     return <AuthenticatedHomePage user_id={session_data.user_id} />;
   }
-  return <UnauthenticatedHomePage />;
+  return <Redirect to={"/landing"} />;
 }
 
-export default HomePage;
+export default DashboardPage;

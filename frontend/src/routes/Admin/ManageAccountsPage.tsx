@@ -157,7 +157,7 @@ function EditSuspension(props: { suspension_id: number }) {
           </Button>
         </DialogActions>
       </Dialog>
-      <IconButton onClick={() => setOpen(true)}>
+      <IconButton variant="outlined" onClick={() => setOpen(true)}>
         <Edit />
       </IconButton>
     </>
@@ -170,7 +170,7 @@ function DeleteSuspension(props: { suspension_id: number }) {
     suspension_id,
   });
   return (
-    <IconButton onClick={() => deleteBan()}>
+    <IconButton variant="outlined" onClick={() => deleteBan()}>
       <Delete />
     </IconButton>
   );
@@ -279,11 +279,11 @@ function AccountRow(props: {
         <TableCell>{suspended_string}</TableCell>
         <TableCell>
           {open ? (
-            <IconButton size="small" onClick={() => setOpen(false)}>
+            <IconButton variant="outlined" size="small" onClick={() => setOpen(false)}>
               <KeyboardArrowUp />
             </IconButton>
           ) : (
-            <IconButton size="small" onClick={() => setOpen(true)}>
+            <IconButton variant="outlined" size="small" onClick={() => setOpen(true)}>
               <KeyboardArrowDown />
             </IconButton>
           )}
@@ -321,24 +321,29 @@ function ManageAccounts() {
   }
 
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Pengguna</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Aktif Sejak</TableCell>
-            <TableCell>Ditangguhkan Hingga</TableCell>
-            <TableCell />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {users.map((user) => (
-            <AccountRow user={user} key={user.user_id} />
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Box>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
+        Atur Pengguna
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Pengguna</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Aktif Sejak</TableCell>
+              <TableCell>Ditangguhkan Hingga</TableCell>
+              <TableCell />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((user) => (
+              <AccountRow user={user} key={user.user_id} />
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 }
 

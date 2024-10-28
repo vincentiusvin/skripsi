@@ -10,16 +10,25 @@ const contributionKeys = {
   detail: (contribution_id: number) => [...contributionKeys.details(), contribution_id] as const,
 };
 
-export function useContributionsGet(opts?: { user_id?: number; project_id?: number }) {
-  const { user_id, project_id } = opts || {};
+export function useContributionsGet(opts?: {
+  limit?: number;
+  page?: number;
+  user_id?: number;
+  project_id?: number;
+  status?: "Approved" | "Pending" | "Revision" | "Rejected";
+}) {
+  const { page, limit, user_id, project_id, status } = opts || {};
 
   return useQuery({
     queryKey: contributionKeys.list(opts),
     queryFn: () =>
       new APIContext("ContributionsGet").fetch("/api/contributions", {
         query: {
-          ...(user_id && { user_id: user_id.toString() }),
-          ...(project_id && { project_id: project_id.toString() }),
+          status: status != undefined ? status : undefined,
+          project_id: project_id != undefined ? project_id.toString() : undefined,
+          user_id: user_id != undefined ? user_id.toString() : undefined,
+          limit: limit != undefined ? limit.toString() : undefined,
+          page: page != undefined ? page.toString() : undefined,
         },
       }),
   });
@@ -28,7 +37,7 @@ export function useContributionsGet(opts?: { user_id?: number; project_id?: numb
 export function useContributionsDetailGet(opts: {
   contribution_id: number;
   retry?: (failureCount: number, error: unknown) => boolean;
-}){
+}) {
   const { contribution_id, retry } = opts;
 
   return useQuery({

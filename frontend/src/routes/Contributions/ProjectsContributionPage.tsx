@@ -1,21 +1,12 @@
 import { Add } from "@mui/icons-material";
-import {
-  Button,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Skeleton,
-  Stack,
-  Typography,
-} from "@mui/material";
-import dayjs from "dayjs";
+import { Avatar, Button, Paper, Skeleton, Stack, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { useParams } from "wouter";
+import charityImg from "../../assets/charity.png";
+import ContribList from "../../components/Cards/ContribList.tsx";
 import StyledLink from "../../components/StyledLink.tsx";
-import UserLabel from "../../components/UserLabel.tsx";
 import { useContributionsGet } from "../../queries/contribution_hooks.ts";
 import AuthorizeProjects from "../Projects/components/AuthorizeProjects.tsx";
-import ContributionChip from "./components/ContributionChip.tsx";
 
 function ProjectsContribution(props: { project_id: number }) {
   const { project_id } = props;
@@ -28,35 +19,63 @@ function ProjectsContribution(props: { project_id: number }) {
   }
 
   return (
-    <Stack>
-      <Typography textAlign={"center"} variant="h6">
-        Kontribusi Terbaru
+    <Stack spacing={2}>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
+        Kontribusi
       </Typography>
-      <StyledLink to={`/projects/${project_id}/add-contribs`}>
-        <Button fullWidth variant="contained" startIcon={<Add />}>
-          Tambah Kontribusi
-        </Button>
-      </StyledLink>
-      {contributions.map((contrib) => (
-        <StyledLink to={`/contributions/${contrib.id}`} key={contrib.id}>
-          <ListItem>
-            <ListItemButton>
-              <ListItemText
-                primary={contrib.name}
-                secondary={dayjs(contrib.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
-              />
-              <ListItemIcon>
-                <Stack direction="row" spacing={2} alignItems={"center"}>
-                  {contrib.user_ids.map((y) => (
-                    <UserLabel user_id={y.user_id} key={y.user_id} />
-                  ))}
-                  <ContributionChip status={contrib.status} />
-                </Stack>
-              </ListItemIcon>
-            </ListItemButton>
-          </ListItem>
-        </StyledLink>
-      ))}
+      <Paper
+        sx={{
+          padding: 4,
+        }}
+      >
+        <Grid
+          container
+          alignItems={"center"}
+          spacing={{
+            md: 16,
+          }}
+          paddingX={{ md: 8 }}
+        >
+          <Grid
+            size={{
+              xs: 12,
+              md: 8,
+            }}
+          >
+            <Typography marginBottom={2}>
+              Anda dapat mengajukan laporan kontribusi kepada pengurus organisasi untuk ditampilkan
+              secara publik di profil anda.
+            </Typography>
+            <Typography marginBottom={2}>
+              Laporan kontribusi yang diajukan perlu disetujui terlebih dahulu oleh pengurus
+              organisasi yang bersangkutan sebelum menjadi publik.
+            </Typography>
+            <StyledLink to={`/projects/${project_id}/add-contribs`}>
+              <Button variant="contained" startIcon={<Add />}>
+                Tambah Kontribusi
+              </Button>
+            </StyledLink>
+          </Grid>
+          <Grid size={{ md: 4, xs: 0 }} display={{ md: "block", xs: "none" }}>
+            <Avatar
+              sx={{
+                width: "100%",
+                height: "100%",
+              }}
+              variant="square"
+              src={charityImg}
+            ></Avatar>
+          </Grid>
+        </Grid>
+      </Paper>
+      <Typography variant="h6">Daftar Kontribusi</Typography>
+      {contributions.length !== 0 ? (
+        contributions.map((contrib) => (
+          <ContribList contribution_id={contrib.id} key={contrib.id} />
+        ))
+      ) : (
+        <Typography textAlign={"center"}>Belum ada laporan kontribusi</Typography>
+      )}
     </Stack>
   );
 }

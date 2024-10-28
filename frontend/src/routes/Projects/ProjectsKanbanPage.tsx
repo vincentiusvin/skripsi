@@ -119,47 +119,53 @@ function Task(props: {
       {...fullProps}
       sx={{
         opacity: isDragged ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        paddingX: 1,
       }}
     >
-      <CardHeader
-        action={
-          <>
-            <EditTaskDialog task_id={task_id} project_id={project_id} />
-            <IconButton
-              {...handleProps}
-              sx={{
-                touchAction: "none",
-              }}
-            >
-              <DragIndicator />
-            </IconButton>
-          </>
-        }
+      <IconButton
+        size="small"
+        {...handleProps}
         sx={{
-          wordBreak: "break-word",
+          touchAction: "none",
         }}
-        title={
-          <Typography variant="h5" fontWeight={"bold"}>
-            {task.name}
-          </Typography>
-        }
-        subheader={<Typography variant="body1">{task.description}</Typography>}
-      />
-      <CardContent>
-        {task.start_at && (
-          <>
-            <Typography variant="caption">
-              Mulai: {dayjs(task.start_at).format("ddd, DD/MM/YY")}
+      >
+        <DragIndicator />
+      </IconButton>
+      <Box flexGrow={1}>
+        <CardHeader
+          action={
+            <>
+              <EditTaskDialog task_id={task_id} project_id={project_id} />
+            </>
+          }
+          sx={{
+            wordBreak: "break-word",
+          }}
+          title={
+            <Typography variant="h5" fontWeight={"bold"}>
+              {task.name}
             </Typography>
-            <br />
-          </>
-        )}
-        {task.end_at && (
-          <Typography variant="caption">
-            Berakhir: {dayjs(task.end_at).format("ddd, DD/MM/YY")}
-          </Typography>
-        )}
-      </CardContent>
+          }
+          subheader={<Typography variant="body1">{task.description}</Typography>}
+        />
+        <CardContent>
+          {task.start_at && (
+            <>
+              <Typography variant="caption">
+                Mulai: {dayjs(task.start_at).format("ddd, DD/MM/YY")}
+              </Typography>
+              <br />
+            </>
+          )}
+          {task.end_at && (
+            <Typography variant="caption">
+              Berakhir: {dayjs(task.end_at).format("ddd, DD/MM/YY")}
+            </Typography>
+          )}
+        </CardContent>
+      </Box>
     </Card>
   );
 }
@@ -194,13 +200,15 @@ function EditBucketDialog(props: { bucket_id: number }) {
   return (
     <>
       <Dialog open={active} onClose={() => setActive(false)}>
-        <DialogTitle>Edit task</DialogTitle>
+        <DialogTitle>Edit Kategori</DialogTitle>
         <DialogContent>
-          <TextField
-            label="Insert name"
-            value={newName ?? bucket.name}
-            onChange={(x) => setNewName(x.target.value)}
-          ></TextField>
+          <Box my={1}>
+            <TextField
+              label="Nama"
+              value={newName ?? bucket.name}
+              onChange={(x) => setNewName(x.target.value)}
+            ></TextField>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button
@@ -209,7 +217,7 @@ function EditBucketDialog(props: { bucket_id: number }) {
               setActive(false);
             }}
           >
-            Delete Bucket
+            Hapus Kelompok Tugas
           </Button>
           <Button
             onClick={() => {
@@ -221,24 +229,13 @@ function EditBucketDialog(props: { bucket_id: number }) {
               setActive(false);
             }}
           >
-            Edit Bucket
+            Simpan Nama
           </Button>
         </DialogActions>
       </Dialog>
-      <Box maxWidth={256}>
-        <Typography
-          display={"inline"}
-          variant="h6"
-          sx={{
-            wordBreak: "break-word",
-          }}
-        >
-          {bucket.name}
-        </Typography>
-        <IconButton onClick={() => setActive(true)}>
-          <MoreVert />
-        </IconButton>
-      </Box>
+      <IconButton onClick={() => setActive(true)}>
+        <MoreVert />
+      </IconButton>
     </>
   );
 }
@@ -258,7 +255,7 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
   const { mutate: addTask } = useTasksPost({
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Task created!</Typography>,
+        message: <Typography>Tugas ditambahkan!</Typography>,
         variant: "success",
       });
       setSelectedBucketEdit(null);
@@ -282,18 +279,14 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
           <DialogTitle>Tambah tugas baru</DialogTitle>
           <DialogContent>
             <Stack spacing={2} my={2}>
-              <TextField
-                fullWidth
-                onChange={(e) => setTaskName(e.target.value)}
-                label="Task name"
-              />
+              <TextField fullWidth onChange={(e) => setTaskName(e.target.value)} label="Judul" />
               <TextField
                 fullWidth
                 onChange={(e) => setTaskDescription(e.target.value)}
-                label="Task description"
+                label="Deskripsi"
               />
-              <DatePicker onChange={(x) => setTaskStartAt(x)} label="Start At"></DatePicker>
-              <DatePicker onChange={(x) => setTaskEndAt(x)} label="End At"></DatePicker>
+              <DatePicker onChange={(x) => setTaskStartAt(x)} label="Mulai"></DatePicker>
+              <DatePicker onChange={(x) => setTaskEndAt(x)} label="Selesai"></DatePicker>
               {project_members != undefined ? (
                 <UserSelect
                   current_users={taskAssign ?? []}
@@ -381,30 +374,30 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
       </IconButton>
       {dialogOpen && task != null && (
         <Dialog open={dialogOpen != null} onClose={() => setDialogOpen(false)}>
-          <DialogTitle>Edit task</DialogTitle>
+          <DialogTitle>Edit Tugas</DialogTitle>
           <DialogContent>
             <Stack spacing={2} my={2}>
               <TextField
                 fullWidth
                 onChange={(e) => setTaskName(e.target.value)}
-                label="Task name"
+                label="Judul"
                 value={taskName ?? task.name}
               />
               <TextField
                 fullWidth
                 onChange={(e) => setTaskDescription(e.target.value)}
-                label="Task description"
+                label="Deskripsi"
                 value={taskDescription ?? task.description ?? ""}
               />
               <DatePicker
                 onChange={(x) => setTaskStartAt(x)}
-                label="Start At"
+                label="Mulai"
                 value={taskStartAt ?? task.start_at != null ? dayjs(task.start_at) : null}
               ></DatePicker>
               <DatePicker
                 value={taskEndAt ?? task.end_at != null ? dayjs(task.end_at) : null}
                 onChange={(x) => setTaskEndAt(x)}
-                label="End At"
+                label="Selesai"
               ></DatePicker>
               {project_members != undefined ? (
                 <UserSelect
@@ -468,10 +461,12 @@ type TempTasks = {
 
 function Kanban(props: { project_id: number }) {
   const { project_id } = props;
+  const [newBucketName, setNewBucketName] = useState("");
   const { mutate: addBucket } = useBucketsPost({
     onSuccess: () => {
+      setNewBucketName("");
       enqueueSnackbar({
-        message: <Typography>Task created!</Typography>,
+        message: <Typography>Kategori ditambahkan!</Typography>,
         variant: "success",
       });
     },
@@ -504,7 +499,6 @@ function Kanban(props: { project_id: number }) {
     setTempTasksData(reshaped);
   }, [tasksData, isFetching]);
 
-  const [newBucketName, setNewBucketName] = useState("");
   const [activeDragID, setActiveDragID] = useState<string | null>();
 
   function findLocation(cell_id: string) {
@@ -539,102 +533,116 @@ function Kanban(props: { project_id: number }) {
   );
 
   return (
-    <Stack height={"100%"} width={"100%"} overflow={"scroll"}>
-      <Stack direction={"row"} spacing={5} flexGrow={1} pb={8}>
-        <DndContext
-          sensors={sensors}
-          onDragStart={(x) => setActiveDragID(x.active.id.toString())}
-          onDragEnd={({ active }) => {
-            setActiveDragID(null);
+    <Stack minHeight={"inherit"}>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
+        Tugas
+      </Typography>
+      <DndContext
+        sensors={sensors}
+        onDragStart={(x) => setActiveDragID(x.active.id.toString())}
+        onDragEnd={({ active }) => {
+          setActiveDragID(null);
 
-            if (typeof active.id === "number") {
-              return;
+          if (typeof active.id === "number") {
+            return;
+          }
+
+          const loc = findLocation(active.id);
+          if (loc?.cellIdx == undefined) {
+            return;
+          }
+
+          const bucket = tempTasksData[loc.ctrIdx].bucket;
+          const tasks = tempTasksData[loc.ctrIdx].tasks;
+          const task = tasks?.[loc.cellIdx];
+
+          if (bucket == undefined || tasks == undefined || task == undefined) {
+            return;
+          }
+
+          const bucket_id = extractID(bucket.id);
+          const task_id = extractID(task.id);
+
+          if (bucket_id == undefined || task_id == undefined) {
+            return;
+          }
+
+          const next_task = tasks[loc.cellIdx + 1];
+          let next_id: number | null = null;
+
+          if (next_task !== undefined) {
+            next_id = extractID(next_task.id) ?? null;
+          }
+
+          updateTask({
+            bucket_id,
+            task_id,
+            before_id: next_id,
+          });
+        }}
+        onDragCancel={() => setActiveDragID(null)}
+        onDragOver={({ over, active }) => {
+          // move between containers...
+          setTempTasksData((x) => {
+            if (
+              over == null ||
+              typeof over.id === "number" ||
+              typeof active.id === "number" ||
+              over.id === active.id // kadang bisa collide sama diri sendiri
+            ) {
+              return x;
+            }
+            const overLoc = findLocation(over.id);
+            const activeLoc = findLocation(active.id.toString());
+
+            if (overLoc == null || activeLoc == null || activeLoc.cellIdx == undefined) {
+              return x;
             }
 
-            const loc = findLocation(active.id);
-            if (loc?.cellIdx == undefined) {
-              return;
+            const cloned = structuredClone(x);
+            const overCtr = cloned[overLoc.ctrIdx];
+            const activeCtr = cloned[activeLoc.ctrIdx];
+            const activeCell = activeCtr.tasks?.[activeLoc.cellIdx];
+
+            if (activeCell == undefined) {
+              return x;
             }
 
-            const bucket = tempTasksData[loc.ctrIdx].bucket;
-            const tasks = tempTasksData[loc.ctrIdx].tasks;
-            const task = tasks?.[loc.cellIdx];
+            cloned[activeLoc.ctrIdx].tasks = activeCtr.tasks?.filter((x) => x.id !== active.id);
 
-            if (bucket == undefined || tasks == undefined || task == undefined) {
-              return;
+            const cutIdx = overLoc.cellIdx;
+            if (cutIdx != undefined) {
+              // insert to array
+              cloned[overLoc.ctrIdx].tasks = [
+                ...(overCtr.tasks?.slice(0, cutIdx) ?? []),
+                activeCell,
+                ...(overCtr.tasks?.slice(cutIdx) ?? []),
+              ];
+            } else {
+              // append
+              cloned[overLoc.ctrIdx].tasks?.push(activeCell);
             }
 
-            const bucket_id = extractID(bucket.id);
-            const task_id = extractID(task.id);
-
-            if (bucket_id == undefined || task_id == undefined) {
-              return;
-            }
-
-            const next_task = tasks[loc.cellIdx + 1];
-            let next_id: number | null = null;
-
-            if (next_task !== undefined) {
-              next_id = extractID(next_task.id) ?? null;
-            }
-
-            updateTask({
-              bucket_id,
-              task_id,
-              before_id: next_id,
-            });
-          }}
-          onDragCancel={() => setActiveDragID(null)}
-          onDragOver={({ over, active }) => {
-            // move between containers...
-            setTempTasksData((x) => {
-              if (
-                over == null ||
-                typeof over.id === "number" ||
-                typeof active.id === "number" ||
-                over.id === active.id // kadang bisa collide sama diri sendiri
-              ) {
-                return x;
-              }
-              const overLoc = findLocation(over.id);
-              const activeLoc = findLocation(active.id.toString());
-
-              if (overLoc == null || activeLoc == null || activeLoc.cellIdx == undefined) {
-                return x;
-              }
-
-              const cloned = structuredClone(x);
-              const overCtr = cloned[overLoc.ctrIdx];
-              const activeCtr = cloned[activeLoc.ctrIdx];
-              const activeCell = activeCtr.tasks?.[activeLoc.cellIdx];
-
-              if (activeCell == undefined) {
-                return x;
-              }
-
-              cloned[activeLoc.ctrIdx].tasks = activeCtr.tasks?.filter((x) => x.id !== active.id);
-
-              const cutIdx = overLoc.cellIdx;
-              if (cutIdx != undefined) {
-                // insert to array
-                cloned[overLoc.ctrIdx].tasks = [
-                  ...(overCtr.tasks?.slice(0, cutIdx) ?? []),
-                  activeCell,
-                  ...(overCtr.tasks?.slice(cutIdx) ?? []),
-                ];
-              } else {
-                // append
-                cloned[overLoc.ctrIdx].tasks?.push(activeCell);
-              }
-
-              return cloned;
-            });
-          }}
-        >
+            return cloned;
+          });
+        }}
+      >
+        <Stack direction={"row"} spacing={5} flexGrow={1} pb={8} overflow={"scroll"}>
           {tempTasksData.map(({ bucket, tasks }, i) => (
             <Box key={bucket.id}>
-              <EditBucketDialog bucket_id={extractID(bucket.id)!} />
-              <AddNewTaskDialog bucket_id={extractID(bucket.id)!} project_id={project_id} />
+              <Stack spacing={1} width={"250px"} direction={"row"} alignItems={"center"}>
+                <Typography
+                  flexGrow={1}
+                  variant="h6"
+                  sx={{
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {bucket.name}
+                </Typography>
+                <EditBucketDialog bucket_id={extractID(bucket.id)!} />
+                <AddNewTaskDialog bucket_id={extractID(bucket.id)!} project_id={project_id} />
+              </Stack>
               <Column
                 position={"relative"}
                 sx={{
@@ -642,16 +650,17 @@ function Kanban(props: { project_id: number }) {
                   transitionDuration: "250ms",
                   border: 3,
                   borderStyle: "dashed",
-                  borderColor: activeDragID
-                    ? activeLoc?.ctrIdx === i
-                      ? "green"
-                      : "white"
-                    : "transparent",
+                  borderColor: (theme) =>
+                    activeDragID
+                      ? activeLoc?.ctrIdx === i
+                        ? theme.palette.success.main
+                        : theme.palette.warning.light
+                      : "transparent",
                 }}
                 id={bucket.id}
                 items={tasks?.map((x) => x.id) ?? []}
               >
-                <Stack spacing={5} width={"250px"} height={1}>
+                <Stack spacing={5} height={1}>
                   {tasks?.map((task) => (
                     <DraggableTask
                       key={task.id}
@@ -664,15 +673,17 @@ function Kanban(props: { project_id: number }) {
               </Column>
             </Box>
           ))}
-          <DragOverlay>
-            {activelyDragged != undefined ? (
-              <Task project_id={project_id} task_id={extractID(activelyDragged.id)!}></Task>
-            ) : null}
-          </DragOverlay>
           <Box>
-            <Stack direction={"row"} alignItems={"top"}>
+            <DragOverlay>
+              {activelyDragged != undefined ? (
+                <Task project_id={project_id} task_id={extractID(activelyDragged.id)!}></Task>
+              ) : null}
+            </DragOverlay>
+          </Box>
+          <Box>
+            <Stack direction={"row"} alignItems={"top"} width={"300px"}>
               <TextField
-                label="Add Bucket"
+                label="Tambah Kategori"
                 value={newBucketName}
                 onChange={(e) => setNewBucketName(e.target.value)}
               ></TextField>
@@ -681,8 +692,8 @@ function Kanban(props: { project_id: number }) {
               </Button>
             </Stack>
           </Box>
-        </DndContext>
-      </Stack>
+        </Stack>
+      </DndContext>
     </Stack>
   );
 }

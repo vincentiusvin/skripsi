@@ -1,4 +1,4 @@
-import { Divider, Skeleton, Stack, Typography } from "@mui/material";
+import { Divider, ListItemButton, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import dayjs from "dayjs";
 import { useParams } from "wouter";
@@ -65,7 +65,9 @@ function ContributionDetail(props: { contribution_id: number }) {
             </Typography>
             {contrib.user_ids.map((x) => (
               <StyledLink to={`/users/${x.user_id}`} key={x.user_id}>
-                <UserLabel user_id={x.user_id} />
+                <ListItemButton>
+                  <UserLabel user_id={x.user_id} />
+                </ListItemButton>
               </StyledLink>
             ))}
           </Stack>

@@ -1,9 +1,5 @@
 import {
-  Box,
   Button,
-  Card,
-  CardActionArea,
-  CardContent,
   Chip,
   Dialog,
   DialogActions,
@@ -18,7 +14,7 @@ import {
 import Grid from "@mui/material/Grid2";
 import { useState } from "react";
 import { useParams } from "wouter";
-import StyledLink from "../../components/StyledLink.tsx";
+import ProjectCard from "../../components/Cards/ProjectCard.tsx";
 import {
   useOrgDetailGet,
   useOrgsDetailMembersDelete,
@@ -99,19 +95,19 @@ function OrgsInfo(props: { org_id: number }) {
         }}
       >
         <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
-          About Us
+          Tentang Kami
         </Typography>
         <Typography textAlign={"center"}>{data.org_description}</Typography>
         <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
-          Our Address
+          Alamat
         </Typography>
         <Typography textAlign={"center"}>{data.org_address}</Typography>
         <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
-          Contact Us
+          Hubungi Kami
         </Typography>
         <Typography textAlign={"center"}>{data.org_phone}</Typography>
         <Typography variant="h4" fontWeight="bold" textAlign={"center"}>
-          Our Members
+          Anggota
         </Typography>
         <Grid container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
           {data.org_users
@@ -131,7 +127,7 @@ function OrgsInfo(props: { org_id: number }) {
             ))}
         </Grid>
         <Typography textAlign={"center"} variant="h4" fontWeight={"bold"}>
-          Categories
+          Kategori
         </Typography>
         <Stack spacing={1} direction={"row"} justifyContent={"center"}>
           {data.org_categories.map((category) => (
@@ -140,9 +136,9 @@ function OrgsInfo(props: { org_id: number }) {
         </Stack>
       </Paper>
       <Typography variant="h6" fontWeight={"bold"}>
-        Projects
+        Proyek
       </Typography>
-      <Grid container>
+      <Grid container spacing={2}>
         {projectData?.map((x, i) => (
           <Grid
             key={i}
@@ -152,22 +148,7 @@ function OrgsInfo(props: { org_id: number }) {
               lg: 4,
             }}
           >
-            <StyledLink to={`/projects/${x.project_id}`}>
-              <Card>
-                <CardActionArea>
-                  <CardContent>
-                    <Stack direction={"row"} alignItems={"center"} spacing={2}>
-                      <Box>
-                        <Typography variant="h5" fontWeight={"bold"}>
-                          {x.project_name}
-                        </Typography>
-                        <Typography>{x.org_id}</Typography>
-                      </Box>
-                    </Stack>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </StyledLink>
+            <ProjectCard project_id={x.project_id} />
           </Grid>
         ))}
       </Grid>

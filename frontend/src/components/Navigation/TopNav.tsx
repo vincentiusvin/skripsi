@@ -1,14 +1,13 @@
-import { DarkMode, LightMode, Login, Logout } from "@mui/icons-material";
-import MenuIcon from "@mui/icons-material/Menu";
-import { AppBar, Box, Button, IconButton, Toolbar, Typography } from "@mui/material";
-import { useAppTheme } from "../helpers/theme.ts";
-import { useSessionDelete, useSessionGet } from "../queries/sesssion_hooks.ts";
-import NotificationDialog from "./Notification.tsx";
-import ProgressLine from "./ProgressLine.tsx";
-import StyledLink from "./StyledLink.tsx";
-import UserLabel from "./UserLabel.tsx";
+import { DarkMode, LightMode, Login, Logout, ViewSidebar } from "@mui/icons-material";
+import { AppBar, Box, Button, IconButton, Toolbar, Typography, alpha } from "@mui/material";
+import { useAppTheme } from "../../helpers/theme.ts";
+import { useSessionDelete, useSessionGet } from "../../queries/sesssion_hooks.ts";
+import NotificationDialog from "../Notification.tsx";
+import ProgressLine from "../ProgressLine.tsx";
+import StyledLink from "../StyledLink.tsx";
+import UserLabel from "../UserLabel.tsx";
 
-function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) => void }) {
+function TopNav(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) => void }) {
   const { drawerOpen, setDrawerOpen } = props;
   const { data } = useSessionGet();
   const { mutate: logout } = useSessionDelete();
@@ -20,6 +19,9 @@ function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) =>
       variant="elevation"
       elevation={0}
       sx={{
+        height: 64,
+        background: (theme) => alpha(theme.palette.background.default, 0.6),
+        backdropFilter: "blur(8px)",
         zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
@@ -36,17 +38,12 @@ function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) =>
           },
         }}
       >
-        <Box
-          sx={{
-            display: {
-              md: "none",
-            },
-          }}
-        >
-          <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
-            <MenuIcon />
-          </IconButton>
-        </Box>
+        <IconButton variant="outlined" onClick={() => setDrawerOpen(!drawerOpen)}>
+          <ViewSidebar />
+        </IconButton>
+        <StyledLink to="/landing">
+          <Typography fontWeight={"bold"}>Dev4You</Typography>
+        </StyledLink>
         <Box flexGrow={1}></Box>
         {data?.logged ? (
           <>
@@ -58,7 +55,7 @@ function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) =>
                 },
               }}
             >
-              <Typography>Hello, {data.user_name}</Typography>
+              <Typography>Halo, {data.user_name}</Typography>
             </Box>
             <StyledLink to={`/users/${data.user_id}`}>
               <Button>
@@ -67,6 +64,7 @@ function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) =>
             </StyledLink>
             {data?.logged ? <NotificationDialog user_id={data.user_id} /> : null}
             <IconButton
+              variant="outlined"
               sx={{
                 display: {
                   xs: "inline-flex",
@@ -99,11 +97,11 @@ function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) =>
           </StyledLink>
         )}
         {theme === "dark" ? (
-          <IconButton onClick={() => setTheme("light")}>
+          <IconButton onClick={() => setTheme("light")} variant="outlined">
             <LightMode />
           </IconButton>
         ) : (
-          <IconButton onClick={() => setTheme("dark")}>
+          <IconButton onClick={() => setTheme("dark")} variant="outlined">
             <DarkMode />
           </IconButton>
         )}
@@ -113,4 +111,4 @@ function Navigation(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) =>
   );
 }
 
-export default Navigation;
+export default TopNav;

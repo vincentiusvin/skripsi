@@ -39,7 +39,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
 
   const searchHook = useSearchParams();
 
-  let activeRoom: undefined | number = undefined;
+  let activeRoom: false | number = false;
 
   const [activeRoomRaw, setActiveRoom] = useStateSearch("room", searchHook);
   const tryNumber = Number(activeRoomRaw);
@@ -78,7 +78,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | undefined>();
 
   return (
-    <Box height={"100%"}>
+    <Box minHeight={"inherit"}>
       <Snackbar open={!connected}>
         <Alert severity="error">
           <Typography>You are not connected!</Typography>
@@ -101,7 +101,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
           </Button>
         </DialogActions>
       </Dialog>
-      <Grid container height={"100%"} spacing={1}>
+      <Grid container minHeight={"inherit"} spacing={1}>
         {sideOpen || selectedChatroom == undefined ? (
           <Grid
             size={{
@@ -144,11 +144,11 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
               <Paper>
                 <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
                   {sideOpen ? (
-                    <IconButton onClick={() => setSideOpen(() => false)}>
+                    <IconButton variant="outlined" onClick={() => setSideOpen(() => false)}>
                       <ArrowLeft />
                     </IconButton>
                   ) : (
-                    <IconButton onClick={() => setSideOpen(() => true)}>
+                    <IconButton variant="outlined" onClick={() => setSideOpen(() => true)}>
                       <ArrowRight />
                     </IconButton>
                   )}
@@ -178,7 +178,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
                     />
                     <ChangeNameDialog chatroom_id={selectedChatroom.chatroom_id} />
                   </Menu>
-                  <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)}>
+                  <IconButton variant="outlined" onClick={(e) => setMenuAnchor(e.currentTarget)}>
                     <MoreVert />
                   </IconButton>
                 </Stack>

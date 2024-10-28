@@ -1,5 +1,11 @@
 import { createTheme } from "@mui/material";
 
+declare module "@mui/material/IconButton" {
+  interface IconButtonOwnProps {
+    variant?: "text" | "outlined";
+  }
+}
+
 function themeFactory(mode: "dark" | "light"): Parameters<typeof createTheme>[0] {
   return {
     shape: {
@@ -50,14 +56,22 @@ function themeFactory(mode: "dark" | "light"): Parameters<typeof createTheme>[0]
       MuiIconButton: {
         styleOverrides: {
           root: ({ theme }) => ({
+            variants: [
+              {
+                props: { variant: "outlined" },
+                style: {
+                  borderWidth: "1px",
+                },
+              },
+            ],
+            color: (theme.vars || theme).palette.primary.main,
+            borderStyle: "solid",
             borderRadius: theme.shape.borderRadius,
-            border: "1px solid ",
             borderColor: mode === "dark" ? theme.palette.primary.dark : theme.palette.primary.light,
             "&:hover": {
               borderColor:
                 mode === "dark" ? theme.palette.primary.light : theme.palette.primary.main,
             },
-            color: (theme.vars || theme).palette.primary.main,
           }),
         },
       },

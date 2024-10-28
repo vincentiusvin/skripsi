@@ -22,7 +22,7 @@ function ProjectLeave(props: { project_id: number; user_id: number }) {
     <Stack
       direction={"column"}
       justifyContent={"center"}
-      height={"100%"}
+      minHeight={"inherit"}
       textAlign={"center"}
       spacing={8}
       width={"75%"}

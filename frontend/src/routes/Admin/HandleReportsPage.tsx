@@ -174,11 +174,11 @@ function ReportRow(props: {
         </TableCell>
         <TableCell>
           {open ? (
-            <IconButton size="small" onClick={() => setOpen(false)}>
+            <IconButton variant="outlined" size="small" onClick={() => setOpen(false)}>
               <KeyboardArrowUp />
             </IconButton>
           ) : (
-            <IconButton size="small" onClick={() => setOpen(true)}>
+            <IconButton variant="outlined" size="small" onClick={() => setOpen(true)}>
               <KeyboardArrowDown />
             </IconButton>
           )}
@@ -252,25 +252,30 @@ function HandleReports() {
   }
 
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Nama Laporan</TableCell>
-            <TableCell>Dibuat Oleh</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Tanggal Diterima</TableCell>
-            <TableCell>Tanggal Selesai</TableCell>
-            <TableCell />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {reports.map((report) => (
-            <ReportRow report={report} key={report.id} />
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Box>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
+        Laporan
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Nama Laporan</TableCell>
+              <TableCell>Dibuat Oleh</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Tanggal Diterima</TableCell>
+              <TableCell>Tanggal Selesai</TableCell>
+              <TableCell />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {reports.map((report) => (
+              <ReportRow report={report} key={report.id} />
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 }
 

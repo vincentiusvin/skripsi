@@ -44,7 +44,7 @@ function InviteMembersDialog(props: { project_id: number }) {
         </DialogContent>
       </Dialog>
       <Button onClick={() => setInviteMembers(true)} variant="contained">
-        Invite Members
+        Undang Anggota Baru
       </Button>
     </>
   );
@@ -96,6 +96,9 @@ function ProjectPeople(props: { project_id: number }) {
 
   return (
     <Stack gap={2}>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>
+        Anggota Proyek
+      </Typography>
       <InviteMembersDialog project_id={project_id} />
       {memberTypes.map((x, i) => (
         <Fragment key={i}>
@@ -107,7 +110,6 @@ function ProjectPeople(props: { project_id: number }) {
               {x.members.map((m) => (
                 <Grid
                   key={m.user_id}
-                  justifyContent={"center"}
                   size={{
                     xs: 12,
                     md: 4,

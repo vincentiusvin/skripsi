@@ -50,7 +50,7 @@ function ProjectsAddPage() {
     <Grid container spacing={2}>
       <Grid size={12}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
-          Tambah Project
+          Tambah Proyek
         </Typography>
       </Grid>
       <Grid size={12}>

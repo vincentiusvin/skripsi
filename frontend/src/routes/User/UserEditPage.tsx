@@ -9,6 +9,7 @@ import {
   IconButton,
   InputAdornment,
   Paper,
+  Skeleton,
   Stack,
   TextField,
   Typography,
@@ -18,6 +19,7 @@ import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
+import avatarFallback from "../../helpers/avatar_fallback.tsx";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { useUsersDetailGet, useUsersDetailUpdate } from "../../queries/user_hooks";
@@ -87,94 +89,97 @@ function UserAccountPageEdit() {
     });
   };
 
-  if (data) {
-    return (
-      <>
-        <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
-          <DialogTitle>Add Image</DialogTitle>
-          <DialogContent>
-            <ImageDropzone
-              sx={{
-                cursor: "pointer",
-              }}
-              onChange={async (file) => {
-                const b64 = file ? await fileToBase64DataURL(file) : undefined;
-                setUserImage(b64);
-                setModalOpen(false);
-              }}
-            >
-              {userImage ? (
-                <Avatar
-                  src={userImage || (data.user_image ?? "")}
-                  variant="rounded"
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                  }}
-                ></Avatar>
-              ) : (
-                <Stack
-                  alignItems={"center"}
-                  minHeight={250}
-                  justifyContent={"center"}
-                  sx={{
-                    cursor: "pointer",
-                  }}
-                >
-                  <AddAPhoto
-                    sx={{
-                      width: 100,
-                      height: 100,
-                    }}
-                  />
-                  <Typography>Drag and Drop or Click to upload an image!</Typography>
-                </Stack>
-              )}
-            </ImageDropzone>
-          </DialogContent>
-        </Dialog>
-        <Grid container rowGap={2}>
-          <Grid
-            size={{
-              xs: 12,
-              md: 4,
+  if (!data) {
+    return <Skeleton />;
+  }
+  const old_image =
+    data.user_image ?? avatarFallback({ label: data.user_name, seed: data.user_id });
+
+  return (
+    <>
+      <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
+        <DialogTitle>Add Image</DialogTitle>
+        <DialogContent>
+          <ImageDropzone
+            sx={{
+              cursor: "pointer",
+            }}
+            onChange={async (file) => {
+              const b64 = file ? await fileToBase64DataURL(file) : undefined;
+              setUserImage(b64);
+              setModalOpen(false);
             }}
           >
-            <Stack alignItems={"center"}>
-              <Badge
-                overlap="circular"
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                badgeContent={
-                  <Button
-                    variant="contained"
-                    onClick={() => {
-                      setModalOpen(true);
-                    }}
-                  >
-                    <Edit />
-                  </Button>
-                }
-              >
-                <Avatar
-                  src={userImage || (data.user_image ?? "")}
-                  sx={{ width: 256, height: 256 }}
-                ></Avatar>
-              </Badge>
-            </Stack>
-          </Grid>
-          <Grid
-            size={{
-              xs: 12,
-              md: 8,
-            }}
-          >
-            <Stack gap={4}>
-              <Paper
+            {userImage ? (
+              <Avatar
+                src={userImage ?? old_image}
+                variant="rounded"
                 sx={{
-                  px: 4,
-                  py: 2,
+                  width: "100%",
+                  height: "100%",
+                }}
+              ></Avatar>
+            ) : (
+              <Stack
+                alignItems={"center"}
+                minHeight={250}
+                justifyContent={"center"}
+                sx={{
+                  cursor: "pointer",
                 }}
               >
+                <AddAPhoto
+                  sx={{
+                    width: 100,
+                    height: 100,
+                  }}
+                />
+                <Typography>Drag and Drop or Click to upload an image!</Typography>
+              </Stack>
+            )}
+          </ImageDropzone>
+        </DialogContent>
+      </Dialog>
+      <Grid container rowGap={2}>
+        <Grid
+          size={{
+            xs: 12,
+            md: 4,
+          }}
+        >
+          <Stack alignItems={"center"}>
+            <Badge
+              overlap="circular"
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              badgeContent={
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setModalOpen(true);
+                  }}
+                >
+                  <Edit />
+                </Button>
+              }
+            >
+              <Avatar src={userImage ?? old_image} sx={{ width: 256, height: 256 }}></Avatar>
+            </Badge>
+          </Stack>
+        </Grid>
+        <Grid
+          size={{
+            xs: 12,
+            md: 8,
+          }}
+        >
+          <Stack gap={4}>
+            <Paper
+              sx={{
+                px: 4,
+                py: 2,
+              }}
+            >
+              <Stack gap={1}>
                 <TextField
                   label="Username"
                   required
@@ -237,31 +242,31 @@ function UserAccountPageEdit() {
                   onChange={(e) => setUserSchool(e.target.value)}
                   value={userSchool ?? data.user_school}
                 />
-              </Paper>
+              </Stack>
+            </Paper>
 
-              <Paper
-                sx={{
-                  px: 4,
-                  py: 2,
-                }}
-              >
-                <TextField
-                  label="About Me"
-                  variant="standard"
-                  fullWidth
-                  onChange={(e) => setUserAboutMe(e.target.value)}
-                  value={userAboutMe ?? data.user_about_me}
-                />
-              </Paper>
-              <Button endIcon={<Save />} variant="contained" onClick={handleUpdateClick}>
-                Simpan
-              </Button>
-            </Stack>
-          </Grid>
+            <Paper
+              sx={{
+                px: 4,
+                py: 2,
+              }}
+            >
+              <TextField
+                label="About Me"
+                variant="standard"
+                fullWidth
+                onChange={(e) => setUserAboutMe(e.target.value)}
+                value={userAboutMe ?? data.user_about_me}
+              />
+            </Paper>
+            <Button endIcon={<Save />} variant="contained" onClick={handleUpdateClick}>
+              Simpan
+            </Button>
+          </Stack>
         </Grid>
-      </>
-    );
-  }
+      </Grid>
+    </>
+  );
 }
 
 export default UserAccountPageEdit;

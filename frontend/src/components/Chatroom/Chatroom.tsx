@@ -33,6 +33,7 @@ import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../queries/user_hooks.ts";
 import FileDropzone from "../FileDropzone.tsx";
 import StyledLink from "../StyledLink.tsx";
+import UserAvatar from "../UserAvatar.tsx";
 
 function DownloadableFile(props: { filename: string; file_id: number }) {
   const { filename, file_id } = props;
@@ -85,7 +86,7 @@ function DownloadableFile(props: { filename: string; file_id: number }) {
         </Typography>
         {/* Pake yang MUI punya, yang wouter gabisa buka di new tab */}
         <Link href={`/api/files/${file_id}`} target="_blank">
-          <IconButton color="default">
+          <IconButton variant="outlined" color="default">
             <Download />
           </IconButton>
         </Link>
@@ -154,10 +155,11 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
                 {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
               </Typography>
             </Box>
-            <IconButton onClick={update}>
+            <IconButton variant="outlined" onClick={update}>
               <Check />
             </IconButton>
             <IconButton
+              variant="outlined"
               onClick={() => {
                 setIsEditing(false);
                 setEditMsg(undefined);
@@ -199,6 +201,7 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
             </Stack>
             <Box>
               <IconButton
+                variant="outlined"
                 onClick={() => {
                   setIsEditing(true);
                 }}
@@ -213,9 +216,13 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
   } else {
     return (
       <Stack direction={"row"} spacing={2} alignItems={"center"}>
-        <StyledLink to={`/users/${user_data?.user_id}`}>
-          <Avatar src={user_data?.user_image ?? ""}></Avatar>
-        </StyledLink>
+        {user_data != null ? (
+          <StyledLink to={`/users/${user_data.user_id}`}>
+            <UserAvatar user_id={user_data.user_id} />
+          </StyledLink>
+        ) : (
+          <Avatar />
+        )}
         <Stack direction={"column"} alignItems={"flex-start"}>
           <Typography fontWeight={"bold"}>{user_data?.user_name}</Typography>
           <Paper
@@ -326,7 +333,9 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
 
   useEffect(() => {
     if (bottomRef.current !== null) {
-      bottomRef.current.scrollIntoView(true);
+      bottomRef.current.scrollIntoView({
+        block: "end",
+      });
     }
   }, [messages?.length]);
 
@@ -388,7 +397,7 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
             ]);
           }}
         >
-          <IconButton>
+          <IconButton variant="outlined">
             <AttachFile />
           </IconButton>
         </FileDropzone>

@@ -74,9 +74,18 @@ export class ContributionService implements Transactable<ContributionService> {
     });
   }
 
-  async getContributions(params: { user_id?: number; project_id?: number }, sender_id: number) {
+  async getContributions(
+    params: {
+      status?: ContributionStatus;
+      page?: number;
+      limit?: number;
+      user_id?: number;
+      project_id?: number;
+    },
+    sender_id: number,
+  ) {
     return await this.transaction_manager.transaction(this as ContributionService, async (serv) => {
-      const result = await serv.cont_repo.getContributions(params.user_id, params.project_id);
+      const result = await serv.cont_repo.getContributions(params);
 
       const filter_result = await Promise.all(
         result.map(async (contrib) => await serv.isAllowedToView(contrib.id, sender_id)),

@@ -111,8 +111,14 @@ export class ProjectRepository {
       .execute();
   }
 
-  async getProjects(filter?: { org_id?: number; user_id?: number; keyword?: string }) {
-    const { org_id, user_id, keyword } = filter || {};
+  async getProjects(filter?: {
+    limit?: number;
+    org_id?: number;
+    user_id?: number;
+    keyword?: string;
+    page?: number;
+  }) {
+    const { page, org_id, user_id, keyword, limit } = filter || {};
 
     let projects = this.db
       .selectFrom("ms_projects")
@@ -120,7 +126,8 @@ export class ProjectRepository {
         ...defaultProjectFields,
         projectWithMembers(eb).as("project_members"),
         projectWithCategories(eb).as("project_categories"),
-      ]);
+      ])
+      .orderBy("created_at desc");
 
     if (org_id != undefined) {
       projects = projects.where("org_id", "=", Number(org_id));
@@ -141,6 +148,15 @@ export class ProjectRepository {
 
     if (keyword != undefined) {
       projects = projects.where("ms_projects.name", "ilike", `%${keyword}%`);
+    }
+
+    if (limit != undefined) {
+      projects = projects.limit(limit);
+    }
+
+    if (page != undefined && limit != undefined) {
+      const offset = (page - 1) * limit;
+      projects = projects.offset(offset);
     }
 
     return await projects.execute();
