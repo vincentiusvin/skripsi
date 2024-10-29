@@ -11,12 +11,18 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import {
   useProjectsDetailMembersDelete,
+  useProjectsDetailMembersGet,
   useProjectsDetailMembersPut,
 } from "../../../../queries/project_hooks.ts";
 
 function ProjectInvitePrompt(props: { project_id: number; user_id: number }) {
   const { project_id, user_id } = props;
   const [open, setOpen] = useState(true);
+
+  const { data: role } = useProjectsDetailMembersGet({
+    project_id,
+    user_id,
+  });
 
   const { mutate: putMember } = useProjectsDetailMembersPut({
     project_id: project_id,
@@ -39,6 +45,10 @@ function ProjectInvitePrompt(props: { project_id: number; user_id: number }) {
       });
     },
   });
+
+  if (role == undefined || role.role !== "Invited") {
+    return null;
+  }
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)}>
