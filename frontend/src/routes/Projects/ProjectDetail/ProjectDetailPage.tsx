@@ -24,10 +24,22 @@ function ProjectDetail(props: { project_id: number }) {
         <ProjectInvitePrompt project_id={project_id} user_id={user_id} />
       ) : null}
       <Grid container>
-        <Grid size={9}>
+        <Grid
+          size={{
+            xs: 12,
+            md: 8,
+            lg: 9,
+          }}
+        >
           <ProjectInfo project_id={project_id} />
         </Grid>
-        <Grid size={3}>
+        <Grid
+          size={{
+            xs: 12,
+            md: 4,
+            lg: 3,
+          }}
+        >
           <Stack spacing={2} divider={<Divider />}>
             {user_id !== undefined ? (
               <ProjectApply user_id={user_id} project_id={project_id} />
