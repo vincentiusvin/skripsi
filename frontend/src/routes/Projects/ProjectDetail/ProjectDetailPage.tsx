@@ -17,17 +17,17 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useParams } from "wouter";
-import OrgCard from "../../components/Cards/OrgCard.tsx";
-import MarkdownViewer from "../../components/MarkdownViewer.tsx";
+import OrgCard from "../../../components/Cards/OrgCard.tsx";
+import MarkdownViewer from "../../../components/MarkdownViewer.tsx";
 import {
   useProjectsDetailGet,
   useProjectsDetailMembersDelete,
   useProjectsDetailMembersGet,
   useProjectsDetailMembersPut,
-} from "../../queries/project_hooks.ts";
-import { useSessionGet } from "../../queries/sesssion_hooks.ts";
-import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
-import ProjectMember, { MemberRoles } from "./components/ProjectMember.tsx";
+} from "../../../queries/project_hooks.ts";
+import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
+import AuthorizeProjects from "../components/AuthorizeProjects.tsx";
+import ProjectMember, { MemberRoles } from "../components/ProjectMember.tsx";
 
 function ProjectInfo(props: { project_id: number }) {
   const { project_id } = props;

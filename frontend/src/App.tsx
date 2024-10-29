@@ -29,7 +29,7 @@ import OrgsLeavePage from "./routes/Orgs/OrgsLeavePage.tsx";
 import OrgsListPage from "./routes/Orgs/OrgsListPage";
 import OrgsManagePage from "./routes/Orgs/OrgsManagePage.tsx";
 import OrgsPeoplePage from "./routes/Orgs/OrgsPeoplePage.tsx";
-import ProjectInfoPage from "./routes/Projects/ProjectDetailPage.tsx";
+import ProjectInfoPage from "./routes/Projects/ProjectDetail/ProjectDetailPage.tsx";
 import ProjectsActivityPage from "./routes/Projects/ProjectsActivityPage.tsx";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectsChatroomPage from "./routes/Projects/ProjectsChatroomPage.tsx";
