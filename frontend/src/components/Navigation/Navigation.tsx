@@ -6,18 +6,18 @@ import SideNav from "./SideNav.tsx";
 import TopNav from "./TopNav.tsx";
 
 function Navigation(props: { children: ReactNode }) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const { children } = props;
   const nav = useState<NavigationData>({
     type: "browse",
+    open: true,
   });
 
   return (
     <Box>
       <NavigationContext.Provider value={nav}>
-        <TopNav drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
+        <TopNav />
         <Stack direction={"row"} mt={2} flexGrow={1}>
-          <SideNav open={drawerOpen} setDrawerOpen={setDrawerOpen} />
+          <SideNav />
           <Box flexGrow={1} paddingX={2} width={0}>
             <Box
               sx={{

@@ -6,12 +6,13 @@ import NotificationDialog from "../Notification.tsx";
 import ProgressLine from "../ProgressLine.tsx";
 import StyledLink from "../StyledLink.tsx";
 import UserLabel from "../UserLabel.tsx";
+import { useNavigation } from "./NavigationContext.ts";
 
-function TopNav(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) => void }) {
-  const { drawerOpen, setDrawerOpen } = props;
+function TopNav() {
   const { data } = useSessionGet();
   const { mutate: logout } = useSessionDelete();
   const [theme, setTheme] = useAppTheme();
+  const [, setNav] = useNavigation();
 
   return (
     <AppBar
@@ -38,7 +39,7 @@ function TopNav(props: { drawerOpen: boolean; setDrawerOpen: (x: boolean) => voi
           },
         }}
       >
-        <IconButton variant="outlined" onClick={() => setDrawerOpen(!drawerOpen)}>
+        <IconButton variant="outlined" onClick={() => setNav((x) => ({ ...x, open: !x.open }))}>
           <ViewSidebar />
         </IconButton>
         <StyledLink to="/landing">

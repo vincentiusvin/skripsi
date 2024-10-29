@@ -147,9 +147,10 @@ function ProjectApply(props: { project_id: number; user_id: number }) {
             setNav({
               type: "project",
               id: project_id,
+              open: true,
             });
           }}
-          disabled={nav.type === "project" && nav.id === project_id}
+          disabled={nav.type === "project" && nav.id === project_id && nav.open}
           variant="contained"
         >
           Buka di Dashboard

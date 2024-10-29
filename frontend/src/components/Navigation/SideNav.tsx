@@ -41,8 +41,8 @@ import StyledLink from "../StyledLink.tsx";
 import {
   NavigationData,
   NavigationRaw,
-  parseNavigation,
-  parseNavigationRaw,
+  navData2NavRaw,
+  navRaw2NavData,
   useNavigation,
 } from "./NavigationContext.ts";
 
@@ -168,15 +168,14 @@ function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
   }
 
   const [nav, setNav] = useNavigation();
-  const nav2raw = parseNavigation(nav);
+  const nav2raw = navData2NavRaw(nav);
 
   return (
     <Select
       fullWidth
       value={nav2raw}
       onChange={(x) => {
-        const raw2nav = parseNavigationRaw(x.target.value as NavigationRaw);
-        setNav(raw2nav);
+        setNav((oldNav) => navRaw2NavData(x.target.value as NavigationRaw, oldNav.open));
       }}
     >
       {options.map((cat) => [
@@ -205,7 +204,9 @@ function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
 function SideNavDashboard() {
   const [_navData] = useNavigation();
   const { data: session } = useSessionGet();
-  const parsedContext: NavigationData = session?.logged ? _navData : { type: "browse" };
+  const navData: NavigationData = session?.logged
+    ? _navData
+    : { type: "browse", open: _navData.open };
 
   let links: {
     link: string;
@@ -213,7 +214,7 @@ function SideNavDashboard() {
     avatar: ReactNode;
   }[] = [];
 
-  if (!parsedContext || parsedContext.type === "browse") {
+  if (!navData || navData.type === "browse") {
     links = [
       {
         link: `/landing`,
@@ -256,8 +257,8 @@ function SideNavDashboard() {
         avatar: <Settings />,
       },
     ];
-  } else if (parsedContext.type === "project") {
-    const project_id = parsedContext.id;
+  } else if (navData.type === "project") {
+    const project_id = navData.id;
     links = [
       {
         link: `/projects/${project_id}`,
@@ -300,8 +301,8 @@ function SideNavDashboard() {
         avatar: <Logout />,
       },
     ];
-  } else if (parsedContext.type === "orgs") {
-    const org_id = parsedContext.id;
+  } else if (navData.type === "orgs") {
+    const org_id = navData.id;
     links = [
       {
         link: `/orgs/${org_id}`,
@@ -329,7 +330,7 @@ function SideNavDashboard() {
         avatar: <Logout />,
       },
     ];
-  } else if (parsedContext.type === "admin") {
+  } else if (navData.type === "admin") {
     links = [
       {
         link: `/manage-reports`,
@@ -360,13 +361,10 @@ function SideNavDashboard() {
   );
 }
 
-function SideNav(props: {
-  responsive?: boolean;
-  open?: boolean;
-  setDrawerOpen?: (x: boolean) => void;
-}) {
+function SideNav() {
   const { data: session } = useSessionGet();
-  const { setDrawerOpen, open } = props;
+  const [nav, setNav] = useNavigation();
+  const open = nav.open;
 
   const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
 
@@ -378,9 +376,10 @@ function SideNav(props: {
     <Drawer
       open={open}
       onClose={() => {
-        if (setDrawerOpen) {
-          setDrawerOpen(false);
-        }
+        setNav((x) => ({
+          ...x,
+          open: false,
+        }));
       }}
       variant={responsive ? "temporary" : "persistent"}
       anchor="left"
