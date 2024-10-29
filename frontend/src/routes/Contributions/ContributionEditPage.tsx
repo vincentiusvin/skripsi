@@ -4,6 +4,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
+import MarkdownEditor from "../../components/MarkdownEditor/index.tsx";
 import UserSelect from "../../components/UserSelect.tsx";
 import {
   useContributionsDetailGet,
@@ -76,15 +77,6 @@ function ContributionEdit(props: { contribution_id: number }) {
             onChange={(e) => setContributionName(e.target.value)}
             required
           />
-          <TextField
-            fullWidth
-            label="Deskripsi"
-            value={contributionDesc ?? contribs.description}
-            onChange={(e) => setContributionDesc(e.target.value)}
-            required
-            multiline
-            minRows={4}
-          />
           <UserSelect
             label="Kontributor"
             allowed_users={[1, 2, 3]}
@@ -92,6 +84,10 @@ function ContributionEdit(props: { contribution_id: number }) {
               setContributionUsers(x);
             }}
             current_users={contributionUsers ?? contribs_users}
+          />
+          <MarkdownEditor
+            oldValue={contributionDesc ?? contribs.description}
+            onChange={(x) => setContributionDesc(x)}
           />
         </Stack>
       </Grid>
