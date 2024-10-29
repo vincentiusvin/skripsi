@@ -241,10 +241,10 @@ function OrgsInfo(props: { org_id: number }) {
         <OrgsBasicData org_id={org_id} />
       </Paper>
       <Grid container spacing={4}>
-        <Grid size={9}>
+        <Grid size={{ xs: 12, md: 9 }}>
           <OrgsProjects org_id={org_id} />
         </Grid>
-        <Grid size={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <OrgsPeople org_id={org_id} />
         </Grid>
       </Grid>
