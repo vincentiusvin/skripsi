@@ -26,6 +26,7 @@ function ProjectsEdit(props: { project_id: number }) {
   const { project_id } = props;
   const [projectName, setProjectName] = useState<string | undefined>();
   const [projectDesc, setProjectDesc] = useState<string | undefined>();
+  const [projectContent, setProjectContent] = useState<string | undefined>();
   const [projectCategory, setProjectCategory] = useState<number[] | undefined>();
 
   const [, setLocation] = useLocation();
@@ -51,6 +52,7 @@ function ProjectsEdit(props: { project_id: number }) {
       project_desc: projectDesc,
       project_name: projectName,
       category_id: projectCategory,
+      project_content: projectContent,
     });
   }
 
@@ -75,6 +77,12 @@ function ProjectsEdit(props: { project_id: number }) {
             label="Name"
             value={projectName ?? oldData.project_name}
           ></TextField>
+          <TextField
+            fullWidth
+            onChange={(e) => setProjectDesc(e.target.value)}
+            label="Description"
+            value={projectDesc ?? oldData.project_desc}
+          ></TextField>
           <FormControl>
             <InputLabel>Category</InputLabel>
             <Select
@@ -93,8 +101,8 @@ function ProjectsEdit(props: { project_id: number }) {
           </FormControl>
           <Typography>Deskripsi</Typography>
           <MarkdownEditor
-            onChange={(x) => setProjectDesc(x)}
-            oldValue={projectDesc ?? oldData.project_desc}
+            onChange={(x) => setProjectContent(x)}
+            oldValue={projectContent ?? oldData.project_content ?? ""}
           />
         </Stack>
       </Grid>

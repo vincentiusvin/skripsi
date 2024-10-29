@@ -54,7 +54,8 @@ function ProjectInfo(props: { project_id: number }) {
       >
         {project.project_name}
       </Typography>
-      <MarkdownViewer>{project.project_desc}</MarkdownViewer>
+      <Typography align="center">{project.project_desc}</Typography>
+      <MarkdownViewer>{project.project_content ?? ""}</MarkdownViewer>
       <Stack direction={"row"} justifyContent={"center"} spacing={2}>
         {project.project_categories.map((category, index) => (
           <Chip key={index} label={category.category_name} />
