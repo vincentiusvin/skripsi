@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Divider, Stack } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useParams } from "wouter";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
@@ -18,7 +18,7 @@ function ProjectDetail(props: { project_id: number }) {
   const user_id = session?.logged ? session.user_id : undefined;
 
   return (
-    <Box>
+    <Stack spacing={2}>
       <ProjectArchiveWarning project_id={project_id} />
       {user_id !== undefined ? (
         <ProjectInvitePrompt project_id={project_id} user_id={user_id} />
@@ -28,7 +28,7 @@ function ProjectDetail(props: { project_id: number }) {
           <ProjectInfo project_id={project_id} />
         </Grid>
         <Grid size={3}>
-          <Stack spacing={2}>
+          <Stack spacing={2} divider={<Divider />}>
             {user_id !== undefined ? (
               <ProjectApply user_id={user_id} project_id={project_id} />
             ) : null}
@@ -38,7 +38,7 @@ function ProjectDetail(props: { project_id: number }) {
           </Stack>
         </Grid>
       </Grid>
-    </Box>
+    </Stack>
   );
 }
 

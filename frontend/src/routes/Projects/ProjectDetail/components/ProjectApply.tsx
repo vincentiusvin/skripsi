@@ -1,5 +1,5 @@
-import { Check } from "@mui/icons-material";
-import { Button, Skeleton, Typography } from "@mui/material";
+import { Add, Cancel, Check } from "@mui/icons-material";
+import { Button, Skeleton, Stack, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import {
   useProjectsDetailGet,
@@ -45,22 +45,104 @@ function ProjectApply(props: { project_id: number; user_id: number }) {
     return <Skeleton />;
   }
 
-  return (
-    <Button
-      endIcon={<Check />}
-      variant="contained"
-      disabled={role.role === "Pending" || project.project_archived}
-      fullWidth
-      onClick={() => {
-        if (role.role === "Not Involved") {
-          addMember({
-            role: "Pending",
-          });
-        }
-      }}
-    >
-      {role.role === "Pending" ? "Applied" : "Apply"}
-    </Button>
-  );
+  if (role.role === "Not Involved") {
+    return (
+      <Stack spacing={2}>
+        <Typography variant="h6" fontWeight={"bold"}>
+          Bergabung
+        </Typography>
+        <Typography variant="caption">
+          Anda dapat mengirimkan permintaan untuk bergabung ke dalam proyek ini. Permintaan anda
+          harus disetujui oleh pengurus proyek sebelum anda dapat masuk.
+        </Typography>
+        <Button
+          startIcon={<Add />}
+          disabled={project.project_archived}
+          variant="contained"
+          onClick={() => {
+            addMember({
+              role: "Pending",
+            });
+          }}
+        >
+          Kirim Permintaan Bergabung
+        </Button>
+      </Stack>
+    );
+  }
+
+  if (role.role === "Pending") {
+    return (
+      <Stack spacing={2}>
+        <Typography variant="h6" fontWeight={"bold"}>
+          Bergabung
+        </Typography>
+        <Typography variant="caption">
+          Anda sudah mengirimkan permintaan untuk bergabung ke dalam proyek ini. Permintaan anda
+          harus disetujui oleh pengurus proyek sebelum anda dapat masuk.
+        </Typography>
+        <Button
+          onClick={() => {
+            deleteMember();
+          }}
+          color="error"
+          startIcon={<Cancel />}
+          variant="contained"
+        >
+          Batalkan Permintaan
+        </Button>
+      </Stack>
+    );
+  }
+
+  if (role.role === "Invited") {
+    return (
+      <Stack spacing={2}>
+        <Typography variant="h6" fontWeight={"bold"}>
+          Bergabung
+        </Typography>
+        <Typography variant="caption">
+          Anda diundang oleh pengurus proyek ini untuk ikut bergabung sebagai developer. Anda dapat
+          mulai berkontribusi setelah menerima undangan ini.
+        </Typography>
+        <Button
+          onClick={() => {
+            addMember({
+              role: "Dev",
+            });
+          }}
+          color="success"
+          startIcon={<Check />}
+          variant="contained"
+        >
+          Terima
+        </Button>
+        <Button
+          onClick={() => {
+            deleteMember();
+          }}
+          color="error"
+          startIcon={<Cancel />}
+          variant="contained"
+        >
+          Tolak
+        </Button>
+      </Stack>
+    );
+  }
+
+  if (role.role === "Admin" || role.role === "Dev") {
+    return (
+      <Stack spacing={2}>
+        <Typography variant="h6" fontWeight={"bold"}>
+          Bergabung
+        </Typography>
+        <Typography variant="caption">Anda merupakan anggota dari proyek ini.</Typography>
+        <Button startIcon={<Check />} disabled={true} variant="contained">
+          Kirim Permintaan Bergabung
+        </Button>
+      </Stack>
+    );
+  }
 }
 export default ProjectApply;
