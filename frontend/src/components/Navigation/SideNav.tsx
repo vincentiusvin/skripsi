@@ -32,46 +32,22 @@ import {
   Theme,
   useMediaQuery,
 } from "@mui/material";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { useOrgsGet } from "../../queries/org_hooks.ts";
 import { useProjectsGet } from "../../queries/project_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../queries/user_hooks.ts";
 import StyledLink from "../StyledLink.tsx";
+import {
+  NavigationData,
+  NavigationRaw,
+  parseNavigation,
+  parseNavigationRaw,
+  useNavigation,
+} from "./NavigationContext.ts";
 
-type SidenavContext = "browse" | `project-${number}` | `orgs-${number}` | "admin";
-
-function parseSidenavContext(x: SidenavContext) {
-  if (x === "browse") {
-    return {
-      type: "browse",
-    } as const;
-  } else if (x.startsWith("project-")) {
-    const project_id = Number(x.split("-")[1]);
-    return {
-      type: "project",
-      id: project_id,
-    } as const;
-  } else if (x.startsWith("orgs-")) {
-    const org_id = Number(x.split("-")[1]);
-    return {
-      type: "orgs",
-      id: org_id,
-    } as const;
-  } else if (x === "admin") {
-    return {
-      type: "admin",
-    } as const;
-  }
-}
-
-function UserSideNavSelector(props: {
-  user_id: number;
-  value: SidenavContext;
-  showAll?: boolean;
-  onChange: (x: SidenavContext) => void;
-}) {
-  const { user_id, value, onChange, showAll } = props;
+function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
+  const { user_id, showAll } = props;
 
   const { data: projects } = useProjectsGet({
     user_id: showAll ? undefined : user_id,
@@ -89,7 +65,7 @@ function UserSideNavSelector(props: {
     title: string;
     icon: ReactNode;
     entries: {
-      value: string;
+      value: NavigationRaw;
       primary: string;
       secondary: string | null;
     }[];
@@ -191,12 +167,16 @@ function UserSideNavSelector(props: {
     }
   }
 
+  const [nav, setNav] = useNavigation();
+  const nav2raw = parseNavigation(nav);
+
   return (
     <Select
       fullWidth
-      value={value}
+      value={nav2raw}
       onChange={(x) => {
-        onChange(x.target.value as SidenavContext);
+        const raw2nav = parseNavigationRaw(x.target.value as NavigationRaw);
+        setNav(raw2nav);
       }}
     >
       {options.map((cat) => [
@@ -222,9 +202,10 @@ function UserSideNavSelector(props: {
   );
 }
 
-function ContextualDashboard(props: { context: SidenavContext }) {
-  const { context } = props;
-  const parsedContext = parseSidenavContext(context);
+function SideNavDashboard() {
+  const [_navData] = useNavigation();
+  const { data: session } = useSessionGet();
+  const parsedContext: NavigationData = session?.logged ? _navData : { type: "browse" };
 
   let links: {
     link: string;
@@ -385,7 +366,6 @@ function SideNav(props: {
   setDrawerOpen?: (x: boolean) => void;
 }) {
   const { data: session } = useSessionGet();
-  const [_activeDashboard, setActiveDashboard] = useState<SidenavContext>("browse");
   const { setDrawerOpen, open } = props;
 
   const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
@@ -393,8 +373,6 @@ function SideNav(props: {
   if (session == undefined) {
     return <Skeleton />;
   }
-
-  const activeDashboard: SidenavContext = session.logged ? _activeDashboard : "browse";
 
   return (
     <Drawer
@@ -420,14 +398,9 @@ function SideNav(props: {
         }}
       >
         {session?.logged ? (
-          <UserSideNavSelector
-            user_id={session.user_id}
-            value={activeDashboard}
-            showAll={session.is_admin}
-            onChange={(x) => setActiveDashboard(x)}
-          />
+          <SideNavSelector user_id={session.user_id} showAll={session.is_admin} />
         ) : null}
-        <ContextualDashboard context={activeDashboard} />
+        <SideNavDashboard />
       </Box>
     </Drawer>
   );
