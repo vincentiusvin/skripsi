@@ -1,6 +1,7 @@
-import { Add, Cancel, Check } from "@mui/icons-material";
+import { Add, Cancel, Check, Visibility } from "@mui/icons-material";
 import { Button, Skeleton, Stack, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
+import { useNavigation } from "../../../../components/Navigation/NavigationContext.ts";
 import {
   useProjectsDetailGet,
   useProjectsDetailMembersDelete,
@@ -40,6 +41,8 @@ function ProjectApply(props: { project_id: number; user_id: number }) {
       });
     },
   });
+
+  const [nav, setNav] = useNavigation();
 
   if (project == undefined || role == undefined) {
     return <Skeleton />;
@@ -138,8 +141,18 @@ function ProjectApply(props: { project_id: number; user_id: number }) {
           Bergabung
         </Typography>
         <Typography variant="caption">Anda merupakan anggota dari proyek ini.</Typography>
-        <Button startIcon={<Check />} disabled={true} variant="contained">
-          Kirim Permintaan Bergabung
+        <Button
+          startIcon={<Visibility />}
+          onClick={() => {
+            setNav({
+              type: "project",
+              id: project_id,
+            });
+          }}
+          disabled={nav.type === "project" && nav.id === project_id}
+          variant="contained"
+        >
+          Buka di Dashboard
         </Button>
       </Stack>
     );
