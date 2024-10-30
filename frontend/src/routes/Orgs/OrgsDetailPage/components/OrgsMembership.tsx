@@ -1,11 +1,11 @@
 import { Cancel, Check, Visibility } from "@mui/icons-material";
 import { Box, Button, Skeleton, Typography } from "@mui/material";
-import { useNavigation } from "../../../components/Navigation/NavigationContext.ts";
+import { useNavigation } from "../../../../components/Navigation/NavigationContext.ts";
 import {
   useOrgsDetailMembersDelete,
   useOrgsDetailMembersGet,
   useOrgsDetailMembersPut,
-} from "../../../queries/org_hooks.ts";
+} from "../../../../queries/org_hooks.ts";
 
 function OrgsMembership(props: { user_id: number; org_id: number }) {
   const { org_id, user_id } = props;

@@ -4,11 +4,11 @@ import { useParams } from "wouter";
 import { useOrgDetailGet } from "../../../queries/org_hooks.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import AuthorizeOrgs from "../components/AuthorizeOrgs.tsx";
-import OrgsInfo from "./OrgsInfo.tsx";
-import OrgsInvitePrompt from "./OrgsInvitePrompt.tsx";
-import OrgsMemberList from "./OrgsMemberList.tsx";
-import OrgsMembership from "./OrgsMembership.tsx";
-import OrgsProjectList from "./OrgsProjectList.tsx";
+import OrgsInfo from "./components/OrgsInfo.tsx";
+import OrgsInvitePrompt from "./components/OrgsInvitePrompt.tsx";
+import OrgsMemberList from "./components/OrgsMemberList.tsx";
+import OrgsMembership from "./components/OrgsMembership.tsx";
+import OrgsProjectList from "./components/OrgsProjectList.tsx";
 
 function OrgsDetail(props: { org_id: number }) {
   const { org_id } = props;

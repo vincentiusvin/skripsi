@@ -1,7 +1,7 @@
 import { Divider, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import ProjectCard from "../../../components/Cards/ProjectCard.tsx";
-import { useProjectsGet } from "../../../queries/project_hooks.ts";
+import ProjectCard from "../../../../components/Cards/ProjectCard.tsx";
+import { useProjectsGet } from "../../../../queries/project_hooks.ts";
 
 function OrgsProjectList(props: { org_id: number }) {
   const { org_id } = props;

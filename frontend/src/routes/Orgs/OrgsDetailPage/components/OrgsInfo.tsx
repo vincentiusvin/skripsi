@@ -1,7 +1,7 @@
 import { Home, Phone } from "@mui/icons-material";
 import { Avatar, Box, Chip, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { useOrgDetailGet } from "../../../queries/org_hooks.ts";
+import { useOrgDetailGet } from "../../../../queries/org_hooks.ts";
 
 function OrgsInfo(props: { org_id: number }) {
   const { org_id } = props;

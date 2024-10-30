@@ -1,6 +1,6 @@
 import { Divider, Skeleton, Stack, Typography } from "@mui/material";
-import { useOrgDetailGet } from "../../../queries/org_hooks.ts";
-import OrgMember from "../components/OrgMember.tsx";
+import { useOrgDetailGet } from "../../../../queries/org_hooks.ts";
+import OrgMember from "../../components/OrgMember.tsx";
 
 function OrgsMemberList(props: { org_id: number }) {
   const { org_id } = props;

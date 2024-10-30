@@ -11,7 +11,7 @@ import {
   useOrgsDetailMembersDelete,
   useOrgsDetailMembersGet,
   useOrgsDetailMembersPut,
-} from "../../../queries/org_hooks.ts";
+} from "../../../../queries/org_hooks.ts";
 
 function OrgsInvitePrompt(props: { org_id: number; user_id: number }) {
   const { org_id, user_id } = props;
