@@ -9,7 +9,9 @@ import {
   StepLabel,
   Stepper,
   TextField,
+  Theme,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
@@ -21,10 +23,19 @@ import { useUsersPost } from "../queries/user_hooks";
 
 function RegisterSteps(props: { step: number }) {
   const { step } = props;
+  const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
 
   return (
     <Slide in={true} direction="up">
-      <Stepper activeStep={step} orientation={"vertical"}>
+      <Stepper
+        activeStep={step}
+        orientation={responsive ? "horizontal" : "vertical"}
+        alternativeLabel={responsive}
+        sx={{
+          width: "100%",
+          overflow: "auto",
+        }}
+      >
         <Step>
           <StepLabel>
             <Typography>Kredensial Akun</Typography>
@@ -193,7 +204,7 @@ function Register() {
       container
       minHeight={"inherit"}
       alignItems={"center"}
-      paddingX={8}
+      paddingX={{ xs: 2, md: 8 }}
       columnSpacing={{ xs: 8, lg: 16 }}
       rowSpacing={2}
     >

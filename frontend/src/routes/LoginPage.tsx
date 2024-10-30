@@ -36,7 +36,7 @@ function Login() {
       container
       minHeight={"inherit"}
       alignItems={"center"}
-      paddingX={8}
+      paddingX={{ xs: 2, md: 8 }}
       columnSpacing={{ lg: 16, xs: 8 }}
       rowSpacing={2}
     >
