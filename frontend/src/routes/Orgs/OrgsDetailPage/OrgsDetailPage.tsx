@@ -1,6 +1,7 @@
 import { Paper, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useParams } from "wouter";
+import MarkdownViewer from "../../../components/MarkdownViewer.tsx";
 import { useOrgDetailGet } from "../../../queries/org_hooks.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import AuthorizeOrgs from "../components/AuthorizeOrgs.tsx";
@@ -36,7 +37,7 @@ function OrgsDetail(props: { org_id: number }) {
         <Typography fontWeight="bold" variant="h6" mt={2}>
           Tentang Kami
         </Typography>
-        <Typography>{data.org_description ?? "Belum ada informasi"}</Typography>
+        <MarkdownViewer>{data.org_description ?? "Belum ada informasi"}</MarkdownViewer>
       </Paper>
       <Grid container spacing={4}>
         <Grid size={{ xs: 12, md: 9 }}>
