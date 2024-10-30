@@ -7,7 +7,11 @@ import {
   DialogTitle,
 } from "@mui/material";
 import { useState } from "react";
-import { useOrgsDetailMembersDelete, useOrgsDetailMembersPut } from "../../../queries/org_hooks.ts";
+import {
+  useOrgsDetailMembersDelete,
+  useOrgsDetailMembersGet,
+  useOrgsDetailMembersPut,
+} from "../../../queries/org_hooks.ts";
 
 function OrgsInvitePrompt(props: { org_id: number; user_id: number }) {
   const { org_id, user_id } = props;
@@ -22,6 +26,15 @@ function OrgsInvitePrompt(props: { org_id: number; user_id: number }) {
     org_id,
     user_id,
   });
+
+  const { data: role } = useOrgsDetailMembersGet({
+    org_id,
+    user_id,
+  });
+
+  if (role == undefined || role.role !== "Invited") {
+    return null;
+  }
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)}>

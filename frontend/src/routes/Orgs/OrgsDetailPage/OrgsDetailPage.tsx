@@ -1,15 +1,22 @@
 import { Paper, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useParams } from "wouter";
-import { useOrgDetailGet, useOrgsDetailMembersGet } from "../../../queries/org_hooks.ts";
+import { useOrgDetailGet } from "../../../queries/org_hooks.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import AuthorizeOrgs from "../components/AuthorizeOrgs.tsx";
+import OrgsInfo from "./OrgsInfo.tsx";
+import OrgsInvitePrompt from "./OrgsInvitePrompt.tsx";
+import OrgsMemberList from "./OrgsMemberList.tsx";
+import OrgsMembership from "./OrgsMembership.tsx";
+import OrgsProjectList from "./OrgsProjectList.tsx";
 
-function OrgsInfo(props: { org_id: number }) {
+function OrgsDetail(props: { org_id: number }) {
   const { org_id } = props;
   const { data } = useOrgDetailGet({
     id: org_id,
   });
+  const { data: session } = useSessionGet();
+  const user_id = session?.logged ? session.user_id : undefined;
 
   if (!data) {
     return <Skeleton />;
@@ -23,7 +30,9 @@ function OrgsInfo(props: { org_id: number }) {
           px: 8,
         }}
       >
-        <OrgsBasicData org_id={org_id} />
+        <OrgsInfo org_id={org_id} />
+        {user_id !== undefined ? <OrgsInvitePrompt org_id={org_id} user_id={user_id} /> : null}
+        {user_id !== undefined ? <OrgsMembership org_id={org_id} user_id={user_id} /> : null}
         <Typography fontWeight="bold" variant="h6" mt={2}>
           Tentang Kami
         </Typography>
@@ -31,54 +40,23 @@ function OrgsInfo(props: { org_id: number }) {
       </Paper>
       <Grid container spacing={4}>
         <Grid size={{ xs: 12, md: 9 }}>
-          <OrgsProjects org_id={org_id} />
+          <OrgsProjectList org_id={org_id} />
         </Grid>
         <Grid size={{ xs: 12, md: 3 }}>
-          <OrgsPeople org_id={org_id} />
+          <OrgsMemberList org_id={org_id} />
         </Grid>
       </Grid>
     </Stack>
   );
 }
 
-function OrgsLoggedIn(props: { user_id: number; org_id: number }) {
-  const { user_id, org_id } = props;
-  const { data: membership } = useOrgsDetailMembersGet({
-    org_id,
-    user_id,
-  });
-
-  const role = membership?.role;
-  if (!role) {
-    return <Skeleton />;
-  }
-
-  if (role === "Admin" || role === "Not Involved") {
-    return <OrgsInfo org_id={org_id} />;
-  }
-
-  if (role === "Invited") {
-    return (
-      <>
-        <InvitedDialog user_id={user_id} org_id={org_id} />
-        <OrgsInfo org_id={org_id} />;
-      </>
-    );
-  }
-}
-
 function OrgsDetailPage() {
-  const { data: user_data } = useSessionGet();
   const { org_id: id } = useParams();
   const org_id = Number(id);
 
   return (
     <AuthorizeOrgs allowedRoles={["Not Involved"]}>
-      {user_data && user_data.logged ? (
-        <OrgsLoggedIn org_id={org_id} user_id={user_data.user_id} />
-      ) : (
-        <OrgsInfo org_id={org_id} />
-      )}
+      <OrgsDetail org_id={org_id} />
     </AuthorizeOrgs>
   );
 }

@@ -1,12 +1,24 @@
-import { Visibility } from "@mui/icons-material";
+import { Cancel, Check, Visibility } from "@mui/icons-material";
 import { Box, Button, Skeleton, Typography } from "@mui/material";
 import { useNavigation } from "../../../components/Navigation/NavigationContext.ts";
-import { useOrgsDetailMembersGet } from "../../../queries/org_hooks.ts";
-import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
+import {
+  useOrgsDetailMembersDelete,
+  useOrgsDetailMembersGet,
+  useOrgsDetailMembersPut,
+} from "../../../queries/org_hooks.ts";
 
-function OrgOpen(props: { user_id: number; org_id: number }) {
+function OrgsMembership(props: { user_id: number; org_id: number }) {
   const { org_id, user_id } = props;
   const { data: member } = useOrgsDetailMembersGet({
+    org_id,
+    user_id,
+  });
+  const { mutate: acceptInvite } = useOrgsDetailMembersPut({
+    org_id,
+    user_id,
+  });
+
+  const { mutate: rejectInvite } = useOrgsDetailMembersDelete({
     org_id,
     user_id,
   });
@@ -37,19 +49,36 @@ function OrgOpen(props: { user_id: number; org_id: number }) {
       </Box>
     );
   }
+
+  if (member.role === "Invited") {
+    return (
+      <Box>
+        <Typography>Anda diundang untuk menjadi pengurus organisasi ini.</Typography>
+        <Button
+          color="success"
+          variant="contained"
+          startIcon={<Check />}
+          onClick={() => {
+            acceptInvite({
+              role: "Admin",
+            });
+          }}
+        >
+          Terima
+        </Button>
+        <Button
+          color="error"
+          variant="contained"
+          startIcon={<Cancel />}
+          onClick={() => {
+            rejectInvite();
+          }}
+        >
+          Tolak
+        </Button>
+      </Box>
+    );
+  }
 }
 
-function OrgOpen2(props: { org_id: number }) {
-  const { org_id } = props;
-  const { data: session } = useSessionGet();
-  if (session == undefined) {
-    return <Skeleton />;
-  }
-
-  if (session.logged) {
-    return <OrgOpen org_id={org_id} user_id={session.user_id} />;
-  }
-  return null;
-}
-
-export default OrgOpen2;
+export default OrgsMembership;
