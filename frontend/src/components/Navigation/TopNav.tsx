@@ -91,7 +91,7 @@ function TopNav() {
             </Button>
           </>
         ) : (
-          <StyledLink to={"/auth"}>
+          <StyledLink to={"/login"}>
             <Button variant="outlined" startIcon={<Login />} onClick={() => logout()}>
               Log In
             </Button>

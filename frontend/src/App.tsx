@@ -22,6 +22,7 @@ import ProjectsAddContributionPage from "./routes/Contributions/ProjectsAddContr
 import ProjectsContributionPage from "./routes/Contributions/ProjectsContributionPage.tsx";
 import DashboardPage from "./routes/DashboardPage.tsx";
 import LandingPage from "./routes/LandingPage.tsx";
+import LoginPage from "./routes/LoginPage.tsx";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
 import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage/OrgsDetailPage.tsx";
 import OrgsEditPage from "./routes/Orgs/OrgsEditPage";
@@ -102,6 +103,7 @@ function App() {
                   <Route path={"/"} component={DashboardPage} />
                   <Route path={"/landing"} component={LandingPage} />
                   <Route path={"/auth"} component={AuthPage} />
+                  <Route path={"/login"} component={LoginPage} />
                   <Route path={"/orgs"} component={OrgsListPage} />
                   <Route path={"/orgs/add"} component={OrgsAddPage} />
                   <Route path={"/orgs/:org_id"} component={OrgsDetailPage} />
