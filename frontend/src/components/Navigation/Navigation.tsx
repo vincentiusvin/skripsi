@@ -1,5 +1,6 @@
 import { Box, Stack } from "@mui/material";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { useLocation } from "wouter";
 import Footer from "./Footer.tsx";
 import { NavigationContext, NavigationData } from "./NavigationContext.ts";
 import SideNav from "./SideNav.tsx";
@@ -11,6 +12,11 @@ function Navigation(props: { children: ReactNode }) {
     type: "browse",
     open: true,
   });
+  const [loc] = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [loc]);
 
   return (
     <Box>
