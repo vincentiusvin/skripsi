@@ -6,7 +6,7 @@ import { useLocation } from "wouter";
 import { useSessionPut } from "../queries/sesssion_hooks";
 import { useUsersPost } from "../queries/user_hooks";
 
-function AuthPage() {
+function RegisterPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -81,4 +81,4 @@ function AuthPage() {
   );
 }
 
-export default AuthPage;
+export default RegisterPage;

@@ -4,6 +4,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import charityImg from "../assets/help.png";
+import StyledLink from "../components/StyledLink.tsx";
 import { useSessionPut } from "../queries/sesssion_hooks";
 
 function Login() {
@@ -94,7 +95,9 @@ function Login() {
             <Stack spacing={1} alignItems={"center"}>
               <Stack direction="row" spacing={2} alignItems={"center"} justifyContent={"center"}>
                 <Typography>Tidak memiliki akun?</Typography>
-                <Button>Daftar</Button>
+                <StyledLink to="/register">
+                  <Button>Daftar</Button>
+                </StyledLink>
               </Stack>
               <Button>Lupa Password</Button>
             </Stack>
