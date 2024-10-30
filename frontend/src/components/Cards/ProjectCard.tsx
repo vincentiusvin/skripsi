@@ -80,7 +80,7 @@ function ProjectCard(props: { project_id: number }) {
               <Divider />
               <Stack direction={"row"} gap={2} flexWrap={"wrap"}>
                 {project.project_categories.map((category, index) => (
-                  <Chip key={index} label={category.category_name} />
+                  <Chip color="secondary" key={index} label={category.category_name} />
                 ))}
               </Stack>
             </Stack>

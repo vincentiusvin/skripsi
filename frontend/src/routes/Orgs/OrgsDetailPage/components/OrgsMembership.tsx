@@ -30,7 +30,7 @@ function OrgsMembership(props: { user_id: number; org_id: number }) {
 
   if (member.role === "Admin") {
     return (
-      <Box>
+      <Box mt={2}>
         <Typography>Anda merupakan anggota organisasi ini</Typography>
         <Button
           variant="contained"
@@ -52,7 +52,7 @@ function OrgsMembership(props: { user_id: number; org_id: number }) {
 
   if (member.role === "Invited") {
     return (
-      <Box>
+      <Box mt={2}>
         <Typography>Anda diundang untuk menjadi pengurus organisasi ini.</Typography>
         <Button
           color="success"

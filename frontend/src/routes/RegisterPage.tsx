@@ -1,35 +1,36 @@
-import { Button, TextField, Typography } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import {
+  Box,
+  Button,
+  Paper,
+  Stack,
+  Step,
+  StepLabel,
+  Stepper,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useSessionPut } from "../queries/sesssion_hooks";
 import { useUsersPost } from "../queries/user_hooks";
 
-function RegisterPage() {
+function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [step, setStep] = useState(0);
 
   const [, setLocation] = useLocation();
 
-  const { mutate: putSession } = useSessionPut({
+  const { mutate: postUsers } = useUsersPost({
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Login success!</Typography>,
+        message: <Typography>Berhasil mendaftarkan akun!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });
       setLocation("/");
     },
   });
-  const { mutate: postUsers } = useUsersPost();
-
-  function login() {
-    putSession({
-      user_name: username,
-      user_password: password,
-    });
-  }
 
   function register() {
     postUsers({
@@ -39,46 +40,78 @@ function RegisterPage() {
   }
 
   return (
-    <Grid container minHeight={"inherit"} alignItems={"center"}>
-      <Grid
-        size={{
-          md: 6,
-          xs: 12,
+    <Stack spacing={8} mt={2}>
+      <Stepper activeStep={step}>
+        <Step>
+          <StepLabel>
+            <Typography>Informasi akun</Typography>
+          </StepLabel>
+        </Step>
+        <Step>
+          <StepLabel>
+            <Typography>Lengkapi data diri</Typography>
+            <Typography variant="caption">Opsional</Typography>
+          </StepLabel>
+        </Step>
+        <Step>
+          <StepLabel>
+            <Typography>Kode OTP</Typography>
+          </StepLabel>
+        </Step>
+        <Step>
+          <StepLabel>
+            <Typography>Langkah berikutnya</Typography>
+          </StepLabel>
+        </Step>
+      </Stepper>
+
+      <Box
+        sx={{
+          paddingX: 52,
         }}
       >
-        Hello
-      </Grid>
-      <Grid container alignItems={"center"} size={{ md: 6, xs: 12 }} spacing={2}>
-        <Grid size={12}>
-          <TextField
-            fullWidth
-            onChange={(e) => setUsername(e.target.value)}
-            label="Username"
-            sx={{ display: "block" }}
-          ></TextField>
-        </Grid>
-        <Grid size={12}>
-          <TextField
-            fullWidth
-            type="password"
-            onChange={(e) => setPassword(e.target.value)}
-            label="Password"
-            sx={{ display: "block" }}
-          ></TextField>
-        </Grid>
-        <Grid size={6}>
-          <Button fullWidth onClick={() => login()}>
-            Login
+        {step === 0 ? (
+          <Paper
+            sx={{
+              paddingX: 4,
+              paddingY: 8,
+            }}
+          >
+            <Stack spacing={4}>
+              <Typography variant="h5" fontWeight={"bold"} textAlign={"center"}>
+                Daftar
+              </Typography>
+              <TextField
+                fullWidth
+                onChange={(e) => setUsername(e.target.value)}
+                label="Username"
+              ></TextField>
+              <TextField
+                fullWidth
+                type="password"
+                onChange={(e) => setPassword(e.target.value)}
+                label="Password"
+              ></TextField>
+            </Stack>
+          </Paper>
+        ) : (
+          <Typography>halo</Typography>
+        )}
+        <Stack direction="row" spacing={2}>
+          <Button fullWidth onClick={() => setStep((x) => x - 1)} variant="outlined">
+            Mundur
           </Button>
-        </Grid>
-        <Grid size={6}>
-          <Button fullWidth onClick={() => register()}>
-            Register
+          <Button fullWidth onClick={() => setStep((x) => x + 1)} variant="contained">
+            Lanjut
           </Button>
-        </Grid>
-      </Grid>
-    </Grid>
+        </Stack>
+      </Box>
+    </Stack>
   );
+}
+
+function RegisterPage() {
+  return <Register />;
 }
 
 export default RegisterPage;

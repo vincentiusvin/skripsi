@@ -39,8 +39,6 @@ function Login() {
       paddingX={8}
       columnSpacing={16}
       rowSpacing={2}
-      margin={-2}
-      marginTop={2}
     >
       <Grid
         size={{
