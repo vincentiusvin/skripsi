@@ -14,6 +14,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
+import MarkdownEditor from "../../components/MarkdownEditor";
 import {
   useProjectsCategoriesGet,
   useProjectsDetailGet,
@@ -25,6 +26,7 @@ function ProjectsEdit(props: { project_id: number }) {
   const { project_id } = props;
   const [projectName, setProjectName] = useState<string | undefined>();
   const [projectDesc, setProjectDesc] = useState<string | undefined>();
+  const [projectContent, setProjectContent] = useState<string | undefined>();
   const [projectCategory, setProjectCategory] = useState<number[] | undefined>();
 
   const [, setLocation] = useLocation();
@@ -50,6 +52,7 @@ function ProjectsEdit(props: { project_id: number }) {
       project_desc: projectDesc,
       project_name: projectName,
       category_id: projectCategory,
+      project_content: projectContent,
     });
   }
 
@@ -96,6 +99,11 @@ function ProjectsEdit(props: { project_id: number }) {
                 ))}
             </Select>
           </FormControl>
+          <Typography>Deskripsi</Typography>
+          <MarkdownEditor
+            onChange={(x) => setProjectContent(x)}
+            oldValue={projectContent ?? oldData.project_content ?? ""}
+          />
         </Stack>
       </Grid>
       <Grid size={12}>

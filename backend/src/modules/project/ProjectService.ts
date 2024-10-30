@@ -150,6 +150,7 @@ export class ProjectService implements Transactable<ProjectService> {
       org_id: number;
       project_desc: string;
       category_id?: number[];
+      project_content?: string;
     },
     sender_id: number,
   ) {
@@ -169,6 +170,7 @@ export class ProjectService implements Transactable<ProjectService> {
       project_desc?: string;
       category_id?: number[];
       project_archived?: boolean;
+      project_content?: string;
     },
     sender_id: number,
   ) {

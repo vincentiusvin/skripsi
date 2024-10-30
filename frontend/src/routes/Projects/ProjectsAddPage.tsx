@@ -13,11 +13,13 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
+import MarkdownEditor from "../../components/MarkdownEditor/index.tsx";
 import { useProjectsCategoriesGet, useProjectsPost } from "../../queries/project_hooks";
 
 function ProjectsAddPage() {
   const [projectName, setProjectName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
+  const [projectContent, setProjectContent] = useState<undefined | string>();
   const [projectCategory, setProjectCategory] = useState<number[]>([]);
   const { org_id: org_id_raw } = useParams();
   const org_id = Number(org_id_raw);
@@ -41,6 +43,7 @@ function ProjectsAddPage() {
       project_name: projectName,
       org_id: org_id,
       category_id: projectCategory,
+      project_content: projectContent,
     });
   }
 
@@ -83,6 +86,8 @@ function ProjectsAddPage() {
                 ))}
             </Select>
           </FormControl>
+          <Typography>Deskripsi</Typography>
+          <MarkdownEditor onChange={(x) => setProjectContent(x)} oldValue={projectContent ?? ""} />
         </Stack>
       </Grid>
       <Grid size={12}>

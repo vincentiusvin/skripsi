@@ -16,6 +16,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
+import MarkdownEditor from "../../components/MarkdownEditor/index.tsx";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { useOrgsCategoriesGet, useOrgsPost } from "../../queries/org_hooks";
@@ -130,11 +131,6 @@ function OrgsAddPage() {
           ></TextField>
           <TextField
             fullWidth
-            onChange={(e) => setOrgDesc(e.target.value)}
-            label="Description"
-          ></TextField>
-          <TextField
-            fullWidth
             onChange={(e) => setOrgAddress(e.target.value)}
             label="Address"
           ></TextField>
@@ -159,6 +155,10 @@ function OrgsAddPage() {
             </Select>
           </FormControl>
         </Stack>
+      </Grid>
+      <Grid size={12}>
+        <Typography>Tentang Organisasi</Typography>
+        <MarkdownEditor oldValue={orgDesc} onChange={(x) => setOrgDesc(x)}></MarkdownEditor>
       </Grid>
       <Grid size={12}>
         <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addOrg()}>

@@ -150,6 +150,7 @@ export interface MsProjectEvents {
 
 export interface MsProjects {
   archived: Generated<boolean>;
+  content: string | null;
   created_at: Generated<Timestamp>;
   description: string;
   id: Generated<number>;

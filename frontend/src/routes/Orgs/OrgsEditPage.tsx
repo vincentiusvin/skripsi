@@ -17,6 +17,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
+import MarkdownEditor from "../../components/MarkdownEditor/index.tsx";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { useOrgDetailGet, useOrgsCategoriesGet, useOrgsUpdate } from "../../queries/org_hooks";
 import AuthorizeOrgs from "./components/AuthorizeOrgs.tsx";
@@ -134,12 +135,6 @@ function OrgsEdit(props: { org_id: number }) {
           ></TextField>
           <TextField
             fullWidth
-            onChange={(e) => setOrgDesc(e.target.value)}
-            label="Description"
-            value={orgDesc ?? org_data.org_description}
-          ></TextField>
-          <TextField
-            fullWidth
             onChange={(e) => setOrgAddress(e.target.value)}
             label="Address"
             value={orgAddress ?? org_data.org_address}
@@ -167,6 +162,13 @@ function OrgsEdit(props: { org_id: number }) {
             </Select>
           </FormControl>
         </Stack>
+      </Grid>
+      <Grid size={12}>
+        <Typography>Tentang Organisasi</Typography>
+        <MarkdownEditor
+          oldValue={orgDesc ?? org_data.org_description}
+          onChange={(x) => setOrgDesc(x)}
+        ></MarkdownEditor>
       </Grid>
       <Grid size={12}>
         <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => editOrg()}>

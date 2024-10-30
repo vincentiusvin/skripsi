@@ -191,62 +191,52 @@ describe.only("projects api", () => {
 
   it("should be able to add projects and view detail", async () => {
     const in_user = caseData.org_user;
-    const in_name = "proj_name";
     const in_org = caseData.org;
-    const in_desc = "Testing data desc";
     const in_category = caseData.project_categories.slice(0, 1).map((x) => x.id);
+    const in_proj = {
+      org_id: in_org.id,
+      project_desc: "Testing data desc",
+      project_name: "proj_name",
+      category_id: in_category,
+      project_content: "ini **markdown**",
+    };
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const send_req = await addProject(
-      {
-        org_id: in_org.id,
-        project_desc: in_desc,
-        project_name: in_name,
-        category_id: in_category,
-      },
-      cookie,
-    );
+    const send_req = await addProject(in_proj, cookie);
     const send_result = await send_req.json();
     const read_req = await getProjectDetail(send_result.project_id, cookie);
     const read_result = await read_req.json();
 
     expect(send_req.status).eq(201);
     expect(read_req.status).eq(200);
-    expect(read_result.project_name).to.eq(in_name);
-    expect(read_result.org_id).to.eq(in_org.id);
-    expect(read_result.project_desc).to.eq(in_desc);
-    expect(read_result.project_categories.map((x) => x.category_id)).to.deep.eq(in_category);
+    const { category_id, ...rest } = in_proj;
+    expect(read_result).to.deep.include(rest);
+    expect(read_result.project_categories.map((x) => x.category_id)).to.deep.eq(category_id);
   });
 
   it("should be able to update projects", async () => {
     const in_user = caseData.project_admin_user;
     const in_proj = caseData.project;
-    const in_name = "new project name after edit";
-    const in_desc = "new project description";
-    const in_archive = true;
     const in_category = caseData.project_categories.slice(0, 2).map((x) => x.id);
+    const in_proj_update = {
+      project_desc: "new project description",
+      project_name: "new project name after edit",
+      category_id: in_category,
+      project_content: "ini **markdown** baru",
+      project_archived: true,
+    };
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const send_req = await updateProject(
-      in_proj.id,
-      {
-        project_desc: in_desc,
-        project_name: in_name,
-        category_id: in_category,
-        project_archived: in_archive,
-      },
-      cookie,
-    );
+    const send_req = await updateProject(in_proj.id, in_proj_update, cookie);
     const send_result = await send_req.json();
     const read_req = await getProjectDetail(send_result.project_id, cookie);
     const read_result = await read_req.json();
 
     expect(send_req.status).eq(200);
     expect(read_req.status).eq(200);
-    expect(read_result.project_name).to.eq(in_name);
-    expect(read_result.project_desc).to.eq(in_desc);
-    expect(read_result.project_archived).to.eq(in_archive);
-    expect(read_result.project_categories.map((x) => x.category_id)).to.deep.eq(in_category);
+    const { category_id, ...rest } = in_proj_update;
+    expect(read_result).to.deep.include(rest);
+    expect(read_result.project_categories.map((x) => x.category_id)).to.deep.eq(category_id);
   });
 
   describe("notifications", () => {

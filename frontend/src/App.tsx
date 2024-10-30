@@ -23,13 +23,13 @@ import ProjectsContributionPage from "./routes/Contributions/ProjectsContributio
 import DashboardPage from "./routes/DashboardPage.tsx";
 import LandingPage from "./routes/LandingPage.tsx";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
-import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage";
+import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage/OrgsDetailPage.tsx";
 import OrgsEditPage from "./routes/Orgs/OrgsEditPage";
 import OrgsLeavePage from "./routes/Orgs/OrgsLeavePage.tsx";
 import OrgsListPage from "./routes/Orgs/OrgsListPage";
 import OrgsManagePage from "./routes/Orgs/OrgsManagePage.tsx";
 import OrgsPeoplePage from "./routes/Orgs/OrgsPeoplePage.tsx";
-import ProjectInfoPage from "./routes/Projects/ProjectDetailPage.tsx";
+import ProjectInfoPage from "./routes/Projects/ProjectDetail/ProjectDetailPage.tsx";
 import ProjectsActivityPage from "./routes/Projects/ProjectsActivityPage.tsx";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectsChatroomPage from "./routes/Projects/ProjectsChatroomPage.tsx";
