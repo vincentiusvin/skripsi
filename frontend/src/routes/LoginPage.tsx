@@ -37,13 +37,13 @@ function Login() {
       minHeight={"inherit"}
       alignItems={"center"}
       paddingX={8}
-      columnSpacing={16}
+      columnSpacing={{ lg: 16, xs: 8 }}
       rowSpacing={2}
     >
       <Grid
         size={{
-          md: 7,
           xs: 12,
+          md: 7,
         }}
       >
         <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>

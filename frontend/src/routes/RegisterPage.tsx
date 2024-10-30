@@ -24,10 +24,10 @@ function RegisterSteps(props: { step: number }) {
 
   return (
     <Slide in={true} direction="up">
-      <Stepper activeStep={step} orientation="vertical">
+      <Stepper activeStep={step} orientation={"vertical"}>
         <Step>
           <StepLabel>
-            <Typography>Informasi akun</Typography>
+            <Typography>Kredensial Akun</Typography>
           </StepLabel>
         </Step>
         <Step>
@@ -162,7 +162,8 @@ function FirstStep(props: {
 function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  // undefined -> unpressed, sama kaya 0 tapi dipakai untuk transisi
+  // kalau baru mulai undefined, tapi dianggap 0
+  // dipakai untuk matiin transisi pas pertama render
   const [step, setStep] = useState<number | undefined>(undefined);
   const actualStep = step == undefined ? 0 : step;
   const isStepped = step !== undefined;
@@ -193,24 +194,16 @@ function Register() {
       minHeight={"inherit"}
       alignItems={"center"}
       paddingX={8}
-      columnSpacing={{ lg: 16, md: 8 }}
+      columnSpacing={{ xs: 8, lg: 16 }}
       rowSpacing={2}
     >
       <Grid
-        size={{
-          md: 7,
-          xs: 12,
+        size={{ xs: 12, md: 5 }}
+        order={{
+          xs: 2,
+          md: 1,
         }}
       >
-        <Stack alignItems={"center"} justifyContent={"center"}>
-          {actualStep === 0 ? (
-            <ImageSidebar isStepped={isStepped} />
-          ) : (
-            <RegisterSteps step={actualStep} />
-          )}
-        </Stack>
-      </Grid>
-      <Grid size={{ md: 5, xs: 12 }}>
         <Paper
           sx={{
             paddingX: 4,
@@ -231,6 +224,24 @@ function Register() {
             <ThirdStep cont={() => setStep(3)} back={() => setStep(1)} />
           )}
         </Paper>
+      </Grid>
+      <Grid
+        size={{
+          md: 7,
+          xs: 12,
+        }}
+        order={{
+          xs: 1,
+          md: 2,
+        }}
+      >
+        <Stack alignItems={"center"} justifyContent={"center"}>
+          {actualStep === 0 ? (
+            <ImageSidebar isStepped={isStepped} />
+          ) : (
+            <RegisterSteps step={actualStep} />
+          )}
+        </Stack>
       </Grid>
     </Grid>
   );
