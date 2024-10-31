@@ -39,7 +39,7 @@ function RegistrationSteps(props: { step: number }) {
       >
         <Step>
           <StepLabel>
-            <Typography>Kredensial Akun</Typography>
+            <Typography>Kredensial akun</Typography>
           </StepLabel>
         </Step>
         <Step>
@@ -66,7 +66,7 @@ function RegistrationSteps(props: { step: number }) {
         </Step>
         <Step>
           <StepLabel>
-            <Typography>Langkah Berikutnya</Typography>
+            <Typography>Langkah berikutnya</Typography>
           </StepLabel>
         </Step>
       </Stepper>
