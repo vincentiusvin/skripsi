@@ -39,7 +39,7 @@ import ProjectsLeavePage from "./routes/Projects/ProjectsLeavePage.tsx";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
 import ProjectsManagePage from "./routes/Projects/ProjectsManagePage.tsx";
 import ProjectsPeoplePage from "./routes/Projects/ProjectsPeoplePage.tsx";
-import RegisterPage from "./routes/RegisterPage.tsx";
+import RegisterPage from "./routes/RegisterPage/RegisterPage.tsx";
 import UserReportAddPage from "./routes/Reports/UserReportAddPage.tsx";
 import UserReportDetailPage from "./routes/Reports/UserReportDetailPage.tsx";
 import UserReportEditPage from "./routes/Reports/UserReportEditPage.tsx";
