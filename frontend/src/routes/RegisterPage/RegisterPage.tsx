@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useState } from "react";
-import charityImg from "../assets/help.png";
+import charityImg from "../../assets/help.png";
 import RegistrationBiodataStep from "./components/RegistrationBiodataStep.tsx";
 import RegistrationConfirmStep from "./components/RegistrationConfirmStep.tsx";
 import RegistrationCredentialStep from "./components/RegistrationCredentialStep.tsx";
