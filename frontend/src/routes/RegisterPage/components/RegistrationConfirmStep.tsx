@@ -38,6 +38,15 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       }
     });
 
+  let websiteCleaned: string | undefined = reg.website;
+  if (reg.website != undefined) {
+    try {
+      websiteCleaned = parseURL(reg.website ?? "").href;
+    } catch (e) {
+      e;
+    }
+  }
+
   const simple_datas = [
     {
       label: "Username",
@@ -62,7 +71,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
     {
       label: "Website",
       icon: <Language />,
-      value: reg.website,
+      value: websiteCleaned,
     },
     {
       label: "Lokasi",

@@ -135,7 +135,7 @@ function Register() {
             <Paper
               sx={{
                 paddingX: 4,
-                paddingY: 8,
+                paddingY: 4,
               }}
             >
               {actualStep === 0 ? (
