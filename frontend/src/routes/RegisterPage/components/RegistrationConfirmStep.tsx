@@ -82,7 +82,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
 
   return (
     <Grid container rowSpacing={4} columnSpacing={2}>
-      <Grid size={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Typography variant="h6" mb={2}>
           Informasi Akun
         </Typography>
@@ -102,7 +102,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
           ))}
         </Stack>
       </Grid>
-      <Grid size={6}>
+      <Grid size={{ xs: 12, md: 6 }}>
         <Typography variant="h6" mb={2}>
           Media Sosial
         </Typography>
