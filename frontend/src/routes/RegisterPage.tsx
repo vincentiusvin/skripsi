@@ -386,49 +386,66 @@ function Confirm(props: { back: () => void; cont: () => void }) {
   });
 
   return (
-    <Stack spacing={2}>
-      {simple_datas.map((x, i) => (
-        <Stack key={i} direction="row" gap={2} alignItems={"center"}>
-          {x.icon}
-          <Stack>
-            <Typography variant="caption">{x.label}</Typography>
-            {x.value != undefined && x.value.length !== 0 ? (
-              <Typography variant="body1">{x.value}</Typography>
-            ) : (
-              <Typography color="gray">Belum diisi</Typography>
-            )}
-          </Stack>
-        </Stack>
-      ))}
-      {link_data.length !== 0 ? (
-        <>
-          <Typography variant="h6">Akun Media Sosial</Typography>
-          {link_data.map((x, i) => (
+    <Grid container rowSpacing={4} columnSpacing={2}>
+      <Grid size={6}>
+        <Typography variant="h6" mb={2}>
+          Informasi Akun
+        </Typography>
+        <Stack spacing={1}>
+          {simple_datas.map((x, i) => (
             <Stack key={i} direction="row" gap={2} alignItems={"center"}>
               {x.icon}
               <Stack>
                 <Typography variant="caption">{x.label}</Typography>
-                {x.value.length !== 0 ? (
-                  <StyledLink to={x.value}>
-                    <Typography variant="body1">{x.value}</Typography>
-                  </StyledLink>
+                {x.value != undefined && x.value.length !== 0 ? (
+                  <Typography variant="body1">{x.value}</Typography>
                 ) : (
                   <Typography color="gray">Belum diisi</Typography>
                 )}
               </Stack>
             </Stack>
           ))}
-        </>
-      ) : null}
-      <Stack direction="row" spacing={2}>
-        <Button fullWidth onClick={() => back()} variant="outlined">
-          Mundur
-        </Button>
-        <Button fullWidth onClick={register} variant="contained">
-          Daftar
-        </Button>
-      </Stack>
-    </Stack>
+        </Stack>
+      </Grid>
+      <Grid size={6}>
+        <Typography variant="h6" mb={2}>
+          Media Sosial
+        </Typography>
+        {link_data.length !== 0 ? (
+          <Stack spacing={1}>
+            {link_data.map((x, i) => (
+              <Stack key={i} direction="row" gap={2} alignItems={"center"}>
+                {x.icon}
+                <Stack>
+                  <Typography variant="caption">{x.label}</Typography>
+                  {x.value.length !== 0 ? (
+                    <StyledLink to={x.value}>
+                      <Typography variant="body1">{x.value}</Typography>
+                    </StyledLink>
+                  ) : (
+                    <Typography color="gray">Belum diisi</Typography>
+                  )}
+                </Stack>
+              </Stack>
+            ))}
+          </Stack>
+        ) : (
+          <Typography variant="body1" color="gray">
+            Belum diisi
+          </Typography>
+        )}
+      </Grid>
+      <Grid size={12}>
+        <Stack direction="row" spacing={2}>
+          <Button fullWidth onClick={() => back()} variant="outlined">
+            Mundur
+          </Button>
+          <Button fullWidth onClick={register} variant="contained">
+            Daftar
+          </Button>
+        </Stack>
+      </Grid>
+    </Grid>
   );
 }
 
@@ -477,36 +494,38 @@ function Register() {
         rowSpacing={2}
       >
         <Grid
-          size={{ xs: 12, md: 5 }}
+          size={{ xs: 12, md: 7 }}
           order={{
             xs: 2,
             md: 1,
           }}
         >
-          <Paper
-            sx={{
-              paddingX: 4,
-              paddingY: 8,
-            }}
-          >
-            {actualStep === 0 ? (
-              <Credentials cont={() => setStep(1)} />
-            ) : actualStep === 1 ? (
-              <AdditionalInfo cont={() => setStep(2)} back={() => setStep(0)} />
-            ) : actualStep === 2 ? (
-              <Socials cont={() => setStep(3)} back={() => setStep(1)} />
-            ) : actualStep === 3 ? (
-              <OneTimePass cont={() => setStep(4)} back={() => setStep(2)} />
-            ) : actualStep === 4 ? (
-              <Confirm back={() => setStep(3)} cont={() => setStep(6)} />
-            ) : (
-              <Next />
-            )}
-          </Paper>
+          <Box width="fit-content" margin={"auto"}>
+            <Paper
+              sx={{
+                paddingX: 4,
+                paddingY: 8,
+              }}
+            >
+              {actualStep === 0 ? (
+                <Credentials cont={() => setStep(1)} />
+              ) : actualStep === 1 ? (
+                <AdditionalInfo cont={() => setStep(2)} back={() => setStep(0)} />
+              ) : actualStep === 2 ? (
+                <Socials cont={() => setStep(3)} back={() => setStep(1)} />
+              ) : actualStep === 3 ? (
+                <OneTimePass cont={() => setStep(4)} back={() => setStep(2)} />
+              ) : actualStep === 4 ? (
+                <Confirm back={() => setStep(3)} cont={() => setStep(6)} />
+              ) : (
+                <Next />
+              )}
+            </Paper>
+          </Box>
         </Grid>
         <Grid
           size={{
-            md: 7,
+            md: 5,
             xs: 12,
           }}
           order={{
