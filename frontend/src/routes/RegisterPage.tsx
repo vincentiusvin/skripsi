@@ -1,7 +1,9 @@
+import { Add, Remove } from "@mui/icons-material";
 import {
   Avatar,
   Box,
   Button,
+  IconButton,
   Paper,
   Slide,
   Stack,
@@ -18,6 +20,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import charityImg from "../assets/help.png";
 import StyledLink from "../components/StyledLink.tsx";
+import { useList } from "../helpers/misc.ts";
 import { useUsersPost } from "../queries/user_hooks";
 
 function RegisterSteps(props: { step: number }) {
@@ -43,6 +46,12 @@ function RegisterSteps(props: { step: number }) {
         <Step>
           <StepLabel>
             <Typography>Lengkapi data diri</Typography>
+            <Typography variant="caption">Opsional</Typography>
+          </StepLabel>
+        </Step>
+        <Step>
+          <StepLabel>
+            <Typography>Tambahkan media sosial</Typography>
             <Typography variant="caption">Opsional</Typography>
           </StepLabel>
         </Step>
@@ -92,13 +101,58 @@ function ImageSidebar(props: { isStepped: boolean }) {
   );
 }
 
-function SecondStep(props: { cont: () => void; back: () => void }) {
+function Socials(props: { cont: () => void; back: () => void }) {
+  const { back, cont } = props;
+  const [socials, { removeAt, push, updateAt }] = useList<string>([]);
+
+  return (
+    <Stack spacing={2}>
+      <Stack direction={"row"} alignItems={"center"}>
+        <Typography flexGrow={1}>Akun media sosial</Typography>
+        <IconButton onClick={() => push("")}>
+          <Add />
+        </IconButton>
+      </Stack>
+      {socials.map((x, i) => (
+        <Stack key={i} direction="row" alignItems={"center"}>
+          <TextField
+            value={x}
+            onChange={(e) => {
+              updateAt(i, e.target.value);
+            }}
+          />
+          <IconButton
+            onClick={() => {
+              removeAt(i);
+            }}
+          >
+            <Remove />
+          </IconButton>
+        </Stack>
+      ))}
+      <Stack direction="row" spacing={2}>
+        <Button fullWidth onClick={() => back()} variant="outlined">
+          Mundur
+        </Button>
+        <Button fullWidth onClick={() => cont()} variant="contained">
+          Lanjut
+        </Button>
+      </Stack>
+    </Stack>
+  );
+}
+
+function AdditionalInfo(props: { cont: () => void; back: () => void }) {
   const { back, cont } = props;
   return (
     <Stack spacing={2}>
       <Typography variant="h5" fontWeight={"bold"} textAlign={"center"}>
         Lengkapi Data Diri
       </Typography>
+      <TextField label="Tingkat Pendidikan" fullWidth />
+      <TextField label="Sekolah/Universitas" fullWidth />
+      <TextField label="Website" fullWidth />
+      <TextField label="Lokasi" fullWidth />
       <Stack direction="row" spacing={2}>
         <Button fullWidth onClick={() => back()} variant="outlined">
           Mundur
@@ -125,7 +179,7 @@ function ThirdStep(props: { cont: () => void; back: () => void }) {
   );
 }
 
-function FirstStep(props: {
+function Credentials(props: {
   setUsername: (x: string) => void;
   setPassword: (x: string) => void;
   password: string;
@@ -138,13 +192,16 @@ function FirstStep(props: {
       <Typography variant="h5" fontWeight={"bold"} textAlign={"center"}>
         Daftar
       </Typography>
+      <TextField required label="Email" fullWidth />
       <TextField
+        required
         fullWidth
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         label="Username"
       ></TextField>
       <TextField
+        required
         fullWidth
         type="password"
         value={password}
@@ -263,7 +320,7 @@ function Register() {
           }}
         >
           {actualStep === 0 ? (
-            <FirstStep
+            <Credentials
               cont={() => setStep(1)}
               password={password}
               username={username}
@@ -271,15 +328,17 @@ function Register() {
               setPassword={setPassword}
             />
           ) : actualStep === 1 ? (
-            <SecondStep cont={() => setStep(2)} back={() => setStep(0)} />
+            <AdditionalInfo cont={() => setStep(2)} back={() => setStep(0)} />
           ) : actualStep === 2 ? (
-            <ThirdStep cont={() => setStep(3)} back={() => setStep(1)} />
+            <Socials cont={() => setStep(3)} back={() => setStep(1)} />
           ) : actualStep === 3 ? (
+            <ThirdStep cont={() => setStep(4)} back={() => setStep(2)} />
+          ) : actualStep === 4 ? (
             <Confirm
               username={username}
               password={password}
-              back={() => setStep(2)}
-              cont={() => setStep(5)}
+              back={() => setStep(3)}
+              cont={() => setStep(6)}
             />
           ) : (
             <Next />
