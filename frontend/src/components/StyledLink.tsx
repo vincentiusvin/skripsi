@@ -4,9 +4,9 @@ import { Link as WouterLink } from "wouter";
 function StyledLink(props: { to: string } & LinkProps) {
   const { children, to, ...rest } = props;
   return (
-    <WouterLink to={to} asChild>
-      <MuiLink {...rest}>{children}</MuiLink>
-    </WouterLink>
+    <MuiLink component={WouterLink} to={to} {...rest}>
+      {children}
+    </MuiLink>
   );
 }
 

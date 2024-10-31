@@ -150,7 +150,6 @@ function Settings(props: { user_id: number }) {
       ],
     },
   ] as const;
-  console.log(settings);
 
   return (
     <Box>
