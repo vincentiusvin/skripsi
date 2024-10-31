@@ -1,9 +1,10 @@
-import { Add, Remove } from "@mui/icons-material";
+import { Add, Email, Remove } from "@mui/icons-material";
 import {
   Avatar,
   Box,
   Button,
   IconButton,
+  InputAdornment,
   Paper,
   Slide,
   Stack,
@@ -17,11 +18,40 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
-import { useState } from "react";
+import { Dispatch, SetStateAction, createContext, useContext, useState } from "react";
 import charityImg from "../assets/help.png";
+import DisplayOnlyTextfield from "../components/DisplayOnlyTextfield.tsx";
 import StyledLink from "../components/StyledLink.tsx";
+import { LinkIcons, linkParser } from "../helpers/linker.tsx";
 import { useList } from "../helpers/misc.ts";
 import { useUsersPost } from "../queries/user_hooks";
+
+type UserData = {
+  email: string;
+  username: string;
+  password: string;
+  education?: string;
+  school?: string;
+  website?: string;
+  location?: string;
+  social_medias: string[];
+};
+
+type UserDataState = [UserData, Dispatch<SetStateAction<UserData>>];
+
+const RegistrationContext = createContext<UserDataState>([
+  {
+    username: "",
+    password: "",
+    email: "",
+    social_medias: [""],
+  },
+  () => {},
+]);
+
+function useRegistrationContext() {
+  return useContext(RegistrationContext);
+}
 
 function RegisterSteps(props: { step: number }) {
   const { step } = props;
@@ -103,38 +133,73 @@ function ImageSidebar(props: { isStepped: boolean }) {
 
 function Socials(props: { cont: () => void; back: () => void }) {
   const { back, cont } = props;
-  const [socials, { removeAt, push, updateAt }] = useList<string>([]);
+  const [reg, setRegistration] = useRegistrationContext();
+  const [socials, { removeAt, push, updateAt }] = useList<string>(reg.social_medias);
+
+  function updateReg() {
+    setRegistration((x) => ({
+      ...x,
+      social_medias: socials,
+    }));
+  }
 
   return (
     <Stack spacing={2}>
       <Stack direction={"row"} alignItems={"center"}>
-        <Typography flexGrow={1}>Akun media sosial</Typography>
+        <Typography variant="h6" fontWeight={"bold"} flexGrow={1}>
+          Akun media sosial
+        </Typography>
         <IconButton onClick={() => push("")}>
           <Add />
         </IconButton>
       </Stack>
-      {socials.map((x, i) => (
-        <Stack key={i} direction="row" alignItems={"center"}>
-          <TextField
-            value={x}
-            onChange={(e) => {
-              updateAt(i, e.target.value);
-            }}
-          />
-          <IconButton
-            onClick={() => {
-              removeAt(i);
-            }}
-          >
-            <Remove />
-          </IconButton>
-        </Stack>
-      ))}
+      {socials.map((x, i) => {
+        const try_parse = linkParser(x);
+        return (
+          <Stack key={i} direction="row" alignItems={"center"}>
+            <TextField
+              label={try_parse !== "Other" ? try_parse : "Link"}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">{LinkIcons[try_parse]}</InputAdornment>
+                  ),
+                },
+              }}
+              value={x}
+              onChange={(e) => {
+                updateAt(i, e.target.value);
+              }}
+            />
+            <IconButton
+              onClick={() => {
+                removeAt(i);
+              }}
+            >
+              <Remove />
+            </IconButton>
+          </Stack>
+        );
+      })}
       <Stack direction="row" spacing={2}>
-        <Button fullWidth onClick={() => back()} variant="outlined">
+        <Button
+          fullWidth
+          onClick={() => {
+            updateReg();
+            back();
+          }}
+          variant="outlined"
+        >
           Mundur
         </Button>
-        <Button fullWidth onClick={() => cont()} variant="contained">
+        <Button
+          fullWidth
+          onClick={() => {
+            updateReg();
+            cont();
+          }}
+          variant="contained"
+        >
           Lanjut
         </Button>
       </Stack>
@@ -165,10 +230,11 @@ function AdditionalInfo(props: { cont: () => void; back: () => void }) {
   );
 }
 
-function ThirdStep(props: { cont: () => void; back: () => void }) {
+function OneTimePass(props: { cont: () => void; back: () => void }) {
   const { back, cont } = props;
   return (
     <Stack direction="row" spacing={2}>
+      <Typography>Kode OTP</Typography>
       <Button fullWidth onClick={() => back()} variant="outlined">
         Mundur
       </Button>
@@ -179,33 +245,49 @@ function ThirdStep(props: { cont: () => void; back: () => void }) {
   );
 }
 
-function Credentials(props: {
-  setUsername: (x: string) => void;
-  setPassword: (x: string) => void;
-  password: string;
-  username: string;
-  cont: () => void;
-}) {
-  const { username, password, setUsername, setPassword, cont } = props;
+function Credentials(props: { cont: () => void }) {
+  const [reg, setReg] = useRegistrationContext();
+  const { cont } = props;
   return (
     <Stack spacing={4}>
       <Typography variant="h5" fontWeight={"bold"} textAlign={"center"}>
         Daftar
       </Typography>
-      <TextField required label="Email" fullWidth />
+      <TextField
+        value={reg.email}
+        onChange={(e) => {
+          setReg((x) => ({
+            ...x,
+            email: e.target.value,
+          }));
+        }}
+        required
+        label="Email"
+        fullWidth
+      />
       <TextField
         required
         fullWidth
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        value={reg.username}
+        onChange={(e) =>
+          setReg((x) => ({
+            ...x,
+            username: e.target.value,
+          }))
+        }
         label="Username"
       ></TextField>
       <TextField
         required
         fullWidth
         type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        value={reg.password}
+        onChange={(e) =>
+          setReg((x) => ({
+            ...x,
+            password: e.target.value,
+          }))
+        }
         label="Password"
         sx={{ display: "block" }}
       ></TextField>
@@ -231,13 +313,9 @@ function Credentials(props: {
   );
 }
 
-function Confirm(props: {
-  username: string;
-  password: string;
-  back: () => void;
-  cont: () => void;
-}) {
-  const { username, password, back, cont } = props;
+function Confirm(props: { back: () => void; cont: () => void }) {
+  const [reg] = useRegistrationContext();
+  const { back, cont } = props;
   const { mutate: postUsers } = useUsersPost({
     onSuccess: () => {
       enqueueSnackbar({
@@ -251,19 +329,23 @@ function Confirm(props: {
 
   function register() {
     postUsers({
-      user_name: username,
-      user_password: password,
+      user_name: reg.username,
+      user_password: reg.password,
     });
   }
 
   return (
-    <Stack direction="row" spacing={2}>
-      <Button fullWidth onClick={() => back()} variant="outlined">
-        Mundur
-      </Button>
-      <Button fullWidth onClick={register} variant="contained">
-        Daftar
-      </Button>
+    <Stack spacing={2}>
+      <DisplayOnlyTextfield icon={<Email />} label="Email" value={reg.email} />
+
+      <Stack direction="row" spacing={2}>
+        <Button fullWidth onClick={() => back()} variant="outlined">
+          Mundur
+        </Button>
+        <Button fullWidth onClick={register} variant="contained">
+          Daftar
+        </Button>
+      </Stack>
     </Stack>
   );
 }
@@ -289,8 +371,13 @@ function Next() {
 }
 
 function Register() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const userState = useState<UserData>({
+    email: "",
+    password: "",
+    social_medias: ["", ""],
+    username: "",
+  });
+
   // kalau baru mulai undefined, tapi dianggap 0
   // dipakai untuk matiin transisi pas pertama render
   const [step, setStep] = useState<number | undefined>(undefined);
@@ -298,72 +385,63 @@ function Register() {
   const isStepped = step !== undefined;
 
   return (
-    <Grid
-      container
-      minHeight={"inherit"}
-      alignItems={"center"}
-      paddingX={{ xs: 2, md: 8 }}
-      columnSpacing={{ xs: 8, lg: 16 }}
-      rowSpacing={2}
-    >
+    <RegistrationContext.Provider value={userState}>
       <Grid
-        size={{ xs: 12, md: 5 }}
-        order={{
-          xs: 2,
-          md: 1,
-        }}
+        container
+        minHeight={"inherit"}
+        alignItems={"center"}
+        paddingX={{ xs: 2, md: 8 }}
+        columnSpacing={{ xs: 8, lg: 16 }}
+        rowSpacing={2}
       >
-        <Paper
-          sx={{
-            paddingX: 4,
-            paddingY: 8,
+        <Grid
+          size={{ xs: 12, md: 5 }}
+          order={{
+            xs: 2,
+            md: 1,
           }}
         >
-          {actualStep === 0 ? (
-            <Credentials
-              cont={() => setStep(1)}
-              password={password}
-              username={username}
-              setUsername={setUsername}
-              setPassword={setPassword}
-            />
-          ) : actualStep === 1 ? (
-            <AdditionalInfo cont={() => setStep(2)} back={() => setStep(0)} />
-          ) : actualStep === 2 ? (
-            <Socials cont={() => setStep(3)} back={() => setStep(1)} />
-          ) : actualStep === 3 ? (
-            <ThirdStep cont={() => setStep(4)} back={() => setStep(2)} />
-          ) : actualStep === 4 ? (
-            <Confirm
-              username={username}
-              password={password}
-              back={() => setStep(3)}
-              cont={() => setStep(6)}
-            />
-          ) : (
-            <Next />
-          )}
-        </Paper>
+          <Paper
+            sx={{
+              paddingX: 4,
+              paddingY: 8,
+            }}
+          >
+            {actualStep === 0 ? (
+              <Credentials cont={() => setStep(1)} />
+            ) : actualStep === 1 ? (
+              <AdditionalInfo cont={() => setStep(2)} back={() => setStep(0)} />
+            ) : actualStep === 2 ? (
+              <Socials cont={() => setStep(3)} back={() => setStep(1)} />
+            ) : actualStep === 3 ? (
+              <OneTimePass cont={() => setStep(4)} back={() => setStep(2)} />
+            ) : actualStep === 4 ? (
+              <Confirm back={() => setStep(3)} cont={() => setStep(6)} />
+            ) : (
+              <Next />
+            )}
+          </Paper>
+        </Grid>
+        <Grid
+          size={{
+            md: 7,
+            xs: 12,
+          }}
+          order={{
+            xs: 1,
+            md: 2,
+          }}
+        >
+          <Stack alignItems={"center"} justifyContent={"center"}>
+            {actualStep === 0 ? (
+              <ImageSidebar isStepped={isStepped} />
+            ) : (
+              <RegisterSteps step={actualStep} />
+            )}
+          </Stack>
+        </Grid>
       </Grid>
-      <Grid
-        size={{
-          md: 7,
-          xs: 12,
-        }}
-        order={{
-          xs: 1,
-          md: 2,
-        }}
-      >
-        <Stack alignItems={"center"} justifyContent={"center"}>
-          {actualStep === 0 ? (
-            <ImageSidebar isStepped={isStepped} />
-          ) : (
-            <RegisterSteps step={actualStep} />
-          )}
-        </Stack>
-      </Grid>
-    </Grid>
+    </RegistrationContext.Provider>
   );
 }
 
