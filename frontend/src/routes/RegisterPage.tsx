@@ -1,4 +1,4 @@
-import { Add, Email, Remove } from "@mui/icons-material";
+import { Add, Email, Language, Person, Place, Remove, School } from "@mui/icons-material";
 import {
   Avatar,
   Box,
@@ -20,9 +20,8 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { Dispatch, SetStateAction, createContext, useContext, useState } from "react";
 import charityImg from "../assets/help.png";
-import DisplayOnlyTextfield from "../components/DisplayOnlyTextfield.tsx";
 import StyledLink from "../components/StyledLink.tsx";
-import { LinkIcons, linkParser } from "../helpers/linker.tsx";
+import { LinkIcons, linkParser, parseURL } from "../helpers/linker.tsx";
 import { useList } from "../helpers/misc.ts";
 import { useUsersPost } from "../queries/user_hooks";
 
@@ -334,10 +333,93 @@ function Confirm(props: { back: () => void; cont: () => void }) {
     });
   }
 
+  const links = reg.social_medias
+    .filter((x) => x.length !== 0)
+    .map((x) => {
+      try {
+        return parseURL(x).href;
+      } catch (e) {
+        return x;
+      }
+    });
+
+  const simple_datas = [
+    {
+      label: "Username",
+      icon: <Person />,
+      value: reg.username,
+    },
+    {
+      label: "Email",
+      icon: <Email />,
+      value: reg.email,
+    },
+    {
+      label: "Tingkat Pendidikan",
+      icon: <School />,
+      value: reg.school,
+    },
+    {
+      label: "Sekolah/Universitas",
+      icon: <School />,
+      value: reg.education,
+    },
+    {
+      label: "Website",
+      icon: <Language />,
+      value: reg.website,
+    },
+    {
+      label: "Lokasi",
+      icon: <Place />,
+      value: reg.location,
+    },
+  ];
+
+  const link_data = links.map((x) => {
+    const type = linkParser(x);
+    return {
+      label: type !== "Other" ? type : "Link",
+      icon: LinkIcons[type],
+      value: x,
+    };
+  });
+
   return (
     <Stack spacing={2}>
-      <DisplayOnlyTextfield icon={<Email />} label="Email" value={reg.email} />
-
+      {simple_datas.map((x, i) => (
+        <Stack key={i} direction="row" gap={2} alignItems={"center"}>
+          {x.icon}
+          <Stack>
+            <Typography variant="caption">{x.label}</Typography>
+            {x.value != undefined && x.value.length !== 0 ? (
+              <Typography variant="body1">{x.value}</Typography>
+            ) : (
+              <Typography color="gray">Belum diisi</Typography>
+            )}
+          </Stack>
+        </Stack>
+      ))}
+      {link_data.length !== 0 ? (
+        <>
+          <Typography variant="h6">Akun Media Sosial</Typography>
+          {link_data.map((x, i) => (
+            <Stack key={i} direction="row" gap={2} alignItems={"center"}>
+              {x.icon}
+              <Stack>
+                <Typography variant="caption">{x.label}</Typography>
+                {x.value.length !== 0 ? (
+                  <StyledLink to={x.value}>
+                    <Typography variant="body1">{x.value}</Typography>
+                  </StyledLink>
+                ) : (
+                  <Typography color="gray">Belum diisi</Typography>
+                )}
+              </Stack>
+            </Stack>
+          ))}
+        </>
+      ) : null}
       <Stack direction="row" spacing={2}>
         <Button fullWidth onClick={() => back()} variant="outlined">
           Mundur
