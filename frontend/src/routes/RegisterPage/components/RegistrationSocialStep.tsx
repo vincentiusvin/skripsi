@@ -1,7 +1,7 @@
 import { Add, Remove } from "@mui/icons-material";
 import { Button, IconButton, InputAdornment, Stack, TextField, Typography } from "@mui/material";
-import { LinkIcons, linkParser } from "../../helpers/linker.tsx";
-import { useList } from "../../helpers/misc.ts";
+import { LinkIcons, linkParser } from "../../../helpers/linker.tsx";
+import { useList } from "../../../helpers/misc.ts";
 import { useRegistrationContext } from "./context.tsx";
 
 function RegistrationSocialStep(props: { cont: () => void; back: () => void }) {

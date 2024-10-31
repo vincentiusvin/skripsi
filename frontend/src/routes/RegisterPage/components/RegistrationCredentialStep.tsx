@@ -1,5 +1,5 @@
 import { Button, Stack, TextField, Typography } from "@mui/material";
-import StyledLink from "../../components/StyledLink.tsx";
+import StyledLink from "../../../components/StyledLink.tsx";
 import { useRegistrationContext } from "./context.tsx";
 
 function RegistrationCredentialStep(props: { cont: () => void }) {

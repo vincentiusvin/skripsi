@@ -2,9 +2,9 @@ import { Email, Language, Person, Place, School } from "@mui/icons-material";
 import { Button, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
-import StyledLink from "../../components/StyledLink.tsx";
-import { LinkIcons, linkParser, parseURL } from "../../helpers/linker.tsx";
-import { useUsersPost } from "../../queries/user_hooks.ts";
+import StyledLink from "../../../components/StyledLink.tsx";
+import { LinkIcons, linkParser, parseURL } from "../../../helpers/linker.tsx";
+import { useUsersPost } from "../../../queries/user_hooks.ts";
 import { useRegistrationContext } from "./context.tsx";
 
 function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) {

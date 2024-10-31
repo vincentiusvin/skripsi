@@ -14,13 +14,13 @@ import {
 import Grid from "@mui/material/Grid2";
 import { useState } from "react";
 import charityImg from "../assets/help.png";
-import RegistrationBiodataStep from "./RegistrationBiodataStep.tsx";
-import RegistrationConfirmStep from "./RegistrationConfirmStep.tsx";
-import RegistrationCredentialStep from "./RegistrationCredentialStep.tsx";
-import RegistrationFinishStep from "./RegistrationFinishStep.tsx";
-import RegistrationOTPStep from "./RegistrationOTPStep.tsx";
-import RegistrationSocialStep from "./RegistrationSocialStep.tsx";
-import { RegistrationContext, UserData } from "./context.tsx";
+import RegistrationBiodataStep from "./components/RegistrationBiodataStep.tsx";
+import RegistrationConfirmStep from "./components/RegistrationConfirmStep.tsx";
+import RegistrationCredentialStep from "./components/RegistrationCredentialStep.tsx";
+import RegistrationFinishStep from "./components/RegistrationFinishStep.tsx";
+import RegistrationOTPStep from "./components/RegistrationOTPStep.tsx";
+import RegistrationSocialStep from "./components/RegistrationSocialStep.tsx";
+import { RegistrationContext, UserData } from "./components/context.tsx";
 
 function RegistrationSteps(props: { step: number }) {
   const { step } = props;
