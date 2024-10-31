@@ -16,7 +16,6 @@ import {
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { useLocation } from "wouter";
 import charityImg from "../assets/help.png";
 import StyledLink from "../components/StyledLink.tsx";
 import { useUsersPost } from "../queries/user_hooks";
@@ -54,7 +53,12 @@ function RegisterSteps(props: { step: number }) {
         </Step>
         <Step>
           <StepLabel>
-            <Typography>Langkah berikutnya</Typography>
+            <Typography>Konfirmasi</Typography>
+          </StepLabel>
+        </Step>
+        <Step>
+          <StepLabel>
+            <Typography>Langkah Berikutnya</Typography>
           </StepLabel>
         </Step>
       </Stepper>
@@ -170,17 +174,13 @@ function FirstStep(props: {
   );
 }
 
-function Register() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  // kalau baru mulai undefined, tapi dianggap 0
-  // dipakai untuk matiin transisi pas pertama render
-  const [step, setStep] = useState<number | undefined>(undefined);
-  const actualStep = step == undefined ? 0 : step;
-  const isStepped = step !== undefined;
-
-  const [, setLocation] = useLocation();
-
+function Confirm(props: {
+  username: string;
+  password: string;
+  back: () => void;
+  cont: () => void;
+}) {
+  const { username, password, back, cont } = props;
   const { mutate: postUsers } = useUsersPost({
     onSuccess: () => {
       enqueueSnackbar({
@@ -188,7 +188,7 @@ function Register() {
         autoHideDuration: 5000,
         variant: "success",
       });
-      setLocation("/");
+      cont();
     },
   });
 
@@ -198,6 +198,47 @@ function Register() {
       user_password: password,
     });
   }
+
+  return (
+    <Stack direction="row" spacing={2}>
+      <Button fullWidth onClick={() => back()} variant="outlined">
+        Mundur
+      </Button>
+      <Button fullWidth onClick={register} variant="contained">
+        Daftar
+      </Button>
+    </Stack>
+  );
+}
+
+function Next() {
+  return (
+    <Box>
+      <Typography variant="h6" fontWeight="bold" textAlign="center" mb={2}>
+        Selamat, akun anda telah terbuat!
+      </Typography>
+      <Stack direction="row" spacing={2}>
+        <Typography variant="body1" flexGrow={1}>
+          Apabila anda ingin mendaftarkan organisasi nirlaba anda di sini, baca lebih lanjut di
+          sini.
+        </Typography>
+        <Typography flexGrow={1}>
+          Apabila anda ingin mulai berkontribusi dalam proyek nirlaba yang sudah ada, baca lebih
+          lanjut di sini.
+        </Typography>
+      </Stack>
+    </Box>
+  );
+}
+
+function Register() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  // kalau baru mulai undefined, tapi dianggap 0
+  // dipakai untuk matiin transisi pas pertama render
+  const [step, setStep] = useState<number | undefined>(undefined);
+  const actualStep = step == undefined ? 0 : step;
+  const isStepped = step !== undefined;
 
   return (
     <Grid
@@ -231,8 +272,17 @@ function Register() {
             />
           ) : actualStep === 1 ? (
             <SecondStep cont={() => setStep(2)} back={() => setStep(0)} />
-          ) : (
+          ) : actualStep === 2 ? (
             <ThirdStep cont={() => setStep(3)} back={() => setStep(1)} />
+          ) : actualStep === 3 ? (
+            <Confirm
+              username={username}
+              password={password}
+              back={() => setStep(2)}
+              cont={() => setStep(5)}
+            />
+          ) : (
+            <Next />
           )}
         </Paper>
       </Grid>
