@@ -66,7 +66,7 @@ function RegistrationSteps(props: { step: number }) {
         </Step>
         <Step>
           <StepLabel>
-            <Typography>Langkah berikutnya</Typography>
+            <Typography>Selesai</Typography>
           </StepLabel>
         </Step>
       </Stepper>
