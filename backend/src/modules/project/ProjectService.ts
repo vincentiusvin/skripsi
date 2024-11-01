@@ -170,7 +170,7 @@ export class ProjectService implements Transactable<ProjectService> {
       project_desc?: string;
       category_id?: number[];
       project_archived?: boolean;
-      project_content?: string;
+      project_content?: string | null;
     },
     sender_id: number,
   ) {

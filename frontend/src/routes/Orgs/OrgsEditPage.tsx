@@ -19,6 +19,7 @@ import { useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
 import MarkdownEditor from "../../components/MarkdownEditor/index.tsx";
 import { fileToBase64DataURL } from "../../helpers/file";
+import { handleOptionalStringUpdate } from "../../helpers/misc.ts";
 import { useOrgDetailGet, useOrgsCategoriesGet, useOrgsUpdate } from "../../queries/org_hooks";
 import AuthorizeOrgs from "./components/AuthorizeOrgs.tsx";
 
@@ -37,13 +38,7 @@ function OrgsEdit(props: { org_id: number }) {
   });
 
   const { mutate: editOrg } = useOrgsUpdate({
-    id: org_id,
-    name: orgName,
-    desc: orgDesc,
-    address: orgAddress,
-    phone: orgPhone,
-    categories: orgCategory,
-    image: orgImage,
+    org_id,
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Edit successful!</Typography>,
@@ -171,7 +166,21 @@ function OrgsEdit(props: { org_id: number }) {
         ></MarkdownEditor>
       </Grid>
       <Grid size={12}>
-        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => editOrg()}>
+        <Button
+          variant="contained"
+          fullWidth
+          endIcon={<Save />}
+          onClick={() =>
+            editOrg({
+              org_name: orgName,
+              org_description: orgDesc,
+              org_address: orgAddress,
+              org_phone: orgPhone,
+              org_categories: orgCategory,
+              org_image: handleOptionalStringUpdate(orgImage),
+            })
+          }
+        >
           Simpan
         </Button>
       </Grid>

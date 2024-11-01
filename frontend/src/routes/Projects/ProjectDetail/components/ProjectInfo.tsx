@@ -1,4 +1,4 @@
-import { Skeleton, Stack, Typography } from "@mui/material";
+import { Box, Divider, Skeleton, Stack, Typography } from "@mui/material";
 import MarkdownViewer from "../../../../components/MarkdownViewer.tsx";
 import { useProjectsDetailGet } from "../../../../queries/project_hooks.ts";
 
@@ -23,7 +23,10 @@ function ProjectInfo(props: { project_id: number }) {
         {project.project_name}
       </Typography>
       <Typography align="center">{project.project_desc}</Typography>
-      <MarkdownViewer>{project.project_content ?? ""}</MarkdownViewer>
+      <Divider />
+      <Box sx={{ padding: 2 }}>
+        <MarkdownViewer>{project.project_content ?? ""}</MarkdownViewer>
+      </Box>
     </Stack>
   );
 }

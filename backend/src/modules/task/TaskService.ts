@@ -101,7 +101,7 @@ export class TaskService implements Transactable<TaskService> {
       bucket_id?: number;
       before_id?: number | null; // sisipin tasknya sebelum id ini.
       name?: string;
-      description?: string;
+      description?: string | null;
       users?: number[];
       start_at?: string | null;
       end_at?: string | null;

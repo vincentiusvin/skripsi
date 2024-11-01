@@ -23,7 +23,7 @@ function ProjectDetail(props: { project_id: number }) {
       {user_id !== undefined ? (
         <ProjectInvitePrompt project_id={project_id} user_id={user_id} />
       ) : null}
-      <Grid container>
+      <Grid container spacing={2}>
         <Grid
           size={{
             xs: 12,

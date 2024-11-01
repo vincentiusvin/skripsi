@@ -5,7 +5,7 @@ import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("users api", () => {
+describe.only("users api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
 
@@ -42,37 +42,107 @@ describe("users api", () => {
   });
 
   it("should be able to add user and login as them", async () => {
-    const in_name = "testing_name";
-    const in_password = "testing_password";
+    const in_obj: Parameters<typeof addUser>[0] = {
+      user_name: "testing_name",
+      user_password: "testing_password",
+      user_email: "testing-actual-test@example.com",
+      user_about_me: "saya suka makan ayam",
+      user_education_level: "S1",
+      user_school: "NUBIS University",
+      user_website: "https://www.example.com",
+      user_socials: ["https://github.com/testing-name"],
+    };
 
-    const send_req = await addUser(in_name, in_password);
-    await send_req.json();
-    const success_login = await getLoginCookie(in_name, in_password);
+    const send_req = await addUser(in_obj);
+    const result = await send_req.json();
+    const success_login = await getLoginCookie(in_obj.user_name, in_obj.user_password);
+
+    const expected_obj = {
+      ...in_obj,
+      user_password: undefined,
+      user_socials: in_obj.user_socials?.map((x) => ({
+        social: x,
+      })),
+    };
+    delete expected_obj.user_password;
 
     expect(send_req.status).eq(201);
     expect(success_login).to.not.eq("");
+    expect(result).to.deep.include(expected_obj);
   });
 
-  it("should be able to update user info", async () => {
-    const in_user = caseData.plain_user;
-    const in_name = "new name from update";
-
-    const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const update_req = await putUser(
-      in_user.id,
-      {
-        user_name: in_name,
+  const update_cases = [
+    {
+      key: "plain_user",
+      name: "should be able to update user info",
+      obj: {
+        user_name: "testing_name",
+        user_password: "testing_password",
+        user_email: "testing-actual-test@example.com",
+        user_about_me: "saya suka makan ayam",
+        user_education_level: "S1",
+        user_school: "NUBIS University",
+        user_website: "https://www.example.com",
+        user_socials: ["https://github.com/testing-name"] as string[],
       },
-      cookie,
-    );
+      ok: true,
+    },
+    {
+      key: "plain_user",
+      name: "should not be able to duplicate links",
+      obj: {
+        user_socials: [
+          "https://github.com/testing-name",
+          "https://github.com/testing-name",
+        ] as string[],
+      },
+      ok: false,
+    },
+    {
+      key: "plain_user",
+      name: "should not be able to insert non links to socials",
+      obj: {
+        user_socials: ["ini bukan link"] as string[],
+      },
+      ok: false,
+    },
+    {
+      key: "plain_user",
+      name: "should not be able to insert non links to website",
+      obj: {
+        user_website: "www.example.com",
+      },
+      ok: false,
+    },
+  ] as const;
 
-    const read_req = await getUserDetail(in_user.id);
-    const result = await read_req.json();
+  for (const { key, name, obj, ok } of update_cases) {
+    it(name, async () => {
+      const in_user = caseData[key];
+      const in_obj: Parameters<typeof putUser>[1] = obj;
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const update_req = await putUser(in_user.id, in_obj, cookie);
 
-    expect(update_req.status).eq(200);
-    expect(result).to.not.eq(undefined);
-    expect(result.user_name).to.eq(in_name);
-  });
+      const read_req = await getUserDetail(in_user.id);
+      const result = await read_req.json();
+
+      const expected_obj = {
+        ...in_obj,
+        user_password: undefined,
+        user_socials: in_obj.user_socials?.map((x) => ({
+          social: x,
+        })),
+      };
+      delete expected_obj.user_password;
+
+      if (ok) {
+        expect(update_req.status).eq(200);
+        expect(result).to.deep.include(expected_obj);
+      } else {
+        expect(update_req.status).to.be.oneOf([400, 401]);
+      }
+    });
+  }
 
   it("should be able to update user password", async () => {
     const in_user = caseData.plain_user;
@@ -103,13 +173,15 @@ function getUsers() {
 function putUser(
   user_id: number,
   body: {
-    user_name?: string | undefined;
-    user_password?: string | undefined;
-    user_email?: string | undefined;
-    user_education_level?: string | undefined;
-    user_school?: string | undefined;
-    user_about_me?: string | undefined;
-    user_image?: string | undefined;
+    user_name?: string;
+    user_password?: string;
+    user_email?: string;
+    user_education_level?: string;
+    user_school?: string;
+    user_about_me?: string;
+    user_image?: string;
+    user_website?: string;
+    user_socials?: string[];
   },
   cookie: string,
 ) {
@@ -128,12 +200,19 @@ function getUserDetail(user_id: number) {
   });
 }
 
-function addUser(user_name: string, user_password: string) {
+function addUser(body: {
+  user_name: string;
+  user_password: string;
+  user_email: string;
+  user_education_level?: string;
+  user_school?: string;
+  user_about_me?: string;
+  user_image?: string;
+  user_website?: string;
+  user_socials?: string[];
+}) {
   return new APIContext("UsersPost").fetch("/api/users", {
     method: "POST",
-    body: {
-      user_name,
-      user_password,
-    },
+    body,
   });
 }

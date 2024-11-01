@@ -5,6 +5,64 @@ import { zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { report_status } from "./ReportMisc.js";
 import { ReportService } from "./ReportService.js";
 
+const ReportUpdateSchema = z.object({
+  title: z
+    .string({
+      message: "Judul tidak valid!",
+    })
+    .min(1, {
+      message: "Judul tidak boleh kosong!",
+    })
+    .optional(),
+  description: z
+    .string({
+      message: "Deskripsi tidak valid!",
+    })
+    .min(1, {
+      message: "Deskripsi tidak boleh kosong!",
+    })
+    .optional(),
+  status: z.enum(report_status).optional(),
+  resolution: z
+    .string({
+      message: "Catatan tidak valid!",
+    })
+    .min(1, {
+      message: "Catatan tidak boleh kosong!",
+    })
+    .optional(),
+  chatroom: z.boolean().optional(),
+});
+
+const ReportCreationSchema = z.object({
+  title: z
+    .string({
+      message: "Judul tidak valid!",
+    })
+    .min(1, {
+      message: "Judul tidak boleh kosong!",
+    }),
+  description: z
+    .string({
+      message: "Deskripsi tidak valid!",
+    })
+    .min(1, {
+      message: "Deskripsi tidak boleh kosong!",
+    }),
+});
+
+const ReportResponseSchema = z.object({
+  status: z.enum(report_status),
+  id: z.number(),
+  sender_id: z.number(),
+  title: z.string(),
+  description: z.string(),
+  created_at: z.date(),
+  resolved_at: z.date().nullable(),
+  resolution: z.string().nullable(),
+  chatroom_id: z.number().nullable(),
+});
+
 export class ReportController extends Controller {
   private report_service: ReportService;
   constructor(express_server: Express, report_service: ReportService) {
@@ -28,19 +86,7 @@ export class ReportController extends Controller {
       ReqQuery: z.object({
         user_id: zodStringReadableAsNumber("Pengguna tidak valid!").optional(),
       }),
-      ResBody: z
-        .object({
-          status: z.enum(report_status),
-          id: z.number(),
-          sender_id: z.number(),
-          title: z.string(),
-          description: z.string(),
-          created_at: z.date(),
-          resolved_at: z.date().nullable(),
-          resolution: z.string().nullable(),
-          chatroom_id: z.number().nullable(),
-        })
-        .array(),
+      ResBody: ReportResponseSchema.array(),
     },
     handler: async (req, res) => {
       const sender_id = Number(req.session.user_id!);
@@ -60,17 +106,7 @@ export class ReportController extends Controller {
       Params: z.object({
         report_id: zodStringReadableAsNumber("ID laporan invalid!"),
       }),
-      ResBody: z.object({
-        status: z.enum(report_status),
-        id: z.number(),
-        sender_id: z.number(),
-        title: z.string(),
-        description: z.string(),
-        created_at: z.date(),
-        resolved_at: z.date().nullable(),
-        resolution: z.string().nullable(),
-        chatroom_id: z.number().nullable(),
-      }),
+      ResBody: ReportResponseSchema,
     },
     handler: async (req, res) => {
       const sender_id = Number(req.session.user_id!);
@@ -85,33 +121,8 @@ export class ReportController extends Controller {
     method: "post",
     path: "/api/reports",
     schema: {
-      ResBody: z.object({
-        status: z.enum(report_status),
-        id: z.number(),
-        sender_id: z.number(),
-        title: z.string(),
-        description: z.string(),
-        created_at: z.date(),
-        resolved_at: z.date().nullable(),
-        resolution: z.string().nullable(),
-        chatroom_id: z.number().nullable(),
-      }),
-      ReqBody: z.object({
-        title: z
-          .string({
-            message: "Judul tidak valid!",
-          })
-          .min(1, {
-            message: "Judul tidak boleh kosong!",
-          }),
-        description: z
-          .string({
-            message: "Deskripsi tidak valid!",
-          })
-          .min(1, {
-            message: "Deskripsi tidak boleh kosong!",
-          }),
-      }),
+      ResBody: ReportResponseSchema,
+      ReqBody: ReportCreationSchema,
     },
     handler: async (req, res) => {
       const sender_id = Number(req.session.user_id!);
@@ -136,45 +147,8 @@ export class ReportController extends Controller {
       Params: z.object({
         report_id: zodStringReadableAsNumber("ID tidak valid!"),
       }),
-      ReqBody: z.object({
-        title: z
-          .string({
-            message: "Judul tidak valid!",
-          })
-          .min(1, {
-            message: "Judul tidak boleh kosong!",
-          })
-          .optional(),
-        description: z
-          .string({
-            message: "Deskripsi tidak valid!",
-          })
-          .min(1, {
-            message: "Deskripsi tidak boleh kosong!",
-          })
-          .optional(),
-        status: z.enum(report_status).optional(),
-        resolution: z
-          .string({
-            message: "Catatan tidak valid!",
-          })
-          .min(1, {
-            message: "Catatan tidak boleh kosong!",
-          })
-          .optional(),
-        chatroom: z.boolean().optional(),
-      }),
-      ResBody: z.object({
-        status: z.enum(report_status),
-        id: z.number(),
-        sender_id: z.number(),
-        title: z.string(),
-        description: z.string(),
-        created_at: z.date(),
-        resolved_at: z.date().nullable(),
-        resolution: z.string().nullable(),
-        chatroom_id: z.number().nullable(),
-      }),
+      ReqBody: ReportUpdateSchema,
+      ResBody: ReportResponseSchema,
     },
     method: "put",
     path: "/api/reports/:report_id",

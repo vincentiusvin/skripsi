@@ -10,6 +10,8 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     )
     .addColumn("description", "text", (col) => col.notNull())
     .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
+    .addColumn("archived", "boolean", (eb) => eb.notNull().defaultTo(false))
+    .addColumn("content", "text")
     .execute();
 }
 

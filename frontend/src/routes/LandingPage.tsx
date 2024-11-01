@@ -212,29 +212,32 @@ function HugeTitle() {
           Di mana <b>developer relawan</b> dan <b>organisasi nirlaba</b> bertemu
         </Typography>
         <Stack direction="row" justifyContent={"center"} spacing={4}>
-          <Button
-            variant="contained"
-            sx={{
-              fontSize: 16,
-              paddingX: 8,
-              paddingY: 1,
-              backgroundColor: "white",
-            }}
-          >
-            Masuk
-          </Button>
-          <Button
-            sx={{
-              fontSize: 16,
-              paddingX: 8,
-              paddingY: 1,
-              background:
-                "radial-gradient(274px at 7.4% 17.9%, rgb(82, 107, 248) 0.3%, rgb(167, 139, 252) 90.5%)",
-            }}
-            variant="contained"
-          >
-            Daftar
-          </Button>
+          <StyledLink to={"/login"}>
+            <Button
+              variant="contained"
+              sx={{
+                fontSize: 16,
+                paddingX: 8,
+                paddingY: 1,
+              }}
+              color="secondary"
+            >
+              Masuk
+            </Button>
+          </StyledLink>
+          <StyledLink to="/register">
+            <Button
+              sx={{
+                fontSize: 16,
+                paddingX: 8,
+                paddingY: 1,
+              }}
+              color="primary"
+              variant="contained"
+            >
+              Daftar
+            </Button>
+          </StyledLink>
         </Stack>
       </Stack>
     </Box>

@@ -200,13 +200,14 @@ export interface MsUsers {
   about_me: string | null;
   created_at: Generated<Timestamp>;
   education_level: string | null;
-  email: string | null;
+  email: string;
   id: Generated<number>;
   image: string | null;
   is_admin: Generated<boolean>;
   name: string;
   password: string;
   school: string | null;
+  website: string | null;
 }
 
 export interface OrgsUsers {
@@ -233,6 +234,12 @@ export interface Session {
   expire: Timestamp;
   sess: Json;
   sid: string;
+}
+
+export interface SocialsUsers {
+  created_at: Generated<Timestamp>;
+  social: string;
+  user_id: number;
 }
 
 export interface TasksUsers {
@@ -270,5 +277,6 @@ export interface DB {
   preferences_users: PreferencesUsers;
   projects_users: ProjectsUsers;
   session: Session;
+  socials_users: SocialsUsers;
   tasks_users: TasksUsers;
 }

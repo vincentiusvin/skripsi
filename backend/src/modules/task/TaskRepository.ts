@@ -183,7 +183,7 @@ export class TaskRepository {
       bucket_id?: number;
       name?: string;
       users?: number[];
-      description?: string;
+      description?: string | null;
       start_at?: string | null;
       end_at?: string | null;
     },

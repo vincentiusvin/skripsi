@@ -158,19 +158,16 @@ export class OrgRepository {
       org_description?: string;
       org_address?: string;
       org_phone?: string;
-      org_image?: string;
+      org_image?: string | null;
       org_category?: number[];
     },
   ) {
-    const { org_name, org_description, org_address, org_phone, org_image, org_category } = obj;
+    const { org_category, ...rest } = obj;
 
-    if (
-      org_name != undefined ||
-      org_description != undefined ||
-      org_address != undefined ||
-      org_phone != undefined ||
-      org_image != undefined
-    ) {
+    const need_main_update = Object.values(rest).some((x) => x !== undefined);
+
+    if (need_main_update) {
+      const { org_name, org_description, org_address, org_phone, org_image } = rest;
       const org = await this.db
         .updateTable("ms_orgs")
         .set({
@@ -178,7 +175,7 @@ export class OrgRepository {
           description: org_description,
           address: org_address,
           phone: org_phone,
-          ...(org_image && { image: org_image }),
+          image: org_image,
         })
         .where("id", "=", id)
         .executeTakeFirst();

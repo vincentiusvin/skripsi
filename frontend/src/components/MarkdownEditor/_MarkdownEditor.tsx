@@ -24,6 +24,7 @@ import {
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 import { useTheme } from "@mui/material/styles";
+import { memo } from "react";
 import { fileToBase64DataURL } from "../../helpers/file.ts";
 
 function _MarkdownEditor(props: { oldValue?: string; onChange?: (x: string) => void }) {
@@ -75,4 +76,4 @@ function _MarkdownEditor(props: { oldValue?: string; onChange?: (x: string) => v
   );
 }
 
-export default _MarkdownEditor;
+export default memo(_MarkdownEditor, () => true);

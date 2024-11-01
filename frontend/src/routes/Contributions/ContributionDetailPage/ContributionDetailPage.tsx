@@ -1,4 +1,4 @@
-import { Divider, ListItemButton, Skeleton, Stack, Typography } from "@mui/material";
+import { Box, Divider, ListItemButton, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import dayjs from "dayjs";
 import { useParams } from "wouter";
@@ -42,7 +42,13 @@ function ContributionDetail(props: { contribution_id: number }) {
             marginY: 2,
           }}
         />
-        <MarkdownViewer>{contrib.description}</MarkdownViewer>
+        <Box
+          sx={{
+            paddingX: 2,
+          }}
+        >
+          <MarkdownViewer>{contrib.description}</MarkdownViewer>
+        </Box>
       </Grid>
       <Grid
         size={{

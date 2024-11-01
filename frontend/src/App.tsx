@@ -14,7 +14,6 @@ import { queryClient } from "./helpers/queryclient";
 import { ThemeContext } from "./helpers/theme.ts";
 import HandleReportsPage from "./routes/Admin/HandleReportsPage.tsx";
 import ManageAccountsPage from "./routes/Admin/ManageAccountsPage.tsx";
-import AuthPage from "./routes/AuthPage";
 import ChatroomForwarderPage from "./routes/ChatroomForwarder.tsx";
 import ContributionDetailPage from "./routes/Contributions/ContributionDetailPage/ContributionDetailPage.tsx";
 import ContributionEditPage from "./routes/Contributions/ContributionEditPage.tsx";
@@ -22,6 +21,7 @@ import ProjectsAddContributionPage from "./routes/Contributions/ProjectsAddContr
 import ProjectsContributionPage from "./routes/Contributions/ProjectsContributionPage.tsx";
 import DashboardPage from "./routes/DashboardPage.tsx";
 import LandingPage from "./routes/LandingPage.tsx";
+import LoginPage from "./routes/LoginPage.tsx";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
 import OrgsDetailPage from "./routes/Orgs/OrgsDetailPage/OrgsDetailPage.tsx";
 import OrgsEditPage from "./routes/Orgs/OrgsEditPage";
@@ -39,6 +39,7 @@ import ProjectsLeavePage from "./routes/Projects/ProjectsLeavePage.tsx";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
 import ProjectsManagePage from "./routes/Projects/ProjectsManagePage.tsx";
 import ProjectsPeoplePage from "./routes/Projects/ProjectsPeoplePage.tsx";
+import RegisterPage from "./routes/RegisterPage/RegisterPage.tsx";
 import UserReportAddPage from "./routes/Reports/UserReportAddPage.tsx";
 import UserReportDetailPage from "./routes/Reports/UserReportDetailPage.tsx";
 import UserReportEditPage from "./routes/Reports/UserReportEditPage.tsx";
@@ -101,7 +102,8 @@ function App() {
                 <Switch>
                   <Route path={"/"} component={DashboardPage} />
                   <Route path={"/landing"} component={LandingPage} />
-                  <Route path={"/auth"} component={AuthPage} />
+                  <Route path={"/login"} component={LoginPage} />
+                  <Route path={"/register"} component={RegisterPage} />
                   <Route path={"/orgs"} component={OrgsListPage} />
                   <Route path={"/orgs/add"} component={OrgsAddPage} />
                   <Route path={"/orgs/:org_id"} component={OrgsDetailPage} />

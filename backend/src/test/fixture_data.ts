@@ -23,58 +23,72 @@ export async function baseCase(db: Kysely<DB>) {
       {
         name: "org user",
         password: hashed,
+        email: "orguser@example.com",
       },
       {
         name: "external user",
         password: hashed,
+        email: "extuser@example.com",
       },
       {
         name: "chat user",
         password: hashed,
+        email: "chatuser@example.com",
       },
       {
         name: "project dev",
         password: hashed,
+        email: "projectdev@example.com",
       },
       {
         name: "project admin",
         password: hashed,
+        email: "projectadmin@example.com",
       },
       {
         name: "friend send",
         password: hashed,
+        email: "friendsend@example.com",
       },
       {
         name: "friend pending",
         password: hashed,
+        email: "friendpending@example.com",
       },
       {
         name: "friend acc",
         password: hashed,
+        email: "friendacc@example.com",
       },
       {
         name: "notif user",
         password: hashed,
+        email: "notifuser@example.com",
       },
       {
         name: "report user",
         password: hashed,
+        email: "reportuser@example.com",
       },
       {
         name: "banned user",
         password: hashed,
+        email: "banneduser@example.com",
       },
       {
         name: "pref user",
         password: hashed,
+        email: "prefuser@example.com",
       },
       {
         name: "contrib user",
         password: hashed,
+        email: "contribuser@example.com",
       },
       {
         name: "expired ban user",
         password: hashed,
+        email: "expiredban@example.com",
       },
     ])
     .returning(["id", "name"])

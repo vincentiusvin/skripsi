@@ -77,7 +77,7 @@ export class OrgService implements Transactable<OrgService> {
       org_description?: string;
       org_address?: string;
       org_phone?: string;
-      org_image?: string;
+      org_image?: string | null;
       org_category?: number[];
     },
     sender_id: number,

@@ -9,6 +9,31 @@ import {
 } from "../../helpers/validators.js";
 import { SuspensionService } from "./SuspensionService.js";
 
+const SuspensionUpdateSchema = z.object({
+  reason: z
+    .string({ message: "Alasan invalid!" })
+    .min(1, { message: "Alasan tidak boleh kosong!" })
+    .optional(),
+  suspended_until: zodStringReadableAsDateTime("Tanggal tidak valid!").optional(),
+  user_id: z.number({ message: "Pengguna tidak valid!" }).optional(),
+});
+
+const SuspensionCreationSchema = z.object({
+  reason: z
+    .string({ message: "Alasan invalid!" })
+    .min(1, { message: "Alasan tidak boleh kosong!" }),
+  suspended_until: zodStringReadableAsDateTime("Tanggal tidak valid!"),
+  user_id: z.number({ message: "Pengguna tidak valid!" }),
+});
+
+const SuspensionResponseSchema = z.object({
+  reason: z.string(),
+  suspended_until: z.date(),
+  user_id: z.number(),
+  created_at: z.date(),
+  id: z.number(),
+});
+
 export class SuspensionController extends Controller {
   private suspension_service: SuspensionService;
   constructor(express_server: Express, suspension_service: SuspensionService) {
@@ -30,20 +55,8 @@ export class SuspensionController extends Controller {
     method: "post",
     path: "/api/suspensions",
     schema: {
-      ReqBody: z.object({
-        reason: z
-          .string({ message: "Alasan invalid!" })
-          .min(1, { message: "Alasan tidak boleh kosong!" }),
-        suspended_until: zodStringReadableAsDateTime("Tanggal tidak valid!"),
-        user_id: z.number({ message: "Pengguna tidak valid!" }),
-      }),
-      ResBody: z.object({
-        reason: z.string(),
-        suspended_until: z.date(),
-        user_id: z.number(),
-        created_at: z.date(),
-        id: z.number(),
-      }),
+      ReqBody: SuspensionCreationSchema,
+      ResBody: SuspensionResponseSchema,
     },
     priors: [validateLogged],
     handler: async (req, res) => {
@@ -78,21 +91,8 @@ export class SuspensionController extends Controller {
       Params: z.object({
         suspension_id: zodStringReadableAsNumber("ID penangguhan tidak valid!"),
       }),
-      ResBody: z.object({
-        reason: z.string(),
-        suspended_until: z.date(),
-        user_id: z.number(),
-        created_at: z.date(),
-        id: z.number(),
-      }),
-      ReqBody: z.object({
-        reason: z
-          .string({ message: "Alasan invalid!" })
-          .min(1, { message: "Alasan tidak boleh kosong!" })
-          .optional(),
-        suspended_until: zodStringReadableAsDateTime("Tanggal tidak valid!").optional(),
-        user_id: z.number({ message: "Pengguna tidak valid!" }).optional(),
-      }),
+      ResBody: SuspensionResponseSchema,
+      ReqBody: SuspensionUpdateSchema,
     },
     priors: [validateLogged as RequestHandler],
     handler: async (req, res) => {
@@ -144,13 +144,7 @@ export class SuspensionController extends Controller {
     method: "get",
     path: "/api/suspensions/:suspension_id",
     schema: {
-      ResBody: z.object({
-        reason: z.string(),
-        suspended_until: z.date(),
-        user_id: z.number(),
-        created_at: z.date(),
-        id: z.number(),
-      }),
+      ResBody: SuspensionResponseSchema,
       Params: z.object({
         suspension_id: zodStringReadableAsNumber("ID penangguhan tidak valid!"),
       }),
@@ -172,15 +166,7 @@ export class SuspensionController extends Controller {
     path: "/api/suspensions",
     priors: [validateLogged as RequestHandler],
     schema: {
-      ResBody: z
-        .object({
-          reason: z.string(),
-          suspended_until: z.date(),
-          user_id: z.number(),
-          created_at: z.date(),
-          id: z.number(),
-        })
-        .array(),
+      ResBody: SuspensionResponseSchema.array(),
       ReqQuery: z.object({
         user_id: zodStringReadableAsNumber("ID pengguna tidak valid!").optional(),
         expired_after: zodStringReadableAsDateTime("Tanggal mulai tidak valid!").optional(),
