@@ -18,6 +18,7 @@ export async function up(db: Kysely<DB>): Promise<void> {
     .values({
       name: "Admin",
       password: hashSync(admin_password, 10),
+      email: "noreply@example.com",
       is_admin: true,
     })
     .execute();

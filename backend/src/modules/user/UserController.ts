@@ -27,11 +27,15 @@ export class UserController extends Controller {
       ReqBody: z.object({
         user_name: z.string().min(1, "Username tidak boleh kosong!"),
         user_password: z.string().min(1, "Password tidak boleh kosong!"),
+        user_email: z.string().min(1, "Email tidak boleh kosong!"),
+        user_education_level: z.string().min(1).optional(),
+        user_school: z.string().min(1).optional(),
+        user_about_me: z.string().min(1).optional(),
       }),
       ResBody: z.object({
         user_id: z.number(),
         user_name: z.string(),
-        user_email: z.string().nullable(),
+        user_email: z.string(),
         user_education_level: z.string().nullable(),
         user_school: z.string().nullable(),
         user_about_me: z.string().nullable(),
