@@ -15,6 +15,11 @@ const UserResponseSchema = z.object({
   user_website: z.string().nullable(),
   user_is_admin: z.boolean(),
   user_created_at: z.date(),
+  user_socials: z
+    .object({
+      social: z.string(),
+    })
+    .array(),
 });
 
 export class UserController extends Controller {
@@ -41,12 +46,13 @@ export class UserController extends Controller {
         .object({
           user_name: z.string().min(1, "Username tidak boleh kosong!"),
           user_password: z.string().min(1, "Password tidak boleh kosong!"),
-          user_email: z.string().min(1, "Email tidak boleh kosong!"),
+          user_email: z.string().min(1, "Email tidak boleh kosong!").email(),
           user_education_level: z.string().min(1).optional(),
           user_school: z.string().min(1).optional(),
           user_about_me: z.string().min(1).optional(),
           user_image: z.string().min(1).optional(),
-          user_website: z.string().min(1).optional(),
+          user_website: z.string().min(1).url().optional(),
+          user_links: z.string().min(1).url().array().optional(),
         })
         .strict(),
       ResBody: UserResponseSchema,
@@ -115,8 +121,9 @@ export class UserController extends Controller {
           user_school: z.string().min(1, "Sekolah tidak boleh kosong!").optional(),
           user_about_me: z.string().min(1, "Biodata tidak boleh kosong!").optional(),
           user_image: z.string().min(1, "Gambar tidak boleh kosong!").optional(),
-          user_email: z.string().min(1, "Email tidak boleh kosong!").optional(),
-          user_website: z.string().min(1).optional(),
+          user_email: z.string().min(1, "Email tidak boleh kosong!").email().optional(),
+          user_website: z.string().min(1).url().optional(),
+          user_links: z.string().min(1).url().array().optional(),
         })
         .strict(),
       ResBody: UserResponseSchema,

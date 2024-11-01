@@ -1,20 +1,33 @@
-import { Kysely } from "kysely";
+import { ExpressionBuilder, Kysely } from "kysely";
+import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
 
-const defaultUserFields = [
-  "ms_users.id as user_id",
-  "ms_users.name as user_name",
-  "ms_users.email as user_email",
-  "ms_users.education_level as user_education_level",
-  "ms_users.school as user_school",
-  "ms_users.about_me as user_about_me",
-  "ms_users.image as user_image",
-  "ms_users.is_admin as user_is_admin",
-  "ms_users.created_at as user_created_at",
-  "ms_users.website as user_website",
-] as const;
+const defaultUserFields = (eb: ExpressionBuilder<DB, "ms_users">) =>
+  [
+    "ms_users.id as user_id",
+    "ms_users.name as user_name",
+    "ms_users.email as user_email",
+    "ms_users.education_level as user_education_level",
+    "ms_users.school as user_school",
+    "ms_users.about_me as user_about_me",
+    "ms_users.image as user_image",
+    "ms_users.is_admin as user_is_admin",
+    "ms_users.created_at as user_created_at",
+    "ms_users.website as user_website",
+    userWithSocials(eb).as("user_socials"),
+  ] as const;
 
 const reducedFields = ["ms_users.id as user_id", "ms_users.name as user_name"] as const;
+
+function userWithSocials(eb: ExpressionBuilder<DB, "ms_users">) {
+  return jsonArrayFrom(
+    eb
+      .selectFrom("socials_users")
+      .innerJoin("ms_users", "socials_users.user_id", "ms_users.id")
+      .select(["socials_users.social"])
+      .whereRef("socials_users.user_id", "=", "ms_users.id"),
+  );
+}
 
 export class UserRepository {
   private db: Kysely<DB>;
@@ -62,6 +75,7 @@ export class UserRepository {
     user_about_me?: string | undefined;
     user_image?: string | undefined;
     user_website?: string | undefined;
+    user_social?: string[];
   }) {
     const {
       user_name,
@@ -72,9 +86,10 @@ export class UserRepository {
       user_about_me,
       user_image,
       user_website,
+      user_social,
     } = obj;
 
-    return await this.db
+    const user_id = await this.db
       .insertInto("ms_users")
       .values({
         name: user_name,
@@ -88,6 +103,23 @@ export class UserRepository {
       })
       .returning("ms_users.id")
       .executeTakeFirst();
+
+    if (user_id == undefined) {
+      throw new Error("Gagal memasukkan data pengguna!");
+    }
+
+    if (user_social != undefined && user_social.length) {
+      await this.db
+        .insertInto("socials_users")
+        .values(
+          user_social.map((x) => ({
+            user_id: user_id.id,
+            social: x,
+          })),
+        )
+        .execute();
+    }
+    return user_id;
   }
 
   async getLoginCredentials(user_name: string) {
@@ -117,6 +149,7 @@ export class UserRepository {
       user_image?: string;
       user_website?: string;
       hashed_password?: string;
+      user_social?: string[];
     },
   ) {
     const {
@@ -128,6 +161,7 @@ export class UserRepository {
       user_about_me,
       user_image,
       user_website,
+      user_social,
     } = obj;
 
     const updated = Object.keys(obj).some((x) => x !== undefined);
@@ -150,5 +184,19 @@ export class UserRepository {
       })
       .where("id", "=", id)
       .execute();
+
+    if (user_social != undefined && user_social.length) {
+      await this.db.deleteFrom("socials_users").where("user_id", "=", id).execute();
+
+      await this.db
+        .insertInto("socials_users")
+        .values(
+          user_social.map((x) => ({
+            user_id: id,
+            social: x,
+          })),
+        )
+        .execute();
+    }
   }
 }

@@ -49,7 +49,7 @@ describe.only("users api", () => {
       user_about_me: "saya suka makan ayam",
       user_education_level: "S1",
       user_school: "NUBIS University",
-      user_website: "example.com",
+      user_website: "https://www.example.com",
     };
 
     const send_req = await addUser(in_obj);
@@ -73,7 +73,7 @@ describe.only("users api", () => {
       user_about_me: "saya suka makan ayam",
       user_education_level: "S1",
       user_school: "NUBIS University",
-      user_website: "example.com",
+      user_website: "https://www.example.com",
     };
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);

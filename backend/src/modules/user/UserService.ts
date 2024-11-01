@@ -6,15 +6,18 @@ import { UserRepository } from "./UserRepository.js";
 export function userServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const user_repo = new UserRepository(db);
-  const user_service = new UserService(user_repo);
+  const user_service = new UserService(user_repo, transaction_manager);
   return user_service;
 }
 
 export class UserService {
   private user_repo: UserRepository;
-  constructor(user_repo: UserRepository) {
+  private transaction_manager: TransactionManager;
+  constructor(user_repo: UserRepository, transaction_manager: TransactionManager) {
     this.user_repo = user_repo;
+    this.transaction_manager = transaction_manager;
   }
+  factory = userServiceFactory;
 
   async isAdminUser(user_id: number): Promise<boolean> {
     const user = await this.user_repo.getUserDetail(user_id);
@@ -44,29 +47,32 @@ export class UserService {
     user_name: string;
     user_email: string;
     user_password: string;
-    user_education_level?: string | undefined;
-    user_school?: string | undefined;
-    user_about_me?: string | undefined;
-    user_image?: string | undefined;
-    user_website?: string | undefined;
+    user_education_level?: string;
+    user_school?: string;
+    user_about_me?: string;
+    user_image?: string;
+    user_website?: string;
+    user_social?: string[];
   }) {
-    const { user_name, user_password, user_email, ...rest } = obj;
-    const same_name = await this.user_repo.findUserByName(user_name);
-    if (same_name) {
-      throw new ClientError("Sudah ada pengguna dengan nama yang sama!");
-    }
-    const same_email = await this.findUserByEmail(user_email);
-    if (same_email != undefined) {
-      throw new ClientError("Sudah ada pengguna dengan email yang sama !");
-    }
+    return await this.transaction_manager.transaction(this as UserService, async (serv) => {
+      const { user_name, user_password, user_email, ...rest } = obj;
+      const same_name = await serv.user_repo.findUserByName(user_name);
+      if (same_name) {
+        throw new ClientError("Sudah ada pengguna dengan nama yang sama!");
+      }
+      const same_email = await serv.findUserByEmail(user_email);
+      if (same_email != undefined) {
+        throw new ClientError("Sudah ada pengguna dengan email yang sama !");
+      }
 
-    const hashed_password = hashSync(user_password, 10);
+      const hashed_password = hashSync(user_password, 10);
 
-    return await this.user_repo.addUser({
-      ...rest,
-      user_name,
-      user_email,
-      hashed_password,
+      return await serv.user_repo.addUser({
+        ...rest,
+        user_name,
+        user_email,
+        hashed_password,
+      });
     });
   }
 
@@ -109,39 +115,42 @@ export class UserService {
       user_image?: string;
       user_password?: string;
       user_website?: string;
+      user_social?: string[];
     },
     sender_id: number,
   ) {
-    const isAllowed = await this.isAllowedToModify(user_id, sender_id);
-    if (!isAllowed) {
-      throw new AuthError("Anda tidak memiliki akses untuk mengubah profil ini!");
-    }
-
-    const { user_name, user_password, user_email, ...rest } = obj;
-    let hashed_password: string | undefined = undefined;
-    if (user_password != undefined) {
-      hashed_password = hashSync(user_password, 10);
-    }
-
-    if (user_email != undefined) {
-      const same_email = await this.findUserByEmail(user_email);
-      if (same_email != undefined) {
-        throw new ClientError("Sudah ada pengguna dengan email yang sama !");
+    return await this.transaction_manager.transaction(this as UserService, async (serv) => {
+      const isAllowed = await serv.isAllowedToModify(user_id, sender_id);
+      if (!isAllowed) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengubah profil ini!");
       }
-    }
 
-    if (user_name != undefined) {
-      const same_name = await this.user_repo.findUserByName(user_name);
-      if (same_name) {
-        throw new ClientError("Sudah ada pengguna dengan nama yang sama!");
+      const { user_name, user_password, user_email, ...rest } = obj;
+      let hashed_password: string | undefined = undefined;
+      if (user_password != undefined) {
+        hashed_password = hashSync(user_password, 10);
       }
-    }
 
-    return await this.user_repo.updateAccountDetails(user_id, {
-      ...rest,
-      user_email,
-      user_name,
-      hashed_password: hashed_password,
+      if (user_email != undefined) {
+        const same_email = await serv.findUserByEmail(user_email);
+        if (same_email != undefined) {
+          throw new ClientError("Sudah ada pengguna dengan email yang sama !");
+        }
+      }
+
+      if (user_name != undefined) {
+        const same_name = await serv.user_repo.findUserByName(user_name);
+        if (same_name) {
+          throw new ClientError("Sudah ada pengguna dengan nama yang sama!");
+        }
+      }
+
+      return await serv.user_repo.updateAccountDetails(user_id, {
+        ...rest,
+        user_email,
+        user_name,
+        hashed_password: hashed_password,
+      });
     });
   }
 }
