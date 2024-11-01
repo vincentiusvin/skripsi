@@ -1,4 +1,4 @@
-import { Avatar, Button, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
@@ -37,13 +37,13 @@ function Login() {
       minHeight={"inherit"}
       alignItems={"center"}
       paddingX={{ xs: 2, md: 8 }}
-      columnSpacing={{ lg: 16, xs: 8 }}
+      columnSpacing={{ xs: 2, lg: 4 }}
       rowSpacing={2}
     >
       <Grid
         size={{
           xs: 12,
-          md: 7,
+          md: 5,
         }}
       >
         <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>
@@ -63,44 +63,46 @@ function Login() {
           src={charityImg}
         ></Avatar>
       </Grid>
-      <Grid size={{ md: 5, xs: 12 }}>
-        <Paper
-          sx={{
-            paddingX: 4,
-            paddingY: 8,
-          }}
-        >
-          <Stack spacing={4}>
-            <Typography variant="h5" fontWeight={"bold"} textAlign={"center"}>
-              Masuk
-            </Typography>
-            <TextField
-              fullWidth
-              onChange={(e) => setUsername(e.target.value)}
-              label="Username"
-              sx={{ display: "block" }}
-            ></TextField>
-            <TextField
-              fullWidth
-              type="password"
-              onChange={(e) => setPassword(e.target.value)}
-              label="Password"
-              sx={{ display: "block" }}
-            ></TextField>
-            <Button variant="contained" size="large" fullWidth onClick={() => login()}>
-              Masuk
-            </Button>
-            <Stack spacing={1} alignItems={"center"}>
-              <Stack direction="row" spacing={2} alignItems={"center"} justifyContent={"center"}>
-                <Typography>Tidak memiliki akun?</Typography>
-                <StyledLink to="/register">
-                  <Button>Daftar</Button>
-                </StyledLink>
+      <Grid size={{ md: 7, xs: 12 }}>
+        <Box width="fit-content" margin="auto">
+          <Paper
+            sx={{
+              paddingX: 4,
+              paddingY: 8,
+            }}
+          >
+            <Stack spacing={4}>
+              <Typography variant="h5" fontWeight={"bold"} textAlign={"center"}>
+                Masuk
+              </Typography>
+              <TextField
+                fullWidth
+                onChange={(e) => setUsername(e.target.value)}
+                label="Username"
+                sx={{ display: "block" }}
+              ></TextField>
+              <TextField
+                fullWidth
+                type="password"
+                onChange={(e) => setPassword(e.target.value)}
+                label="Password"
+                sx={{ display: "block" }}
+              ></TextField>
+              <Button variant="contained" size="large" fullWidth onClick={() => login()}>
+                Masuk
+              </Button>
+              <Stack spacing={1} alignItems={"center"}>
+                <Stack direction="row" spacing={2} alignItems={"center"} justifyContent={"center"}>
+                  <Typography>Tidak memiliki akun?</Typography>
+                  <StyledLink to="/register">
+                    <Button>Daftar</Button>
+                  </StyledLink>
+                </Stack>
+                <Button>Lupa Password</Button>
               </Stack>
-              <Button>Lupa Password</Button>
             </Stack>
-          </Stack>
-        </Paper>
+          </Paper>
+        </Box>
       </Grid>
     </Grid>
   );

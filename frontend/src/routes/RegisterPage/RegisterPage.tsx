@@ -121,7 +121,7 @@ function Register() {
         minHeight={"inherit"}
         alignItems={"center"}
         paddingX={{ xs: 2, md: 8 }}
-        columnSpacing={{ xs: 8, lg: 16 }}
+        columnSpacing={{ xs: 2, lg: 4 }}
         rowSpacing={2}
       >
         <Grid
