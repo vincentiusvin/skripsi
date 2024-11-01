@@ -4,6 +4,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import StyledLink from "../../../components/StyledLink.tsx";
 import { LinkIcons, linkParser, parseURL } from "../../../helpers/linker.tsx";
+import { handleOptionalStringCreation } from "../../../helpers/misc.ts";
 import { useUsersPost } from "../../../queries/user_hooks.ts";
 import { useRegistrationContext } from "./context.tsx";
 
@@ -45,9 +46,9 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       user_name: reg.username,
       user_password: reg.password,
       user_email: reg.email,
-      user_education_level: reg.education,
-      user_school: reg.school,
-      user_website: websiteCleaned,
+      user_education_level: handleOptionalStringCreation(reg.education),
+      user_school: handleOptionalStringCreation(reg.school),
+      user_website: handleOptionalStringCreation(websiteCleaned),
       user_socials: links,
     });
   }
