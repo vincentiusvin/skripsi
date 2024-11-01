@@ -50,13 +50,20 @@ describe.only("users api", () => {
       user_education_level: "S1",
       user_school: "NUBIS University",
       user_website: "https://www.example.com",
+      user_socials: ["https://github.com/testing-name"],
     };
 
     const send_req = await addUser(in_obj);
     const result = await send_req.json();
     const success_login = await getLoginCookie(in_obj.user_name, in_obj.user_password);
 
-    const expected_obj = { ...in_obj, user_password: undefined };
+    const expected_obj = {
+      ...in_obj,
+      user_password: undefined,
+      user_socials: in_obj.user_socials?.map((x) => ({
+        social: x,
+      })),
+    };
     delete expected_obj.user_password;
 
     expect(send_req.status).eq(201);
@@ -74,6 +81,7 @@ describe.only("users api", () => {
       user_education_level: "S1",
       user_school: "NUBIS University",
       user_website: "https://www.example.com",
+      user_socials: ["https://github.com/testing-name"],
     };
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
@@ -82,7 +90,13 @@ describe.only("users api", () => {
     const read_req = await getUserDetail(in_user.id);
     const result = await read_req.json();
 
-    const expected_obj = { ...in_obj, user_password: undefined };
+    const expected_obj = {
+      ...in_obj,
+      user_password: undefined,
+      user_socials: in_obj.user_socials?.map((x) => ({
+        social: x,
+      })),
+    };
     delete expected_obj.user_password;
 
     expect(update_req.status).eq(200);
@@ -118,14 +132,15 @@ function getUsers() {
 function putUser(
   user_id: number,
   body: {
-    user_name?: string | undefined;
-    user_password?: string | undefined;
-    user_email?: string | undefined;
-    user_education_level?: string | undefined;
-    user_school?: string | undefined;
-    user_about_me?: string | undefined;
-    user_image?: string | undefined;
-    user_website?: string | undefined;
+    user_name?: string;
+    user_password?: string;
+    user_email?: string;
+    user_education_level?: string;
+    user_school?: string;
+    user_about_me?: string;
+    user_image?: string;
+    user_website?: string;
+    user_socials?: string[];
   },
   cookie: string,
 ) {
@@ -148,11 +163,12 @@ function addUser(body: {
   user_name: string;
   user_password: string;
   user_email: string;
-  user_education_level?: string | undefined;
-  user_school?: string | undefined;
-  user_about_me?: string | undefined;
-  user_image?: string | undefined;
-  user_website?: string | undefined;
+  user_education_level?: string;
+  user_school?: string;
+  user_about_me?: string;
+  user_image?: string;
+  user_website?: string;
+  user_socials?: string[];
 }) {
   return new APIContext("UsersPost").fetch("/api/users", {
     method: "POST",

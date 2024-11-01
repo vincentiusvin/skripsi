@@ -75,7 +75,7 @@ export class UserRepository {
     user_about_me?: string | undefined;
     user_image?: string | undefined;
     user_website?: string | undefined;
-    user_social?: string[];
+    user_socials?: string[];
   }) {
     const {
       user_name,
@@ -86,7 +86,7 @@ export class UserRepository {
       user_about_me,
       user_image,
       user_website,
-      user_social,
+      user_socials,
     } = obj;
 
     const user_id = await this.db
@@ -108,11 +108,11 @@ export class UserRepository {
       throw new Error("Gagal memasukkan data pengguna!");
     }
 
-    if (user_social != undefined && user_social.length) {
+    if (user_socials != undefined && user_socials.length) {
       await this.db
         .insertInto("socials_users")
         .values(
-          user_social.map((x) => ({
+          user_socials.map((x) => ({
             user_id: user_id.id,
             social: x,
           })),
@@ -149,7 +149,7 @@ export class UserRepository {
       user_image?: string;
       user_website?: string;
       hashed_password?: string;
-      user_social?: string[];
+      user_socials?: string[];
     },
   ) {
     const {
@@ -161,7 +161,7 @@ export class UserRepository {
       user_about_me,
       user_image,
       user_website,
-      user_social,
+      user_socials,
     } = obj;
 
     const updated = Object.keys(obj).some((x) => x !== undefined);
@@ -185,13 +185,13 @@ export class UserRepository {
       .where("id", "=", id)
       .execute();
 
-    if (user_social != undefined && user_social.length) {
+    if (user_socials != undefined && user_socials.length) {
       await this.db.deleteFrom("socials_users").where("user_id", "=", id).execute();
 
       await this.db
         .insertInto("socials_users")
         .values(
-          user_social.map((x) => ({
+          user_socials.map((x) => ({
             user_id: id,
             social: x,
           })),

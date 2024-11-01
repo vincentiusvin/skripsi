@@ -52,7 +52,7 @@ export class UserService {
     user_about_me?: string;
     user_image?: string;
     user_website?: string;
-    user_social?: string[];
+    user_socials?: string[];
   }) {
     return await this.transaction_manager.transaction(this as UserService, async (serv) => {
       const { user_name, user_password, user_email, ...rest } = obj;
@@ -115,7 +115,7 @@ export class UserService {
       user_image?: string;
       user_password?: string;
       user_website?: string;
-      user_social?: string[];
+      user_socials?: string[];
     },
     sender_id: number,
   ) {
