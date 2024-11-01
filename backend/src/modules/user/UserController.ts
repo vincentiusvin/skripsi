@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import { defaultError, zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { UserService } from "./UserService.js";
 
 const UserResponseSchema = z.object({
@@ -23,27 +23,35 @@ const UserResponseSchema = z.object({
 });
 
 const UserUpdateSchema = z.object({
-  user_name: z.string().min(1, "Nama tidak boleh kosong!").optional(),
-  user_password: z.string().min(1, "Password tidak boleh kosong!").optional(),
-  user_education_level: z.string().min(1, "Pendidikan tidak boleh kosong!").optional(),
-  user_school: z.string().min(1, "Sekolah tidak boleh kosong!").nullable().optional(),
-  user_about_me: z.string().min(1, "Biodata tidak boleh kosong!").nullable().optional(),
-  user_image: z.string().min(1, "Gambar tidak boleh kosong!").nullable().optional(),
-  user_email: z.string().min(1, "Email tidak boleh kosong!").email().optional(),
-  user_website: z.string().min(1).url().nullable().optional(),
-  user_socials: z.string().min(1).url().array().optional(),
+  user_name: z.string(defaultError("Nama pengguna tidak valid!")).min(1).optional(),
+  user_password: z.string(defaultError("Password tidak valid!")).min(1).optional(),
+  user_education_level: z
+    .string(defaultError("Jenjang pendidikan tidak valid!"))
+    .min(1)
+    .nullable()
+    .optional(),
+  user_school: z
+    .string(defaultError("Institusi pendidikan tidak valid!"))
+    .min(1)
+    .nullable()
+    .optional(),
+  user_about_me: z.string(defaultError("Biodata tidak valid!")).min(1).nullable().optional(),
+  user_image: z.string(defaultError("Gambar tidak valid!")).min(1).nullable().optional(),
+  user_email: z.string(defaultError("Email tidak valid!")).min(1).email().optional(),
+  user_website: z.string(defaultError("Website tidak valid!")).min(1).url().nullable().optional(),
+  user_socials: z.string(defaultError("Media sosial tidak valid!")).min(1).url().array().optional(),
 });
 
 const UserCreationSchema = z.object({
-  user_name: z.string().min(1, "Username tidak boleh kosong!"),
-  user_password: z.string().min(1, "Password tidak boleh kosong!"),
-  user_email: z.string().min(1, "Email tidak boleh kosong!").email(),
-  user_education_level: z.string().min(1).optional(),
-  user_school: z.string().min(1).optional(),
-  user_about_me: z.string().min(1).optional(),
-  user_image: z.string().min(1).optional(),
-  user_website: z.string().min(1).url().optional(),
-  user_socials: z.string().min(1).url().array().min(1).optional(),
+  user_name: z.string(defaultError("Nama pengguna tidak valid!")).min(1),
+  user_password: z.string(defaultError("Password tidak valid!")).min(1),
+  user_email: z.string(defaultError("Email tidak valid!")).min(1).email(),
+  user_education_level: z.string(defaultError("Jenjang pendidikan tidak valid!")).min(1).optional(),
+  user_school: z.string(defaultError("Institusi pendidikan tidak valid!")).min(1).optional(),
+  user_about_me: z.string(defaultError("Biodata tidak valid!")).min(1).optional(),
+  user_image: z.string(defaultError("Gambar tidak valid!")).min(1).optional(),
+  user_website: z.string(defaultError("Website tidak valid!")).min(1).url().optional(),
+  user_socials: z.string(defaultError("Media sosial tidak valid!")).min(1).url().array().optional(),
 });
 
 export class UserController extends Controller {

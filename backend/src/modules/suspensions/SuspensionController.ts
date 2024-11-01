@@ -4,26 +4,22 @@ import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
 import { validateLogged } from "../../helpers/validate.js";
 import {
+  defaultError,
   zodStringReadableAsDateTime,
   zodStringReadableAsNumber,
 } from "../../helpers/validators.js";
 import { SuspensionService } from "./SuspensionService.js";
 
 const SuspensionUpdateSchema = z.object({
-  reason: z
-    .string({ message: "Alasan invalid!" })
-    .min(1, { message: "Alasan tidak boleh kosong!" })
-    .optional(),
-  suspended_until: zodStringReadableAsDateTime("Tanggal tidak valid!").optional(),
-  user_id: z.number({ message: "Pengguna tidak valid!" }).optional(),
+  reason: z.string(defaultError("Alasan penangguhan tidak valid!")).min(1).optional(),
+  suspended_until: zodStringReadableAsDateTime("Tanggal penangguhan tidak valid!").optional(),
+  user_id: z.number(defaultError("Nomor pengguna tidak valid!")).optional(),
 });
 
 const SuspensionCreationSchema = z.object({
-  reason: z
-    .string({ message: "Alasan invalid!" })
-    .min(1, { message: "Alasan tidak boleh kosong!" }),
-  suspended_until: zodStringReadableAsDateTime("Tanggal tidak valid!"),
-  user_id: z.number({ message: "Pengguna tidak valid!" }),
+  reason: z.string(defaultError("Alasan penangguhan tidak valid!")).min(1),
+  suspended_until: zodStringReadableAsDateTime("Tanggal penangguhan tidak valid!"),
+  user_id: z.number(defaultError("Nomor pengguna tidak valid!")),
 });
 
 const SuspensionResponseSchema = z.object({
