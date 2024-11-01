@@ -39,6 +39,7 @@ import { enqueueSnackbar } from "notistack";
 import { ReactNode, useEffect, useState } from "react";
 import { useParams } from "wouter";
 import UserSelect from "../../components/UserSelect.tsx";
+import { handleOptionalStringCreation, handleOptionalStringUpdate } from "../../helpers/misc.ts";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import {
   useBucketsDetailDelete,
@@ -245,11 +246,11 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
 
   // undef: gak ada yang dipilih
   // number: lagi ngedit bucket itu
-  const [selectedBucketEdit, setSelectedBucketEdit] = useState<null | number>(null);
+  const [selectedBucketEdit, setSelectedBucketEdit] = useState<undefined | number>();
   const [taskName, setTaskName] = useState<string>("");
-  const [taskDescription, setTaskDescription] = useState<null | string>(null);
-  const [taskStartAt, setTaskStartAt] = useState<null | Dayjs>(null);
-  const [taskEndAt, setTaskEndAt] = useState<null | Dayjs>(null);
+  const [taskDescription, setTaskDescription] = useState<undefined | string>();
+  const [taskStartAt, setTaskStartAt] = useState<undefined | Dayjs>();
+  const [taskEndAt, setTaskEndAt] = useState<undefined | Dayjs>();
   const [taskAssign, setTaskAssign] = useState<number[] | undefined>();
 
   const { mutate: addTask } = useTasksPost({
@@ -258,7 +259,7 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
         message: <Typography>Tugas ditambahkan!</Typography>,
         variant: "success",
       });
-      setSelectedBucketEdit(null);
+      setSelectedBucketEdit(undefined);
     },
   });
   const { data: project_data } = useProjectsDetailGet({
@@ -274,8 +275,11 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
       <IconButton onClick={() => setSelectedBucketEdit(bucket_id)}>
         <Add />
       </IconButton>
-      {selectedBucketEdit != null && (
-        <Dialog open={selectedBucketEdit != null} onClose={() => setSelectedBucketEdit(null)}>
+      {selectedBucketEdit != undefined && (
+        <Dialog
+          open={selectedBucketEdit != undefined}
+          onClose={() => setSelectedBucketEdit(undefined)}
+        >
           <DialogTitle>Tambah tugas baru</DialogTitle>
           <DialogContent>
             <Stack spacing={2} my={2}>
@@ -285,8 +289,14 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
                 onChange={(e) => setTaskDescription(e.target.value)}
                 label="Deskripsi"
               />
-              <DatePicker onChange={(x) => setTaskStartAt(x)} label="Mulai"></DatePicker>
-              <DatePicker onChange={(x) => setTaskEndAt(x)} label="Selesai"></DatePicker>
+              <DatePicker
+                onChange={(x) => setTaskStartAt(x ?? undefined)}
+                label="Mulai"
+              ></DatePicker>
+              <DatePicker
+                onChange={(x) => setTaskEndAt(x ?? undefined)}
+                label="Selesai"
+              ></DatePicker>
               {project_members != undefined ? (
                 <UserSelect
                   current_users={taskAssign ?? []}
@@ -305,7 +315,7 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
                 addTask({
                   bucket_id,
                   name: taskName,
-                  description: taskDescription ?? undefined,
+                  description: handleOptionalStringCreation(taskDescription),
                   start_at: taskStartAt?.toISOString(),
                   end_at: taskEndAt?.toISOString(),
                   users: taskAssign,
@@ -424,7 +434,7 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
                 editTask({
                   task_id,
                   name: taskName,
-                  description: taskDescription,
+                  description: handleOptionalStringUpdate(taskDescription),
                   start_at: taskStartAt != undefined ? taskStartAt.toISOString() : taskStartAt,
                   end_at: taskEndAt != undefined ? taskEndAt.toISOString() : taskEndAt,
                   users: taskAssign,

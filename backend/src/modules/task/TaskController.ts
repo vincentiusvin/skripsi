@@ -8,6 +8,47 @@ import {
 } from "../../helpers/validators.js";
 import { TaskService } from "./TaskService.js";
 
+const TaskResponseSchema = z.object({
+  bucket_id: z.number(),
+  name: z.string(),
+  description: z.string().nullable(),
+  start_at: z.date().nullable(),
+  end_at: z.date().nullable(),
+  id: z.number(),
+  order: z.number(),
+  users: z.array(
+    z.object({
+      user_id: z.number(),
+    }),
+  ),
+});
+
+const TaskCreationSchema = z.object({
+  name: z.string({ message: "Nama tidak valid!" }).min(1, "Nama tidak boleh kosong!"),
+  bucket_id: z.number({ message: "Kelompok tugas tidak boleh kosong!" }),
+  users: z.array(z.number(), { message: "Pengguna invalid!" }).optional(),
+  description: z
+    .string({ message: "Deskripsi tidak valid!" })
+    .min(1, "Deskripsi tidak boleh kosong!")
+    .optional(),
+  start_at: zodStringReadableAsDateTime("Tanggal mulai tidak valid!").optional(),
+  end_at: zodStringReadableAsDateTime("Tanggal selesai tidak valid!").optional(),
+});
+
+const TaskUpdateSchema = z.object({
+  name: z.string({ message: "Nama tidak valid!" }).min(1, "Nama tidak boleh kosong!").optional(),
+  bucket_id: z.number({ message: "ID kelompok tugas tidak valid!" }).optional(),
+  before_id: z.number({ message: "Lokasi tugas tidak valid!" }).optional().nullable(),
+  users: z.array(z.number(), { message: "Pengguna invalid!" }).optional(),
+  description: z
+    .string({ message: "Deskripsi tidak valid!" })
+    .min(1, "Deskripsi tidak boleh kosong!")
+    .nullable()
+    .optional(),
+  start_at: zodStringReadableAsDateTime("Tanggal mulai tidak valid!").optional().nullable(),
+  end_at: zodStringReadableAsDateTime("Tanggal selesai tidak valid!").optional().nullable(),
+});
+
 export class TaskController extends Controller {
   private task_service: TaskService;
   constructor(express_server: Express, task_service: TaskService) {
@@ -37,20 +78,7 @@ export class TaskController extends Controller {
       Params: z.object({
         task_id: zodStringReadableAsNumber("ID tugas tidak valid!"),
       }),
-      ResBody: z.object({
-        bucket_id: z.number(),
-        name: z.string(),
-        description: z.string().nullable(),
-        start_at: z.date().nullable(),
-        end_at: z.date().nullable(),
-        id: z.number(),
-        order: z.number(),
-        users: z.array(
-          z.object({
-            user_id: z.number(),
-          }),
-        ),
-      }),
+      ResBody: TaskResponseSchema,
     },
     handler: async (req, res) => {
       const { task_id: task_id_raw } = req.params;
@@ -93,35 +121,8 @@ export class TaskController extends Controller {
       Params: z.object({
         task_id: zodStringReadableAsNumber("ID tugas tidak valid!"),
       }),
-      ReqBody: z.object({
-        bucket_id: z.number({ message: "ID kelompok tugas tidak valid!" }).optional(),
-        before_id: z.number({ message: "Lokasi tugas tidak valid!" }).optional().nullable(),
-        users: z.array(z.number(), { message: "Pengguna invalid!" }).optional(),
-        name: z
-          .string({ message: "Nama tidak valid!" })
-          .min(1, "Nama tidak boleh kosong!")
-          .optional(),
-        description: z
-          .string({ message: "Deskripsi tidak valid!" })
-          .min(1, "Deskripsi tidak boleh kosong!")
-          .optional(),
-        start_at: zodStringReadableAsDateTime("Tanggal mulai tidak valid!").optional().nullable(),
-        end_at: zodStringReadableAsDateTime("Tanggal selesai tidak valid!").optional().nullable(),
-      }),
-      ResBody: z.object({
-        bucket_id: z.number(),
-        name: z.string(),
-        description: z.string().nullable(),
-        start_at: z.date().nullable(),
-        end_at: z.date().nullable(),
-        id: z.number(),
-        order: z.number(),
-        users: z.array(
-          z.object({
-            user_id: z.number(),
-          }),
-        ),
-      }),
+      ReqBody: TaskUpdateSchema,
+      ResBody: TaskResponseSchema,
     },
     handler: async (req, res) => {
       const { task_id: task_id_raw } = req.params;
@@ -244,31 +245,8 @@ export class TaskController extends Controller {
     method: "post",
     path: "/api/tasks",
     schema: {
-      ReqBody: z.object({
-        name: z.string({ message: "Nama tidak valid!" }).min(1, "Nama tidak boleh kosong!"),
-        bucket_id: z.number({ message: "Kelompok tugas tidak boleh kosong!" }),
-        users: z.array(z.number(), { message: "Pengguna invalid!" }).optional(),
-        description: z
-          .string({ message: "Deskripsi tidak valid!" })
-          .min(1, "Deskripsi tidak boleh kosong!")
-          .optional(),
-        start_at: zodStringReadableAsDateTime("Tanggal mulai tidak valid!").optional(),
-        end_at: zodStringReadableAsDateTime("Tanggal selesai tidak valid!").optional(),
-      }),
-      ResBody: z.object({
-        bucket_id: z.number(),
-        name: z.string(),
-        description: z.string().nullable(),
-        start_at: z.date().nullable(),
-        end_at: z.date().nullable(),
-        id: z.number(),
-        order: z.number(),
-        users: z.array(
-          z.object({
-            user_id: z.number(),
-          }),
-        ),
-      }),
+      ReqBody: TaskCreationSchema,
+      ResBody: TaskResponseSchema,
     },
     handler: async (req, res) => {
       const { bucket_id, users, name, description, end_at, start_at } = req.body;
@@ -301,22 +279,7 @@ export class TaskController extends Controller {
     method: "get",
     path: "/api/tasks",
     schema: {
-      ResBody: z
-        .object({
-          bucket_id: z.number(),
-          name: z.string(),
-          description: z.string().nullable(),
-          start_at: z.date().nullable(),
-          end_at: z.date().nullable(),
-          id: z.number(),
-          order: z.number(),
-          users: z.array(
-            z.object({
-              user_id: z.number(),
-            }),
-          ),
-        })
-        .array(),
+      ResBody: TaskResponseSchema.array(),
       ReqQuery: z.object({
         bucket_id: zodStringReadableAsNumber("ID kelompok tugas tidak valid!").optional(),
         user_id: zodStringReadableAsNumber("ID pengguna tidak valid!").optional(),
