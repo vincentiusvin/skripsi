@@ -152,40 +152,39 @@ export class UserRepository {
       user_socials?: string[];
     },
   ) {
-    const {
-      user_name,
-      hashed_password,
-      user_email,
-      user_education_level,
-      user_school,
-      user_about_me,
-      user_image,
-      user_website,
-      user_socials,
-    } = obj;
+    const { user_socials, ...main_update } = obj;
 
-    const updated = Object.keys(obj).some((x) => x !== undefined);
+    const should_main_update = Object.values(main_update).some((x) => x !== undefined);
 
-    if (!updated) {
-      return;
+    if (should_main_update) {
+      const {
+        user_name,
+        hashed_password,
+        user_email,
+        user_education_level,
+        user_school,
+        user_about_me,
+        user_image,
+        user_website,
+      } = main_update;
+
+      await this.db
+        .updateTable("ms_users")
+        .set({
+          name: user_name,
+          password: hashed_password,
+          email: user_email,
+          education_level: user_education_level,
+          school: user_school,
+          about_me: user_about_me,
+          image: user_image,
+          website: user_website,
+        })
+        .where("id", "=", id)
+        .execute();
     }
 
-    await this.db
-      .updateTable("ms_users")
-      .set({
-        name: user_name,
-        password: hashed_password,
-        email: user_email,
-        education_level: user_education_level,
-        school: user_school,
-        about_me: user_about_me,
-        image: user_image,
-        website: user_website,
-      })
-      .where("id", "=", id)
-      .execute();
-
-    if (user_socials != undefined && user_socials.length) {
+    if (user_socials != undefined && user_socials.length !== 0) {
       await this.db.deleteFrom("socials_users").where("user_id", "=", id).execute();
 
       await this.db

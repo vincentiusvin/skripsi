@@ -55,7 +55,7 @@ export class UserService {
     user_socials?: string[];
   }) {
     return await this.transaction_manager.transaction(this as UserService, async (serv) => {
-      const { user_name, user_password, user_email, ...rest } = obj;
+      const { user_name, user_password, user_email, user_socials, ...rest } = obj;
       const same_name = await serv.user_repo.findUserByName(user_name);
       if (same_name) {
         throw new ClientError("Sudah ada pengguna dengan nama yang sama!");
@@ -65,10 +65,17 @@ export class UserService {
         throw new ClientError("Sudah ada pengguna dengan email yang sama !");
       }
 
+      if (user_socials != undefined && user_socials.length !== 0) {
+        if (new Set(user_socials).size !== user_socials?.length) {
+          throw new Error("Tidak boleh ada akun sosial media yang terduplikat!");
+        }
+      }
+
       const hashed_password = hashSync(user_password, 10);
 
       return await serv.user_repo.addUser({
         ...rest,
+        user_socials,
         user_name,
         user_email,
         hashed_password,
@@ -125,7 +132,7 @@ export class UserService {
         throw new AuthError("Anda tidak memiliki akses untuk mengubah profil ini!");
       }
 
-      const { user_name, user_password, user_email, ...rest } = obj;
+      const { user_name, user_password, user_email, user_socials, ...rest } = obj;
       let hashed_password: string | undefined = undefined;
       if (user_password != undefined) {
         hashed_password = hashSync(user_password, 10);
@@ -145,10 +152,17 @@ export class UserService {
         }
       }
 
+      if (user_socials != undefined && user_socials.length !== 0) {
+        if (new Set(user_socials).size !== user_socials?.length) {
+          throw new ClientError("Tidak boleh ada akun sosial media yang terduplikat!");
+        }
+      }
+
       return await serv.user_repo.updateAccountDetails(user_id, {
         ...rest,
         user_email,
         user_name,
+        user_socials,
         hashed_password: hashed_password,
       });
     });
