@@ -143,12 +143,12 @@ export class UserRepository {
     obj: {
       user_name?: string;
       user_email?: string;
-      user_education_level?: string;
-      user_school?: string;
-      user_about_me?: string;
-      user_image?: string;
-      user_website?: string;
+      user_education_level?: string | null;
+      user_school?: string | null;
+      user_about_me?: string | null;
+      user_image?: string | null;
       hashed_password?: string;
+      user_website?: string | null;
       user_socials?: string[];
     },
   ) {
