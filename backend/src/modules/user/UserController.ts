@@ -123,7 +123,7 @@ export class UserController extends Controller {
           user_image: z.string().min(1, "Gambar tidak boleh kosong!").optional(),
           user_email: z.string().min(1, "Email tidak boleh kosong!").email().optional(),
           user_website: z.string().min(1).url().optional(),
-          user_socials: z.string().min(1).url().array().min(1).optional(),
+          user_socials: z.string().min(1).url().array().optional(),
         })
         .strict(),
       ResBody: UserResponseSchema,

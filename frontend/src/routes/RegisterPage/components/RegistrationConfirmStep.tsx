@@ -21,13 +21,6 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
     },
   });
 
-  function register() {
-    postUsers({
-      user_name: reg.username,
-      user_password: reg.password,
-    });
-  }
-
   const links = reg.social_medias
     .filter((x) => x.length !== 0)
     .map((x) => {
@@ -45,6 +38,18 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
     } catch (e) {
       e;
     }
+  }
+
+  function register() {
+    postUsers({
+      user_name: reg.username,
+      user_password: reg.password,
+      user_email: reg.email,
+      user_education_level: reg.education,
+      user_school: reg.school,
+      user_website: websiteCleaned,
+      user_socials: links,
+    });
   }
 
   const simple_datas = [
