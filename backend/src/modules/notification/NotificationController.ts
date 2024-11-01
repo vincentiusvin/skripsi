@@ -3,9 +3,20 @@ import { RequestHandler } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { validateLogged } from "../../helpers/validate.js";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import { defaultError, zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { notification_types } from "./NotificationMisc.js";
 import { NotificationService } from "./NotificationService.js";
+
+const NotificationResponseSchema = z.object({
+  type: z.enum(notification_types),
+  read: z.boolean(),
+  user_id: z.number(),
+  id: z.number(),
+  description: z.string(),
+  title: z.string(),
+  created_at: z.date(),
+  type_id: z.number().nullable(),
+});
 
 export class NotificationController extends Controller {
   private notifcation_service: NotificationService;
@@ -27,21 +38,10 @@ export class NotificationController extends Controller {
     priors: [validateLogged as RequestHandler],
     schema: {
       ReqQuery: z.object({
-        user_id: zodStringReadableAsNumber("Pengguna tidak ditemukan!").optional(),
-        read: z.string().optional(),
+        user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!").optional(),
+        read: z.string(defaultError("Status baca tidak valid!")).optional(),
       }),
-      ResBody: z
-        .object({
-          type: z.enum(notification_types),
-          read: z.boolean(),
-          user_id: z.number(),
-          id: z.number(),
-          description: z.string(),
-          title: z.string(),
-          created_at: z.date(),
-          type_id: z.number().nullable(),
-        })
-        .array(),
+      ResBody: NotificationResponseSchema.array(),
     },
     handler: async (req, res) => {
       const { user_id, read } = req.query;
@@ -61,21 +61,12 @@ export class NotificationController extends Controller {
     priors: [validateLogged],
     schema: {
       Params: z.object({
-        notification_id: z.string(),
+        notification_id: z.string(defaultError("Nomor notifikasi tidak valid!")),
       }),
       ReqBody: z.object({
         read: z.boolean(),
       }),
-      ResBody: z.object({
-        type: z.enum(notification_types),
-        read: z.boolean(),
-        user_id: z.number(),
-        id: z.number(),
-        description: z.string(),
-        title: z.string(),
-        created_at: z.date(),
-        type_id: z.number().nullable(),
-      }),
+      ResBody: NotificationResponseSchema,
     },
     handler: async (req, res) => {
       const { notification_id: notification_id_str } = req.params;

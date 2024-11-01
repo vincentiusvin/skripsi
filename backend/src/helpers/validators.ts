@@ -1,10 +1,16 @@
 import { z } from "zod";
 
+export function defaultError(message: string) {
+  return {
+    errorMap: () => ({ message }),
+  };
+}
+
 export function zodStringReadableAsNumber(message: string) {
   return z
-    .string({ message })
-    .min(1, { message })
-    .refine((arg) => !isNaN(Number(arg)), { message });
+    .string(defaultError(message))
+    .min(1)
+    .refine((arg) => !isNaN(Number(arg)));
 }
 
 export function zodPagination() {
@@ -13,18 +19,18 @@ export function zodPagination() {
 
   return {
     page: z.coerce
-      .number({ message: pageMsg })
-      .min(1, pageMsg)
+      .number(defaultError(pageMsg))
+      .min(1)
       .transform((x) => x.toString())
       .optional(),
     limit: z.coerce
-      .number({ message: limitMsg })
-      .min(1, limitMsg)
+      .number(defaultError(limitMsg))
+      .min(1)
       .transform((x) => x.toString())
       .optional(),
   };
 }
 
 export function zodStringReadableAsDateTime(message: string) {
-  return z.string({ message }).min(1, { message }).datetime({ message });
+  return z.string(defaultError(message)).min(1).datetime();
 }

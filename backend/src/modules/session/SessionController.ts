@@ -3,6 +3,7 @@ import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { ClientError } from "../../helpers/error.js";
+import { defaultError } from "../../helpers/validators.js";
 import { SuspensionService } from "../suspensions/SuspensionService.js";
 import { UserService } from "../user/UserService.js";
 
@@ -67,8 +68,8 @@ export class SessionController extends Controller {
     path: "/api/session",
     schema: {
       ReqBody: z.object({
-        user_password: z.string().min(1),
-        user_name: z.string().min(1),
+        user_name: z.string(defaultError("Username harus diisi!")).min(1),
+        user_password: z.string(defaultError("Password harus diisi!")).min(1),
       }),
       ResBody: z.object({
         user_name: z.string(),
