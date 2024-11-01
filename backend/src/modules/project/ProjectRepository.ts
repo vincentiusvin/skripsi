@@ -221,7 +221,7 @@ export class ProjectRepository {
       project_desc?: string;
       category_id?: number[];
       project_archived?: boolean;
-      project_content?: string;
+      project_content?: string | null;
     },
   ) {
     const { project_content, project_archived, project_name, project_desc, category_id } = obj;

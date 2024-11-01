@@ -73,30 +73,12 @@ export function useOrgsCategoriesGet(opts: {
   });
 }
 
-export function useOrgsUpdate(opts: {
-  id: number;
-  name?: string;
-  desc?: string;
-  address?: string;
-  phone?: string;
-  categories?: number[];
-  image?: string;
-  onSuccess?: () => void;
-}) {
-  const { id, name, desc, address, phone, image, onSuccess, categories } = opts;
+export function useOrgsUpdate(opts: { org_id: number; onSuccess?: () => void }) {
+  const { org_id, onSuccess } = opts;
   return useMutation({
-    mutationFn: () =>
-      new APIContext("OrgsUpdate").fetch(`/api/orgs/${id}`, {
-        method: "PUT",
-        body: {
-          org_name: name,
-          org_description: desc,
-          org_address: address,
-          org_phone: phone,
-          org_categories: categories,
-          ...(image && { org_image: image }),
-        },
-      }),
+    mutationFn: new APIContext("OrgsUpdate").bodyFetch(`/api/orgs/${org_id}`, {
+      method: "PUT",
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orgKeys.all() });
       if (onSuccess) {

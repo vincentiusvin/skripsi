@@ -15,6 +15,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import MarkdownEditor from "../../components/MarkdownEditor";
+import { handleOptionalStringUpdate } from "../../helpers/misc.ts";
 import {
   useProjectsCategoriesGet,
   useProjectsDetailGet,
@@ -52,7 +53,7 @@ function ProjectsEdit(props: { project_id: number }) {
       project_desc: projectDesc,
       project_name: projectName,
       category_id: projectCategory,
-      project_content: projectContent,
+      project_content: handleOptionalStringUpdate(projectContent),
     });
   }
 

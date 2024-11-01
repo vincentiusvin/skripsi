@@ -6,6 +6,56 @@ import { zodPagination, zodStringReadableAsNumber } from "../../helpers/validato
 import { ProjectRoles, parseRole, project_roles } from "./ProjectMisc.js";
 import { ProjectService } from "./ProjectService.js";
 
+const ProjectResponseSchema = z.object({
+  org_id: z.number(),
+  project_id: z.number(),
+  project_archived: z.boolean(),
+  project_content: z.string().nullable(),
+  project_name: z.string(),
+  project_desc: z.string(),
+  project_members: z
+    .object({
+      user_id: z.number(),
+      role: z.enum(project_roles).or(z.literal("Not Involved")),
+    })
+    .array(),
+  project_categories: z
+    .object({
+      category_name: z.string(),
+      category_id: z.number(),
+    })
+    .array(),
+});
+
+const ProjectUpdateSchema = z.object({
+  project_name: z
+    .string({ message: "Nama invalid!" })
+    .min(1, "Nama tidak boleh kosong!")
+    .optional(),
+  project_desc: z
+    .string({ message: "Deskripsi invalid!" })
+    .min(1, "Deskripsi tidak boleh kosong!")
+    .optional(),
+  project_content: z
+    .string({ message: "Penjelasan invalid!" })
+    .min(1, "Penjelasan invalid!")
+    .nullable()
+    .optional(),
+  category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
+  project_archived: z.boolean().optional(),
+});
+
+const ProjectCreationSchema = z.object({
+  project_name: z.string({ message: "Nama invalid!" }).min(1, "Nama tidak boleh kosong!"),
+  org_id: z.number({ message: "Organisasi invalid!" }),
+  project_desc: z.string({ message: "Deskripsi invalid!" }).min(1, "Deskripsi tidak boleh kosong!"),
+  category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
+  project_content: z
+    .string({ message: "Penjelasan invalid!" })
+    .min(1, "Penjelasan invalid!")
+    .optional(),
+});
+
 export class ProjectController extends Controller {
   private project_service: ProjectService;
   constructor(express_server: Express, project_service: ProjectService) {
@@ -30,38 +80,8 @@ export class ProjectController extends Controller {
     method: "post",
     path: "/api/projects",
     schema: {
-      ReqBody: z.object({
-        project_name: z.string({ message: "Nama invalid!" }).min(1, "Nama tidak boleh kosong!"),
-        org_id: z.number({ message: "Organisasi invalid!" }),
-        project_desc: z
-          .string({ message: "Deskripsi invalid!" })
-          .min(1, "Deskripsi tidak boleh kosong!"),
-        category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
-        project_content: z
-          .string({ message: "Penjelasan invalid!" })
-          .min(1, "Penjelasan invalid!")
-          .optional(),
-      }),
-      ResBody: z.object({
-        org_id: z.number(),
-        project_id: z.number(),
-        project_archived: z.boolean(),
-        project_content: z.string().nullable(),
-        project_name: z.string(),
-        project_desc: z.string(),
-        project_members: z
-          .object({
-            user_id: z.number(),
-            role: z.enum(project_roles).or(z.literal("Not Involved")),
-          })
-          .array(),
-        project_categories: z
-          .object({
-            category_name: z.string(),
-            category_id: z.number(),
-          })
-          .array(),
-      }),
+      ReqBody: ProjectCreationSchema,
+      ResBody: ProjectResponseSchema,
     },
     handler: async (req, res) => {
       const { project_content, project_name, org_id, project_desc, category_id } = req.body;
@@ -92,28 +112,7 @@ export class ProjectController extends Controller {
         keyword: z.string().optional(),
         ...zodPagination(),
       }),
-      ResBody: z
-        .object({
-          org_id: z.number(),
-          project_id: z.number(),
-          project_archived: z.boolean(),
-          project_content: z.string().nullable(),
-          project_name: z.string(),
-          project_desc: z.string(),
-          project_members: z
-            .object({
-              user_id: z.number(),
-              role: z.enum(project_roles).or(z.literal("Not Involved")),
-            })
-            .array(),
-          project_categories: z
-            .object({
-              category_name: z.string(),
-              category_id: z.number(),
-            })
-            .array(),
-        })
-        .array(),
+      ResBody: ProjectResponseSchema.array(),
     },
     handler: async (req, res) => {
       const { limit, org_id, user_id, keyword, page } = req.query;
@@ -136,26 +135,7 @@ export class ProjectController extends Controller {
       Params: z.object({
         project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
       }),
-      ResBody: z.object({
-        org_id: z.number(),
-        project_id: z.number(),
-        project_content: z.string().nullable(),
-        project_name: z.string(),
-        project_archived: z.boolean(),
-        project_desc: z.string(),
-        project_members: z
-          .object({
-            user_id: z.number(),
-            role: z.enum(project_roles).or(z.literal("Not Involved")),
-          })
-          .array(),
-        project_categories: z
-          .object({
-            category_name: z.string(),
-            category_id: z.number(),
-          })
-          .array(),
-      }),
+      ResBody: ProjectResponseSchema,
     },
     handler: async (req, res) => {
       const project_id = req.params.project_id;
@@ -199,42 +179,8 @@ export class ProjectController extends Controller {
       Params: z.object({
         project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
       }),
-      ReqBody: z.object({
-        project_name: z
-          .string({ message: "Nama invalid!" })
-          .min(1, "Nama tidak boleh kosong!")
-          .optional(),
-        project_desc: z
-          .string({ message: "Deskripsi invalid!" })
-          .min(1, "Deskripsi tidak boleh kosong!")
-          .optional(),
-        project_content: z
-          .string({ message: "Penjelasan invalid!" })
-          .min(1, "Penjelasan invalid!")
-          .optional(),
-        category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
-        project_archived: z.boolean().optional(),
-      }),
-      ResBody: z.object({
-        org_id: z.number(),
-        project_id: z.number(),
-        project_name: z.string(),
-        project_content: z.string().nullable(),
-        project_desc: z.string(),
-        project_archived: z.boolean(),
-        project_members: z
-          .object({
-            user_id: z.number(),
-            role: z.enum(project_roles).or(z.literal("Not Involved")),
-          })
-          .array(),
-        project_categories: z
-          .object({
-            category_name: z.string(),
-            category_id: z.number(),
-          })
-          .array(),
-      }),
+      ReqBody: ProjectUpdateSchema,
+      ResBody: ProjectResponseSchema,
     },
     handler: async (req, res) => {
       const project_id = Number(req.params.project_id);
