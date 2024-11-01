@@ -2,7 +2,11 @@ import type { Express } from "express";
 import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
-import { zodPagination, zodStringReadableAsNumber } from "../../helpers/validators.js";
+import {
+  defaultError,
+  zodPagination,
+  zodStringReadableAsNumber,
+} from "../../helpers/validators.js";
 import { ProjectRoles, parseRole, project_roles } from "./ProjectMisc.js";
 import { ProjectService } from "./ProjectService.js";
 
@@ -28,32 +32,23 @@ const ProjectResponseSchema = z.object({
 });
 
 const ProjectUpdateSchema = z.object({
-  project_name: z
-    .string({ message: "Nama invalid!" })
-    .min(1, "Nama tidak boleh kosong!")
-    .optional(),
-  project_desc: z
-    .string({ message: "Deskripsi invalid!" })
-    .min(1, "Deskripsi tidak boleh kosong!")
-    .optional(),
+  project_name: z.string(defaultError("Nama proyek tidak valid!")).min(1).optional(),
+  project_desc: z.string(defaultError("Deskripsi proyek tidak valid!")).min(1).optional(),
   project_content: z
-    .string({ message: "Penjelasan invalid!" })
-    .min(1, "Penjelasan invalid!")
+    .string(defaultError("Konten proyek tidak valid!"))
+    .min(1)
     .nullable()
     .optional(),
-  category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
-  project_archived: z.boolean().optional(),
+  category_id: z.number(defaultError("Kategori proyek tidak valid!")).array().optional(),
+  project_archived: z.boolean(defaultError("Status arsip proyek tidak valid!")).optional(),
 });
 
 const ProjectCreationSchema = z.object({
-  project_name: z.string({ message: "Nama invalid!" }).min(1, "Nama tidak boleh kosong!"),
-  org_id: z.number({ message: "Organisasi invalid!" }),
-  project_desc: z.string({ message: "Deskripsi invalid!" }).min(1, "Deskripsi tidak boleh kosong!"),
-  category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
-  project_content: z
-    .string({ message: "Penjelasan invalid!" })
-    .min(1, "Penjelasan invalid!")
-    .optional(),
+  project_name: z.string(defaultError("Nama proyek tidak valid!")).min(1),
+  org_id: z.number(defaultError("Nomor organisasi tidak valid!")),
+  project_desc: z.string(defaultError("Deskripsi proyek tidak valid!")).min(1),
+  category_id: z.number(defaultError("Kategori proyek tidak valid!")).array().optional(),
+  project_content: z.string(defaultError("Konten proyek tidak valid!")).min(1).optional(),
 });
 
 export class ProjectController extends Controller {
