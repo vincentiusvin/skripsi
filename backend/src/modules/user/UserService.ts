@@ -40,14 +40,34 @@ export class UserService {
     return await this.user_repo.findUserByName(name);
   }
 
-  async addUser(user_name: string, user_password: string) {
-    const similar_name = await this.user_repo.findUserByName(user_name);
-    if (similar_name) {
-      throw new ClientError("Sudah ada user dengan nama yang sama!");
+  async addUser(obj: {
+    user_name: string;
+    user_email: string;
+    user_password: string;
+    user_education_level?: string | undefined;
+    user_school?: string | undefined;
+    user_about_me?: string | undefined;
+    user_image?: string | undefined;
+    user_website?: string | undefined;
+  }) {
+    const { user_name, user_password, user_email, ...rest } = obj;
+    const same_name = await this.user_repo.findUserByName(user_name);
+    if (same_name) {
+      throw new ClientError("Sudah ada pengguna dengan nama yang sama!");
+    }
+    const same_email = await this.findUserByEmail(user_email);
+    if (same_email != undefined) {
+      throw new ClientError("Sudah ada pengguna dengan email yang sama !");
     }
 
     const hashed_password = hashSync(user_password, 10);
-    return await this.user_repo.addUser(user_name, hashed_password);
+
+    return await this.user_repo.addUser({
+      ...rest,
+      user_name,
+      user_email,
+      hashed_password,
+    });
   }
 
   async getUserDetail(user_id: number) {
@@ -88,28 +108,40 @@ export class UserService {
       user_about_me?: string;
       user_image?: string;
       user_password?: string;
+      user_website?: string;
     },
     sender_id: number,
   ) {
     const isAllowed = await this.isAllowedToModify(user_id, sender_id);
     if (!isAllowed) {
-      throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
+      throw new AuthError("Anda tidak memiliki akses untuk mengubah profil ini!");
     }
 
-    const { user_password, user_email } = obj;
+    const { user_name, user_password, user_email, ...rest } = obj;
     let hashed_password: string | undefined = undefined;
-    if (user_password) {
+    if (user_password != undefined) {
       hashed_password = hashSync(user_password, 10);
     }
-    if (user_email) {
+
+    if (user_email != undefined) {
       const same_email = await this.findUserByEmail(user_email);
       if (same_email != undefined) {
-        throw new ClientError("Sudah ada user dengan email yang sama !");
+        throw new ClientError("Sudah ada pengguna dengan email yang sama !");
       }
     }
+
+    if (user_name != undefined) {
+      const same_name = await this.user_repo.findUserByName(user_name);
+      if (same_name) {
+        throw new ClientError("Sudah ada pengguna dengan nama yang sama!");
+      }
+    }
+
     return await this.user_repo.updateAccountDetails(user_id, {
-      ...obj,
-      user_password: hashed_password,
+      ...rest,
+      user_email,
+      user_name,
+      hashed_password: hashed_password,
     });
   }
 }

@@ -11,6 +11,7 @@ const defaultUserFields = [
   "ms_users.image as user_image",
   "ms_users.is_admin as user_is_admin",
   "ms_users.created_at as user_created_at",
+  "ms_users.website as user_website",
 ] as const;
 
 const reducedFields = ["ms_users.id as user_id", "ms_users.name as user_name"] as const;
@@ -52,12 +53,38 @@ export class UserRepository {
     return await query.execute();
   }
 
-  async addUser(user_name: string, hashed_password: string) {
+  async addUser(obj: {
+    user_name: string;
+    user_email: string;
+    hashed_password: string;
+    user_education_level?: string | undefined;
+    user_school?: string | undefined;
+    user_about_me?: string | undefined;
+    user_image?: string | undefined;
+    user_website?: string | undefined;
+  }) {
+    const {
+      user_name,
+      user_email,
+      hashed_password,
+      user_education_level,
+      user_school,
+      user_about_me,
+      user_image,
+      user_website,
+    } = obj;
+
     return await this.db
       .insertInto("ms_users")
       .values({
         name: user_name,
         password: hashed_password,
+        email: user_email,
+        education_level: user_education_level,
+        school: user_school,
+        about_me: user_about_me,
+        image: user_image,
+        website: user_website,
       })
       .returning("ms_users.id")
       .executeTakeFirst();
@@ -88,44 +115,40 @@ export class UserRepository {
       user_school?: string;
       user_about_me?: string;
       user_image?: string;
-      user_password?: string;
+      user_website?: string;
+      hashed_password?: string;
     },
   ) {
     const {
       user_name,
-      user_password,
+      hashed_password,
       user_email,
       user_education_level,
       user_school,
       user_about_me,
       user_image,
+      user_website,
     } = obj;
 
-    if (
-      user_name != undefined ||
-      user_password != undefined ||
-      user_email != undefined ||
-      user_education_level != undefined ||
-      user_school != undefined ||
-      user_about_me != undefined ||
-      user_image != undefined
-    ) {
-      const user = await this.db
-        .updateTable("ms_users")
-        .set({
-          name: user_name,
-          password: user_password,
-          email: user_email,
-          education_level: user_education_level,
-          school: user_school,
-          about_me: user_about_me,
-          ...(user_image && { image: user_image }),
-        })
-        .where("id", "=", id)
-        .executeTakeFirst();
-      if (!user) {
-        throw new Error("Data tidak di update");
-      }
+    const updated = Object.keys(obj).some((x) => x !== undefined);
+
+    if (!updated) {
+      return;
     }
+
+    await this.db
+      .updateTable("ms_users")
+      .set({
+        name: user_name,
+        password: hashed_password,
+        email: user_email,
+        education_level: user_education_level,
+        school: user_school,
+        about_me: user_about_me,
+        image: user_image,
+        website: user_website,
+      })
+      .where("id", "=", id)
+      .execute();
   }
 }
