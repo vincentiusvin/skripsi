@@ -22,6 +22,30 @@ const UserResponseSchema = z.object({
     .array(),
 });
 
+const UserUpdateSchema = z.object({
+  user_name: z.string().min(1, "Nama tidak boleh kosong!").optional(),
+  user_password: z.string().min(1, "Password tidak boleh kosong!").optional(),
+  user_education_level: z.string().min(1, "Pendidikan tidak boleh kosong!").optional(),
+  user_school: z.string().min(1, "Sekolah tidak boleh kosong!").nullable().optional(),
+  user_about_me: z.string().min(1, "Biodata tidak boleh kosong!").nullable().optional(),
+  user_image: z.string().min(1, "Gambar tidak boleh kosong!").nullable().optional(),
+  user_email: z.string().min(1, "Email tidak boleh kosong!").email().optional(),
+  user_website: z.string().min(1).url().nullable().optional(),
+  user_socials: z.string().min(1).url().array().optional(),
+});
+
+const UserCreationSchema = z.object({
+  user_name: z.string().min(1, "Username tidak boleh kosong!"),
+  user_password: z.string().min(1, "Password tidak boleh kosong!"),
+  user_email: z.string().min(1, "Email tidak boleh kosong!").email(),
+  user_education_level: z.string().min(1).optional(),
+  user_school: z.string().min(1).optional(),
+  user_about_me: z.string().min(1).optional(),
+  user_image: z.string().min(1).optional(),
+  user_website: z.string().min(1).url().optional(),
+  user_socials: z.string().min(1).url().array().min(1).optional(),
+});
+
 export class UserController extends Controller {
   private user_service: UserService;
   constructor(express_server: Express, user_service: UserService) {
@@ -42,19 +66,7 @@ export class UserController extends Controller {
     method: "post",
     path: "/api/users",
     schema: {
-      ReqBody: z
-        .object({
-          user_name: z.string().min(1, "Username tidak boleh kosong!"),
-          user_password: z.string().min(1, "Password tidak boleh kosong!"),
-          user_email: z.string().min(1, "Email tidak boleh kosong!").email(),
-          user_education_level: z.string().min(1).optional(),
-          user_school: z.string().min(1).optional(),
-          user_about_me: z.string().min(1).optional(),
-          user_image: z.string().min(1).optional(),
-          user_website: z.string().min(1).url().optional(),
-          user_socials: z.string().min(1).url().array().min(1).optional(),
-        })
-        .strict(),
+      ReqBody: UserCreationSchema.strict(),
       ResBody: UserResponseSchema,
     },
     handler: async (req, res) => {
@@ -113,19 +125,7 @@ export class UserController extends Controller {
       Params: z.object({
         id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
       }),
-      ReqBody: z
-        .object({
-          user_name: z.string().min(1, "Nama tidak boleh kosong!").optional(),
-          user_password: z.string().min(1, "Password tidak boleh kosong!").optional(),
-          user_education_level: z.string().min(1, "Pendidikan tidak boleh kosong!").optional(),
-          user_school: z.string().min(1, "Sekolah tidak boleh kosong!").nullable().optional(),
-          user_about_me: z.string().min(1, "Biodata tidak boleh kosong!").nullable().optional(),
-          user_image: z.string().min(1, "Gambar tidak boleh kosong!").nullable().optional(),
-          user_email: z.string().min(1, "Email tidak boleh kosong!").email().optional(),
-          user_website: z.string().min(1).url().nullable().optional(),
-          user_socials: z.string().min(1).url().array().optional(),
-        })
-        .strict(),
+      ReqBody: UserUpdateSchema.strict(),
       ResBody: UserResponseSchema,
     },
     handler: async (req, res) => {
