@@ -4,7 +4,6 @@ import { Application } from "../../app.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
-import { OrgRoles } from "./OrgMisc.js";
 
 describe("organization api", () => {
   let app: Application;
@@ -234,7 +233,7 @@ function getOrgDetail(org_id: number, cookie: string) {
   });
 }
 
-function assignMember(org_id: number, user_id: number, role: OrgRoles, cookie: string) {
+function assignMember(org_id: number, user_id: number, role: "Admin" | "Invited", cookie: string) {
   return new APIContext("OrgsDetailMembersDetailPut").fetch(
     `/api/orgs/${org_id}/users/${user_id}`,
     {

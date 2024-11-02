@@ -1,6 +1,5 @@
 import { Button, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import { OrgRoles } from "../../../../../backend/src/modules/organization/OrgMisc.ts";
 import UserCard from "../../../components/Cards/UserCard.tsx";
 import {
   useOrgsDetailMembersDelete,
@@ -16,7 +15,7 @@ function OrgMember(props: {
   };
   putOption?: {
     text: string;
-    role: OrgRoles;
+    role: "Admin" | "Invited";
   };
 }) {
   const { user_id, org_id, deleteOption, putOption } = props;
