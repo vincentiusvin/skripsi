@@ -109,7 +109,9 @@ function OrgsEdit(props: { org_id: number }) {
                     height: 100,
                   }}
                 />
-                <Typography>Drag and Drop or Click to upload an image!</Typography>
+                <Typography textAlign={"center"}>
+                  Tarik atau tekan di sini untuk mengupload gambar!
+                </Typography>
               </Stack>
             )}
           </ImageDropzone>
@@ -125,26 +127,29 @@ function OrgsEdit(props: { org_id: number }) {
           <TextField
             fullWidth
             onChange={(e) => setOrgName(e.target.value)}
-            label="Name"
+            required
+            label="Nama Organisasi"
             value={orgName ?? org_data.org_name}
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgAddress(e.target.value)}
-            label="Address"
+            required
+            label="Alamat"
             value={orgAddress ?? org_data.org_address}
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgPhone(e.target.value)}
-            label="Phone"
+            required
+            label="Nomor Telepon"
             value={orgPhone ?? org_data.org_phone}
           ></TextField>
           <FormControl>
-            <InputLabel>Category</InputLabel>
+            <InputLabel>Kategori</InputLabel>
             <Select
               onChange={(e) => setOrgCategory(e.target.value as number[])}
-              label="Category"
+              label="Kategori"
               multiple
               value={orgCategory ?? org_data.org_categories.map((x) => x.category_id)}
             >
@@ -159,11 +164,20 @@ function OrgsEdit(props: { org_id: number }) {
         </Stack>
       </Grid>
       <Grid size={12}>
-        <Typography>Tentang Organisasi</Typography>
-        <MarkdownEditor
-          oldValue={orgDesc ?? org_data.org_description}
-          onChange={(x) => setOrgDesc(x)}
-        ></MarkdownEditor>
+        <Paper
+          sx={{
+            paddingX: 4,
+            paddingY: 2,
+          }}
+        >
+          <Typography variant="body1" mb={1}>
+            Tentang Organisasi
+          </Typography>
+          <MarkdownEditor
+            oldValue={orgDesc ?? org_data.org_description}
+            onChange={(x) => setOrgDesc(x)}
+          ></MarkdownEditor>
+        </Paper>
       </Grid>
       <Grid size={12}>
         <Button

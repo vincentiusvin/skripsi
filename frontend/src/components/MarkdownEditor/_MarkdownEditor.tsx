@@ -27,7 +27,6 @@ import { Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { memo } from "react";
 import { fileToBase64DataURL } from "../../helpers/file.ts";
-import "./style.css";
 
 function _MarkdownEditor(props: { oldValue?: string; onChange?: (x: string) => void }) {
   const { oldValue, onChange } = props;
