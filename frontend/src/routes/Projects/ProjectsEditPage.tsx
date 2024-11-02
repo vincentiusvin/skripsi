@@ -73,12 +73,14 @@ function ProjectsEdit(props: { project_id: number }) {
       <Grid size={12}>
         <Stack spacing={4}>
           <TextField
+            required
             fullWidth
             onChange={(e) => setProjectName(e.target.value)}
             label="Nama Proyek"
             value={projectName ?? oldData.project_name}
           ></TextField>
           <TextField
+            required
             fullWidth
             onChange={(e) => setProjectDesc(e.target.value)}
             label="Deskripsi Singkat"
