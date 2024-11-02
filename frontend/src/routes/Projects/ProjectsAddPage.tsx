@@ -14,7 +14,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
-import MarkdownEditor from "../../components/MarkdownEditor/index.tsx";
+import RichEditor from "../../components/RichEditor/index.tsx";
 import { useProjectsCategoriesGet, useProjectsPost } from "../../queries/project_hooks";
 
 function ProjectsAddPage() {
@@ -91,10 +91,7 @@ function ProjectsAddPage() {
             <Typography variant="body1" mb={1}>
               Tentang Organisasi
             </Typography>
-            <MarkdownEditor
-              onChange={(x) => setProjectContent(x)}
-              oldValue={projectContent ?? ""}
-            />
+            <RichEditor onBlur={(x) => setProjectContent(x)} defaultValue={projectContent ?? ""} />
           </Box>
         </Stack>
       </Grid>

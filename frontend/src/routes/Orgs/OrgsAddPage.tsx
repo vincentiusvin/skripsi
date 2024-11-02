@@ -16,7 +16,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
-import MarkdownEditor from "../../components/MarkdownEditor/index.tsx";
+import RichEditor from "../../components/RichEditor/index.tsx";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { useOrgsCategoriesGet, useOrgsPost } from "../../queries/org_hooks";
@@ -172,7 +172,7 @@ function OrgsAddPage() {
           <Typography variant="body1" mb={1}>
             Tentang Organisasi
           </Typography>
-          <MarkdownEditor oldValue={orgDesc} onChange={(x) => setOrgDesc(x)}></MarkdownEditor>
+          <RichEditor defaultValue={orgDesc} onBlur={(x) => setOrgDesc(x)}></RichEditor>
         </Paper>
       </Grid>
       <Grid size={12}>

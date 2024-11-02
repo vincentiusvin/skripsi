@@ -17,7 +17,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
-import MarkdownEditor from "../../components/MarkdownEditor/index.tsx";
+import RichEditor from "../../components/RichEditor/index.tsx";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { handleOptionalStringUpdate } from "../../helpers/misc.ts";
 import { useOrgDetailGet, useOrgsCategoriesGet, useOrgsUpdate } from "../../queries/org_hooks";
@@ -173,10 +173,10 @@ function OrgsEdit(props: { org_id: number }) {
           <Typography variant="body1" mb={1}>
             Tentang Organisasi
           </Typography>
-          <MarkdownEditor
-            oldValue={orgDesc ?? org_data.org_description}
-            onChange={(x) => setOrgDesc(x)}
-          ></MarkdownEditor>
+          <RichEditor
+            defaultValue={orgDesc ?? org_data.org_description}
+            onBlur={(x) => setOrgDesc(x)}
+          ></RichEditor>
         </Paper>
       </Grid>
       <Grid size={12}>

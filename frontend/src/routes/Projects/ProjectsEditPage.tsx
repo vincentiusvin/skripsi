@@ -14,7 +14,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
-import MarkdownEditor from "../../components/MarkdownEditor";
+import RichEditor from "../../components/RichEditor/index.tsx";
 import { handleOptionalStringUpdate } from "../../helpers/misc.ts";
 import {
   useProjectsCategoriesGet,
@@ -101,9 +101,9 @@ function ProjectsEdit(props: { project_id: number }) {
             </Select>
           </FormControl>
           <Typography>Deskripsi</Typography>
-          <MarkdownEditor
-            onChange={(x) => setProjectContent(x)}
-            oldValue={projectContent ?? oldData.project_content ?? ""}
+          <RichEditor
+            onBlur={(x) => setProjectContent(x)}
+            defaultValue={projectContent ?? oldData.project_content ?? ""}
           />
         </Stack>
       </Grid>

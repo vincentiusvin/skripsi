@@ -4,7 +4,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
-import MarkdownEditor from "../../components/MarkdownEditor/index.tsx";
+import RichEditor from "../../components/RichEditor/index.tsx";
 import UserSelect from "../../components/UserSelect.tsx";
 import {
   useContributionsDetailGet,
@@ -85,9 +85,9 @@ function ContributionEdit(props: { contribution_id: number }) {
             }}
             current_users={contributionUsers ?? contribs_users}
           />
-          <MarkdownEditor
-            oldValue={contributionDesc ?? contribs.description}
-            onChange={(x) => setContributionDesc(x)}
+          <RichEditor
+            defaultValue={contributionDesc ?? contribs.description}
+            onBlur={(x) => setContributionDesc(x)}
           />
         </Stack>
       </Grid>

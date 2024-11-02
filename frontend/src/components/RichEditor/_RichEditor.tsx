@@ -35,8 +35,12 @@ import {
 import { memo, useRef } from "react";
 import { fileToBase64DataURL } from "../../helpers/file.ts";
 
-function _MarkdownEditor(props: { oldValue?: string; onChange?: (x: string) => void }) {
-  const { oldValue } = props;
+function _RichEditor(props: {
+  label?: string;
+  defaultValue?: string;
+  onBlur?: (x: string) => void;
+}) {
+  const { label, defaultValue, onBlur } = props;
   const ref = useRef<RichTextEditorRef>(null);
 
   async function insertImage(files: File[], pos?: number) {
@@ -61,32 +65,39 @@ function _MarkdownEditor(props: { oldValue?: string; onChange?: (x: string) => v
     <Box
       sx={{
         position: "relative",
-        ".markdown-editor-label-custom": {
+        ".rich-editor-label-custom": {
           color: (theme) => theme.palette.text.secondary,
         },
-        "&:focus-within .markdown-editor-label-custom": {
+        "&:focus-within .rich-editor-label-custom": {
           color: (theme) => theme.palette.primary.main,
         },
       }}
     >
-      <Typography
-        position={"absolute"}
-        component={"label"}
-        zIndex={100}
-        sx={{
-          transform: "translate(8px, -11px)",
-          top: 0,
-          background: (theme) => theme.palette.background.default,
-          pointerEvents: "none",
-          paddingX: 1,
-        }}
-        className="markdown-editor-label-custom"
-        variant="caption"
-      >
-        Penjelasan Proyek
-      </Typography>
+      {label ? (
+        <Typography
+          position={"absolute"}
+          component={"label"}
+          zIndex={100}
+          sx={{
+            transform: "translate(8px, -11px)",
+            top: 0,
+            background: (theme) => theme.palette.background.default,
+            pointerEvents: "none",
+            paddingX: 1,
+          }}
+          className="rich-editor-label-custom"
+          variant="caption"
+        >
+          {label}
+        </Typography>
+      ) : null}
       <RichTextEditor
-        content={oldValue}
+        onBlur={(e) => {
+          if (onBlur) {
+            onBlur(e.editor.getHTML());
+          }
+        }}
+        content={defaultValue}
         ref={ref}
         extensions={[
           StarterKit,
@@ -175,4 +186,4 @@ function _MarkdownEditor(props: { oldValue?: string; onChange?: (x: string) => v
   );
 }
 
-export default memo(_MarkdownEditor, () => true);
+export default memo(_RichEditor, () => true);
