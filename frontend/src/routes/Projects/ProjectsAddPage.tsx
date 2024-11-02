@@ -1,5 +1,6 @@
 import { Save } from "@mui/icons-material";
 import {
+  Box,
   Button,
   FormControl,
   InputLabel,
@@ -86,8 +87,15 @@ function ProjectsAddPage() {
                 ))}
             </Select>
           </FormControl>
-          <Typography>Deskripsi</Typography>
-          <MarkdownEditor onChange={(x) => setProjectContent(x)} oldValue={projectContent ?? ""} />
+          <Box>
+            <Typography variant="body1" mb={1}>
+              Tentang Organisasi
+            </Typography>
+            <MarkdownEditor
+              onChange={(x) => setProjectContent(x)}
+              oldValue={projectContent ?? ""}
+            />
+          </Box>
         </Stack>
       </Grid>
       <Grid size={12}>
