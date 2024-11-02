@@ -75,20 +75,20 @@ function ProjectsEdit(props: { project_id: number }) {
           <TextField
             fullWidth
             onChange={(e) => setProjectName(e.target.value)}
-            label="Name"
+            label="Nama Proyek"
             value={projectName ?? oldData.project_name}
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setProjectDesc(e.target.value)}
-            label="Description"
+            label="Deskripsi Singkat"
             value={projectDesc ?? oldData.project_desc}
           ></TextField>
           <FormControl>
             <InputLabel>Category</InputLabel>
             <Select
               value={projectCategory ?? oldData.project_categories.map((x) => x.category_id)}
-              label="Category"
+              label="Kategori"
               multiple
               onChange={(e) => setProjectCategory(e.target.value as number[])}
             >
@@ -100,8 +100,8 @@ function ProjectsEdit(props: { project_id: number }) {
                 ))}
             </Select>
           </FormControl>
-          <Typography>Deskripsi</Typography>
           <RichEditor
+            label="Detail Proyek"
             onBlur={(x) => setProjectContent(x)}
             defaultValue={projectContent ?? oldData.project_content ?? ""}
           />

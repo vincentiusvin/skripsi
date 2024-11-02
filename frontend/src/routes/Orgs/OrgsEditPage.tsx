@@ -164,18 +164,11 @@ function OrgsEdit(props: { org_id: number }) {
         </Stack>
       </Grid>
       <Grid size={12}>
-        <Paper
-          sx={{
-            paddingX: 4,
-            paddingY: 2,
-          }}
-        >
-          <RichEditor
-            label={"Tentang Organisasi"}
-            defaultValue={orgDesc ?? org_data.org_description}
-            onBlur={(x) => setOrgDesc(x)}
-          ></RichEditor>
-        </Paper>
+        <RichEditor
+          label={"Tentang Organisasi"}
+          defaultValue={orgDesc ?? org_data.org_description}
+          onBlur={(x) => setOrgDesc(x)}
+        ></RichEditor>
       </Grid>
       <Grid size={12}>
         <Button

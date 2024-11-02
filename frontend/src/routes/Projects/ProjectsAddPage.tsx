@@ -15,6 +15,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import RichEditor from "../../components/RichEditor.tsx";
+import { handleOptionalStringCreation } from "../../helpers/misc.ts";
 import { useProjectsCategoriesGet, useProjectsPost } from "../../queries/project_hooks";
 
 function ProjectsAddPage() {
@@ -30,7 +31,7 @@ function ProjectsAddPage() {
   const { mutate: postProject } = useProjectsPost({
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Added successful</Typography>,
+        message: <Typography>Proyek berhasil ditambahkan!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });
@@ -44,7 +45,7 @@ function ProjectsAddPage() {
       project_name: projectName,
       org_id: org_id,
       category_id: projectCategory,
-      project_content: projectContent,
+      project_content: handleOptionalStringCreation(projectContent),
     });
   }
 
@@ -60,22 +61,22 @@ function ProjectsAddPage() {
       <Grid size={12}>
         <Stack spacing={4}>
           <TextField
+            required
             fullWidth
             onChange={(e) => setProjectName(e.target.value)}
-            label="Name"
+            label="Nama Proyek"
           ></TextField>
           <TextField
+            required
             fullWidth
             onChange={(e) => setProjectDesc(e.target.value)}
-            label="Description"
+            label="Deskripsi Singkat"
           ></TextField>
           <FormControl>
-            <InputLabel id="demo-simple-select-label">Category</InputLabel>
+            <InputLabel>Kategori</InputLabel>
             <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
               value={projectCategory}
-              label="Category"
+              label="Kategori"
               multiple
               onChange={(e) => setProjectCategory(e.target.value as number[])}
             >
@@ -88,10 +89,11 @@ function ProjectsAddPage() {
             </Select>
           </FormControl>
           <Box>
-            <Typography variant="body1" mb={1}>
-              Tentang Organisasi
-            </Typography>
-            <RichEditor onBlur={(x) => setProjectContent(x)} defaultValue={projectContent ?? ""} />
+            <RichEditor
+              label="Detail Proyek"
+              onBlur={(x) => setProjectContent(x)}
+              defaultValue={projectContent ?? ""}
+            />
           </Box>
         </Stack>
       </Grid>

@@ -145,7 +145,7 @@ function OrgsAddPage() {
             label="Nomor Telepon"
           ></TextField>
           <FormControl>
-            <InputLabel id="demo-simple-select-label">Kategori</InputLabel>
+            <InputLabel>Kategori</InputLabel>
             <Select
               value={orgCategory ?? []}
               multiple
@@ -163,19 +163,11 @@ function OrgsAddPage() {
         </Stack>
       </Grid>
       <Grid size={12}>
-        <Paper
-          sx={{
-            paddingX: 4,
-            paddingY: 2,
-          }}
-        >
-          <Typography variant="body1" mb={1}></Typography>
-          <RichEditor
-            label={"Tentang Organisasi"}
-            defaultValue={orgDesc}
-            onBlur={(x) => setOrgDesc(x)}
-          ></RichEditor>
-        </Paper>
+        <RichEditor
+          label={"Tentang Organisasi"}
+          defaultValue={orgDesc}
+          onBlur={(x) => setOrgDesc(x)}
+        ></RichEditor>
       </Grid>
       <Grid size={12}>
         <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addOrg()}>
