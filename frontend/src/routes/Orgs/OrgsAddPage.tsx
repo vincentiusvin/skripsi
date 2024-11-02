@@ -34,7 +34,7 @@ function OrgsAddPage() {
   const { mutate: orgsPost } = useOrgsPost({
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Added successful!</Typography>,
+        message: <Typography>Organisasi berhasil ditambahkan!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });

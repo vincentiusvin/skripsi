@@ -41,7 +41,7 @@ function OrgsEdit(props: { org_id: number }) {
     org_id,
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Edit successful!</Typography>,
+        message: <Typography>Organisasi berhasil diubah!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });
