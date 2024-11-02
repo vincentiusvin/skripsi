@@ -1,4 +1,3 @@
-import "@mdxeditor/editor/style.css";
 import { Skeleton } from "@mui/material";
 import { Suspense, lazy } from "react";
 
