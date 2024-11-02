@@ -1,46 +1,28 @@
 import type { Express } from "express";
-import { ZodType, z } from "zod";
+import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
 import { validateLogged } from "../../helpers/validate.js";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
-import { OrgRoles, org_roles, parseRole } from "./OrgMisc.js";
+import { defaultError, zodStringReadableAsNumber } from "../../helpers/validators.js";
+import { org_roles } from "./OrgMisc.js";
 import { OrgService } from "./OrgService.js";
 
 const OrgUpdateSchema = z.object({
-  org_name: z
-    .string({ message: "Nama invalid!" })
-    .min(1, { message: "Nama tidak boleh kosong!" })
-    .optional(),
-  org_description: z
-    .string({ message: "Deskripsi invalid!" })
-    .min(1, { message: "Deskripsi tidak boleh kosong!" })
-    .optional(),
-  org_address: z
-    .string({ message: "Alamat invalid!" })
-    .min(1, { message: "Alamat tidak boleh kosong!" })
-    .optional(),
-  org_phone: z
-    .string({ message: "Nomor telefon invalid!" })
-    .min(1, { message: "Nomor telefon tidak boleh kosong!" })
-    .optional(),
-  org_image: z.string({ message: "Deskripsi invalid!" }).nullable().optional(),
-  org_categories: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
+  org_name: z.string(defaultError("Nama tidak valid!")).min(1).optional(),
+  org_description: z.string(defaultError("Deskripsi tidak valid!")).min(1).optional(),
+  org_address: z.string(defaultError("Alamat tidak valid!")).min(1).optional(),
+  org_phone: z.string(defaultError("Nomor telepon tidak valid!")).min(1).optional(),
+  org_image: z.string(defaultError("Gambar tidak valid!")).nullable().optional(),
+  org_categories: z.number(defaultError("Kategori organisasi tidak valid!")).array().optional(),
 });
 
 const OrgCreationSchema = z.object({
-  org_name: z.string({ message: "Nama invalid!" }).min(1, { message: "Nama tidak boleh kosong!" }),
-  org_description: z
-    .string({ message: "Deskripsi invalid!" })
-    .min(1, { message: "Deskripsi tidak boleh kosong!" }),
-  org_address: z
-    .string({ message: "Alamat invalid!" })
-    .min(1, { message: "Alamat tidak boleh kosong!" }),
-  org_phone: z
-    .string({ message: "Nomor telefon invalid!" })
-    .min(1, { message: "Nomor telefon tidak boleh kosong!" }),
-  org_image: z.string({ message: "Gambar invalid!" }).min(1).optional(),
-  org_categories: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
+  org_name: z.string(defaultError("Nama tidak valid!")).min(1),
+  org_description: z.string(defaultError("Deskripsi tidak valid!")).min(1),
+  org_address: z.string(defaultError("Alamat tidak valid!")).min(1),
+  org_phone: z.string(defaultError("Nomor telepon tidak valid!")).min(1),
+  org_image: z.string(defaultError("Gambar tidak valid!")).optional(),
+  org_categories: z.number(defaultError("Kategori organisasi tidak valid!")).array().optional(),
 });
 
 const OrgResponseSchema = z.object({
@@ -62,6 +44,11 @@ const OrgResponseSchema = z.object({
       user_role: z.enum(org_roles).or(z.literal("Not Involved")),
     })
     .array(),
+});
+
+const OrgMemberParamSchema = z.object({
+  org_id: zodStringReadableAsNumber("Nomor organisasi tidak valid!"),
+  user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!"),
 });
 
 export class OrgController extends Controller {
@@ -121,7 +108,7 @@ export class OrgController extends Controller {
     path: "/api/orgs",
     schema: {
       ReqQuery: z.object({
-        user_id: zodStringReadableAsNumber("Id pengguna invalid!").optional(),
+        user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!").optional(),
       }),
       ResBody: OrgResponseSchema.array(),
     },
@@ -139,7 +126,7 @@ export class OrgController extends Controller {
     path: "/api/orgs/:org_id",
     schema: {
       Params: z.object({
-        org_id: zodStringReadableAsNumber("ID tidak valid!"),
+        org_id: zodStringReadableAsNumber("Nomor organisasi tidak valid!"),
       }),
       ResBody: OrgResponseSchema,
     },
@@ -176,7 +163,7 @@ export class OrgController extends Controller {
       ReqBody: OrgUpdateSchema,
       ResBody: OrgResponseSchema,
       Params: z.object({
-        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
+        org_id: zodStringReadableAsNumber("Nomor organisasi tidak valid!"),
       }),
     },
     method: "put",
@@ -208,10 +195,7 @@ export class OrgController extends Controller {
     method: "get",
     path: "/api/orgs/:org_id/users/:user_id",
     schema: {
-      Params: z.object({
-        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
-        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
-      }),
+      Params: OrgMemberParamSchema,
       ResBody: z.object({
         role: z.enum(org_roles).or(z.literal("Not Involved")),
       }),
@@ -233,15 +217,9 @@ export class OrgController extends Controller {
         role: z.enum(org_roles).or(z.literal("Not Involved")),
       }),
       ReqBody: z.object({
-        role: z
-          .string()
-          .min(1)
-          .transform((arg) => parseRole(arg)) as ZodType<OrgRoles>,
+        role: z.enum(org_roles, defaultError("Peran anggota tidak valid!")),
       }),
-      Params: z.object({
-        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
-        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
-      }),
+      Params: OrgMemberParamSchema,
     },
     handler: async (req, res) => {
       const { org_id: org_id_str, user_id: user_id_str } = req.params;
@@ -260,10 +238,7 @@ export class OrgController extends Controller {
     method: "delete",
     path: "/api/orgs/:org_id/users/:user_id",
     schema: {
-      Params: z.object({
-        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
-        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
-      }),
+      Params: OrgMemberParamSchema,
       ResBody: z.object({
         role: z.enum(org_roles).or(z.literal("Not Involved")),
       }),

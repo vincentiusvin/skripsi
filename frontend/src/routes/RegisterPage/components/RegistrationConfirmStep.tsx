@@ -2,7 +2,7 @@ import { Email, Language, Person, Place, School } from "@mui/icons-material";
 import { Button, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
-import StyledLink from "../../../components/StyledLink.tsx";
+import StringLabel from "../../../components/StringLabel.tsx";
 import { LinkIcons, linkParser, parseURL } from "../../../helpers/linker.tsx";
 import { handleOptionalStringCreation } from "../../../helpers/misc.ts";
 import { useUsersPost } from "../../../queries/user_hooks.ts";
@@ -103,17 +103,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
         </Typography>
         <Stack spacing={1}>
           {simple_datas.map((x, i) => (
-            <Stack key={i} direction="row" gap={2} alignItems={"center"}>
-              {x.icon}
-              <Stack>
-                <Typography variant="caption">{x.label}</Typography>
-                {x.value != undefined && x.value.length !== 0 ? (
-                  <Typography variant="body1">{x.value}</Typography>
-                ) : (
-                  <Typography color="gray">Belum diisi</Typography>
-                )}
-              </Stack>
-            </Stack>
+            <StringLabel key={i} icon={x.icon} value={x.value} label={x.label} />
           ))}
         </Stack>
       </Grid>
@@ -124,19 +114,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
         {link_data.length !== 0 ? (
           <Stack spacing={1}>
             {link_data.map((x, i) => (
-              <Stack key={i} direction="row" gap={2} alignItems={"center"}>
-                {x.icon}
-                <Stack>
-                  <Typography variant="caption">{x.label}</Typography>
-                  {x.value.length !== 0 ? (
-                    <StyledLink to={x.value}>
-                      <Typography variant="body1">{x.value}</Typography>
-                    </StyledLink>
-                  ) : (
-                    <Typography color="gray">Belum diisi</Typography>
-                  )}
-                </Stack>
-              </Stack>
+              <StringLabel key={i} icon={x.icon} value={x.value} label={x.label} />
             ))}
           </Stack>
         ) : (

@@ -26,15 +26,15 @@ function OrgsAddPage() {
   const [orgDesc, setOrgDesc] = useState("");
   const [orgAddress, setOrgAddress] = useState("");
   const [orgPhone, setOrgPhone] = useState("");
-  const [orgImage, setOrgImage] = useState<string | null>(null);
-  const [orgCategory, setOrgCategory] = useState<number | null>(null);
+  const [orgImage, setOrgImage] = useState<string | undefined>();
+  const [orgCategory, setOrgCategory] = useState<number[] | undefined>();
 
   const [, setLocation] = useLocation();
 
   const { mutate: orgsPost } = useOrgsPost({
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Added successful!</Typography>,
+        message: <Typography>Organisasi berhasil ditambahkan!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });
@@ -46,10 +46,10 @@ function OrgsAddPage() {
     orgsPost({
       org_name: orgName,
       org_address: orgAddress,
-      org_categories: orgCategory != null ? [orgCategory] : [],
+      org_categories: orgCategory,
       org_phone: orgPhone,
       org_description: orgDesc,
-      org_image: orgImage !== null ? orgImage : undefined,
+      org_image: orgImage,
     });
   }
 
@@ -84,7 +84,7 @@ function OrgsAddPage() {
             }}
             onChange={async (file) => {
               const b64 = file ? await fileToBase64DataURL(file) : null;
-              setOrgImage(b64);
+              setOrgImage(b64 ?? undefined);
             }}
           >
             {orgImage ? (
@@ -111,7 +111,9 @@ function OrgsAddPage() {
                     height: 100,
                   }}
                 />
-                <Typography>Drag and Drop or Click to upload an image!</Typography>
+                <Typography textAlign={"center"}>
+                  Tarik atau tekan di sini untuk mengupload gambar!
+                </Typography>
               </Stack>
             )}
           </ImageDropzone>
@@ -127,24 +129,28 @@ function OrgsAddPage() {
           <TextField
             fullWidth
             onChange={(e) => setOrgName(e.target.value)}
-            label="Name"
+            required
+            label="Nama Organisasi"
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgAddress(e.target.value)}
-            label="Address"
+            required
+            label="Alamat"
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgPhone(e.target.value)}
-            label="Phone"
+            required
+            label="Nomor Telepon"
           ></TextField>
           <FormControl>
-            <InputLabel id="demo-simple-select-label">Category</InputLabel>
+            <InputLabel id="demo-simple-select-label">Kategori</InputLabel>
             <Select
-              value={orgCategory}
-              onChange={(e) => setOrgCategory(Number(e.target.value))}
-              label="Category"
+              value={orgCategory ?? []}
+              multiple
+              onChange={(e) => setOrgCategory(e.target.value as number[])}
+              label="Kategori"
             >
               {categories &&
                 categories.map((category) => (
@@ -157,8 +163,17 @@ function OrgsAddPage() {
         </Stack>
       </Grid>
       <Grid size={12}>
-        <Typography>Tentang Organisasi</Typography>
-        <MarkdownEditor oldValue={orgDesc} onChange={(x) => setOrgDesc(x)}></MarkdownEditor>
+        <Paper
+          sx={{
+            paddingX: 4,
+            paddingY: 2,
+          }}
+        >
+          <Typography variant="body1" mb={1}>
+            Tentang Organisasi
+          </Typography>
+          <MarkdownEditor oldValue={orgDesc} onChange={(x) => setOrgDesc(x)}></MarkdownEditor>
+        </Paper>
       </Grid>
       <Grid size={12}>
         <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addOrg()}>

@@ -1,16 +1,20 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller";
-import { zodPagination, zodStringReadableAsNumber } from "../../helpers/validators.js";
+import {
+  defaultError,
+  zodPagination,
+  zodStringReadableAsNumber,
+} from "../../helpers/validators.js";
 import { contribution_status } from "./ContributionMisc.js";
 import { ContributionService } from "./ContributionService";
 
 const ContributionUpdateSchema = z.object({
-  name: z.string().min(1, "Nama kontribusi tidak boleh kosong!").optional(),
-  description: z.string().min(1, "Deskripsi kontribusi tidak boleh kosong!").optional(),
-  project_id: z.number().min(1, "Project ID tidak boleh kosong!").optional(),
-  user_ids: z.array(z.number(), { message: "User Id invalid!" }).min(1).optional(),
-  status: z.enum(contribution_status).optional(),
+  name: z.string(defaultError("Judul kontribusi tidak valid!")).min(1).optional(),
+  description: z.string(defaultError("Deskripsi kontribusi tidak valid!")).min(1).optional(),
+  project_id: z.number(defaultError("Nomor proyek tidak valid!")).min(1).optional(),
+  user_ids: z.number(defaultError("Nomor pengguna tidak valid!")).array().min(1).optional(),
+  status: z.enum(contribution_status, defaultError("Status tidak valid!")).optional(),
 });
 
 const ContributionResponseSchema = z.object({
@@ -28,10 +32,10 @@ const ContributionResponseSchema = z.object({
 });
 
 const ContributionCreationSchema = z.object({
-  name: z.string().min(1, "Nama kontribusi tidak boleh kosong!"),
-  description: z.string().min(1, "Deskripsi kontribusi tidak boleh kosong!"),
-  project_id: z.number().min(1, "Project ID tidak boleh kosong!"),
-  user_ids: z.array(z.number(), { message: "User Id invalid!" }).min(1),
+  name: z.string(defaultError("Judul kontribusi tidak valid!")).min(1),
+  description: z.string(defaultError("Deskripsi kontribusi tidak valid!")).min(1),
+  project_id: z.number(defaultError("Nomor proyek tidak valid!")).min(1),
+  user_ids: z.number(defaultError("Nomor pengguna tidak valid!")).array().min(1),
 });
 
 export class ContributionController extends Controller {
@@ -55,9 +59,9 @@ export class ContributionController extends Controller {
     path: "/api/contributions",
     schema: {
       ReqQuery: z.object({
-        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!").optional(),
-        project_id: zodStringReadableAsNumber("ID proyek tidak valid!").optional(),
-        status: z.enum(contribution_status).optional(),
+        user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!").optional(),
+        project_id: zodStringReadableAsNumber("Nomor proyek tidak valid!").optional(),
+        status: z.enum(contribution_status, defaultError("Status tidak valid!")).optional(),
         ...zodPagination(),
       }),
       ResBody: ContributionResponseSchema.array(),
@@ -84,7 +88,7 @@ export class ContributionController extends Controller {
     path: "/api/contributions/:id",
     schema: {
       Params: z.object({
-        id: zodStringReadableAsNumber("ID kontribusi tidak valid"),
+        id: zodStringReadableAsNumber("Nomor kontribusi tidak valid"),
       }),
       ResBody: ContributionResponseSchema,
     },

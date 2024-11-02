@@ -1,54 +1,21 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import { defaultError, zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { report_status } from "./ReportMisc.js";
 import { ReportService } from "./ReportService.js";
 
 const ReportUpdateSchema = z.object({
-  title: z
-    .string({
-      message: "Judul tidak valid!",
-    })
-    .min(1, {
-      message: "Judul tidak boleh kosong!",
-    })
-    .optional(),
-  description: z
-    .string({
-      message: "Deskripsi tidak valid!",
-    })
-    .min(1, {
-      message: "Deskripsi tidak boleh kosong!",
-    })
-    .optional(),
-  status: z.enum(report_status).optional(),
-  resolution: z
-    .string({
-      message: "Catatan tidak valid!",
-    })
-    .min(1, {
-      message: "Catatan tidak boleh kosong!",
-    })
-    .optional(),
-  chatroom: z.boolean().optional(),
+  title: z.string(defaultError("Judul laporan tidak valid!")).min(1).optional(),
+  description: z.string(defaultError("Deskripsi laporan tidak valid!")).min(1).optional(),
+  status: z.enum(report_status, defaultError("Status laporan tidak valid!")).optional(),
+  resolution: z.string(defaultError("Resolusi laporan tidak valid!")).min(1).optional(),
+  chatroom: z.boolean(defaultError("Nomor ruang chat tidak valid!")).optional(),
 });
 
 const ReportCreationSchema = z.object({
-  title: z
-    .string({
-      message: "Judul tidak valid!",
-    })
-    .min(1, {
-      message: "Judul tidak boleh kosong!",
-    }),
-  description: z
-    .string({
-      message: "Deskripsi tidak valid!",
-    })
-    .min(1, {
-      message: "Deskripsi tidak boleh kosong!",
-    }),
+  title: z.string(defaultError("Judul laporan tidak valid!")).min(1),
+  description: z.string(defaultError("Deskripsi laporan tidak valid!")).min(1),
 });
 
 const ReportResponseSchema = z.object({

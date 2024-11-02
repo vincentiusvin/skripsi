@@ -2,8 +2,22 @@ import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { AuthError } from "../../helpers/error.js";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import { defaultError, zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { FriendService } from "./FriendService.js";
+
+const FriendParamsSchema = z.object({
+  from_id: zodStringReadableAsNumber("Nomor pengguna pertama tidak valid!"),
+  to_id: zodStringReadableAsNumber("Nomor pengguna kedua tidak valid!"),
+});
+
+const FriendUpdateSchema = z.object({
+  status: z.enum(["Accepted", "Sent", "Pending"], defaultError("Status pertemanan tidak valid!")),
+});
+
+const FriendResponseSchema = z.object({
+  status: z.enum(["Accepted", "Pending", "Sent", "None"]),
+  user_id: z.number(),
+});
 
 export class FriendController extends Controller {
   private friend_service: FriendService;
@@ -25,16 +39,9 @@ export class FriendController extends Controller {
     method: "put",
     path: "/api/users/:from_id/friends/:to_id",
     schema: {
-      Params: z.object({
-        from_id: zodStringReadableAsNumber("ID pengguna pertama tidak valid!"),
-        to_id: zodStringReadableAsNumber("ID pengguna kedua tidak valid!"),
-      }),
-      ReqBody: z.object({
-        status: z.enum(["Accepted", "Sent", "Pending"]),
-      }),
-      ResBody: z.object({
-        status: z.enum(["Accepted", "Pending", "Sent", "None"]),
-      }),
+      Params: FriendParamsSchema,
+      ReqBody: FriendUpdateSchema,
+      ResBody: FriendResponseSchema,
     },
     handler: async (req, res) => {
       const from_user_id = Number(req.params.from_id);
@@ -45,37 +52,29 @@ export class FriendController extends Controller {
       await this.friend_service.updateFriend(from_user_id, to_user_id, status, sender_id);
       const result = await this.friend_service.getFriendStatus(from_user_id, to_user_id);
 
-      res.status(200).json({ status: result });
+      res.status(200).json({ status: result, user_id: to_user_id });
     },
   });
   UsersDetailFriendsDetailGet = new Route({
     method: "get",
     path: "/api/users/:from_id/friends/:to_id",
     schema: {
-      Params: z.object({
-        from_id: zodStringReadableAsNumber("ID pengguna pertama tidak valid!"),
-        to_id: zodStringReadableAsNumber("ID pengguna kedua tidak valid!"),
-      }),
-      ResBody: z.object({
-        status: z.enum(["Accepted", "Pending", "Sent", "None"]),
-      }),
+      Params: FriendParamsSchema,
+      ResBody: FriendResponseSchema,
     },
     handler: async (req, res) => {
       const from_user_id = Number(req.params.from_id);
       const to_user_id = Number(req.params.to_id);
 
       const result = await this.friend_service.getFriendStatus(from_user_id, to_user_id);
-      res.status(200).json({ status: result });
+      res.status(200).json({ status: result, user_id: to_user_id });
     },
   });
   UsersDetailFriendsDetailDelete = new Route({
     method: "delete",
     path: "/api/users/:from_id/friends/:to_id",
     schema: {
-      Params: z.object({
-        from_id: zodStringReadableAsNumber("ID pengguna pertama tidak valid!"),
-        to_id: zodStringReadableAsNumber("ID pengguna kedua tidak valid!"),
-      }),
+      Params: FriendParamsSchema,
       ResBody: z.object({
         msg: z.string(),
       }),
@@ -97,14 +96,9 @@ export class FriendController extends Controller {
     path: "/api/users/:user_id/friends",
     schema: {
       Params: z.object({
-        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
+        user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!"),
       }),
-      ResBody: z
-        .object({
-          status: z.enum(["Accepted", "Pending", "Sent", "None"]),
-          user_id: z.number(),
-        })
-        .array(),
+      ResBody: FriendResponseSchema.array(),
     },
     handler: async (req, res) => {
       const user_id = Number(req.params.user_id);
