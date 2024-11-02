@@ -5,10 +5,10 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import RichEditor from "../../components/RichEditor.tsx";
-import UserSelect from "../../components/UserSelect.tsx";
 import { useContributionsPost } from "../../queries/contribution_hooks.ts";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import AuthorizeProjects from "../Projects/components/AuthorizeProjects.tsx";
+import ContributionSelectPeople from "./components/ContributionUserSelect.tsx";
 
 function ProjectsAddContribution(props: { project_id: number }) {
   const { project_id } = props;
@@ -58,15 +58,12 @@ function ProjectsAddContribution(props: { project_id: number }) {
             onChange={(e) => setContributionName(e.target.value)}
             required
           />
-          <UserSelect
-            label="Kontributor"
-            allowed_users={project.project_members
-              .filter((x) => x.role === "Dev")
-              .map((x) => x.user_id)}
-            onChange={(x) => {
+          <ContributionSelectPeople
+            value={contributionUsers}
+            project_id={project_id}
+            setValue={(x) => {
               setContributionUsers(x);
             }}
-            current_users={contributionUsers}
           />
           <RichEditor defaultValue={contributionDesc} onBlur={(x) => setContributionDesc(x)} />
         </Stack>
