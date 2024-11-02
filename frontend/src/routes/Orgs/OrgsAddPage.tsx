@@ -16,7 +16,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
-import MarkdownEditor from "../../components/MarkdownEditor/index.tsx";
+import RichEditor from "../../components/RichEditor.tsx";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { useOrgsCategoriesGet, useOrgsPost } from "../../queries/org_hooks";
@@ -145,7 +145,7 @@ function OrgsAddPage() {
             label="Nomor Telepon"
           ></TextField>
           <FormControl>
-            <InputLabel id="demo-simple-select-label">Kategori</InputLabel>
+            <InputLabel>Kategori</InputLabel>
             <Select
               value={orgCategory ?? []}
               multiple
@@ -163,17 +163,11 @@ function OrgsAddPage() {
         </Stack>
       </Grid>
       <Grid size={12}>
-        <Paper
-          sx={{
-            paddingX: 4,
-            paddingY: 2,
-          }}
-        >
-          <Typography variant="body1" mb={1}>
-            Tentang Organisasi
-          </Typography>
-          <MarkdownEditor oldValue={orgDesc} onChange={(x) => setOrgDesc(x)}></MarkdownEditor>
-        </Paper>
+        <RichEditor
+          label={"Tentang Organisasi"}
+          defaultValue={orgDesc}
+          onBlur={(x) => setOrgDesc(x)}
+        ></RichEditor>
       </Grid>
       <Grid size={12}>
         <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addOrg()}>

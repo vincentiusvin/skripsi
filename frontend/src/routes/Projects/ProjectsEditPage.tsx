@@ -14,7 +14,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
-import MarkdownEditor from "../../components/MarkdownEditor";
+import RichEditor from "../../components/RichEditor.tsx";
 import { handleOptionalStringUpdate } from "../../helpers/misc.ts";
 import {
   useProjectsCategoriesGet,
@@ -73,22 +73,24 @@ function ProjectsEdit(props: { project_id: number }) {
       <Grid size={12}>
         <Stack spacing={4}>
           <TextField
+            required
             fullWidth
             onChange={(e) => setProjectName(e.target.value)}
-            label="Name"
+            label="Nama Proyek"
             value={projectName ?? oldData.project_name}
           ></TextField>
           <TextField
+            required
             fullWidth
             onChange={(e) => setProjectDesc(e.target.value)}
-            label="Description"
+            label="Deskripsi Singkat"
             value={projectDesc ?? oldData.project_desc}
           ></TextField>
           <FormControl>
             <InputLabel>Category</InputLabel>
             <Select
               value={projectCategory ?? oldData.project_categories.map((x) => x.category_id)}
-              label="Category"
+              label="Kategori"
               multiple
               onChange={(e) => setProjectCategory(e.target.value as number[])}
             >
@@ -100,10 +102,10 @@ function ProjectsEdit(props: { project_id: number }) {
                 ))}
             </Select>
           </FormControl>
-          <Typography>Deskripsi</Typography>
-          <MarkdownEditor
-            onChange={(x) => setProjectContent(x)}
-            oldValue={projectContent ?? oldData.project_content ?? ""}
+          <RichEditor
+            label="Detail Proyek"
+            onBlur={(x) => setProjectContent(x)}
+            defaultValue={projectContent ?? oldData.project_content ?? ""}
           />
         </Stack>
       </Grid>

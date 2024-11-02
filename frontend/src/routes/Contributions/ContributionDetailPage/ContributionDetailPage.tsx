@@ -3,7 +3,7 @@ import Grid from "@mui/material/Grid2";
 import dayjs from "dayjs";
 import { useParams } from "wouter";
 import ProjectCard from "../../../components/Cards/ProjectCard.tsx";
-import MarkdownViewer from "../../../components/MarkdownViewer.tsx";
+import RichViewer from "../../../components/RichViewer.tsx";
 import StyledLink from "../../../components/StyledLink.tsx";
 import UserLabel from "../../../components/UserLabel.tsx";
 import { useContributionsDetailGet } from "../../../queries/contribution_hooks.ts";
@@ -47,7 +47,7 @@ function ContributionDetail(props: { contribution_id: number }) {
             paddingX: 2,
           }}
         >
-          <MarkdownViewer>{contrib.description}</MarkdownViewer>
+          <RichViewer>{contrib.description}</RichViewer>
         </Box>
       </Grid>
       <Grid

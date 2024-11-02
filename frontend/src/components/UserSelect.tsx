@@ -6,14 +6,15 @@ function UserSelect(props: {
   current_users: number[];
   allowed_users: number[];
   onChange?: (x: number[]) => void;
+  required?: boolean;
 }) {
-  const { onChange: onChange, label, current_users, allowed_users } = props;
+  const { required, onChange: onChange, label, current_users, allowed_users } = props;
 
   const all = [...new Set([...current_users, ...allowed_users])];
 
   return (
     <FormControl fullWidth>
-      <InputLabel>{label}</InputLabel>
+      <InputLabel required={required}>{label}</InputLabel>
       <Select
         fullWidth
         label={label}
