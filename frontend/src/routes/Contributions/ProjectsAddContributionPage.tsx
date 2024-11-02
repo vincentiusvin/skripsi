@@ -65,7 +65,11 @@ function ProjectsAddContribution(props: { project_id: number }) {
               setContributionUsers(x);
             }}
           />
-          <RichEditor defaultValue={contributionDesc} onBlur={(x) => setContributionDesc(x)} />
+          <RichEditor
+            label="Deskripsi Kontribusi *"
+            defaultValue={contributionDesc}
+            onBlur={(x) => setContributionDesc(x)}
+          />
         </Stack>
       </Grid>
       <Grid size={12}>

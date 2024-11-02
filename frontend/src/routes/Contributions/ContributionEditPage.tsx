@@ -85,7 +85,7 @@ function ContributionEdit(props: { contribution_id: number }) {
             }}
           />
           <RichEditor
-            label="Deskripsi Kontribusi"
+            label="Deskripsi Kontribusi *"
             defaultValue={contributionDesc ?? contribs.description}
             onBlur={(x) => setContributionDesc(x)}
           />
