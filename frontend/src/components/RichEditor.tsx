@@ -32,10 +32,10 @@ import {
   RichTextEditorRef,
   insertImages,
 } from "mui-tiptap";
-import { memo, useRef } from "react";
-import { fileToBase64DataURL } from "../../helpers/file.ts";
+import { useRef } from "react";
+import { fileToBase64DataURL } from "../helpers/file.ts";
 
-function _RichEditor(props: {
+function RichEditor(props: {
   label?: string;
   defaultValue?: string;
   onBlur?: (x: string) => void;
@@ -186,4 +186,4 @@ function _RichEditor(props: {
   );
 }
 
-export default memo(_RichEditor, () => true);
+export default RichEditor;

@@ -14,7 +14,7 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
-import RichEditor from "../../components/RichEditor/index.tsx";
+import RichEditor from "../../components/RichEditor.tsx";
 import { useProjectsCategoriesGet, useProjectsPost } from "../../queries/project_hooks";
 
 function ProjectsAddPage() {

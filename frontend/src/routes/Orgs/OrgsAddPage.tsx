@@ -16,7 +16,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
-import RichEditor from "../../components/RichEditor/index.tsx";
+import RichEditor from "../../components/RichEditor.tsx";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { useOrgsCategoriesGet, useOrgsPost } from "../../queries/org_hooks";
