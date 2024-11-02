@@ -170,10 +170,8 @@ function OrgsEdit(props: { org_id: number }) {
             paddingY: 2,
           }}
         >
-          <Typography variant="body1" mb={1}>
-            Tentang Organisasi
-          </Typography>
           <RichEditor
+            label={"Tentang Organisasi"}
             defaultValue={orgDesc ?? org_data.org_description}
             onBlur={(x) => setOrgDesc(x)}
           ></RichEditor>

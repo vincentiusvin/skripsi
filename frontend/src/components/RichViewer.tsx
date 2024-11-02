@@ -16,7 +16,9 @@ function RichViewer(props: { children: string }) {
         Superscript,
         Link,
         LinkBubbleMenuHandler,
-        ResizableImage,
+        ResizableImage.configure({
+          allowBase64: true,
+        }),
       ]}
       content={children}
     />

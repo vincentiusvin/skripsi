@@ -106,7 +106,9 @@ function RichEditor(props: {
           Superscript,
           Link,
           LinkBubbleMenuHandler,
-          ResizableImage,
+          ResizableImage.configure({
+            allowBase64: true,
+          }),
         ]}
         editorProps={{
           handleDrop: (view, event) => {

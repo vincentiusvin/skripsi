@@ -169,10 +169,12 @@ function OrgsAddPage() {
             paddingY: 2,
           }}
         >
-          <Typography variant="body1" mb={1}>
-            Tentang Organisasi
-          </Typography>
-          <RichEditor defaultValue={orgDesc} onBlur={(x) => setOrgDesc(x)}></RichEditor>
+          <Typography variant="body1" mb={1}></Typography>
+          <RichEditor
+            label={"Tentang Organisasi"}
+            defaultValue={orgDesc}
+            onBlur={(x) => setOrgDesc(x)}
+          ></RichEditor>
         </Paper>
       </Grid>
       <Grid size={12}>
