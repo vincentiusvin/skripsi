@@ -15,6 +15,7 @@ import { UserEditContext, useUserEditState } from "./context.tsx";
 
 function UserEdit(props: { user_id: number }) {
   const { user_id } = props;
+  const [, setLocation] = useLocation();
   const { mutate: editUser } = useUsersDetailUpdate({
     user_id,
     onSuccess: () => {
@@ -23,6 +24,7 @@ function UserEdit(props: { user_id: number }) {
         autoHideDuration: 5000,
         variant: "success",
       });
+      setLocation(`/users/${user_id}`);
     },
   });
 
