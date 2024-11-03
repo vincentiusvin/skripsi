@@ -25,7 +25,6 @@ function userWithSocials(eb: ExpressionBuilder<DB, "ms_users">) {
   return jsonArrayFrom(
     eb
       .selectFrom("socials_users")
-      .innerJoin("ms_users", "socials_users.user_id", "ms_users.id")
       .select(["socials_users.social"])
       .whereRef("socials_users.user_id", "=", "ms_users.id"),
   );
@@ -198,18 +197,20 @@ export class UserRepository {
         .execute();
     }
 
-    if (user_socials != undefined && user_socials.length !== 0) {
+    if (user_socials != undefined) {
       await this.db.deleteFrom("socials_users").where("user_id", "=", id).execute();
 
-      await this.db
-        .insertInto("socials_users")
-        .values(
-          user_socials.map((x) => ({
-            user_id: id,
-            social: x,
-          })),
-        )
-        .execute();
+      if (user_socials.length !== 0) {
+        await this.db
+          .insertInto("socials_users")
+          .values(
+            user_socials.map((x) => ({
+              user_id: id,
+              social: x,
+            })),
+          )
+          .execute();
+      }
     }
   }
 }
