@@ -2,11 +2,6 @@ import { ArrowLeft, ArrowRight, MoreVert } from "@mui/icons-material";
 import {
   Alert,
   Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
   Menu,
   Paper,
@@ -15,21 +10,16 @@ import {
   Stack,
   Tab,
   Tabs,
-  TextField,
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useParams } from "wouter";
 import ChatroomComponent from "../../components/Chatroom/Chatroom.tsx";
 import { ChangeNameDialog, DeleteRoom } from "../../components/Chatroom/ChatroomMisc.tsx";
+import CreateProjectChatroomDialog from "../../components/CreateProjectChatroom.tsx";
 import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
-import {
-  useChatSocket,
-  useProjectsDetailChatroomsGet,
-  useProjectsDetailChatroomsPost,
-} from "../../queries/chat_hooks.ts";
+import { useChatSocket, useProjectsDetailChatroomsGet } from "../../queries/chat_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import AuthorizeProjects, { RedirectBack } from "./components/AuthorizeProjects.tsx";
 
@@ -50,21 +40,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
   const { data: chatrooms } = useProjectsDetailChatroomsGet({ project_id });
   const selectedChatroom = chatrooms?.find((x) => x.chatroom_id === activeRoom);
 
-  const [addRoomOpen, setAddRoomOpen] = useState(false);
-  const [addRoomName, setAddRoomName] = useState("");
-
   const [sideOpen, setSideOpen] = useState(false);
-
-  const { mutate: createRoom } = useProjectsDetailChatroomsPost({
-    project_id: project_id,
-    onSuccess: () => {
-      enqueueSnackbar({
-        message: <Typography>Room created!</Typography>,
-        variant: "success",
-      });
-      setAddRoomOpen(false);
-    },
-  });
 
   useChatSocket({
     userId: user_id,
@@ -81,26 +57,9 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
     <Box minHeight={"inherit"}>
       <Snackbar open={!connected}>
         <Alert severity="error">
-          <Typography>You are not connected!</Typography>
+          <Typography>Koneksi chat terputus!</Typography>
         </Alert>
       </Snackbar>
-      <Dialog open={addRoomOpen} onClose={() => setAddRoomOpen(false)}>
-        <DialogTitle>Add new room</DialogTitle>
-        <DialogContent>
-          <TextField fullWidth onChange={(e) => setAddRoomName(e.target.value)} label="Room name" />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() =>
-              createRoom({
-                name: addRoomName,
-              })
-            }
-          >
-            Create room
-          </Button>
-        </DialogActions>
-      </Dialog>
       <Grid container minHeight={"inherit"} spacing={1}>
         {sideOpen || selectedChatroom == undefined ? (
           <Grid
@@ -109,15 +68,6 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
               lg: 2,
             }}
           >
-            <Button
-              fullWidth
-              variant="contained"
-              onClick={() => {
-                setAddRoomOpen(true);
-              }}
-            >
-              Add room
-            </Button>
             <Tabs
               orientation="vertical"
               scrollButtons="auto"
@@ -127,6 +77,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
                 setActiveRoom(newRoomId);
               }}
             >
+              <CreateProjectChatroomDialog project_id={project_id} />
               {chatrooms?.map((x, i) => (
                 <Tab key={i} label={x.chatroom_name} value={x.chatroom_id} />
               ))}
