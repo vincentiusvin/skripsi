@@ -191,8 +191,18 @@ function EditBucketDialog(props: { bucket_id: number }) {
   const [active, setActive] = useState(false);
   const { data: bucket } = useBucketsDetailGet({ bucket_id });
   const [newName, setNewName] = useState<string | undefined>();
-  const { mutate: editBucket } = useBucketsDetailPut({ bucket_id });
+  const { mutate: editBucket } = useBucketsDetailPut({
+    bucket_id,
+    onSuccess: () => {
+      reset();
+    },
+  });
   const { mutate: deleteBucket } = useBucketsDetailDelete({ bucket_id });
+
+  function reset() {
+    setNewName(undefined);
+    setActive(false);
+  }
 
   if (!bucket) {
     return <Skeleton />;
@@ -200,13 +210,14 @@ function EditBucketDialog(props: { bucket_id: number }) {
 
   return (
     <>
-      <Dialog open={active} onClose={() => setActive(false)}>
+      <Dialog open={active} onClose={() => reset()}>
         <DialogTitle>Edit Kategori</DialogTitle>
         <DialogContent>
           <Box my={1}>
             <TextField
               label="Nama"
               value={newName ?? bucket.name}
+              required
               onChange={(x) => setNewName(x.target.value)}
             ></TextField>
           </Box>
@@ -215,19 +226,15 @@ function EditBucketDialog(props: { bucket_id: number }) {
           <Button
             onClick={() => {
               deleteBucket();
-              setActive(false);
             }}
           >
             Hapus Kelompok Tugas
           </Button>
           <Button
             onClick={() => {
-              if (newName) {
-                editBucket({
-                  name: newName,
-                });
-              }
-              setActive(false);
+              editBucket({
+                name: newName,
+              });
             }}
           >
             Simpan Nama
@@ -256,7 +263,7 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
   const { mutate: addTask } = useTasksPost({
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Tugas ditambahkan!</Typography>,
+        message: <Typography>Tugas berhasil ditambahkan!</Typography>,
         variant: "success",
       });
       setSelectedBucketEdit(undefined);
@@ -283,7 +290,12 @@ function AddNewTaskDialog(props: { bucket_id: number; project_id: number }) {
           <DialogTitle>Tambah tugas baru</DialogTitle>
           <DialogContent>
             <Stack spacing={2} my={2}>
-              <TextField fullWidth onChange={(e) => setTaskName(e.target.value)} label="Judul" />
+              <TextField
+                fullWidth
+                required
+                onChange={(e) => setTaskName(e.target.value)}
+                label="Judul"
+              />
               <TextField
                 fullWidth
                 onChange={(e) => setTaskDescription(e.target.value)}
@@ -351,7 +363,7 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
   const { mutate: editTask } = useTasksDetailPut({
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Task modified!</Typography>,
+        message: <Typography>Tugas berhasil diedit!</Typography>,
         variant: "success",
       });
       setDialogOpen(false);
@@ -362,7 +374,7 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
     task_id,
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Task deleted!</Typography>,
+        message: <Typography>Tugas berhasil dihapus!</Typography>,
         variant: "success",
       });
       setDialogOpen(false);
@@ -390,6 +402,7 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
               <TextField
                 fullWidth
                 onChange={(e) => setTaskName(e.target.value)}
+                required
                 label="Judul"
                 value={taskName ?? task.name}
               />
@@ -637,7 +650,7 @@ function Kanban(props: { project_id: number }) {
           });
         }}
       >
-        <Stack direction={"row"} spacing={5} flexGrow={1} pb={8} overflow={"scroll"}>
+        <Stack direction={"row"} spacing={5} flexGrow={1} pb={8} overflow={"scroll"} pt={2}>
           {tempTasksData.map(({ bucket, tasks }, i) => (
             <Box key={bucket.id}>
               <Stack spacing={1} width={"250px"} direction={"row"} alignItems={"center"}>

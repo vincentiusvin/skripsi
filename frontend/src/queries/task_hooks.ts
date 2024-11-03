@@ -155,13 +155,16 @@ export function useBucketsDetailGet(opts: { bucket_id: number; enabled?: boolean
   });
 }
 
-export function useBucketsDetailPut(opts: { bucket_id: number }) {
-  const { bucket_id } = opts;
+export function useBucketsDetailPut(opts: { bucket_id: number; onSuccess?: () => void }) {
+  const { bucket_id, onSuccess } = opts;
   return useMutation({
     mutationFn: new APIContext("BucketsDetailPut").bodyFetch(`/api/buckets/${bucket_id}`, {
       method: "put",
     }),
     onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
       queryClient.invalidateQueries({ queryKey: bucketKeys.all() });
     },
   });
