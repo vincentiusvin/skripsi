@@ -60,13 +60,14 @@ function AddRoomDialog(props: { user_id: number }) {
   return (
     <>
       <Dialog open={addRoomOpen} onClose={() => reset()}>
-        <DialogTitle>Add new room</DialogTitle>
+        <DialogTitle>Tambah ruangan baru</DialogTitle>
         <DialogContent>
           <Box pt={2}>
             <TextField
               fullWidth
               onChange={(e) => setAddRoomName(e.target.value)}
-              label="Nama ruangan"
+              label="Nama Ruangan"
+              required
             />
           </Box>
         </DialogContent>

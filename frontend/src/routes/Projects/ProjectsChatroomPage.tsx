@@ -60,10 +60,11 @@ function CreateProjectChatroomDialog(props: { project_id: number }) {
         <DialogContent>
           <Box pt={2}>
             <TextField
+              required
               value={addRoomName ?? ""}
               fullWidth
               onChange={(e) => setAddRoomName(e.target.value)}
-              label="Nama ruangan"
+              label="Nama Ruangan"
             />
           </Box>
         </DialogContent>
