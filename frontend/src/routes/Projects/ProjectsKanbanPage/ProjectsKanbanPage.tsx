@@ -15,17 +15,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Add } from "@mui/icons-material";
-import { Box, BoxProps, Button, Skeleton, Stack, TextField, Typography } from "@mui/material";
-import { enqueueSnackbar } from "notistack";
+import { Box, BoxProps, Skeleton, Stack, Typography } from "@mui/material";
 import { ReactNode, useEffect, useState } from "react";
 import { useParams } from "wouter";
-import {
-  useBucketsPost,
-  useFormattedTasks,
-  useTasksDetailPut,
-} from "../../../queries/task_hooks.ts";
+import { useFormattedTasks, useTasksDetailPut } from "../../../queries/task_hooks.ts";
 import AuthorizeProjects from "../components/AuthorizeProjects.tsx";
+import AddBucket from "./AddBucket.tsx";
 import AddTaskDialog from "./AddTaskDialog.tsx";
 import EditBucketDialog from "./EditBucketDialog.tsx";
 import Task from "./TaskCard.tsx";
@@ -112,16 +107,6 @@ type TempTasks = {
 
 function Kanban(props: { project_id: number }) {
   const { project_id } = props;
-  const [newBucketName, setNewBucketName] = useState("");
-  const { mutate: addBucket } = useBucketsPost({
-    onSuccess: () => {
-      setNewBucketName("");
-      enqueueSnackbar({
-        message: <Typography>Kategori ditambahkan!</Typography>,
-        variant: "success",
-      });
-    },
-  });
   const { mutate: updateTask } = useTasksDetailPut({});
   const { data: tasksData, isFetching } = useFormattedTasks({ project_id });
 
@@ -332,16 +317,7 @@ function Kanban(props: { project_id: number }) {
             </DragOverlay>
           </Box>
           <Box>
-            <Stack direction={"row"} alignItems={"top"} width={"300px"}>
-              <TextField
-                label="Tambah Kategori"
-                value={newBucketName}
-                onChange={(e) => setNewBucketName(e.target.value)}
-              ></TextField>
-              <Button onClick={() => addBucket({ name: newBucketName, project_id })}>
-                <Add />
-              </Button>
-            </Stack>
+            <AddBucket project_id={project_id} />
           </Box>
         </Stack>
       </DndContext>
