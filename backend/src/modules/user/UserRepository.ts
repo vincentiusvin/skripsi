@@ -14,6 +14,8 @@ const defaultUserFields = (eb: ExpressionBuilder<DB, "ms_users">) =>
     "ms_users.is_admin as user_is_admin",
     "ms_users.created_at as user_created_at",
     "ms_users.website as user_website",
+    "ms_users.location as user_location",
+    "ms_users.workplace as user_workplace",
     userWithSocials(eb).as("user_socials"),
   ] as const;
 
@@ -76,6 +78,8 @@ export class UserRepository {
     user_image?: string | undefined;
     user_website?: string | undefined;
     user_socials?: string[];
+    user_location?: string;
+    user_workplace?: string;
   }) {
     const {
       user_name,
@@ -87,6 +91,8 @@ export class UserRepository {
       user_image,
       user_website,
       user_socials,
+      user_location,
+      user_workplace,
     } = obj;
 
     const user_id = await this.db
@@ -100,6 +106,8 @@ export class UserRepository {
         about_me: user_about_me,
         image: user_image,
         website: user_website,
+        location: user_location,
+        workplace: user_workplace,
       })
       .returning("ms_users.id")
       .executeTakeFirst();
@@ -150,6 +158,8 @@ export class UserRepository {
       hashed_password?: string;
       user_website?: string | null;
       user_socials?: string[];
+      user_location?: string | null;
+      user_workplace?: string | null;
     },
   ) {
     const { user_socials, ...main_update } = obj;
@@ -166,6 +176,8 @@ export class UserRepository {
         user_about_me,
         user_image,
         user_website,
+        user_location,
+        user_workplace,
       } = main_update;
 
       await this.db
@@ -179,6 +191,8 @@ export class UserRepository {
           about_me: user_about_me,
           image: user_image,
           website: user_website,
+          location: user_location,
+          workplace: user_workplace,
         })
         .where("id", "=", id)
         .execute();

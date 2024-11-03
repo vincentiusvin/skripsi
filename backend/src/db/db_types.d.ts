@@ -204,10 +204,12 @@ export interface MsUsers {
   id: Generated<number>;
   image: string | null;
   is_admin: Generated<boolean>;
+  location: string | null;
   name: string;
   password: string;
   school: string | null;
   website: string | null;
+  workplace: string | null;
 }
 
 export interface OrgsUsers {
