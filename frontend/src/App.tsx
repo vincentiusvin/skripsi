@@ -34,7 +34,7 @@ import ProjectsActivityPage from "./routes/Projects/ProjectsActivityPage.tsx";
 import ProjectsAddPage from "./routes/Projects/ProjectsAddPage";
 import ProjectsChatroomPage from "./routes/Projects/ProjectsChatroomPage.tsx";
 import ProjectsEditPage from "./routes/Projects/ProjectsEditPage.tsx";
-import ProjectsKanbanPage from "./routes/Projects/ProjectsKanbanPage.tsx";
+import ProjectsKanbanPage from "./routes/Projects/ProjectsKanbanPage/ProjectsKanbanPage.tsx";
 import ProjectsLeavePage from "./routes/Projects/ProjectsLeavePage.tsx";
 import ProjectListPage from "./routes/Projects/ProjectsListPage";
 import ProjectsManagePage from "./routes/Projects/ProjectsManagePage.tsx";
