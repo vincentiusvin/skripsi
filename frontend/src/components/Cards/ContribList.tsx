@@ -1,13 +1,13 @@
 import {
   ListItem,
   ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Skeleton,
   Stack,
   Theme,
+  Typography,
   useMediaQuery,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import dayjs from "dayjs";
 import { useContributionsDetailGet } from "../../queries/contribution_hooks.ts";
 import ContributionChip from "../../routes/Contributions/components/ContributionChip.tsx";
@@ -30,18 +30,31 @@ function ContribList(props: { contribution_id: number; hideStatus?: boolean }) {
     <StyledLink to={`/contributions/${contrib.id}`} key={contrib.id}>
       <ListItem disableGutters>
         <ListItemButton>
-          <ListItemText
-            primary={contrib.name}
-            secondary={dayjs(contrib.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
-          />
-          <ListItemIcon>
-            <Stack direction="row" spacing={!responsive ? 2 : 1} alignItems={"center"}>
-              {contrib.user_ids.map((y) => (
-                <UserLabel disableName={responsive} user_id={y.user_id} key={y.user_id} />
-              ))}
-              {!hideStatus ? <ContributionChip status={contrib.status} /> : null}
-            </Stack>
-          </ListItemIcon>
+          <Grid container width="100%" alignItems={"center"}>
+            <Grid size={4}>
+              <Typography variant="body1">{contrib.name}</Typography>
+              <Typography variant="caption">
+                {dayjs(contrib.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+              </Typography>
+            </Grid>
+            <Grid size={8}>
+              <Stack alignItems={"end"} spacing={1}>
+                {!hideStatus ? <ContributionChip status={contrib.status} /> : null}
+                <Stack
+                  direction="row"
+                  gap={!responsive ? 2 : 1}
+                  justifyContent={"end"}
+                  width={"100%"}
+                  alignItems={"center"}
+                  flexWrap={"wrap"}
+                >
+                  {contrib.user_ids.map((y) => (
+                    <UserLabel disableName={responsive} user_id={y.user_id} key={y.user_id} />
+                  ))}
+                </Stack>
+              </Stack>
+            </Grid>
+          </Grid>
         </ListItemButton>
       </ListItem>
     </StyledLink>
