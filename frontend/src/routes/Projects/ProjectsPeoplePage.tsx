@@ -18,29 +18,34 @@ import ProjectMember from "./components/ProjectMember.tsx";
 function InviteMembersDialog(props: { project_id: number }) {
   const { project_id } = props;
   const { data: users } = useUsersGet();
+  const { data: project } = useProjectsDetailGet({ project_id });
   const [inviteMembers, setInviteMembers] = useState(false);
+
+  if (users == undefined || project == undefined) {
+    return <Skeleton />;
+  }
+
+  const project_members = project?.project_members.map((x) => x.user_id);
+  const invitable = users.filter((x) => !project_members.includes(x.user_id));
+
   return (
     <>
       <Dialog open={inviteMembers} onClose={() => setInviteMembers(false)}>
         <DialogTitle>Add members</DialogTitle>
         <DialogContent>
-          {users ? (
-            <Stack gap={2}>
-              {users.map((x) => (
-                <ProjectMember
-                  project_id={project_id}
-                  user_id={x.user_id}
-                  key={x.user_id}
-                  putOption={{
-                    role: "Invited",
-                    text: "Invite",
-                  }}
-                />
-              ))}
-            </Stack>
-          ) : (
-            <Skeleton />
-          )}
+          <Stack gap={2}>
+            {invitable.map((x) => (
+              <ProjectMember
+                project_id={project_id}
+                user_id={x.user_id}
+                key={x.user_id}
+                putOption={{
+                  role: "Invited",
+                  text: "Invite",
+                }}
+              />
+            ))}
+          </Stack>
         </DialogContent>
       </Dialog>
       <Button onClick={() => setInviteMembers(true)} variant="contained">

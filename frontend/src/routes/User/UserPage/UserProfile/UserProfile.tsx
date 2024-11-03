@@ -158,7 +158,11 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
             <Typography variant="h6" fontWeight={"bold"} textAlign={"center"}>
               Tentang
             </Typography>
-            <Typography>
+            <Typography
+              sx={{
+                whiteSpace: "pre-wrap",
+              }}
+            >
               {userDetail.user_about_me ? userDetail.user_about_me : "Belum ada informasi"}
             </Typography>
           </Paper>

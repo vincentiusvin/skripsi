@@ -1,5 +1,6 @@
 import { Delete, Edit, Logout, People } from "@mui/icons-material";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -35,11 +36,16 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
         variant: "success",
         message: <Typography>Ruangan berhasil diedit!</Typography>,
       });
-      setEditRoomMembersOpen(false);
+      reset();
     },
   });
   const [editRoomMembersOpen, setEditRoomMembersOpen] = useState(false);
   const [newUsers, setNewUsers] = useState<number[] | undefined>();
+
+  function reset() {
+    setEditRoomMembersOpen(false);
+    setNewUsers(undefined);
+  }
 
   if (!chatroom || !users) {
     return <Skeleton />;
@@ -54,22 +60,25 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
         <ListItemIcon>
           <People />
         </ListItemIcon>
-        <ListItemText>Add Members</ListItemText>
+        <ListItemText>Edit Anggota</ListItemText>
       </MenuItem>
-      <Dialog open={editRoomMembersOpen} onClose={() => setEditRoomMembersOpen(false)}>
-        <DialogTitle>Tambah pengguna</DialogTitle>
+      <Dialog open={editRoomMembersOpen} onClose={() => reset()}>
+        <DialogTitle>Edit Anggota</DialogTitle>
         <DialogContent
           sx={{
             minWidth: 350,
           }}
         >
-          <UserSelect
-            current_users={newUsers ?? chatroom_users}
-            allowed_users={all_users}
-            onChange={(newUsers) => {
-              setNewUsers(newUsers);
-            }}
-          />
+          <Box pt={2}>
+            <UserSelect
+              label={"Anggota"}
+              current_users={newUsers ?? chatroom_users}
+              allowed_users={all_users}
+              onChange={(newUsers) => {
+                setNewUsers(newUsers);
+              }}
+            />
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button
@@ -98,6 +107,7 @@ export function ChangeNameDialog(props: { chatroom_id: number }) {
         variant: "success",
         message: <Typography>Ruangan berhasil diedit!</Typography>,
       });
+      reset();
     },
   });
   const [editRoomNameOpen, setEditRoomNameOpen] = useState(false);
@@ -106,24 +116,32 @@ export function ChangeNameDialog(props: { chatroom_id: number }) {
     return <Skeleton />;
   }
 
+  function reset() {
+    setEditRoomName(undefined);
+    setEditRoomNameOpen(false);
+  }
+
   return (
     <>
       <MenuItem onClick={() => setEditRoomNameOpen(true)}>
         <ListItemIcon>
           <Edit />
         </ListItemIcon>
-        <ListItemText> Rename </ListItemText>
+        <ListItemText>Edit Ruangan</ListItemText>
       </MenuItem>
 
-      <Dialog open={editRoomNameOpen} onClose={() => setEditRoomNameOpen(false)}>
-        <DialogTitle>Rename room</DialogTitle>
+      <Dialog open={editRoomNameOpen} onClose={() => reset()}>
+        <DialogTitle>Edit ruangan</DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            value={editRoomName ?? chatroom.chatroom_name}
-            onChange={(e) => setEditRoomName(e.target.value)}
-            label="Room name"
-          />
+          <Box pt={2}>
+            <TextField
+              required
+              fullWidth
+              value={editRoomName ?? chatroom.chatroom_name}
+              onChange={(e) => setEditRoomName(e.target.value)}
+              label="Nama Ruangan"
+            />
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button
@@ -131,10 +149,9 @@ export function ChangeNameDialog(props: { chatroom_id: number }) {
               editRoom({
                 name: editRoomName,
               });
-              setEditRoomNameOpen(false);
             }}
           >
-            Rename Room
+            Simpan
           </Button>
         </DialogActions>
       </Dialog>
@@ -173,7 +190,7 @@ export function LeaveRoom(props: { chatroom_id: number; user_id: number; onLeave
       <ListItemIcon>
         <Logout />
       </ListItemIcon>
-      <ListItemText>Leave</ListItemText>
+      <ListItemText>Keluar</ListItemText>
     </MenuItem>
   );
 }

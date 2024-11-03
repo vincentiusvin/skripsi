@@ -15,36 +15,41 @@ import { useUsersGet } from "../../queries/user_hooks.ts";
 import AuthorizeOrgs from "./components/AuthorizeOrgs.tsx";
 import OrgMember from "./components/OrgMember.tsx";
 
-function InviteMembersDialog(props: { project_id: number }) {
-  const { project_id } = props;
+function InviteMembersDialog(props: { org_id: number }) {
+  const { org_id } = props;
   const { data: users } = useUsersGet();
+  const { data: org } = useOrgDetailGet({ id: org_id });
   const [inviteMembers, setInviteMembers] = useState(false);
+
+  if (users == undefined || org == undefined) {
+    return <Skeleton />;
+  }
+
+  const org_members = org.org_users.map((x) => x.user_id);
+  const invitable = users.filter((x) => !org_members.includes(x.user_id));
+
   return (
     <>
       <Dialog open={inviteMembers} onClose={() => setInviteMembers(false)}>
         <DialogTitle>Add members</DialogTitle>
         <DialogContent>
-          {users ? (
-            <Stack gap={2}>
-              {users.map((x) => (
-                <OrgMember
-                  org_id={project_id}
-                  user_id={x.user_id}
-                  key={x.user_id}
-                  putOption={{
-                    role: "Invited",
-                    text: "Invite",
-                  }}
-                />
-              ))}
-            </Stack>
-          ) : (
-            <Skeleton />
-          )}
+          <Stack gap={2}>
+            {invitable.map((x) => (
+              <OrgMember
+                org_id={org_id}
+                user_id={x.user_id}
+                key={x.user_id}
+                putOption={{
+                  role: "Invited",
+                  text: "Undang",
+                }}
+              />
+            ))}
+          </Stack>
         </DialogContent>
       </Dialog>
       <Button onClick={() => setInviteMembers(true)} variant="contained">
-        Invite Members
+        Tambah Pengurus
       </Button>
     </>
   );
@@ -85,7 +90,7 @@ function OrgsPeople(props: { org_id: number }) {
       <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>
         Pengurus Organisasi
       </Typography>
-      <InviteMembersDialog project_id={org_id} />
+      <InviteMembersDialog org_id={org_id} />
       {memberTypes.map((x, i) => (
         <Fragment key={i}>
           <Typography variant="h6" textAlign={"center"}>

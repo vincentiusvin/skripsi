@@ -33,6 +33,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { ReactNode } from "react";
+import { useLocation } from "wouter";
 import { useOrgsGet } from "../../queries/org_hooks.ts";
 import { useProjectsGet } from "../../queries/project_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
@@ -204,6 +205,7 @@ function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
 function SideNavDashboard() {
   const [_navData] = useNavigation();
   const { data: session } = useSessionGet();
+  const [location] = useLocation();
   const navData: NavigationData = session?.logged
     ? _navData
     : { type: "browse", open: _navData.open };
@@ -350,7 +352,7 @@ function SideNavDashboard() {
       {links.map((x) => (
         <StyledLink to={x.link} key={x.name}>
           <ListItem dense>
-            <ListItemButton>
+            <ListItemButton selected={location === x.link}>
               <ListItemIcon>{x.avatar}</ListItemIcon>
               <ListItemText>{x.name}</ListItemText>
             </ListItemButton>

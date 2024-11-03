@@ -33,6 +33,66 @@ import {
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import AuthorizeProjects, { RedirectBack } from "./components/AuthorizeProjects.tsx";
 
+function CreateProjectChatroomDialog(props: { project_id: number }) {
+  const { project_id } = props;
+  const [addRoomOpen, setAddRoomOpen] = useState(false);
+  const [addRoomName, setAddRoomName] = useState("");
+  const { mutate: createRoom } = useProjectsDetailChatroomsPost({
+    project_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Ruang chat berhasil dibuat!</Typography>,
+        variant: "success",
+      });
+      reset();
+    },
+  });
+
+  function reset() {
+    setAddRoomName("");
+    setAddRoomOpen(false);
+  }
+
+  return (
+    <>
+      <Dialog open={addRoomOpen} onClose={() => reset()}>
+        <DialogTitle>Tambah ruangan baru</DialogTitle>
+        <DialogContent>
+          <Box pt={2}>
+            <TextField
+              required
+              value={addRoomName ?? ""}
+              fullWidth
+              onChange={(e) => setAddRoomName(e.target.value)}
+              label="Nama Ruangan"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() =>
+              createRoom({
+                name: addRoomName,
+              })
+            }
+          >
+            Buat ruangan
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Button
+        fullWidth
+        variant="contained"
+        onClick={() => {
+          setAddRoomOpen(true);
+        }}
+      >
+        Tambah Ruangan
+      </Button>
+    </>
+  );
+}
+
 function ChatroomWrapper(props: { user_id: number; project_id: number }) {
   const { project_id, user_id } = props;
   const [connected, setConnected] = useState(false);
@@ -50,21 +110,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
   const { data: chatrooms } = useProjectsDetailChatroomsGet({ project_id });
   const selectedChatroom = chatrooms?.find((x) => x.chatroom_id === activeRoom);
 
-  const [addRoomOpen, setAddRoomOpen] = useState(false);
-  const [addRoomName, setAddRoomName] = useState("");
-
   const [sideOpen, setSideOpen] = useState(false);
-
-  const { mutate: createRoom } = useProjectsDetailChatroomsPost({
-    project_id: project_id,
-    onSuccess: () => {
-      enqueueSnackbar({
-        message: <Typography>Room created!</Typography>,
-        variant: "success",
-      });
-      setAddRoomOpen(false);
-    },
-  });
 
   useChatSocket({
     userId: user_id,
@@ -81,26 +127,9 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
     <Box minHeight={"inherit"}>
       <Snackbar open={!connected}>
         <Alert severity="error">
-          <Typography>You are not connected!</Typography>
+          <Typography>Koneksi chat terputus!</Typography>
         </Alert>
       </Snackbar>
-      <Dialog open={addRoomOpen} onClose={() => setAddRoomOpen(false)}>
-        <DialogTitle>Add new room</DialogTitle>
-        <DialogContent>
-          <TextField fullWidth onChange={(e) => setAddRoomName(e.target.value)} label="Room name" />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() =>
-              createRoom({
-                name: addRoomName,
-              })
-            }
-          >
-            Create room
-          </Button>
-        </DialogActions>
-      </Dialog>
       <Grid container minHeight={"inherit"} spacing={1}>
         {sideOpen || selectedChatroom == undefined ? (
           <Grid
@@ -109,15 +138,6 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
               lg: 2,
             }}
           >
-            <Button
-              fullWidth
-              variant="contained"
-              onClick={() => {
-                setAddRoomOpen(true);
-              }}
-            >
-              Add room
-            </Button>
             <Tabs
               orientation="vertical"
               scrollButtons="auto"
@@ -127,6 +147,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
                 setActiveRoom(newRoomId);
               }}
             >
+              <CreateProjectChatroomDialog project_id={project_id} />
               {chatrooms?.map((x, i) => (
                 <Tab key={i} label={x.chatroom_name} value={x.chatroom_id} />
               ))}
