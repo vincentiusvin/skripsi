@@ -58,11 +58,13 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       label: "Username",
       icon: <Person />,
       value: reg.username,
+      link: undefined,
     },
     {
       label: "Email",
       icon: <Email />,
       value: reg.email,
+      link: `mailto:${reg.email}`,
     },
     {
       label: "Tingkat Pendidikan",
@@ -78,6 +80,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       label: "Website",
       icon: <Language />,
       value: websiteCleaned,
+      link: websiteCleaned,
     },
     {
       label: "Lokasi",
@@ -92,6 +95,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       label: type !== "Other" ? type : "Link",
       icon: LinkIcons[type],
       value: x,
+      link: x,
     };
   });
 
@@ -103,7 +107,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
         </Typography>
         <Stack spacing={1}>
           {simple_datas.map((x, i) => (
-            <StringLabel key={i} icon={x.icon} value={x.value} label={x.label} />
+            <StringLabel key={i} link={x.link} icon={x.icon} value={x.value} label={x.label} />
           ))}
         </Stack>
       </Grid>
@@ -114,7 +118,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
         {link_data.length !== 0 ? (
           <Stack spacing={1}>
             {link_data.map((x, i) => (
-              <StringLabel key={i} icon={x.icon} value={x.value} label={x.label} />
+              <StringLabel key={i} link={x.link} icon={x.icon} value={x.value} label={x.label} />
             ))}
           </Stack>
         ) : (
