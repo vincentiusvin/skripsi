@@ -122,7 +122,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
             ))}
           </Stack>
         ) : (
-          <Typography variant="body1" color="gray">
+          <Typography variant="body1" color="textSecondary">
             Belum diisi
           </Typography>
         )}

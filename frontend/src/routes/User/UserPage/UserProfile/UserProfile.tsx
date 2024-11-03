@@ -1,4 +1,4 @@
-import { Email, Language, School } from "@mui/icons-material";
+import { Email, Language, Place, School, Work } from "@mui/icons-material";
 import { Avatar, Paper, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useLocation } from "wouter";
@@ -51,6 +51,16 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
       icon: <Email />,
       label: "Email",
       value: userDetail.user_email,
+    },
+    {
+      icon: <Place />,
+      label: "Lokasi",
+      value: userDetail.user_location ?? undefined,
+    },
+    {
+      icon: <Work />,
+      label: "Tempat Kerja",
+      value: userDetail.user_workplace ?? undefined,
     },
     {
       icon: <School />,
@@ -122,15 +132,19 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
               <Grid size={{ xs: 12, md: 6 }}>
                 <Stack spacing={1}>
                   <Typography variant="h6">Media Sosial</Typography>
-                  {socials_with_icon.map((x, i) => (
-                    <StringLabel
-                      link={x.link}
-                      icon={x.icon}
-                      label={x.label}
-                      value={x.value}
-                      key={i}
-                    />
-                  ))}
+                  {socials_with_icon.length !== 0 ? (
+                    socials_with_icon.map((x, i) => (
+                      <StringLabel
+                        link={x.link}
+                        icon={x.icon}
+                        label={x.label}
+                        value={x.value}
+                        key={i}
+                      />
+                    ))
+                  ) : (
+                    <Typography color="textSecondary">Belum diisi</Typography>
+                  )}
                 </Stack>
               </Grid>
             </Grid>

@@ -24,7 +24,7 @@ function StringLabel(props: { link?: string; icon: ReactNode; label: string; val
             <Typography variant="body1">{value}</Typography>
           )
         ) : (
-          <Typography color="gray">Belum diisi</Typography>
+          <Typography color="textSecondary">Belum diisi</Typography>
         )}
       </Stack>
     </Stack>

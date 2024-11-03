@@ -20,7 +20,7 @@ import RegistrationCredentialStep from "./components/RegistrationCredentialStep.
 import RegistrationFinishStep from "./components/RegistrationFinishStep.tsx";
 import RegistrationOTPStep from "./components/RegistrationOTPStep.tsx";
 import RegistrationSocialStep from "./components/RegistrationSocialStep.tsx";
-import { RegistrationContext, UserData } from "./components/context.tsx";
+import { RegistrationContext, useUserRegisterState } from "./components/context.tsx";
 
 function RegistrationSteps(props: { step: number }) {
   const { step } = props;
@@ -101,12 +101,7 @@ function ImageSidebar(props: { isStepped: boolean }) {
 }
 
 function Register() {
-  const userState = useState<UserData>({
-    email: "",
-    password: "",
-    social_medias: ["", ""],
-    username: "",
-  });
+  const userState = useUserRegisterState();
 
   // kalau baru mulai undefined, tapi dianggap 0
   // dipakai untuk matiin transisi pas pertama render
