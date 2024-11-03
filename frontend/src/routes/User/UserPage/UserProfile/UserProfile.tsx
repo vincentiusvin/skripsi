@@ -60,7 +60,7 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
     {
       icon: <School />,
       label: "Sekolah/Universitas",
-      value: userDetail.user_education_level ?? undefined,
+      value: userDetail.user_school ?? undefined,
     },
     {
       icon: <Language />,
@@ -71,7 +71,7 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
   ];
 
   return (
-    <Grid container rowGap={2}>
+    <Grid container spacing={2}>
       <Grid
         size={{
           xs: 12,
@@ -104,8 +104,8 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
             <Typography variant="h4" fontWeight={"bold"}>
               {userDetail.user_name}
             </Typography>
-            <Grid container>
-              <Grid size={6}>
+            <Grid container spacing={2} mt={2}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Stack spacing={1}>
                   <Typography variant="h6">Data Diri</Typography>
                   {basic_data.map((x, i) => (
@@ -119,7 +119,7 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
                   ))}
                 </Stack>
               </Grid>
-              <Grid size={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Stack spacing={1}>
                   <Typography variant="h6">Media Sosial</Typography>
                   {socials_with_icon.map((x, i) => (

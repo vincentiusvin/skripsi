@@ -11,7 +11,14 @@ function StringLabel(props: { link?: string; icon: ReactNode; label: string; val
         {value != undefined && value.length !== 0 ? (
           link != undefined ? (
             <Link href={link}>
-              <Typography variant="body1">{value}</Typography>
+              <Typography
+                sx={{
+                  wordBreak: "break-word",
+                }}
+                variant="body1"
+              >
+                {value}
+              </Typography>
             </Link>
           ) : (
             <Typography variant="body1">{value}</Typography>

@@ -1,5 +1,6 @@
 import { Add, Remove } from "@mui/icons-material";
 import { IconButton, InputAdornment, Skeleton, Stack, TextField, Typography } from "@mui/material";
+import { useEffect } from "react";
 import { LinkIcons, linkParser } from "../../../helpers/linker.tsx";
 import { useList } from "../../../helpers/misc.ts";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
@@ -22,12 +23,12 @@ function UserEditSocialsLoaded(props: { social_medias: string[] }) {
   const [, setUserEdit] = useUserEditContext();
   const [socials, { removeAt, push, updateAt }] = useList<string>(social_medias);
 
-  function syncSocials() {
+  useEffect(() => {
     setUserEdit((x) => ({
       ...x,
       user_socials: socials,
     }));
-  }
+  }, [socials, setUserEdit]);
 
   return (
     <Stack spacing={2}>
@@ -38,7 +39,6 @@ function UserEditSocialsLoaded(props: { social_medias: string[] }) {
         <IconButton
           onClick={() => {
             push("");
-            syncSocials();
           }}
         >
           <Add />
@@ -60,13 +60,11 @@ function UserEditSocialsLoaded(props: { social_medias: string[] }) {
               value={x}
               onChange={(e) => {
                 updateAt(i, e.target.value);
-                syncSocials();
               }}
             />
             <IconButton
               onClick={() => {
                 removeAt(i);
-                syncSocials();
               }}
             >
               <Remove />
