@@ -1,4 +1,4 @@
-import { Email, Language, Person, Place, School } from "@mui/icons-material";
+import { Email, Language, Person, Place, School, Work } from "@mui/icons-material";
 import { Button, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
@@ -49,6 +49,8 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       user_education_level: handleOptionalStringCreation(reg.education),
       user_school: handleOptionalStringCreation(reg.school),
       user_website: handleOptionalStringCreation(websiteCleaned),
+      user_location: handleOptionalStringCreation(reg.location),
+      user_workplace: handleOptionalStringCreation(reg.workplace),
       user_socials: links,
     });
   }
@@ -67,6 +69,16 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       link: `mailto:${reg.email}`,
     },
     {
+      label: "Lokasi",
+      icon: <Place />,
+      value: reg.location,
+    },
+    {
+      label: "Tempat Kerja",
+      icon: <Work />,
+      value: reg.workplace,
+    },
+    {
       label: "Tingkat Pendidikan",
       icon: <School />,
       value: reg.school,
@@ -81,11 +93,6 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       icon: <Language />,
       value: websiteCleaned,
       link: websiteCleaned,
-    },
-    {
-      label: "Lokasi",
-      icon: <Place />,
-      value: reg.location,
     },
   ];
 

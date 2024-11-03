@@ -43,6 +43,30 @@ function UserEditBiodata(props: { user_id: number }) {
         value={userEdit.user_email ?? data.user_email}
       />
       <TextField
+        label="Lokasi"
+        fullWidth
+        variant="standard"
+        onChange={(e) =>
+          setUserEdit((x) => ({
+            ...x,
+            user_location: e.target.value,
+          }))
+        }
+        value={userEdit.user_location ?? data.user_location ?? ""}
+      />
+      <TextField
+        label="Tempat Kerja"
+        fullWidth
+        variant="standard"
+        onChange={(e) =>
+          setUserEdit((x) => ({
+            ...x,
+            user_workplace: e.target.value,
+          }))
+        }
+        value={userEdit.user_workplace ?? data.user_workplace ?? ""}
+      />
+      <TextField
         label="Tingkat Pendidikan"
         fullWidth
         variant="standard"
@@ -55,7 +79,7 @@ function UserEditBiodata(props: { user_id: number }) {
         value={userEdit.user_education_level ?? data.user_education_level ?? ""}
       />
       <TextField
-        label="Sekolah"
+        label="Sekolah/Universitas"
         fullWidth
         variant="standard"
         onChange={(e) =>

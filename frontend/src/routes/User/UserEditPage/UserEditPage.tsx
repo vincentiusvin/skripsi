@@ -62,6 +62,8 @@ function UserEdit(props: { user_id: number }) {
       user_about_me: handleOptionalStringUpdate(userUpdate.user_about_me),
       user_image: handleOptionalStringUpdate(userUpdate.user_image),
       user_socials: socialsCleaned,
+      user_location: handleOptionalStringUpdate(userUpdate.user_location),
+      user_workplace: handleOptionalStringUpdate(userUpdate.user_workplace),
     });
   };
 

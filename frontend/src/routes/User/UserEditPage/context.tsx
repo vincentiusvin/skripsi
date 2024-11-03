@@ -1,42 +1,23 @@
 import { createContext, useContext, useState } from "react";
 
 export type UserUpdateData = {
-  user_name: undefined | string;
-  user_email: undefined | string;
-  user_school: undefined | string;
-  user_education_level: undefined | string;
-  user_about_me: undefined | string;
-  user_image: undefined | string;
-  user_website: undefined | string;
-  user_socials: undefined | string[];
+  user_name?: string;
+  user_email?: string;
+  user_school?: string;
+  user_education_level?: string;
+  user_about_me?: string;
+  user_image?: string;
+  user_website?: string;
+  user_socials?: string[];
+  user_workplace?: string;
+  user_location?: string;
 };
 
 export function useUserEditState() {
-  return useState<UserUpdateData>({
-    user_name: undefined,
-    user_email: undefined,
-    user_school: undefined,
-    user_education_level: undefined,
-    user_about_me: undefined,
-    user_image: undefined,
-    user_socials: undefined,
-    user_website: undefined,
-  });
+  return useState<UserUpdateData>({});
 }
 
-export const UserEditContext = createContext<ReturnType<typeof useUserEditState>>([
-  {
-    user_name: undefined,
-    user_email: undefined,
-    user_school: undefined,
-    user_education_level: undefined,
-    user_about_me: undefined,
-    user_image: undefined,
-    user_socials: undefined,
-    user_website: undefined,
-  },
-  () => {},
-]);
+export const UserEditContext = createContext<ReturnType<typeof useUserEditState>>([{}, () => {}]);
 
 export function useUserEditContext() {
   return useContext(UserEditContext);
