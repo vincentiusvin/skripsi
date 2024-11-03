@@ -32,10 +32,22 @@ import avatarFallback from "../../helpers/avatar_fallback.tsx";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { LinkIcons, linkParser } from "../../helpers/linker.tsx";
-import { handleOptionalStringUpdate, useList } from "../../helpers/misc.ts";
+import { useList } from "../../helpers/misc.ts";
 import { useUsersDetailGet, useUsersDetailUpdate } from "../../queries/user_hooks";
 
-function UserSocials(props: { social_medias: string[] }) {
+function UserEditSocials(props: { user_id: number }) {
+  const { user_id } = props;
+  const { data } = useUsersDetailGet({
+    user_id,
+  });
+
+  if (data == undefined) {
+    return <Skeleton />;
+  }
+  return <UserEditSocialsLoaded social_medias={data.user_socials.map((x) => x.social)} />;
+}
+
+function UserEditSocialsLoaded(props: { social_medias: string[] }) {
   const { social_medias } = props;
   const [socials, { removeAt, push, updateAt }] = useList<string>(social_medias);
 
@@ -77,6 +89,64 @@ function UserSocials(props: { social_medias: string[] }) {
           </Stack>
         );
       })}
+    </Stack>
+  );
+}
+
+function UserBiodata(props: { user_id: number }) {
+  const { user_id } = props;
+  const { data } = useUsersDetailGet({
+    user_id,
+  });
+  const [userName, setUserName] = useState<string | undefined>(undefined);
+  const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
+  const [userEducationLevel, setUserEducationLevel] = useState<string | undefined>(undefined);
+  const [userSchool, setUserSchool] = useState<string | undefined>(undefined);
+
+  if (data == undefined) {
+    return <Skeleton />;
+  }
+
+  return (
+    <Stack gap={2}>
+      <TextField
+        label="Username"
+        required
+        variant="standard"
+        value={userName ?? data.user_name}
+        onChange={(e) => setUserName(e.target.value)}
+        fullWidth
+      />
+      <TextField
+        required
+        label="Email"
+        variant="standard"
+        fullWidth
+        onChange={(e) => setUserEmail(e.target.value)}
+        value={userEmail ?? data.user_email}
+      />
+      <TextField
+        label="Tingkat Pendidikan"
+        fullWidth
+        variant="standard"
+        onChange={(e) => setUserEducationLevel(e.target.value)}
+        value={userEducationLevel ?? data.user_education_level ?? ""}
+      />
+      <TextField
+        label="Sekolah"
+        fullWidth
+        variant="standard"
+        onChange={(e) => setUserSchool(e.target.value)}
+        value={userSchool ?? data.user_school ?? ""}
+      />
+      <TextField
+        label="Website"
+        fullWidth
+        variant="standard"
+        onChange={(e) => setUserSchool(e.target.value)}
+        value={userSchool ?? data.user_school ?? ""}
+      />
+      <UserResetPassword user_id={user_id} />
     </Stack>
   );
 }
@@ -195,56 +265,18 @@ function UserResetPassword(props: { user_id: number }) {
   );
 }
 
-function UserAccountPageEdit() {
-  const { id } = useParams();
-  const [, setLocation] = useLocation();
-  const [userName, setUserName] = useState<string | undefined>(undefined);
-  const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
-  const [userEducationLevel, setUserEducationLevel] = useState<string | undefined>(undefined);
-  const [userSchool, setUserSchool] = useState<string | undefined>(undefined);
-  const [userAboutMe, setUserAboutMe] = useState<string | undefined>(undefined);
+function UserImageEdit(props: { user_id: number }) {
+  const { user_id } = props;
+  const { data } = useUsersDetailGet({
+    user_id,
+  });
   const [userImage, setUserImage] = useState<string | undefined>(undefined);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
-  const user_id = Number(id);
-
-  const { data } = useUsersDetailGet({
-    user_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status == 404) || failureCount > 3) {
-        setLocation("/");
-        return false;
-      }
-      return true;
-    },
-  });
-
-  const { mutate: editUser } = useUsersDetailUpdate({
-    user_id,
-    onSuccess: () => {
-      enqueueSnackbar({
-        message: <Typography>Profil berhasil diupdate!</Typography>,
-        autoHideDuration: 5000,
-        variant: "success",
-      });
-      setLocation(`/users/${id}`);
-    },
-  });
-
-  const handleUpdateClick = () => {
-    editUser({
-      user_name: userName,
-      user_email: userEmail,
-      user_education_level: handleOptionalStringUpdate(userEducationLevel),
-      user_school: handleOptionalStringUpdate(userSchool),
-      user_about_me: handleOptionalStringUpdate(userAboutMe),
-      user_image: handleOptionalStringUpdate(userImage),
-    });
-  };
-
-  if (!data) {
+  if (data == undefined) {
     return <Skeleton />;
   }
+
   const old_image =
     data.user_image ?? avatarFallback({ label: data.user_name, seed: data.user_id });
 
@@ -295,132 +327,156 @@ function UserAccountPageEdit() {
           </ImageDropzone>
         </DialogContent>
       </Dialog>
-      <Grid container spacing={2}>
-        <Grid
-          size={{
-            xs: 12,
-            lg: 4,
-          }}
-        >
-          <Stack alignItems={"center"}>
-            <Badge
-              overlap="circular"
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              badgeContent={
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    setModalOpen(true);
-                  }}
-                >
-                  <Edit />
-                </Button>
-              }
-            >
-              <Avatar src={userImage ?? old_image} sx={{ width: 256, height: 256 }}></Avatar>
-            </Badge>
-          </Stack>
-        </Grid>
-        <Grid
-          size={{
-            xs: 12,
-            lg: 8,
-          }}
-        >
-          <Stack gap={4}>
-            <Paper
-              sx={{
-                px: 4,
-                py: 2,
+      <Stack alignItems={"center"}>
+        <Badge
+          overlap="circular"
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          badgeContent={
+            <Button
+              variant="contained"
+              onClick={() => {
+                setModalOpen(true);
               }}
             >
-              <Stack gap={2}>
-                <TextField
-                  label="Username"
-                  required
-                  variant="standard"
-                  value={userName ?? data.user_name}
-                  onChange={(e) => setUserName(e.target.value)}
-                  fullWidth
-                />
-                <TextField
-                  required
-                  label="Email"
-                  variant="standard"
-                  fullWidth
-                  onChange={(e) => setUserEmail(e.target.value)}
-                  value={userEmail ?? data.user_email}
-                />
-                <TextField
-                  label="Tingkat Pendidikan"
-                  fullWidth
-                  variant="standard"
-                  onChange={(e) => setUserEducationLevel(e.target.value)}
-                  value={userEducationLevel ?? data.user_education_level ?? ""}
-                />
-                <TextField
-                  label="Sekolah"
-                  fullWidth
-                  variant="standard"
-                  onChange={(e) => setUserSchool(e.target.value)}
-                  value={userSchool ?? data.user_school ?? ""}
-                />
-                <TextField
-                  label="Website"
-                  fullWidth
-                  variant="standard"
-                  onChange={(e) => setUserSchool(e.target.value)}
-                  value={userSchool ?? data.user_school ?? ""}
-                />
-                <UserResetPassword user_id={user_id} />
-              </Stack>
-            </Paper>
-          </Stack>
-        </Grid>
-        <Grid
-          size={{
-            xs: 12,
-            lg: 4,
-          }}
+              <Edit />
+            </Button>
+          }
         >
-          <Paper
-            sx={{
-              px: 4,
-              py: 2,
-            }}
-          >
-            <UserSocials social_medias={data.user_socials.map((x) => x.social)} />
-          </Paper>
-        </Grid>
-        <Grid
-          size={{
-            xs: 12,
-            lg: 8,
-          }}
-        >
-          <Paper
-            sx={{
-              px: 4,
-              py: 2,
-            }}
-          >
-            <TextField
-              label="Tentang Anda"
-              variant="standard"
-              fullWidth
-              onChange={(e) => setUserAboutMe(e.target.value)}
-              value={userAboutMe ?? data.user_about_me ?? ""}
-            />
-          </Paper>
-        </Grid>
-        <Grid size={12}>
-          <Button fullWidth endIcon={<Save />} variant="contained" onClick={handleUpdateClick}>
-            Simpan
-          </Button>
-        </Grid>
-      </Grid>
+          <Avatar src={userImage ?? old_image} sx={{ width: 256, height: 256 }}></Avatar>
+        </Badge>
+      </Stack>
     </>
   );
+}
+
+function UserAboutMeEdit(props: { user_id: number }) {
+  const { user_id } = props;
+  const [userAboutMe, setUserAboutMe] = useState<string | undefined>(undefined);
+  const { data } = useUsersDetailGet({
+    user_id,
+  });
+
+  if (data == undefined) {
+    return <Skeleton />;
+  }
+  return (
+    <Stack justifyContent={"center"} height={"100%"}>
+      <TextField
+        label="Tentang Anda"
+        variant="standard"
+        fullWidth
+        multiline
+        onChange={(e) => setUserAboutMe(e.target.value)}
+        value={userAboutMe ?? data.user_about_me ?? ""}
+      />
+    </Stack>
+  );
+}
+
+function UserEdit(props: { user_id: number }) {
+  const { user_id } = props;
+  const { mutate: editUser } = useUsersDetailUpdate({
+    user_id,
+  });
+
+  const handleUpdateClick = () => {
+    editUser({
+      // user_name: userName,
+      // user_email: userEmail,
+      // user_education_level: handleOptionalStringUpdate(userEducationLevel),
+      // user_school: handleOptionalStringUpdate(userSchool),
+      // user_about_me: handleOptionalStringUpdate(userAboutMe),
+      // user_image: handleOptionalStringUpdate(userImage),
+    });
+  };
+
+  return (
+    <Grid container spacing={2}>
+      <Grid
+        size={{
+          xs: 12,
+          lg: 4,
+        }}
+      >
+        <UserImageEdit user_id={user_id} />
+      </Grid>
+      <Grid
+        size={{
+          xs: 12,
+          lg: 8,
+        }}
+      >
+        <Paper
+          sx={{
+            px: 4,
+            py: 2,
+          }}
+        >
+          <UserBiodata user_id={user_id} />
+        </Paper>
+      </Grid>
+      <Grid
+        size={{
+          xs: 12,
+          lg: 4,
+        }}
+      >
+        <Paper
+          sx={{
+            px: 4,
+            py: 2,
+          }}
+        >
+          <UserEditSocials user_id={user_id} />
+        </Paper>
+      </Grid>
+      <Grid
+        size={{
+          xs: 12,
+          lg: 8,
+        }}
+      >
+        <Paper
+          sx={{
+            px: 4,
+            py: 2,
+            height: "100%",
+          }}
+        >
+          <UserAboutMeEdit user_id={user_id} />
+        </Paper>
+      </Grid>
+      <Grid size={12}>
+        <Button fullWidth endIcon={<Save />} variant="contained" onClick={handleUpdateClick}>
+          Simpan
+        </Button>
+      </Grid>
+    </Grid>
+  );
+}
+
+function UserAccountPageEdit() {
+  const { id } = useParams();
+  const [, setLocation] = useLocation();
+
+  const user_id = Number(id);
+
+  const { data } = useUsersDetailGet({
+    user_id,
+    retry: (failureCount, error) => {
+      if ((error instanceof APIError && error.status == 404) || failureCount > 3) {
+        setLocation("/");
+        return false;
+      }
+      return true;
+    },
+  });
+
+  if (!data) {
+    return <Skeleton />;
+  }
+
+  return <UserEdit user_id={user_id} />;
 }
 
 export default UserAccountPageEdit;
