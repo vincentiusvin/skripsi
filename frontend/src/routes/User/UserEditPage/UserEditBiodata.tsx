@@ -1,17 +1,14 @@
 import { Skeleton, Stack, TextField } from "@mui/material";
-import { useState } from "react";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
 import UserResetPassword from "./UserResetPassword.tsx";
+import { useUserEditContext } from "./context.tsx";
 
 function UserEditBiodata(props: { user_id: number }) {
   const { user_id } = props;
   const { data } = useUsersDetailGet({
     user_id,
   });
-  const [userName, setUserName] = useState<string | undefined>(undefined);
-  const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
-  const [userEducationLevel, setUserEducationLevel] = useState<string | undefined>(undefined);
-  const [userSchool, setUserSchool] = useState<string | undefined>(undefined);
+  const [userEdit, setUserEdit] = useUserEditContext();
 
   if (data == undefined) {
     return <Skeleton />;
@@ -23,8 +20,13 @@ function UserEditBiodata(props: { user_id: number }) {
         label="Username"
         required
         variant="standard"
-        value={userName ?? data.user_name}
-        onChange={(e) => setUserName(e.target.value)}
+        value={userEdit.user_name ?? data.user_name}
+        onChange={(e) =>
+          setUserEdit((x) => ({
+            ...x,
+            user_name: e.target.value,
+          }))
+        }
         fullWidth
       />
       <TextField
@@ -32,29 +34,49 @@ function UserEditBiodata(props: { user_id: number }) {
         label="Email"
         variant="standard"
         fullWidth
-        onChange={(e) => setUserEmail(e.target.value)}
-        value={userEmail ?? data.user_email}
+        onChange={(e) =>
+          setUserEdit((x) => ({
+            ...x,
+            user_email: e.target.value,
+          }))
+        }
+        value={userEdit.user_email ?? data.user_email}
       />
       <TextField
         label="Tingkat Pendidikan"
         fullWidth
         variant="standard"
-        onChange={(e) => setUserEducationLevel(e.target.value)}
-        value={userEducationLevel ?? data.user_education_level ?? ""}
+        onChange={(e) =>
+          setUserEdit((x) => ({
+            ...x,
+            user_education_level: e.target.value,
+          }))
+        }
+        value={userEdit.user_education_level ?? data.user_education_level ?? ""}
       />
       <TextField
         label="Sekolah"
         fullWidth
         variant="standard"
-        onChange={(e) => setUserSchool(e.target.value)}
-        value={userSchool ?? data.user_school ?? ""}
+        onChange={(e) =>
+          setUserEdit((x) => ({
+            ...x,
+            user_school: e.target.value,
+          }))
+        }
+        value={userEdit.user_school ?? data.user_school ?? ""}
       />
       <TextField
         label="Website"
         fullWidth
         variant="standard"
-        onChange={(e) => setUserSchool(e.target.value)}
-        value={userSchool ?? data.user_school ?? ""}
+        onChange={(e) =>
+          setUserEdit((x) => ({
+            ...x,
+            user_website: e.target.value,
+          }))
+        }
+        value={userEdit.user_website ?? data.user_website ?? ""}
       />
       <UserResetPassword user_id={user_id} />
     </Stack>

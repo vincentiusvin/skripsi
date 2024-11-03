@@ -1,10 +1,10 @@
 import { Skeleton, Stack, TextField } from "@mui/material";
-import { useState } from "react";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
+import { useUserEditContext } from "./context.tsx";
 
 function UserEditAboutMe(props: { user_id: number }) {
   const { user_id } = props;
-  const [userAboutMe, setUserAboutMe] = useState<string | undefined>(undefined);
+  const [userEdit, setUserEdit] = useUserEditContext();
   const { data } = useUsersDetailGet({
     user_id,
   });
@@ -19,8 +19,13 @@ function UserEditAboutMe(props: { user_id: number }) {
         variant="standard"
         fullWidth
         multiline
-        onChange={(e) => setUserAboutMe(e.target.value)}
-        value={userAboutMe ?? data.user_about_me ?? ""}
+        onChange={(e) =>
+          setUserEdit((x) => ({
+            ...x,
+            user_about_me: e.target.value,
+          }))
+        }
+        value={userEdit.user_about_me ?? data.user_about_me ?? ""}
       />
     </Stack>
   );

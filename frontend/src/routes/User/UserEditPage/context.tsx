@@ -7,6 +7,7 @@ export type UserUpdateData = {
   user_education_level: undefined | string;
   user_about_me: undefined | string;
   user_image: undefined | string;
+  user_website: undefined | string;
   user_socials: undefined | string[];
 };
 
@@ -19,6 +20,7 @@ export function useUserEditState() {
     user_about_me: undefined,
     user_image: undefined,
     user_socials: undefined,
+    user_website: undefined,
   });
 }
 
@@ -31,6 +33,7 @@ export const UserEditContext = createContext<ReturnType<typeof useUserEditState>
     user_about_me: undefined,
     user_image: undefined,
     user_socials: undefined,
+    user_website: undefined,
   },
   () => {},
 ]);

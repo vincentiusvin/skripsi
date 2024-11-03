@@ -140,14 +140,14 @@ export class UserService {
 
       if (user_email != undefined) {
         const same_email = await serv.findUserByEmail(user_email);
-        if (same_email != undefined) {
+        if (same_email && same_email.user_id !== user_id) {
           throw new ClientError("Sudah ada pengguna dengan email yang sama !");
         }
       }
 
       if (user_name != undefined) {
         const same_name = await serv.user_repo.findUserByName(user_name);
-        if (same_name) {
+        if (same_name && same_name.user_id !== user_id) {
           throw new ClientError("Sudah ada pengguna dengan nama yang sama!");
         }
       }

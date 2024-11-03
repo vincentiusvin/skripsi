@@ -1,8 +1,10 @@
 import { Save } from "@mui/icons-material";
-import { Button, Paper, Skeleton } from "@mui/material";
+import { Button, Paper, Skeleton, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import { enqueueSnackbar } from "notistack";
 import { useLocation, useParams } from "wouter";
 import { APIError } from "../../../helpers/fetch.ts";
+import { parseURL } from "../../../helpers/linker.tsx";
 import { handleOptionalStringUpdate } from "../../../helpers/misc.ts";
 import { useUsersDetailGet, useUsersDetailUpdate } from "../../../queries/user_hooks.ts";
 import UserEditAboutMe from "./UserEditAboutMe.tsx";
@@ -15,19 +17,49 @@ function UserEdit(props: { user_id: number }) {
   const { user_id } = props;
   const { mutate: editUser } = useUsersDetailUpdate({
     user_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Berhasil mengupdate profile!</Typography>,
+        autoHideDuration: 5000,
+        variant: "success",
+      });
+    },
   });
 
   const [userUpdate, setUserUpdate] = useUserEditState();
 
   const handleUpdateClick = () => {
+    let websiteCleaned = handleOptionalStringUpdate(userUpdate.user_website);
+    if (userUpdate.user_website != undefined) {
+      try {
+        websiteCleaned = parseURL(websiteCleaned ?? "").href;
+      } catch (e) {
+        e;
+      }
+    }
+
+    let socialsCleaned = userUpdate.user_socials;
+    if (socialsCleaned != undefined) {
+      socialsCleaned = socialsCleaned
+        .filter((x) => x.length !== 0)
+        .map((x) => {
+          try {
+            return parseURL(x).href;
+          } catch (e) {
+            return x;
+          }
+        });
+    }
+
     editUser({
       user_name: userUpdate.user_name,
       user_email: userUpdate.user_email,
       user_education_level: handleOptionalStringUpdate(userUpdate.user_education_level),
       user_school: handleOptionalStringUpdate(userUpdate.user_school),
+      user_website: websiteCleaned,
       user_about_me: handleOptionalStringUpdate(userUpdate.user_about_me),
       user_image: handleOptionalStringUpdate(userUpdate.user_image),
-      user_socials: userUpdate.user_socials,
+      user_socials: socialsCleaned,
     });
   };
 

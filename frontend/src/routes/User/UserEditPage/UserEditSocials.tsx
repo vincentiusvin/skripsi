@@ -3,6 +3,7 @@ import { IconButton, InputAdornment, Skeleton, Stack, TextField, Typography } fr
 import { LinkIcons, linkParser } from "../../../helpers/linker.tsx";
 import { useList } from "../../../helpers/misc.ts";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
+import { useUserEditContext } from "./context.tsx";
 
 function UserEditSocials(props: { user_id: number }) {
   const { user_id } = props;
@@ -18,7 +19,15 @@ function UserEditSocials(props: { user_id: number }) {
 
 function UserEditSocialsLoaded(props: { social_medias: string[] }) {
   const { social_medias } = props;
+  const [, setUserEdit] = useUserEditContext();
   const [socials, { removeAt, push, updateAt }] = useList<string>(social_medias);
+
+  function syncSocials() {
+    setUserEdit((x) => ({
+      ...x,
+      user_socials: socials,
+    }));
+  }
 
   return (
     <Stack spacing={2}>
@@ -26,7 +35,12 @@ function UserEditSocialsLoaded(props: { social_medias: string[] }) {
         <Typography variant="h6" fontWeight={"bold"} flexGrow={1}>
           Akun media sosial
         </Typography>
-        <IconButton onClick={() => push("")}>
+        <IconButton
+          onClick={() => {
+            push("");
+            syncSocials();
+          }}
+        >
           <Add />
         </IconButton>
       </Stack>
@@ -46,11 +60,13 @@ function UserEditSocialsLoaded(props: { social_medias: string[] }) {
               value={x}
               onChange={(e) => {
                 updateAt(i, e.target.value);
+                syncSocials();
               }}
             />
             <IconButton
               onClick={() => {
                 removeAt(i);
+                syncSocials();
               }}
             >
               <Remove />

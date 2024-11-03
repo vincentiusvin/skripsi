@@ -15,13 +15,14 @@ import ImageDropzone from "../../../components/Dropzone.tsx";
 import avatarFallback from "../../../helpers/avatar_fallback.tsx";
 import { fileToBase64DataURL } from "../../../helpers/file.ts";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
+import { useUserEditContext } from "./context.tsx";
 
 function UserEditImage(props: { user_id: number }) {
   const { user_id } = props;
   const { data } = useUsersDetailGet({
     user_id,
   });
-  const [userImage, setUserImage] = useState<string | undefined>(undefined);
+  const [userEdit, setUserEdit] = useUserEditContext();
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   if (data == undefined) {
@@ -42,13 +43,16 @@ function UserEditImage(props: { user_id: number }) {
             }}
             onChange={async (file) => {
               const b64 = file ? await fileToBase64DataURL(file) : undefined;
-              setUserImage(b64);
+              setUserEdit((x) => ({
+                ...x,
+                user_image: b64,
+              }));
               setModalOpen(false);
             }}
           >
-            {userImage ? (
+            {userEdit.user_image ? (
               <Avatar
-                src={userImage ?? old_image}
+                src={userEdit.user_image ?? old_image}
                 variant="rounded"
                 sx={{
                   width: "100%",
@@ -93,7 +97,7 @@ function UserEditImage(props: { user_id: number }) {
             </Button>
           }
         >
-          <Avatar src={userImage ?? old_image} sx={{ width: 256, height: 256 }}></Avatar>
+          <Avatar src={userEdit.user_image ?? old_image} sx={{ width: 256, height: 256 }}></Avatar>
         </Badge>
       </Stack>
     </>
