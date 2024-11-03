@@ -27,13 +27,13 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
-import ImageDropzone from "../../components/Dropzone";
-import avatarFallback from "../../helpers/avatar_fallback.tsx";
-import { APIError } from "../../helpers/fetch";
-import { fileToBase64DataURL } from "../../helpers/file";
-import { LinkIcons, linkParser } from "../../helpers/linker.tsx";
-import { useList } from "../../helpers/misc.ts";
-import { useUsersDetailGet, useUsersDetailUpdate } from "../../queries/user_hooks";
+import ImageDropzone from "../../../components/Dropzone.tsx";
+import avatarFallback from "../../../helpers/avatar_fallback.tsx";
+import { APIError } from "../../../helpers/fetch.ts";
+import { fileToBase64DataURL } from "../../../helpers/file.ts";
+import { LinkIcons, linkParser } from "../../../helpers/linker.tsx";
+import { useList } from "../../../helpers/misc.ts";
+import { useUsersDetailGet, useUsersDetailUpdate } from "../../../queries/user_hooks.ts";
 
 function UserEditSocials(props: { user_id: number }) {
   const { user_id } = props;

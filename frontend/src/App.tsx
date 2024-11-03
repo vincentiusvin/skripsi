@@ -46,7 +46,7 @@ import UserReportEditPage from "./routes/Reports/UserReportEditPage.tsx";
 import UserReportPage from "./routes/Reports/UserReportPage.tsx";
 import SettingsPage from "./routes/SettingsPage.tsx";
 import FindUsersPage from "./routes/User/FindUsersPage.tsx";
-import UserAccountPageEdit from "./routes/User/UserEditPage.tsx";
+import UserAccountPageEdit from "./routes/User/UserEditPage/UserEditPage.tsx";
 import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
 import ChatroomPage from "./routes/UserChatroom.tsx";
 import { darkTheme, lightTheme } from "./theme.ts";
