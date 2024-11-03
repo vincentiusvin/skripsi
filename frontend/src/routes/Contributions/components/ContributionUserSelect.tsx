@@ -18,7 +18,9 @@ function ContributionSelectPeople(props: {
     <UserSelect
       label="Kontributor"
       required
-      allowed_users={project.project_members.map((x) => x.user_id)}
+      allowed_users={project.project_members
+        .filter((x) => x.role === "Dev" || x.role === "Admin")
+        .map((x) => x.user_id)}
       onChange={(x) => {
         setValue(x);
       }}
