@@ -75,7 +75,7 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
       <Grid
         size={{
           xs: 12,
-          md: 4,
+          lg: 4,
         }}
       >
         <Stack alignItems={"center"} spacing={2}>
@@ -91,7 +91,7 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
       <Grid
         size={{
           xs: 12,
-          md: 8,
+          lg: 8,
         }}
       >
         <Stack spacing={4}>
