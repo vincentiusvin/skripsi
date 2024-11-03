@@ -48,7 +48,7 @@ import SettingsPage from "./routes/SettingsPage.tsx";
 import FindUsersPage from "./routes/User/FindUsersPage.tsx";
 import UserAccountPageEdit from "./routes/User/UserEditPage/UserEditPage.tsx";
 import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
-import ChatroomPage from "./routes/UserChatroom.tsx";
+import ChatroomPage from "./routes/UserChatroomPage.tsx";
 import { darkTheme, lightTheme } from "./theme.ts";
 
 function useColorMode() {

@@ -2,6 +2,11 @@ import { ArrowLeft, ArrowRight, MoreVert } from "@mui/icons-material";
 import {
   Alert,
   Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
   Menu,
   Paper,
@@ -10,18 +15,82 @@ import {
   Stack,
   Tab,
   Tabs,
+  TextField,
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useParams } from "wouter";
 import ChatroomComponent from "../../components/Chatroom/Chatroom.tsx";
 import { ChangeNameDialog, DeleteRoom } from "../../components/Chatroom/ChatroomMisc.tsx";
-import CreateProjectChatroomDialog from "../../components/CreateProjectChatroom.tsx";
 import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
-import { useChatSocket, useProjectsDetailChatroomsGet } from "../../queries/chat_hooks.ts";
+import {
+  useChatSocket,
+  useProjectsDetailChatroomsGet,
+  useProjectsDetailChatroomsPost,
+} from "../../queries/chat_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import AuthorizeProjects, { RedirectBack } from "./components/AuthorizeProjects.tsx";
+
+function CreateProjectChatroomDialog(props: { project_id: number }) {
+  const { project_id } = props;
+  const [addRoomOpen, setAddRoomOpen] = useState(false);
+  const [addRoomName, setAddRoomName] = useState("");
+  const { mutate: createRoom } = useProjectsDetailChatroomsPost({
+    project_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Ruang chat berhasil dibuat!</Typography>,
+        variant: "success",
+      });
+      reset();
+    },
+  });
+
+  function reset() {
+    setAddRoomName("");
+    setAddRoomOpen(false);
+  }
+
+  return (
+    <>
+      <Dialog open={addRoomOpen} onClose={() => reset()}>
+        <DialogTitle>Tambah ruangan baru</DialogTitle>
+        <DialogContent>
+          <Box pt={2}>
+            <TextField
+              value={addRoomName ?? ""}
+              fullWidth
+              onChange={(e) => setAddRoomName(e.target.value)}
+              label="Nama ruangan"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() =>
+              createRoom({
+                name: addRoomName,
+              })
+            }
+          >
+            Buat ruangan
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Button
+        fullWidth
+        variant="contained"
+        onClick={() => {
+          setAddRoomOpen(true);
+        }}
+      >
+        Tambah Ruangan
+      </Button>
+    </>
+  );
+}
 
 function ChatroomWrapper(props: { user_id: number; project_id: number }) {
   const { project_id, user_id } = props;

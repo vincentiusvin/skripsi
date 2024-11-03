@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight, MoreVert } from "@mui/icons-material";
 import {
   Alert,
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -44,18 +45,30 @@ function AddRoomDialog(props: { user_id: number }) {
     user_id: user_id,
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Room created!</Typography>,
+        message: <Typography>Ruang chat berhasil dibuat!</Typography>,
         variant: "success",
       });
-      setAddRoomOpen(false);
+      reset();
     },
   });
+
+  function reset() {
+    setAddRoomName("");
+    setAddRoomOpen(false);
+  }
+
   return (
     <>
-      <Dialog open={addRoomOpen} onClose={() => setAddRoomOpen(false)}>
+      <Dialog open={addRoomOpen} onClose={() => reset()}>
         <DialogTitle>Add new room</DialogTitle>
         <DialogContent>
-          <TextField fullWidth onChange={(e) => setAddRoomName(e.target.value)} label="Room name" />
+          <Box pt={2}>
+            <TextField
+              fullWidth
+              onChange={(e) => setAddRoomName(e.target.value)}
+              label="Nama ruangan"
+            />
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button
@@ -65,7 +78,7 @@ function AddRoomDialog(props: { user_id: number }) {
               })
             }
           >
-            Create room
+            Buat ruangan
           </Button>
         </DialogActions>
       </Dialog>
@@ -76,7 +89,7 @@ function AddRoomDialog(props: { user_id: number }) {
           setAddRoomOpen(true);
         }}
       >
-        Add room
+        Tambah Ruangan
       </Button>
     </>
   );
@@ -124,7 +137,7 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
     <Grid container minHeight={"inherit"} spacing={1}>
       <Snackbar open={!connected}>
         <Alert severity="error">
-          <Typography>You are not connected!</Typography>
+          <Typography>Koneksi chat terputus!</Typography>
         </Alert>
       </Snackbar>
       {sideOpen || selectedChatroom == undefined ? (
