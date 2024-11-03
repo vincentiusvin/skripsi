@@ -1,4 +1,4 @@
-import { Email, Language, Person, Place, School } from "@mui/icons-material";
+import { Email, Language, Person, Place, School, Work } from "@mui/icons-material";
 import { Button, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
@@ -49,6 +49,8 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       user_education_level: handleOptionalStringCreation(reg.education),
       user_school: handleOptionalStringCreation(reg.school),
       user_website: handleOptionalStringCreation(websiteCleaned),
+      user_location: handleOptionalStringCreation(reg.location),
+      user_workplace: handleOptionalStringCreation(reg.workplace),
       user_socials: links,
     });
   }
@@ -58,11 +60,23 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       label: "Username",
       icon: <Person />,
       value: reg.username,
+      link: undefined,
     },
     {
       label: "Email",
       icon: <Email />,
       value: reg.email,
+      link: `mailto:${reg.email}`,
+    },
+    {
+      label: "Lokasi",
+      icon: <Place />,
+      value: reg.location,
+    },
+    {
+      label: "Tempat Kerja",
+      icon: <Work />,
+      value: reg.workplace,
     },
     {
       label: "Tingkat Pendidikan",
@@ -78,11 +92,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       label: "Website",
       icon: <Language />,
       value: websiteCleaned,
-    },
-    {
-      label: "Lokasi",
-      icon: <Place />,
-      value: reg.location,
+      link: websiteCleaned,
     },
   ];
 
@@ -92,6 +102,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       label: type !== "Other" ? type : "Link",
       icon: LinkIcons[type],
       value: x,
+      link: x,
     };
   });
 
@@ -103,7 +114,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
         </Typography>
         <Stack spacing={1}>
           {simple_datas.map((x, i) => (
-            <StringLabel key={i} icon={x.icon} value={x.value} label={x.label} />
+            <StringLabel key={i} link={x.link} icon={x.icon} value={x.value} label={x.label} />
           ))}
         </Stack>
       </Grid>
@@ -114,11 +125,11 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
         {link_data.length !== 0 ? (
           <Stack spacing={1}>
             {link_data.map((x, i) => (
-              <StringLabel key={i} icon={x.icon} value={x.value} label={x.label} />
+              <StringLabel key={i} link={x.link} icon={x.icon} value={x.value} label={x.label} />
             ))}
           </Stack>
         ) : (
-          <Typography variant="body1" color="gray">
+          <Typography variant="body1" color="textSecondary">
             Belum diisi
           </Typography>
         )}

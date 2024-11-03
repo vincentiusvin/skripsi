@@ -50,6 +50,8 @@ describe("users api", () => {
       user_education_level: "S1",
       user_school: "NUBIS University",
       user_website: "https://www.example.com",
+      user_location: "Jakarta",
+      user_workplace: "Kantor",
       user_socials: ["https://github.com/testing-name"],
     };
 
@@ -84,6 +86,8 @@ describe("users api", () => {
         user_school: "NUBIS University",
         user_website: "https://www.example.com",
         user_socials: ["https://github.com/testing-name"] as string[],
+        user_location: "Jakarta",
+        user_workplace: "Kantor",
       },
       ok: true,
     },
@@ -182,6 +186,8 @@ function putUser(
     user_image?: string;
     user_website?: string;
     user_socials?: string[];
+    user_location?: string;
+    user_workplace?: string;
   },
   cookie: string,
 ) {
@@ -210,6 +216,8 @@ function addUser(body: {
   user_image?: string;
   user_website?: string;
   user_socials?: string[];
+  user_location?: string;
+  user_workplace?: string;
 }) {
   return new APIContext("UsersPost").fetch("/api/users", {
     method: "POST",

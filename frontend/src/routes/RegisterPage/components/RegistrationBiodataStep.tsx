@@ -10,6 +10,28 @@ function RegistrationBiodataStep(props: { cont: () => void; back: () => void }) 
         Lengkapi Data Diri
       </Typography>
       <TextField
+        label="Lokasi"
+        fullWidth
+        value={reg.location ?? ""}
+        onChange={(e) => {
+          setReg((x) => ({
+            ...x,
+            location: e.target.value,
+          }));
+        }}
+      />
+      <TextField
+        label="Tempat Kerja"
+        fullWidth
+        value={reg.workplace ?? ""}
+        onChange={(e) => {
+          setReg((x) => ({
+            ...x,
+            workplace: e.target.value,
+          }));
+        }}
+      />
+      <TextField
         label="Tingkat Pendidikan"
         fullWidth
         value={reg.education ?? ""}
@@ -39,17 +61,6 @@ function RegistrationBiodataStep(props: { cont: () => void; back: () => void }) 
           setReg((x) => ({
             ...x,
             website: e.target.value,
-          }));
-        }}
-      />
-      <TextField
-        label="Lokasi"
-        fullWidth
-        value={reg.location ?? ""}
-        onChange={(e) => {
-          setReg((x) => ({
-            ...x,
-            location: e.target.value,
           }));
         }}
       />

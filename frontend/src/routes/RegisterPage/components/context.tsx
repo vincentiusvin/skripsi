@@ -1,6 +1,6 @@
-import { Dispatch, SetStateAction, createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 
-export type UserData = {
+export type UserRegister = {
   email: string;
   username: string;
   password: string;
@@ -8,12 +8,20 @@ export type UserData = {
   school?: string;
   website?: string;
   location?: string;
+  workplace?: string;
   social_medias: string[];
 };
 
-export type UserDataState = [UserData, Dispatch<SetStateAction<UserData>>];
+export function useUserRegisterState() {
+  return useState<UserRegister>({
+    email: "",
+    password: "",
+    social_medias: ["", ""],
+    username: "",
+  });
+}
 
-export const RegistrationContext = createContext<UserDataState>([
+export const RegistrationContext = createContext<ReturnType<typeof useUserRegisterState>>([
   {
     username: "",
     password: "",
