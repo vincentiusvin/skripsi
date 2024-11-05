@@ -1,4 +1,7 @@
 import { Autocomplete, MenuItem, Paper, Stack, TextField } from "@mui/material";
+import { useState } from "react";
+import { useDebounce } from "use-debounce";
+import { useUsersGet } from "../queries/user_hooks.ts";
 import UserLabel from "./UserLabel.tsx";
 
 function UserSelect(props: {
@@ -11,16 +14,25 @@ function UserSelect(props: {
   const { required, onChange: onChange, label, current_users, allowed_users } = props;
 
   const all = [...new Set([...current_users, ...allowed_users])].sort();
+  const [keyword, setKeyword] = useState<string | undefined>(undefined);
+  const [debouncedKeyword] = useDebounce(keyword, 300);
+  const { data: users } = useUsersGet({ keyword: debouncedKeyword });
+
+  const options = users?.filter((x) => all.includes(x.user_id)).map((x) => x.user_id) ?? [];
 
   return (
     <Autocomplete
       fullWidth
-      options={all}
+      options={options}
       multiple
+      onInputChange={(e, v) => {
+        setKeyword(v);
+      }}
+      filterOptions={(x) => x}
       getOptionLabel={(v) => v.toString()}
       value={current_users}
       disableCloseOnSelect
-      onChange={(e, v) => {
+      onChange={(_, v) => {
         if (onChange) {
           onChange(v);
         }
