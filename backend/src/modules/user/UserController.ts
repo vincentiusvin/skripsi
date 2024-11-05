@@ -118,8 +118,8 @@ export class UserController extends Controller {
       const { keyword, page, limit } = req.query;
       const result = await this.user_service.getUsers({
         keyword,
-        page: page != undefined ? Number(page) : undefined,
-        limit: page != undefined ? Number(limit) : undefined,
+        page: page !== undefined ? Number(page) : undefined,
+        limit: limit !== undefined ? Number(limit) : undefined,
       });
       res.status(200).json(result);
     },
