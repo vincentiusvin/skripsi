@@ -1,18 +1,8 @@
 import { Add } from "@mui/icons-material";
-import {
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardActionArea,
-  CardContent,
-  CardMedia,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Avatar, Button, Paper, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import charityImg from "../../assets/charity.png";
+import OrgCard from "../../components/Cards/OrgCard.tsx";
 import StyledLink from "../../components/StyledLink.tsx";
 import { useOrgsGet } from "../../queries/org_hooks";
 
@@ -74,26 +64,10 @@ function OrgsListPage() {
             key={x.org_id}
             size={{
               xs: 12,
-              sm: 6,
-              md: 3,
             }}
           >
             <StyledLink to={`/orgs/${x.org_id}`}>
-              <Card>
-                <CardActionArea>
-                  {x.org_image && <CardMedia component="img" height={300} src={x.org_image} />}
-                  <CardContent>
-                    <Stack direction={"row"} alignItems={"center"} spacing={2}>
-                      <Box>
-                        <Typography variant="h5" fontWeight={"bold"}>
-                          {x.org_name}
-                        </Typography>
-                        <Typography>{x.org_description}</Typography>
-                      </Box>
-                    </Stack>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
+              <OrgCard org_id={x.org_id} />
             </StyledLink>
           </Grid>
         ))}
