@@ -55,7 +55,7 @@ export function useUsersDetailGet(opts: {
     queryKey: userKeys.detail(user_id),
     queryFn: () => new APIContext("UsersDetailGet").fetch(`/api/users/${user_id}`),
     retry: retry,
-    staleTime: 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
