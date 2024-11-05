@@ -31,13 +31,23 @@ function AddTaskDialog(props: { bucket_id: number; project_id: number }) {
   const [taskEndAt, setTaskEndAt] = useState<undefined | Dayjs>();
   const [taskAssign, setTaskAssign] = useState<number[] | undefined>();
 
+  function reset() {
+    setTaskName("");
+    setTaskDescription(undefined);
+    setTaskDescription(undefined);
+    setTaskStartAt(undefined);
+    setTaskEndAt(undefined);
+    setTaskAssign(undefined);
+    setSelectedBucketEdit(undefined);
+  }
+
   const { mutate: addTask } = useTasksPost({
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Tugas berhasil ditambahkan!</Typography>,
         variant: "success",
       });
-      setSelectedBucketEdit(undefined);
+      reset();
     },
   });
   const { data: project_data } = useProjectsDetailGet({
@@ -54,10 +64,7 @@ function AddTaskDialog(props: { bucket_id: number; project_id: number }) {
         <Add />
       </IconButton>
       {selectedBucketEdit != undefined && (
-        <Dialog
-          open={selectedBucketEdit != undefined}
-          onClose={() => setSelectedBucketEdit(undefined)}
-        >
+        <Dialog open={selectedBucketEdit != undefined} onClose={reset}>
           <DialogTitle>Tambah tugas baru</DialogTitle>
           <DialogContent>
             <Stack spacing={2} my={2}>

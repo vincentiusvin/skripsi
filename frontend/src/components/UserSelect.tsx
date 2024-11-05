@@ -34,7 +34,7 @@ function UserSelect(props: {
                   padding: 1,
                 }}
               >
-                <UserLabel user_id={x} disableImage />
+                <UserLabel size="small" user_id={x} disableImage />
               </Paper>
             ))}
           </Stack>
@@ -43,7 +43,7 @@ function UserSelect(props: {
         {all.map((user_id) => {
           return (
             <MenuItem value={user_id} key={user_id}>
-              <UserLabel user_id={user_id} />
+              <UserLabel size="small" user_id={user_id} />
             </MenuItem>
           );
         })}
