@@ -1,4 +1,4 @@
-import { FormControl, InputLabel, MenuItem, Paper, Select, Stack } from "@mui/material";
+import { Autocomplete, MenuItem, Paper, Stack, TextField } from "@mui/material";
 import UserLabel from "./UserLabel.tsx";
 
 function UserSelect(props: {
@@ -10,45 +10,45 @@ function UserSelect(props: {
 }) {
   const { required, onChange: onChange, label, current_users, allowed_users } = props;
 
-  const all = [...new Set([...current_users, ...allowed_users])];
+  const all = [...new Set([...current_users, ...allowed_users])].sort();
 
   return (
-    <FormControl fullWidth>
-      <InputLabel required={required}>{label}</InputLabel>
-      <Select
-        fullWidth
-        label={label}
-        multiple
-        value={current_users}
-        onChange={(e) => {
-          if (onChange) {
-            onChange(e.target.value as number[]);
-          }
-        }}
-        renderValue={(sel) => (
-          <Stack direction={"row"} gap={2} flexWrap={"wrap"}>
-            {sel.map((x) => (
-              <Paper
-                key={x}
-                sx={{
-                  padding: 1,
-                }}
-              >
-                <UserLabel size="small" user_id={x} disableImage />
-              </Paper>
-            ))}
-          </Stack>
-        )}
-      >
-        {all.map((user_id) => {
-          return (
-            <MenuItem value={user_id} key={user_id}>
-              <UserLabel size="small" user_id={user_id} />
-            </MenuItem>
-          );
-        })}
-      </Select>
-    </FormControl>
+    <Autocomplete
+      fullWidth
+      options={all}
+      multiple
+      getOptionLabel={(v) => v.toString()}
+      value={current_users}
+      disableCloseOnSelect
+      onChange={(e, v) => {
+        if (onChange) {
+          onChange(v);
+        }
+      }}
+      renderTags={(sel) => (
+        <Stack direction={"row"} rowGap={1} columnGap={2} flexWrap={"wrap"}>
+          {sel.map((x) => (
+            <Paper
+              key={x}
+              sx={{
+                padding: 1,
+              }}
+            >
+              <UserLabel size="small" user_id={x} disableImage />
+            </Paper>
+          ))}
+        </Stack>
+      )}
+      renderOption={(p, id) => {
+        const { key, ...inputProps } = p;
+        return (
+          <MenuItem key={key} {...inputProps}>
+            <UserLabel size="small" user_id={id} />
+          </MenuItem>
+        );
+      }}
+      renderInput={(p) => <TextField {...p} label={label} required={required} />}
+    />
   );
 }
 
