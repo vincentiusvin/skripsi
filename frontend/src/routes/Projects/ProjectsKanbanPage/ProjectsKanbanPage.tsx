@@ -15,10 +15,15 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Box, BoxProps, Skeleton, Stack, Typography } from "@mui/material";
+import { Alert, Box, BoxProps, Button, Skeleton, Stack, Typography } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 import { ReactNode, useEffect, useState } from "react";
 import { useParams } from "wouter";
-import { useFormattedTasks, useTasksDetailPut } from "../../../queries/task_hooks.ts";
+import {
+  useFormattedTasks,
+  useProjectBucketsReset,
+  useTasksDetailPut,
+} from "../../../queries/task_hooks.ts";
 import AuthorizeProjects from "../components/AuthorizeProjects.tsx";
 import AddBucket from "./AddBucket.tsx";
 import AddTaskDialog from "./AddTaskDialog.tsx";
@@ -112,6 +117,16 @@ function Kanban(props: { project_id: number }) {
 
   const [tempTasksData, setTempTasksData] = useState<TempTasks>([]);
 
+  const { mutate: resetBuckets } = useProjectBucketsReset({
+    project_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Kelompok tugas berhasil ditambahkan!</Typography>,
+        variant: "success",
+      });
+    },
+  });
+
   useEffect(() => {
     // PENTING!!! Biar data stale sama data fresh ga kemix.
     // https://github.com/vincentiusvin/skripsi/pull/14#issuecomment-2227337867
@@ -173,6 +188,25 @@ function Kanban(props: { project_id: number }) {
       <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
         Tugas
       </Typography>
+      {tasksData.length === 0 ? (
+        <Alert
+          severity="info"
+          action={
+            <Button
+              size="small"
+              color="inherit"
+              onClick={() => {
+                resetBuckets();
+              }}
+            >
+              Pasang Template
+            </Button>
+          }
+        >
+          Proyek ini belum memiliki kategori tugas. Anda dapat menggunakan template default dengan
+          mengklik tombol di samping.
+        </Alert>
+      ) : null}
       <DndContext
         sensors={sensors}
         onDragStart={(x) => setActiveDragID(x.active.id.toString())}

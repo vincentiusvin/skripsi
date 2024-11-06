@@ -96,6 +96,26 @@ export function useTasksPost(opts: { onSuccess: () => void }) {
   });
 }
 
+export function useProjectBucketsReset(opts: { project_id: number; onSuccess: () => void }) {
+  const { onSuccess, project_id } = opts;
+  return useMutation({
+    mutationFn: () =>
+      new APIContext("ProjectsDetailBucketsReset").fetch(`/api/projects/${project_id}/buckets`, {
+        method: "PUT",
+        body: {
+          state: "default",
+        },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all() });
+      queryClient.invalidateQueries({ queryKey: bucketKeys.all() });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
 export function useTasksDetailPut(opts: { onSuccess?: () => void }) {
   const { onSuccess } = opts;
   return useMutation({
