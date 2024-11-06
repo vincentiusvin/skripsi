@@ -1,4 +1,5 @@
-import { Skeleton, Stack, TextField, Typography } from "@mui/material";
+import { SearchOutlined } from "@mui/icons-material";
+import { InputAdornment, Skeleton, Stack, TextField, Typography } from "@mui/material";
 import { useDebounce } from "use-debounce";
 import UserCard from "../../components/Cards/UserCard.tsx";
 import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
@@ -19,7 +20,16 @@ function FindUsers() {
       </Typography>
       <TextField
         value={keyword ?? ""}
-        label="Nama pengguna"
+        label="Cari pengguna"
+        slotProps={{
+          input: {
+            endAdornment: (
+              <InputAdornment position="start">
+                <SearchOutlined />
+              </InputAdornment>
+            ),
+          },
+        }}
         onChange={(e) => {
           setKeyword(e.target.value);
         }}
