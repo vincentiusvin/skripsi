@@ -42,8 +42,8 @@ export class OrgRepository {
     this.db = db;
   }
 
-  getOrgs(filter?: { user_id?: number }) {
-    const { user_id } = filter ?? {};
+  getOrgs(filter?: { keyword?: string; user_id?: number }) {
+    const { keyword, user_id } = filter ?? {};
 
     let query = this.db
       .selectFrom("ms_orgs")
@@ -64,6 +64,10 @@ export class OrgRepository {
             .where("orgs_users.user_id", "=", user_id),
         ),
       );
+    }
+
+    if (keyword != undefined && keyword.length !== 0) {
+      query = query.where("ms_orgs.name", "ilike", `%${keyword}%`);
     }
 
     return query.execute();

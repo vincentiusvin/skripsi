@@ -1,8 +1,10 @@
+import { SearchOutlined } from "@mui/icons-material";
 import {
   Button,
   Dialog,
   DialogContent,
   DialogTitle,
+  InputAdornment,
   Skeleton,
   Stack,
   TextField,
@@ -49,6 +51,15 @@ function InviteMembersDialog(props: { project_id: number }) {
               label="Cari pengguna"
               onChange={(e) => setKeyword(e.target.value)}
               value={keyword}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="start">
+                      <SearchOutlined />
+                    </InputAdornment>
+                  ),
+                },
+              }}
             />
             {invitable != undefined ? (
               invitable.map((x) => (
