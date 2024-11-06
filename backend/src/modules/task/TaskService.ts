@@ -1,4 +1,4 @@
-import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
@@ -165,6 +165,39 @@ export class TaskService implements Transactable<TaskService> {
         await this.sendTaskNotification(task_id, project_id, user_id);
       }
     }
+  }
+
+  async addDefaultConfig(project_id: number, sender_id: number) {
+    return await this.transaction_manager.transaction(this as TaskService, async (serv) => {
+      const buckets = await serv.getBuckets({
+        project_id,
+      });
+
+      if (buckets.length !== 0) {
+        throw new ClientError("Anda tidak dapat me-reset kanban board apabila masih ada tugas!");
+      }
+
+      const sender_role = await serv.project_service.getMemberRole(project_id, sender_id);
+      if (sender_role !== "Admin" && sender_role !== "Dev") {
+        throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+      }
+
+      const id = await serv.addBucket(project_id, "Backlog", sender_id);
+      await serv.addBucket(project_id, "Doing", sender_id);
+      await serv.addBucket(project_id, "Done", sender_id);
+
+      if (id == undefined) {
+        throw new Error("Gagal membuat kelompok tugas pada proyek!");
+      }
+      await serv.addTask(
+        {
+          bucket_id: id.id,
+          name: "Contoh tugas",
+          description: "Anda dapat menarik tugas ini ke kelompok lain",
+        },
+        sender_id,
+      );
+    });
   }
 
   async addTask(

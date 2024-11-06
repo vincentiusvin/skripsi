@@ -76,11 +76,11 @@ function NewestContributions() {
       <Typography marginBottom={2} variant="caption">
         Terima kasih telah membantu organisasi-organisasi ini ❤️
       </Typography>
-      <Box marginTop={4}>
+      <Stack marginTop={4} gap={2}>
         {contribs.map((x) => (
           <ContribList key={x.id} contribution_id={x.id} hideStatus />
         ))}
-      </Box>
+      </Stack>
     </Box>
   );
 }

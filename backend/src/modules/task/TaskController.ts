@@ -62,6 +62,7 @@ export class TaskController extends Controller {
       TasksGet: this.TasksGet,
       BucketsGet: this.BucketsGet,
       BucketsPost: this.BucketsPost,
+      ProjectsDetailBucketsReset: this.ProjectsDetailBucketsReset,
     };
   }
 
@@ -333,6 +334,33 @@ export class TaskController extends Controller {
 
       res.status(201).json({
         msg: "Bucket created!",
+      });
+    },
+  });
+
+  ProjectsDetailBucketsReset = new Route({
+    method: "put",
+    path: "/api/projects/:project_id/buckets",
+    schema: {
+      Params: z.object({
+        project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
+      }),
+      ReqBody: z.object({
+        state: z.literal("default"),
+      }),
+      ResBody: z.object({
+        msg: z.string(),
+      }),
+    },
+    handler: async (req, res) => {
+      const { project_id: project_id_raw } = req.params;
+      const project_id = Number(project_id_raw);
+      const sender_id = Number(req.session.user_id);
+
+      await this.task_service.addDefaultConfig(project_id, sender_id);
+
+      res.status(200).json({
+        msg: "Buckets reset to default state!",
       });
     },
   });

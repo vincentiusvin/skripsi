@@ -1,6 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import { ReactNode, useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useRoute } from "wouter";
 import Footer from "./Footer.tsx";
 import { NavigationContext, NavigationData } from "./NavigationContext.ts";
 import SideNav from "./SideNav.tsx";
@@ -23,6 +23,38 @@ function useLocationAwareNav() {
   if (!manualOverride && suppress.includes(loc)) {
     overrideNav.open = false;
   }
+
+  const [projectMatch, projectParams] = useRoute("/projects/:project_id/*?");
+  const [orgMatch, orgParams] = useRoute("/orgs/:org_id/*?");
+  const [adminMatch] = useRoute("/admin/*?");
+
+  useEffect(() => {
+    if (projectMatch) {
+      const project_id = Number(projectParams.project_id);
+      setNav((x) => ({
+        type: "project",
+        id: project_id,
+        open: x.open,
+      }));
+    } else if (orgMatch) {
+      const org_id = Number(orgParams.org_id);
+      setNav((x) => ({
+        type: "orgs",
+        id: org_id,
+        open: x.open,
+      }));
+    } else if (adminMatch) {
+      setNav((x) => ({
+        type: "admin",
+        open: x.open,
+      }));
+    } else {
+      setNav((x) => ({
+        type: "browse",
+        open: x.open,
+      }));
+    }
+  }, [orgMatch, orgParams?.org_id, projectMatch, projectParams?.project_id, adminMatch]);
 
   useEffect(() => {
     setManualOverride(false);

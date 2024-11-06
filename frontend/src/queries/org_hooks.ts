@@ -6,7 +6,8 @@ import { queryClient } from "../helpers/queryclient";
 const orgKeys = {
   all: () => ["orgs"] as const,
   lists: () => [...orgKeys.all(), "list"] as const,
-  list: (opts?: { user_id?: number }) => [...orgKeys.all(), "list", opts] as const,
+  list: (opts?: { user_id?: number; keyword?: string }) =>
+    [...orgKeys.all(), "list", opts] as const,
   details: () => [...orgKeys.all(), "detail"] as const,
   detail: (org_id: number) => [...orgKeys.details(), org_id] as const,
   detailMembers: (org_id: number, user_id: number) => [
@@ -32,17 +33,16 @@ export function useOrgDetailGet(opts: {
   });
 }
 
-export function useOrgsGet(opts?: { user_id?: number }) {
-  const { user_id } = opts ?? {};
+export function useOrgsGet(opts?: { user_id?: number; keyword?: string }) {
+  const { user_id, keyword } = opts ?? {};
   return useQuery({
-    queryKey: user_id ? orgKeys.list({ user_id }) : orgKeys.list(),
+    queryKey: orgKeys.list({ user_id, keyword }),
     queryFn: () =>
       new APIContext("OrgsGet").fetch("/api/orgs", {
-        query: user_id
-          ? {
-              user_id: user_id.toString(),
-            }
-          : undefined,
+        query: {
+          user_id: user_id?.toString(),
+          keyword: keyword != undefined && keyword.length !== 0 ? keyword : undefined,
+        },
       }),
   });
 }

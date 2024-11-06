@@ -1,6 +1,7 @@
 import {
-  ListItem,
-  ListItemButton,
+  Card,
+  CardActionArea,
+  CardContent,
   Skeleton,
   Stack,
   Theme,
@@ -28,35 +29,44 @@ function ContribList(props: { contribution_id: number; hideStatus?: boolean }) {
 
   return (
     <StyledLink to={`/contributions/${contrib.id}`} key={contrib.id}>
-      <ListItem disableGutters>
-        <ListItemButton>
-          <Grid container width="100%" alignItems={"center"}>
-            <Grid size={4}>
-              <Typography variant="body1">{contrib.name}</Typography>
-              <Typography variant="caption">
-                {dayjs(contrib.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
-              </Typography>
-            </Grid>
-            <Grid size={8}>
-              <Stack alignItems={"end"} spacing={1}>
-                {!hideStatus ? <ContributionChip status={contrib.status} /> : null}
-                <Stack
-                  direction="row"
-                  gap={!responsive ? 2 : 1}
-                  justifyContent={"end"}
-                  width={"100%"}
-                  alignItems={"center"}
-                  flexWrap={"wrap"}
-                >
-                  {contrib.user_ids.map((y) => (
-                    <UserLabel disableName={responsive} user_id={y.user_id} key={y.user_id} />
-                  ))}
+      <Card>
+        <CardActionArea>
+          <CardContent>
+            <Grid container width="100%" alignItems={"center"}>
+              <Grid size={4}>
+                <Typography variant="h6" fontWeight={"bold"}>
+                  {contrib.name}
+                </Typography>
+                <Typography variant="caption">
+                  {dayjs(contrib.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+                </Typography>
+              </Grid>
+              <Grid size={8}>
+                <Stack alignItems={"end"} spacing={1}>
+                  {!hideStatus ? <ContributionChip status={contrib.status} /> : null}
+                  <Stack
+                    direction="row"
+                    gap={!responsive ? 2 : 1}
+                    justifyContent={"end"}
+                    width={"100%"}
+                    alignItems={"center"}
+                    flexWrap={"wrap"}
+                  >
+                    {contrib.user_ids.map((y) => (
+                      <UserLabel
+                        size="small"
+                        disableName={responsive}
+                        user_id={y.user_id}
+                        key={y.user_id}
+                      />
+                    ))}
+                  </Stack>
                 </Stack>
-              </Stack>
+              </Grid>
             </Grid>
-          </Grid>
-        </ListItemButton>
-      </ListItem>
+          </CardContent>
+        </CardActionArea>
+      </Card>
     </StyledLink>
   );
 }

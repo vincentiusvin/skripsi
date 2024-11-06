@@ -102,7 +102,7 @@ export class UserService {
     }
   }
 
-  async getUsers(opts?: { is_admin?: boolean; keyword?: string }) {
+  async getUsers(opts?: { page?: number; limit?: number; is_admin?: boolean; keyword?: string }) {
     return await this.user_repo.getUsers(opts);
   }
 

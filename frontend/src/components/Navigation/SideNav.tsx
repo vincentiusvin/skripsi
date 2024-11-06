@@ -335,12 +335,12 @@ function SideNavDashboard() {
   } else if (navData.type === "admin") {
     links = [
       {
-        link: `/manage-reports`,
+        link: `/admin/manage-reports`,
         name: `Laporan`,
         avatar: <Flag />,
       },
       {
-        link: `/manage-accounts`,
+        link: `/admin/manage-accounts`,
         name: `Atur Pengguna`,
         avatar: <People />,
       },

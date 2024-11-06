@@ -1,7 +1,11 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
-import { defaultError, zodStringReadableAsNumber } from "../../helpers/validators.js";
+import {
+  defaultError,
+  zodPagination,
+  zodStringReadableAsNumber,
+} from "../../helpers/validators.js";
 import { UserService } from "./UserService.js";
 
 const UserResponseSchema = z.object({
@@ -107,12 +111,15 @@ export class UserController extends Controller {
       ResBody: UserResponseSchema.array(),
       ReqQuery: z.object({
         keyword: z.string().optional(),
+        ...zodPagination(),
       }),
     },
     handler: async (req, res) => {
-      const { keyword } = req.query;
+      const { keyword, page, limit } = req.query;
       const result = await this.user_service.getUsers({
         keyword,
+        page: page !== undefined ? Number(page) : undefined,
+        limit: limit !== undefined ? Number(limit) : undefined,
       });
       res.status(200).json(result);
     },

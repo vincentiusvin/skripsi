@@ -1,14 +1,18 @@
+import { SearchOutlined } from "@mui/icons-material";
 import {
   Button,
   Dialog,
   DialogContent,
   DialogTitle,
+  InputAdornment,
   Skeleton,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { Fragment, useState } from "react";
+import { useDebounce } from "use-debounce";
 import { useParams } from "wouter";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
@@ -17,34 +21,61 @@ import ProjectMember from "./components/ProjectMember.tsx";
 
 function InviteMembersDialog(props: { project_id: number }) {
   const { project_id } = props;
-  const { data: users } = useUsersGet();
   const { data: project } = useProjectsDetailGet({ project_id });
   const [inviteMembers, setInviteMembers] = useState(false);
+  const [keyword, setKeyword] = useState<string>("");
+  const [debouncedKeyword] = useDebounce(keyword, 300);
+  const { data: users } = useUsersGet({
+    keyword: debouncedKeyword,
+  });
 
-  if (users == undefined || project == undefined) {
+  if (project == undefined) {
     return <Skeleton />;
   }
 
   const project_members = project?.project_members.map((x) => x.user_id);
-  const invitable = users.filter((x) => !project_members.includes(x.user_id));
+  const invitable = users?.filter((x) => !project_members.includes(x.user_id));
+
+  function reset() {
+    setInviteMembers(false);
+    setKeyword("");
+  }
 
   return (
     <>
-      <Dialog open={inviteMembers} onClose={() => setInviteMembers(false)}>
-        <DialogTitle>Add members</DialogTitle>
+      <Dialog open={inviteMembers} onClose={() => reset()}>
+        <DialogTitle>Undang anggota baru</DialogTitle>
         <DialogContent>
-          <Stack gap={2}>
-            {invitable.map((x) => (
-              <ProjectMember
-                project_id={project_id}
-                user_id={x.user_id}
-                key={x.user_id}
-                putOption={{
-                  role: "Invited",
-                  text: "Invite",
-                }}
-              />
-            ))}
+          <Stack spacing={2} mt={1}>
+            <TextField
+              label="Cari pengguna"
+              onChange={(e) => setKeyword(e.target.value)}
+              value={keyword}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="start">
+                      <SearchOutlined />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+            {invitable != undefined ? (
+              invitable.map((x) => (
+                <ProjectMember
+                  project_id={project_id}
+                  user_id={x.user_id}
+                  key={x.user_id}
+                  putOption={{
+                    role: "Invited",
+                    text: "Invite",
+                  }}
+                />
+              ))
+            ) : (
+              <Skeleton />
+            )}
           </Stack>
         </DialogContent>
       </Dialog>

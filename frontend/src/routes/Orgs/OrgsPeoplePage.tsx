@@ -1,14 +1,18 @@
+import { SearchOutlined } from "@mui/icons-material";
 import {
   Button,
   Dialog,
   DialogContent,
   DialogTitle,
+  InputAdornment,
   Skeleton,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { Fragment, useState } from "react";
+import { useDebounce } from "use-debounce";
 import { useParams } from "wouter";
 import { useOrgDetailGet } from "../../queries/org_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
@@ -17,34 +21,61 @@ import OrgMember from "./components/OrgMember.tsx";
 
 function InviteMembersDialog(props: { org_id: number }) {
   const { org_id } = props;
-  const { data: users } = useUsersGet();
   const { data: org } = useOrgDetailGet({ id: org_id });
+  const [keyword, setKeyword] = useState<string>("");
+  const [debouncedKeyword] = useDebounce(keyword, 300);
+  const { data: users } = useUsersGet({
+    keyword: debouncedKeyword,
+  });
   const [inviteMembers, setInviteMembers] = useState(false);
 
-  if (users == undefined || org == undefined) {
+  function reset() {
+    setKeyword("");
+    setInviteMembers(false);
+  }
+
+  if (org == undefined) {
     return <Skeleton />;
   }
 
   const org_members = org.org_users.map((x) => x.user_id);
-  const invitable = users.filter((x) => !org_members.includes(x.user_id));
+  const invitable = users?.filter((x) => !org_members.includes(x.user_id));
 
   return (
     <>
-      <Dialog open={inviteMembers} onClose={() => setInviteMembers(false)}>
-        <DialogTitle>Add members</DialogTitle>
+      <Dialog open={inviteMembers} onClose={reset}>
+        <DialogTitle>Undang pengurus baru</DialogTitle>
         <DialogContent>
-          <Stack gap={2}>
-            {invitable.map((x) => (
-              <OrgMember
-                org_id={org_id}
-                user_id={x.user_id}
-                key={x.user_id}
-                putOption={{
-                  role: "Invited",
-                  text: "Undang",
-                }}
-              />
-            ))}
+          <Stack spacing={2} mt={1}>
+            <TextField
+              label="Cari pengguna"
+              onChange={(e) => setKeyword(e.target.value)}
+              value={keyword}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="start">
+                      <SearchOutlined />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+            {invitable != undefined ? (
+              invitable.map((x) => (
+                <OrgMember
+                  org_id={org_id}
+                  user_id={x.user_id}
+                  key={x.user_id}
+                  putOption={{
+                    role: "Invited",
+                    text: "Undang",
+                  }}
+                />
+              ))
+            ) : (
+              <Skeleton />
+            )}
           </Stack>
         </DialogContent>
       </Dialog>

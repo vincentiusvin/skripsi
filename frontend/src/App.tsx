@@ -149,8 +149,8 @@ function App() {
                   <Route path={"/users"} component={FindUsersPage} />
                   <Route path={"/users/:id"} component={UserAccountPage} />
                   <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
-                  <Route path={"/manage-reports"} component={HandleReportsPage} />
-                  <Route path={"/manage-accounts"} component={ManageAccountsPage} />
+                  <Route path={"/admin/manage-reports"} component={HandleReportsPage} />
+                  <Route path={"/admin/manage-accounts"} component={ManageAccountsPage} />
                   <Route path={"/settings"} component={SettingsPage} />
                 </Switch>
               </Navigation>

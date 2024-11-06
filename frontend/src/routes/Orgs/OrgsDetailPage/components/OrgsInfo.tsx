@@ -1,6 +1,7 @@
-import { Home, Phone } from "@mui/icons-material";
+import { Phone, Place } from "@mui/icons-material";
 import { Avatar, Box, Chip, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import StringLabel from "../../../../components/StringLabel.tsx";
 import { useOrgDetailGet } from "../../../../queries/org_hooks.ts";
 
 function OrgsInfo(props: { org_id: number }) {
@@ -26,10 +27,9 @@ function OrgsInfo(props: { org_id: number }) {
             height: 128,
             width: 128,
           }}
+          src={data.org_image ?? ""}
           variant="rounded"
-        >
-          {data.org_image}
-        </Avatar>
+        />
       </Grid>
       <Grid
         size={{
@@ -43,24 +43,12 @@ function OrgsInfo(props: { org_id: number }) {
           </Typography>
           <Stack spacing={1} direction={"row"} gap={2} flexWrap={"wrap"}>
             {data.org_categories.map((category) => (
-              <Chip label={category.category_name} key={category.category_id} />
+              <Chip color="secondary" label={category.category_name} key={category.category_id} />
             ))}
           </Stack>
           <Stack direction={"row"} spacing={4}>
-            <Stack direction="row" alignItems={"center"} spacing={2}>
-              <Home />
-              <Box>
-                <Typography fontWeight="bold">Alamat</Typography>
-                <Typography>{data.org_address}</Typography>
-              </Box>
-            </Stack>
-            <Stack direction="row" alignItems={"center"} spacing={2}>
-              <Phone />
-              <Box>
-                <Typography fontWeight="bold">Telepon</Typography>
-                <Typography>{data.org_phone}</Typography>
-              </Box>
-            </Stack>
+            <StringLabel icon={<Place />} label="Lokasi" value={data.org_address} />
+            <StringLabel icon={<Phone />} label="Telepon" value={data.org_phone} />
           </Stack>
           <Box></Box>
         </Stack>

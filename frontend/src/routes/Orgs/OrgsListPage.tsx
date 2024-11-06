@@ -1,23 +1,22 @@
-import { Add } from "@mui/icons-material";
-import {
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardActionArea,
-  CardContent,
-  CardMedia,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Add, SearchOutlined } from "@mui/icons-material";
+import { Avatar, Button, InputAdornment, Paper, Stack, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import { useDebounce } from "use-debounce";
 import charityImg from "../../assets/charity.png";
+import OrgCard from "../../components/Cards/OrgCard.tsx";
 import StyledLink from "../../components/StyledLink.tsx";
+import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
 import { useOrgsGet } from "../../queries/org_hooks";
 
 function OrgsListPage() {
-  const { data } = useOrgsGet();
+  const searchHook = useSearchParams();
+  const [keyword, setKeyword] = useStateSearch("keyword", searchHook);
+  const [debouncedKeyword] = useDebounce(keyword, 250);
+
+  const { data } = useOrgsGet({
+    keyword: debouncedKeyword?.toString(),
+  });
+
   return (
     <Stack spacing={2}>
       <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>
@@ -67,33 +66,42 @@ function OrgsListPage() {
           </Grid>
         </Grid>
       </Paper>
-      <Typography variant="h6">Daftar Organisasi</Typography>
+      <Stack direction="row" alignItems={"center"}>
+        <Typography flexGrow={1} variant="h6">
+          Daftar Organisasi
+        </Typography>
+        <TextField
+          label={"Cari organisasi"}
+          value={keyword ?? ""}
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="start">
+                  <SearchOutlined />
+                </InputAdornment>
+              ),
+            },
+          }}
+          onChange={(e) => {
+            const keyword = e.currentTarget.value;
+            if (keyword.length) {
+              setKeyword(keyword);
+            } else {
+              setKeyword(undefined);
+            }
+          }}
+        />
+      </Stack>
       <Grid container spacing={2} mt={2}>
         {data?.map((x) => (
           <Grid
             key={x.org_id}
             size={{
               xs: 12,
-              sm: 6,
-              md: 3,
             }}
           >
             <StyledLink to={`/orgs/${x.org_id}`}>
-              <Card>
-                <CardActionArea>
-                  {x.org_image && <CardMedia component="img" height={300} src={x.org_image} />}
-                  <CardContent>
-                    <Stack direction={"row"} alignItems={"center"} spacing={2}>
-                      <Box>
-                        <Typography variant="h5" fontWeight={"bold"}>
-                          {x.org_name}
-                        </Typography>
-                        <Typography>{x.org_description}</Typography>
-                      </Box>
-                    </Stack>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
+              <OrgCard org_id={x.org_id} />
             </StyledLink>
           </Grid>
         ))}

@@ -132,15 +132,25 @@ export async function baseCase(db: Kysely<DB>) {
     ])
     .execute();
 
-  const project = await db
+  const projects = await db
     .insertInto("ms_projects")
-    .values({
-      description: "very awesome project",
-      name: "testing project",
-      org_id: org.id,
-    })
+    .values([
+      {
+        description: "very awesome project",
+        name: "testing project",
+        org_id: org.id,
+      },
+      {
+        description: "very awesome project",
+        name: "testing project",
+        org_id: org.id,
+      },
+    ])
     .returning(["id", "name"])
-    .executeTakeFirstOrThrow();
+    .execute();
+
+  const project = projects[0];
+  const empty_project = projects[1];
 
   await db
     .insertInto("projects_users")
@@ -448,6 +458,7 @@ export async function baseCase(db: Kysely<DB>) {
     reports,
     contrib_user,
     report_user,
+    empty_project,
     expired_banned_user,
     accepted_contribution,
     rejected_contribution,

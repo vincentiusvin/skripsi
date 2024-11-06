@@ -1,4 +1,6 @@
-import { Skeleton, Stack, TextField, Typography } from "@mui/material";
+import { SearchOutlined } from "@mui/icons-material";
+import { InputAdornment, Skeleton, Stack, TextField, Typography } from "@mui/material";
+import { useDebounce } from "use-debounce";
 import UserCard from "../../components/Cards/UserCard.tsx";
 import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
@@ -6,8 +8,9 @@ import { useUsersGet } from "../../queries/user_hooks.ts";
 function FindUsers() {
   const search = useSearchParams();
   const [keyword, setKeyword] = useStateSearch("keyword", search);
+  const [debouncedKeyword] = useDebounce(keyword, 300);
   const { data: users } = useUsersGet({
-    keyword: keyword?.toString(),
+    keyword: debouncedKeyword?.toString(),
   });
 
   return (
@@ -17,7 +20,16 @@ function FindUsers() {
       </Typography>
       <TextField
         value={keyword ?? ""}
-        label="Nama pengguna"
+        label="Cari pengguna"
+        slotProps={{
+          input: {
+            endAdornment: (
+              <InputAdornment position="start">
+                <SearchOutlined />
+              </InputAdornment>
+            ),
+          },
+        }}
         onChange={(e) => {
           setKeyword(e.target.value);
         }}

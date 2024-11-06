@@ -109,14 +109,16 @@ export class OrgController extends Controller {
     schema: {
       ReqQuery: z.object({
         user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!").optional(),
+        keyword: z.string(defaultError("Nama organisasi tidak valid!")).min(1).optional(),
       }),
       ResBody: OrgResponseSchema.array(),
     },
 
     handler: async (req, res) => {
-      const { user_id } = req.query;
+      const { user_id, keyword } = req.query;
       const result = await this.org_service.getOrgs({
         user_id: user_id != undefined ? Number(user_id) : undefined,
+        keyword: keyword != undefined && keyword.length > 0 ? keyword : undefined,
       });
       res.status(200).json(result);
     },

@@ -1,5 +1,6 @@
 import { Skeleton, Stack, Typography } from "@mui/material";
 import OrgCard from "../../../../components/Cards/OrgCard.tsx";
+import StyledLink from "../../../../components/StyledLink.tsx";
 import { useProjectsDetailGet } from "../../../../queries/project_hooks.ts";
 
 function ProjectOrgDisplay(props: { project_id: number }) {
@@ -15,7 +16,9 @@ function ProjectOrgDisplay(props: { project_id: number }) {
       <Typography variant="h6" fontWeight={"bold"}>
         Organisasi
       </Typography>
-      <OrgCard org_id={project.org_id}></OrgCard>
+      <StyledLink to={`/orgs/${project.org_id}`}>
+        <OrgCard org_id={project.org_id}></OrgCard>
+      </StyledLink>
     </Stack>
   );
 }

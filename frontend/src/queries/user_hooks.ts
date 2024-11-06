@@ -5,7 +5,8 @@ import { queryClient } from "../helpers/queryclient";
 const userKeys = {
   all: () => ["users"] as const,
   lists: () => [...userKeys.all(), "list"] as const,
-  list: (opts: { keyword: string | undefined }) => [...userKeys.all(), "list", opts] as const,
+  list: (opts: { keyword?: string; page?: number; limit?: number }) =>
+    [...userKeys.all(), "list", opts] as const,
   details: () => [...userKeys.all(), "detail"] as const,
   detail: (user_id: number) => [...userKeys.details(), user_id] as const,
   preferences: (user_id: number) => [...userKeys.detail(user_id), "prefs"] as const,
@@ -29,15 +30,17 @@ export function useUsersPost(opts?: { onSuccess?: () => void }) {
   });
 }
 
-export function useUsersGet(opts?: { keyword?: string }) {
-  const { keyword } = opts ?? {};
+export function useUsersGet(opts?: { keyword?: string; page?: number; limit?: number }) {
+  const { keyword, page, limit } = opts ?? {};
   const clean_keyword = keyword != undefined && keyword.length > 0 ? keyword : undefined;
   return useQuery({
-    queryKey: userKeys.list({ keyword: clean_keyword }),
+    queryKey: userKeys.list({ keyword: clean_keyword, page, limit }),
     queryFn: () =>
       new APIContext("UsersGet").fetch("/api/users", {
         query: {
           keyword: clean_keyword,
+          page: page?.toString(),
+          limit: limit?.toString(),
         },
       }),
   });

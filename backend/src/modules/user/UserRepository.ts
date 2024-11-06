@@ -52,8 +52,8 @@ export class UserRepository {
       .executeTakeFirst();
   }
 
-  async getUsers(opts?: { is_admin?: boolean; keyword?: string }) {
-    const { is_admin, keyword } = opts ?? {};
+  async getUsers(opts?: { is_admin?: boolean; keyword?: string; limit?: number; page?: number }) {
+    const { page, limit, is_admin, keyword } = opts ?? {};
     let query = this.db.selectFrom("ms_users").select(defaultUserFields);
 
     if (is_admin) {
@@ -62,6 +62,15 @@ export class UserRepository {
 
     if (keyword != undefined) {
       query = query.where("ms_users.name", "ilike", `%${keyword}%`);
+    }
+
+    if (limit != undefined) {
+      query = query.limit(limit);
+    }
+
+    if (page != undefined && limit != undefined) {
+      const offset = (page - 1) * limit;
+      query = query.offset(offset);
     }
 
     return await query.execute();

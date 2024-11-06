@@ -248,6 +248,7 @@ export class TaskRepository {
         name: name,
         project_id: Number(project_id),
       })
-      .execute();
+      .returning("ms_task_buckets.id")
+      .executeTakeFirst();
   }
 }

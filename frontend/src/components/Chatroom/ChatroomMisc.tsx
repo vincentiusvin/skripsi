@@ -20,12 +20,10 @@ import {
   useChatroomsDetailGet,
   useChatroomsDetailPut,
 } from "../../queries/chat_hooks.ts";
-import { useUsersGet } from "../../queries/user_hooks.ts";
 import UserSelect from "../UserSelect.tsx";
 
 export function AddMembersDialog(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
-  const { data: users } = useUsersGet();
 
   const { data: chatroom } = useChatroomsDetailGet({ chatroom_id });
 
@@ -47,12 +45,11 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
     setNewUsers(undefined);
   }
 
-  if (!chatroom || !users) {
+  if (!chatroom) {
     return <Skeleton />;
   }
 
   const chatroom_users = chatroom.chatroom_users.map((x) => x.user_id);
-  const all_users = users.map((x) => x.user_id);
 
   return (
     <>
@@ -73,7 +70,6 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
             <UserSelect
               label={"Anggota"}
               current_users={newUsers ?? chatroom_users}
-              allowed_users={all_users}
               onChange={(newUsers) => {
                 setNewUsers(newUsers);
               }}
