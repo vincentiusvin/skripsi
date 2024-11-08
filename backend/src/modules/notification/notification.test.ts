@@ -3,6 +3,7 @@ import { Kysely } from "kysely";
 import { before, beforeEach, describe } from "mocha";
 import { Application } from "../../app.js";
 import { DB } from "../../db/db_types.js";
+import { sleep } from "../../helpers/misc.js";
 import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { getNotifications } from "../../test/NotificationTester.js";
 import { baseCase } from "../../test/fixture_data.js";
@@ -131,6 +132,7 @@ describe("notification service", () => {
     };
 
     await service.addNotification(in_data);
+    await sleep(20);
 
     expect(mocked_email.called).to.eq(1);
   });
@@ -154,6 +156,7 @@ describe("notification service", () => {
       await service.addNotification(in_data);
     }
 
+    await sleep(20);
     expect(mocked_email.called).to.eq(1);
   });
 
@@ -176,6 +179,7 @@ describe("notification service", () => {
       await service.addNotification(in_data);
     }
 
+    await sleep(20);
     expect(mocked_email.called).to.eq(2);
   });
 });
