@@ -52,3 +52,21 @@ export function useNotificationsPut(opts: { notification_id: number; onSuccess?:
     },
   });
 }
+
+export function useNotificationsMassPut(opts: { user_id: number; onSuccess?: () => void }) {
+  const { user_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: new APIContext("NotificationsMassPut").bodyFetch(`/api/notifications`, {
+      method: "PUT",
+      query: {
+        user_id: user_id.toString(),
+      },
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: notifKeys.all() });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}

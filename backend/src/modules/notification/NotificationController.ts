@@ -29,6 +29,7 @@ export class NotificationController extends Controller {
     return {
       NotificationsGet: this.NotificationsGet,
       NotificationsPut: this.NotificationsPut,
+      NotificationsMassPut: this.NotificationsMassPut,
     };
   }
 
@@ -49,6 +50,35 @@ export class NotificationController extends Controller {
       const result = await this.notifcation_service.getNotifications({
         user_id: user_id != undefined ? Number(user_id) : undefined,
         read: read != undefined ? read === "true" : undefined,
+      });
+
+      res.status(200).json(result);
+    },
+  });
+
+  NotificationsMassPut = new Route({
+    method: "put",
+    path: "/api/notifications",
+    priors: [validateLogged],
+    schema: {
+      ReqQuery: z.object({
+        user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!"),
+      }),
+      ReqBody: z.object({
+        read: z.boolean(),
+      }),
+      ResBody: NotificationResponseSchema.array(),
+    },
+    handler: async (req, res) => {
+      const sender_id = Number(req.session.user_id);
+      const { user_id: user_id_raw } = req.query;
+      const user_id = Number(user_id_raw);
+      const { read } = req.body;
+
+      await this.notifcation_service.massUpdateNotification(read, user_id, sender_id);
+
+      const result = await this.notifcation_service.getNotifications({
+        user_id: user_id != undefined ? Number(user_id) : undefined,
       });
 
       res.status(200).json(result);

@@ -2,7 +2,7 @@ import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
-  notificationServiceFactory,
+  envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
 import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
 import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
@@ -14,7 +14,7 @@ export function chatServiceFactory(transaction_manager: TransactionManager) {
   const chat_repo = new ChatRepository(db);
   const user_service = userServiceFactory(transaction_manager);
   const preference_service = preferenceServiceFactory(transaction_manager);
-  const notification_service = notificationServiceFactory(transaction_manager);
+  const notification_service = envNotificationServiceFactory(transaction_manager);
   const project_service = projectServiceFactory(transaction_manager);
   const chat_service = new ChatService(
     chat_repo,
@@ -111,7 +111,7 @@ export class ChatService implements Transactable<ChatService> {
         this.notification_service.addNotification({
           title: `Pesan masuk di "${chatroom.chatroom_name}"`,
           description: `${msg.message}`,
-          type: chatroom.project_id != null ? "ProjectChat" : "GeneralChat",
+          type: chatroom.project_id != null ? "Diskusi Proyek" : "Diskusi Pribadi",
           type_id: chatroom.chatroom_id,
           user_id: user_id,
         }),

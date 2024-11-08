@@ -195,6 +195,9 @@ function Kanban(props: { project_id: number }) {
             <Button
               size="small"
               color="inherit"
+              sx={{
+                margin: "auto",
+              }}
               onClick={() => {
                 resetBuckets();
               }}

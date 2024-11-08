@@ -322,22 +322,11 @@ function FileDisplay(props: FileData & { onDelete?: () => void }) {
   );
 }
 
-export function ChatroomComponent(props: { chatroom_id: number }) {
+function ChatroomTypingArea(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
   const [draft, setDraft] = useState("");
   const { mutate: sendMessage } = useChatroomsDetailMessagesPost({ chatroom_id });
-  const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
   const [files, setFiles] = useState<FileData[]>([]);
-
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (bottomRef.current !== null) {
-      bottomRef.current.scrollIntoView({
-        block: "end",
-      });
-    }
-  }, [messages?.length]);
 
   function send() {
     sendMessage({
@@ -353,11 +342,6 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
 
   return (
     <FileDropzone
-      sx={{
-        flexGrow: 1,
-        display: "flex",
-        flexDirection: "column",
-      }}
       disableClick
       onChange={async (file) => {
         if (file == null) {
@@ -373,13 +357,6 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
         ]);
       }}
     >
-      <Stack mt={2} marginLeft={2} spacing={1} overflow={"auto"} flexGrow={1} flexBasis={0}>
-        {messages?.map((x, i) => (
-          <Box key={i} ref={i === messages.length - 1 ? bottomRef : null}>
-            <Message message={x} chatroom_id={chatroom_id} />
-          </Box>
-        ))}
-      </Stack>
       <Stack my={2} direction={"row"} display={"flex"} spacing={2}>
         <FileDropzone
           sx={{ display: "flex" }}
@@ -462,6 +439,40 @@ export function ChatroomComponent(props: { chatroom_id: number }) {
         </Box>
       ) : null}
     </FileDropzone>
+  );
+}
+
+export function ChatroomComponent(props: { chatroom_id: number }) {
+  const { chatroom_id } = props;
+  const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
+
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (bottomRef.current !== null) {
+      bottomRef.current.scrollIntoView({
+        block: "end",
+      });
+    }
+  }, [messages?.length]);
+
+  return (
+    <Box
+      sx={{
+        flexGrow: 1,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Stack mt={2} marginLeft={2} spacing={1} overflow={"auto"} flexGrow={1} flexBasis={0}>
+        {messages?.map((x, i) => (
+          <Box key={i} ref={i === messages.length - 1 ? bottomRef : null}>
+            <Message message={x} chatroom_id={chatroom_id} />
+          </Box>
+        ))}
+      </Stack>
+      <ChatroomTypingArea chatroom_id={chatroom_id} />
+    </Box>
   );
 }
 

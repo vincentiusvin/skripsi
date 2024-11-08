@@ -2,7 +2,7 @@ import { AuthError, ClientError } from "../../helpers/error.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
-  notificationServiceFactory,
+  envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
 import { UserService, userServiceFactory } from "../user/UserService.js";
 import { OrgRoles } from "./OrgMisc.js";
@@ -12,7 +12,7 @@ export function orgServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const org_repo = new OrgRepository(db);
   const user_service = userServiceFactory(transaction_manager);
-  const notification_service = notificationServiceFactory(transaction_manager);
+  const notification_service = envNotificationServiceFactory(transaction_manager);
   const org_service = new OrgService(
     org_repo,
     user_service,
@@ -170,7 +170,7 @@ export class OrgService implements Transactable<OrgService> {
       user_id,
       description: `Anda diundang untuk menjadi "Admin" di organisasi "${org.org_name}".
 Anda dapat menerima tawaran ini dan mengelola projek yang dijalankan oleh organisasi.`,
-      type: "OrgManage",
+      type: "Organisasi",
       type_id: org_id,
     });
   }

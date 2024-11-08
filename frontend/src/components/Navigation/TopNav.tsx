@@ -42,7 +42,15 @@ function TopNav() {
         <IconButton variant="outlined" onClick={() => setNav((x) => ({ ...x, open: !x.open }))}>
           <ViewSidebar />
         </IconButton>
-        <StyledLink to="/">
+        <StyledLink
+          to="/"
+          sx={{
+            display: {
+              xs: "none",
+              sm: "block",
+            },
+          }}
+        >
           <Typography fontWeight={"bold"}>Dev4You</Typography>
         </StyledLink>
         <Box flexGrow={1}></Box>

@@ -2,7 +2,7 @@ import { AuthError, NotFoundError } from "../../helpers/error.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
-  notificationServiceFactory,
+  envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
 import { ProjectRoles } from "../project/ProjectMisc.js";
 import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
@@ -13,7 +13,7 @@ export function contributionServiceFactory(transaction_manager: TransactionManag
   const db = transaction_manager.getDB();
   const contribution_repo = new ContributionRepository(db);
   const project_service = projectServiceFactory(transaction_manager);
-  const notification_service = notificationServiceFactory(transaction_manager);
+  const notification_service = envNotificationServiceFactory(transaction_manager);
 
   const contribution_service = new ContributionService(
     contribution_repo,
@@ -238,7 +238,7 @@ export class ContributionService implements Transactable<ContributionService> {
           description: `Terdapat perkembangan pada laporan kontribusi "${
             contrib.name
           } yang anda buat. Kontribusi tersebut ${message.toLocaleLowerCase()}"`,
-          type: "ContributionUpdate",
+          type: "Kontribusi",
           type_id: contribution_id,
         });
       }),
@@ -253,7 +253,7 @@ export class ContributionService implements Transactable<ContributionService> {
             title: `Kontribusi "${contrib.name}" ${message}`,
             user_id,
             description: `Terdapat perkembangan pada laporan kontribusi "${contrib.name}. Anda dapat mengevaluasi ulang kontribusi tersebut."`,
-            type: "ContributionUpdate",
+            type: "Kontribusi",
             type_id: contribution_id,
           });
         }),
@@ -277,7 +277,7 @@ export class ContributionService implements Transactable<ContributionService> {
           title: `Kontribusi "${contrib.name}" membutuhkan persetujuan anda!`,
           user_id,
           description: `Pengguna menambahkan laporan kontribusi "${contrib.name} di proyek "${project.project_name}". Anda dapat mengevaluasi kontribusi tersebut."`,
-          type: "ContributionUpdate",
+          type: "Kontribusi",
           type_id: contribution_id,
         });
       }),

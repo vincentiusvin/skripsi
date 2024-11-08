@@ -11,7 +11,7 @@ import { contributionServiceFactory } from "./modules/contribution/ContributionS
 import { FriendController } from "./modules/friend/FriendController.js";
 import { friendServiceFactory } from "./modules/friend/FriendService.js";
 import { NotificationController } from "./modules/notification/NotificationController.js";
-import { notificationServiceFactory } from "./modules/notification/NotificationService.js";
+import { envNotificationServiceFactory } from "./modules/notification/NotificationService.js";
 import { OrgController } from "./modules/organization/OrgController.js";
 import { orgServiceFactory } from "./modules/organization/OrgService.js";
 import { PreferenceController } from "./modules/preferences/PreferenceController.js";
@@ -33,7 +33,7 @@ export function registerControllers(app: Application) {
 
   const user_service = userServiceFactory(tm);
   const preference_service = preferenceServiceFactory(tm);
-  const notification_service = notificationServiceFactory(tm);
+  const notification_service = envNotificationServiceFactory(tm);
   const org_service = orgServiceFactory(tm);
   const project_service = projectServiceFactory(tm);
   const task_service = taskServiceFactory(tm);

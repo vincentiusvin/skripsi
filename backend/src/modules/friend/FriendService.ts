@@ -2,7 +2,7 @@ import { AuthError, ClientError } from "../../helpers/error.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
-  notificationServiceFactory,
+  envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
 import { UserService, userServiceFactory } from "../user/UserService.js";
 import { FriendStatus } from "./FriendMisc.js";
@@ -12,7 +12,7 @@ export function friendServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const friend_repo = new FriendRepository(db);
   const user_service = userServiceFactory(transaction_manager);
-  const notification_service = notificationServiceFactory(transaction_manager);
+  const notification_service = envNotificationServiceFactory(transaction_manager);
 
   const friend_service = new FriendService(
     friend_repo,
@@ -93,7 +93,7 @@ export class FriendService implements Transactable<FriendService> {
       title: `Undangan teman dari "${sender.user_name}"`,
       user_id: recv_user_id,
       description: `Anda diundang untuk berteman oleh ${sender.user_name}. Anda dapat menerima atau mengabaikan permintaan ini.`,
-      type: "Friend",
+      type: "Teman",
       type_id: sender_user_id,
     });
   }
@@ -108,7 +108,7 @@ export class FriendService implements Transactable<FriendService> {
       title: `Undangan teman diterima oleh "${accepter.user_name}"`,
       user_id: sender_user_id,
       description: `Undangan pertemanan anda diterima oleh ${accepter.user_name}!.`,
-      type: "Friend",
+      type: "Teman",
       type_id: sender_user_id,
     });
   }

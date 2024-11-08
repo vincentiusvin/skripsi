@@ -212,6 +212,13 @@ export interface MsUsers {
   workplace: string | null;
 }
 
+export interface NotificationBuffers {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  type: string;
+  user_id: number;
+}
+
 export interface OrgsUsers {
   created_at: Generated<Timestamp>;
   org_id: number;
@@ -275,6 +282,7 @@ export interface DB {
   ms_task_buckets: MsTaskBuckets;
   ms_tasks: MsTasks;
   ms_users: MsUsers;
+  notification_buffers: NotificationBuffers;
   orgs_users: OrgsUsers;
   preferences_users: PreferencesUsers;
   projects_users: ProjectsUsers;

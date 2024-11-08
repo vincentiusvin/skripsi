@@ -1,11 +1,11 @@
-import { Avatar, Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, Paper, Skeleton, Stack, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { Redirect, useLocation } from "wouter";
 import charityImg from "../assets/help.png";
 import StyledLink from "../components/StyledLink.tsx";
-import { useSessionPut } from "../queries/sesssion_hooks";
+import { useSessionGet, useSessionPut } from "../queries/sesssion_hooks";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -109,6 +109,13 @@ function Login() {
 }
 
 function LoginPage() {
+  const { data: session } = useSessionGet();
+  if (session == undefined) {
+    return <Skeleton />;
+  }
+  if (session.logged) {
+    return <Redirect to={"/"} />;
+  }
   return <Login />;
 }
 

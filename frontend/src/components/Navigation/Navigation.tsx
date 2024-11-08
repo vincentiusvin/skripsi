@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, Theme, useMediaQuery } from "@mui/material";
 import { ReactNode, useEffect, useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import Footer from "./Footer.tsx";
@@ -12,9 +12,10 @@ const suppress = ["/landing", "/login", "/register"];
 // Terus restore state terakhir setelah leave halaman tersebut.
 // Tapi juga bolehin user untuk buka navbar di halaman tadi, jangan dihide.
 function useLocationAwareNav() {
+  const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
   const [nav, setNav] = useState<NavigationData>({
     type: "browse",
-    open: true,
+    open: !responsive,
   });
   const [loc] = useLocation();
   const [manualOverride, setManualOverride] = useState(false);

@@ -3,7 +3,7 @@ import { Transactable, TransactionManager } from "../../helpers/transaction/tran
 import { ChatService, chatServiceFactory } from "../chatroom/ChatroomService.js";
 import {
   NotificationService,
-  notificationServiceFactory,
+  envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
 import { UserService, userServiceFactory } from "../user/UserService.js";
 import { ReportStatus } from "./ReportMisc.js";
@@ -13,7 +13,7 @@ export function reportServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const report_repo = new ReportRepository(db);
   const user_service = userServiceFactory(transaction_manager);
-  const notification_service = notificationServiceFactory(transaction_manager);
+  const notification_service = envNotificationServiceFactory(transaction_manager);
   const chat_service = chatServiceFactory(transaction_manager);
 
   const report_service = new ReportService(
@@ -157,7 +157,7 @@ export class ReportService implements Transactable<ReportService> {
       user_id: report.sender_id,
       description: `Laporan anda telah ${translate_status} oleh pengelola website.
       Anda dapat membaca alasan lebih lanjut pada halaman laporan.`,
-      type: "ReportUpdate",
+      type: "Laporan",
       type_id: report.id,
     });
   }
@@ -172,7 +172,7 @@ export class ReportService implements Transactable<ReportService> {
       title: `Diskusi "${report.title}"`,
       user_id: report.sender_id,
       description: `Pengelola website telah membuka ruang diskusi untuk membahas laporan ${report.title} yang anda buat.`,
-      type: "ReportUpdate",
+      type: "Laporan",
       type_id: report.id,
     });
   }

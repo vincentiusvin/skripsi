@@ -2,6 +2,7 @@ import {
   Avatar,
   Box,
   Paper,
+  Skeleton,
   Slide,
   Stack,
   Step,
@@ -13,7 +14,9 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useState } from "react";
+import { Redirect } from "wouter";
 import charityImg from "../../assets/help.png";
+import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import RegistrationBiodataStep from "./components/RegistrationBiodataStep.tsx";
 import RegistrationConfirmStep from "./components/RegistrationConfirmStep.tsx";
 import RegistrationCredentialStep from "./components/RegistrationCredentialStep.tsx";
@@ -173,6 +176,13 @@ function Register() {
 }
 
 function RegisterPage() {
+  const { data: session } = useSessionGet();
+  if (session == undefined) {
+    return <Skeleton />;
+  }
+  if (session.logged) {
+    return <Redirect to={"/"} />;
+  }
   return <Register />;
 }
 

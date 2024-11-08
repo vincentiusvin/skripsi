@@ -138,6 +138,7 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
               lg: 2,
             }}
           >
+            <CreateProjectChatroomDialog project_id={project_id} />
             <Tabs
               orientation="vertical"
               scrollButtons="auto"
@@ -147,7 +148,6 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
                 setActiveRoom(newRoomId);
               }}
             >
-              <CreateProjectChatroomDialog project_id={project_id} />
               {chatrooms?.map((x, i) => (
                 <Tab key={i} label={x.chatroom_name} value={x.chatroom_id} />
               ))}
