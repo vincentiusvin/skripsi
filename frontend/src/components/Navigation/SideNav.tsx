@@ -223,11 +223,17 @@ function SideNavDashboard() {
         name: `Beranda`,
         avatar: <Home />,
       },
-      {
+    ];
+
+    if (session?.logged) {
+      links.push({
         link: `/`,
         name: `Dashboard`,
         avatar: <Dashboard />,
-      },
+      });
+    }
+
+    links.push(
       {
         link: `/orgs`,
         name: `Cari Organisasi`,
@@ -243,22 +249,27 @@ function SideNavDashboard() {
         name: `Cari Teman`,
         avatar: <People />,
       },
-      {
-        link: `/chatrooms`,
-        name: `Pesan`,
-        avatar: <Message />,
-      },
-      {
-        link: `/reports`,
-        name: `Laporan`,
-        avatar: <Flag />,
-      },
-      {
-        link: `/settings`,
-        name: `Preferensi`,
-        avatar: <Settings />,
-      },
-    ];
+    );
+
+    if (session?.logged) {
+      links.push(
+        {
+          link: `/chatrooms`,
+          name: `Pesan`,
+          avatar: <Message />,
+        },
+        {
+          link: `/reports`,
+          name: `Laporan`,
+          avatar: <Flag />,
+        },
+        {
+          link: `/settings`,
+          name: `Preferensi`,
+          avatar: <Settings />,
+        },
+      );
+    }
   } else if (navData.type === "project") {
     const project_id = navData.id;
     links = [
