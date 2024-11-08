@@ -91,6 +91,16 @@ export class NotificationService implements Transactable<NotificationService> {
     });
   }
 
+  async massUpdateNotification(read: boolean, user_id: number, sender_id: number) {
+    return await this.transaction_manager.transaction(this as NotificationService, async (serv) => {
+      const is_allowed = await serv.isAllowedToModifyUserNotification(user_id, sender_id);
+      if (!is_allowed) {
+        throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
+      }
+      return await serv.notificiation_repo.massUpdateNotificationStatus(read, user_id);
+    });
+  }
+
   async updateNotification(notification_id: number, read: boolean, sender_id: number) {
     return await this.transaction_manager.transaction(this as NotificationService, async (serv) => {
       const is_allowed = await serv.isAllowedToModify(notification_id, sender_id);
@@ -121,7 +131,11 @@ export class NotificationService implements Transactable<NotificationService> {
     if (!notif) {
       throw new NotFoundError("Notifikasi gagal ditemukan!");
     }
-    if (sender_id == notif.user_id) {
+    return await this.isAllowedToModifyUserNotification(notif.user_id, sender_id);
+  }
+
+  private async isAllowedToModifyUserNotification(user_id: number, sender_id: number) {
+    if (sender_id == user_id) {
       return true;
     }
     const is_admin = await this.user_service.isAdminUser(sender_id);

@@ -159,6 +159,16 @@ export class NotificationRepository {
       .execute();
   }
 
+  async massUpdateNotificationStatus(read: boolean, user_id: number) {
+    return await this.db
+      .updateTable("ms_notifications")
+      .set({
+        read,
+      })
+      .where("ms_notifications.user_id", "=", user_id)
+      .execute();
+  }
+
   async addNotification(opts: {
     title: string;
     description: string;

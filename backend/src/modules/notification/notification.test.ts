@@ -57,9 +57,25 @@ describe("notification api", () => {
     expect(found).to.not.eq(undefined);
     expect(found?.read).to.eq(in_status);
   });
+
+  it("should be able to mass read notification", async () => {
+    const in_user = caseData.notif_user;
+    const in_status = true;
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const send_req = await massPutNotifications(in_status, in_user.id, cookie);
+    const res = await send_req.json();
+
+    expect(send_req.status).to.eq(200);
+    expect(res).to.satisfy((x: typeof res) => {
+      return x.every((notif) => {
+        return notif.read === in_status;
+      });
+    });
+  });
 });
 
-describe.only("notification service", () => {
+describe("notification service", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   let service: NotificationService;
@@ -168,6 +184,22 @@ function putNotifications(notification_id: number, read: boolean, cookie: string
   return new APIContext("NotificationsPut").fetch(`/api/notifications/${notification_id}`, {
     headers: {
       cookie: cookie,
+    },
+    body: {
+      read,
+    },
+    credentials: "include",
+    method: "put",
+  });
+}
+
+function massPutNotifications(read: boolean, user_id: number, cookie: string) {
+  return new APIContext("NotificationsMassPut").fetch(`/api/notifications`, {
+    headers: {
+      cookie: cookie,
+    },
+    query: {
+      user_id: user_id.toString(),
     },
     body: {
       read,

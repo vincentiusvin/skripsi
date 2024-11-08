@@ -351,12 +351,20 @@ export async function baseCase(db: Kysely<DB>) {
 
   const notifications = await db
     .insertInto("ms_notifications")
-    .values({
-      title: "Testing",
-      description: "test desc",
-      type: "OrgManage",
-      user_id: notif_user.id,
-    })
+    .values([
+      {
+        title: "Testing",
+        description: "test desc",
+        type: "OrgManage",
+        user_id: notif_user.id,
+      },
+      {
+        title: "Testing",
+        description: "test desc",
+        type: "OrgManage",
+        user_id: notif_user.id,
+      },
+    ])
     .returning(["id", "title", "description", "type", "user_id"])
     .execute();
 
