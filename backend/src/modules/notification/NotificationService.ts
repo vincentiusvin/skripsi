@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { AuthError, NotFoundError } from "../../helpers/error.js";
+import logger from "../../helpers/logging.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import { EmailService, IEmailService } from "../email/EmailService.js";
 import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
@@ -64,31 +65,37 @@ export class NotificationService implements Transactable<NotificationService> {
     type: NotificationTypes; // informasi resource untuk notification ini
     type_id?: number; // opsional - id resource tersebut
   }) {
-    return await this.transaction_manager.transaction(this as NotificationService, async (serv) => {
-      const { title, description, user_id, type } = opts;
+    const { title, description, user_id, type } = opts;
+    let pref: Awaited<ReturnType<NotificationService["getNotificationPreference"]>> | undefined;
 
-      const user = await serv.user_service.getUserDetail(user_id);
-      if (!user) {
-        throw new NotFoundError("Gagal menemukan pengguna tersebut!");
-      }
+    const result = await this.transaction_manager.transaction(
+      this as NotificationService,
+      async (serv) => {
+        const user = await serv.user_service.getUserDetail(user_id);
+        if (!user) {
+          throw new NotFoundError("Gagal menemukan pengguna tersebut!");
+        }
 
-      const pref = await serv.getNotificationPreference(user_id, type);
-      if (pref === "off") {
-        return;
-      }
+        pref = await serv.getNotificationPreference(user_id, type);
+        if (pref === "off") {
+          return;
+        }
 
-      const result = await serv.notificiation_repo.addNotification(opts);
+        return await serv.notificiation_repo.addNotification(opts);
+      },
+    );
 
-      if (pref === "email" && user.user_email != undefined) {
-        await serv.sendMail(user_id, type, {
-          subject: title,
-          html_content: description,
-          text_content: description,
-        });
-      }
+    if (pref != undefined && pref === "email") {
+      this.sendMail(user_id, type, {
+        subject: title,
+        html_content: description,
+        text_content: description,
+      }).catch((e) => {
+        logger.error(`Gagal mengirimkan email kepada pengguna ${user_id}`, { error: e });
+      });
+    }
 
-      return result;
-    });
+    return result;
   }
 
   async massUpdateNotification(read: boolean, user_id: number, sender_id: number) {
@@ -157,11 +164,14 @@ export class NotificationService implements Transactable<NotificationService> {
       text_content: string;
     },
   ) {
-    const startDate = dayjs().startOf("month").toDate();
-    const endDate = dayjs().endOf("month").toDate();
+    const startDate = dayjs().startOf("week").toDate();
+    const endDate = dayjs().endOf("week").toDate();
     const user = await this.user_service.getUserDetail(user_id);
     if (user == null) {
       throw new NotFoundError("Gagal menemukan pengguna tersebut!");
+    }
+    if (user.user_email == null) {
+      return;
     }
 
     const unread_notifs = await this.notificiation_repo.getNotifications({
@@ -193,9 +203,9 @@ export class NotificationService implements Transactable<NotificationService> {
       await this.email_service.send_email({
         target: user.user_email,
         sender: "noreply",
-        subject: "Anda memiliki beberapa pesan masuk yang belum terbaca di Dev4You!",
-        html_content: "Anda memiliki beberapa pesan masuk yang belum dibaca di Dev4You!",
-        text_content: "Anda memiliki beberapa pesan masuk yang belum dibaca di Dev4You!",
+        subject: `${unread_notifs.length} Pesan Masuk di Dev4You`,
+        html_content: `Anda memiliki ${unread_notifs.length} pesan masuk yang belum dibaca di Dev4You!`,
+        text_content: `Anda memiliki ${unread_notifs.length} pesan masuk yang belum dibaca di Dev4You!`,
       });
 
       await this.notificiation_repo.addNotificationBufferMark({
