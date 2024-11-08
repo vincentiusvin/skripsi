@@ -164,54 +164,63 @@ export class NotificationService implements Transactable<NotificationService> {
       text_content: string;
     },
   ) {
-    const startDate = dayjs().startOf("week").toDate();
-    const endDate = dayjs().endOf("week").toDate();
-    const user = await this.user_service.getUserDetail(user_id);
-    if (user == null) {
-      throw new NotFoundError("Gagal menemukan pengguna tersebut!");
-    }
-    if (user.user_email == null) {
-      return;
-    }
+    return await this.transaction_manager.transaction(this as NotificationService, async (serv) => {
+      const startDate = dayjs().startOf("week").toDate();
+      const endDate = dayjs().endOf("week").toDate();
+      const user = await serv.user_service.getUserDetail(user_id);
+      if (user == null) {
+        throw new NotFoundError("Gagal menemukan pengguna tersebut!");
+      }
+      if (user.user_email == null) {
+        return;
+      }
 
-    const unread_notifs = await this.notificiation_repo.getNotifications({
-      user_id,
-      startDate,
-      endDate,
-      read: false,
-    });
-
-    const is_bufferred_type = NOTIFICATION_TYPE_TO_BUFFER.includes(type);
-
-    // send if there are no notifications
-    if (unread_notifs.length === 1 || !is_bufferred_type) {
-      return await this.email_service.send_email({
-        ...email,
-        sender: "noreply",
-        target: user.user_email,
-      });
-    }
-
-    // otherwise buffer the message
-    const bufs = await this.notificiation_repo.getNotificationBuffer({
-      startDate,
-      endDate,
-      user_id,
-    });
-
-    if (bufs.length === 0 && unread_notifs.length >= NOTIFICATION_BUFFER_LENGTH) {
-      await this.email_service.send_email({
-        target: user.user_email,
-        sender: "noreply",
-        subject: `${unread_notifs.length} Pesan Masuk di Dev4You`,
-        html_content: `Anda memiliki ${unread_notifs.length} pesan masuk yang belum dibaca di Dev4You!`,
-        text_content: `Anda memiliki ${unread_notifs.length} pesan masuk yang belum dibaca di Dev4You!`,
+      const unread_notifs = await serv.notificiation_repo.getNotifications({
+        user_id,
+        startDate,
+        endDate,
+        read: false,
       });
 
-      await this.notificiation_repo.addNotificationBufferMark({
-        type,
+      const is_bufferred_type = NOTIFICATION_TYPE_TO_BUFFER.includes(type);
+
+      // send if there are no notifications
+      if (unread_notifs.length === 1 || !is_bufferred_type) {
+        logger.info(`Sending email notification to ${user_id}`, {
+          unread_notifications: unread_notifs.length,
+        });
+        return await serv.email_service.send_email({
+          ...email,
+          sender: "noreply",
+          target: user.user_email,
+        });
+      }
+
+      // otherwise buffer the message
+      const bufs = await serv.notificiation_repo.getNotificationBuffer({
+        startDate,
+        endDate,
         user_id,
       });
-    }
+
+      if (bufs.length === 0 && unread_notifs.length >= NOTIFICATION_BUFFER_LENGTH) {
+        logger.info(`Sending buffer email to ${user_id}`, {
+          unread_notifications: unread_notifs.length,
+          buffer_mark: bufs.length,
+        });
+        await serv.email_service.send_email({
+          target: user.user_email,
+          sender: "noreply",
+          subject: `${unread_notifs.length} Pesan Masuk di Dev4You`,
+          html_content: `Anda memiliki ${unread_notifs.length} pesan masuk yang belum dibaca di Dev4You!`,
+          text_content: `Anda memiliki ${unread_notifs.length} pesan masuk yang belum dibaca di Dev4You!`,
+        });
+
+        await serv.notificiation_repo.addNotificationBufferMark({
+          type,
+          user_id,
+        });
+      }
+    });
   }
 }
