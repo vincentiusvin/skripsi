@@ -102,7 +102,7 @@ describe("notification service", () => {
     } = {
       title: "Notif baru",
       description: "halo",
-      type: "GeneralChat",
+      type: "Diskusi Pribadi",
       user_id: in_user.id,
     };
 
@@ -126,7 +126,7 @@ describe("notification service", () => {
     } = {
       title: "Notif baru",
       description: "halo",
-      type: "GeneralChat",
+      type: "Diskusi Pribadi",
       user_id: in_user.id,
     };
 
@@ -147,7 +147,7 @@ describe("notification service", () => {
       } = {
         title: "Notif baru",
         description: "halo",
-        type: "GeneralChat",
+        type: "Diskusi Pribadi",
         user_id: in_user.id,
       };
 
@@ -169,7 +169,7 @@ describe("notification service", () => {
       } = {
         title: "Notif baru",
         description: "halo",
-        type: "GeneralChat",
+        type: "Diskusi Pribadi",
         user_id: in_user.id,
       };
 

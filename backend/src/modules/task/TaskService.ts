@@ -274,7 +274,7 @@ export class TaskService implements Transactable<TaskService> {
       title: `Tugas "${task.name}"`,
       user_id,
       description: `Anda tercatat sebagai pelaksana tugas "${task.name}"`,
-      type: "ProjectTask",
+      type: "Tugas",
       type_id: project_id,
     });
   }

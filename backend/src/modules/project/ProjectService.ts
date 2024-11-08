@@ -252,7 +252,7 @@ export class ProjectService implements Transactable<ProjectService> {
       title: `Penerimaan Developer di ${project.project_name}`,
       user_id,
       description: `Anda telah diterima sebagai "Developer" di projek "${project.project_name}" dan dapat mulai berkontribusi.`,
-      type: "ProjectManage",
+      type: "Proyek",
       type_id: project_id,
     });
   }
@@ -267,7 +267,7 @@ export class ProjectService implements Transactable<ProjectService> {
       user_id,
       description: `Anda diundang untuk menjadi "Developer" di projek "${project.project_name}".
 Anda dapat menerima tawaran ini dan berkontribusi di projek tersebut.`,
-      type: "ProjectManage",
+      type: "Proyek",
       type_id: project_id,
     });
   }
@@ -284,7 +284,7 @@ Anda dapat menerima tawaran ini dan berkontribusi di projek tersebut.`,
         user_id: org_user_id.user_id,
         description: `Terdapat pengguna yang ingin menjadi "Developer" di projek "${project.project_name}" yang anda kelola.
 Anda dapat menerima atau menolak permintaan tersebut.`,
-        type: "ProjectManage",
+        type: "Proyek",
         type_id: project_id,
       });
     }

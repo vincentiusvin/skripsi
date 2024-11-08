@@ -32,7 +32,7 @@ function notificationServiceFactory(
 }
 
 // Buffer notification types that are included here
-const NOTIFICATION_TYPE_TO_BUFFER: NotificationTypes[] = ["GeneralChat", "ProjectChat"];
+const NOTIFICATION_TYPE_TO_BUFFER: NotificationTypes[] = ["Diskusi Pribadi", "Diskusi Proyek"];
 const NOTIFICATION_BUFFER_LENGTH = 5;
 
 export class NotificationService implements Transactable<NotificationService> {
@@ -211,9 +211,9 @@ export class NotificationService implements Transactable<NotificationService> {
         await serv.email_service.send_email({
           target: user.user_email,
           sender: "noreply",
-          subject: `${unread_notifs.length} Pesan Masuk di Dev4You`,
-          html_content: `Anda memiliki ${unread_notifs.length} pesan masuk yang belum dibaca di Dev4You!`,
-          text_content: `Anda memiliki ${unread_notifs.length} pesan masuk yang belum dibaca di Dev4You!`,
+          subject: `${unread_notifs.length} Notifikasi Baru di Dev4You`,
+          html_content: `Anda memiliki ${unread_notifs.length} notifikasi baru yang belum dibaca di Dev4You!`,
+          text_content: `Anda memiliki ${unread_notifs.length} notifikasi baru yang belum dibaca di Dev4You!`,
         });
 
         await serv.notificiation_repo.addNotificationBufferMark({

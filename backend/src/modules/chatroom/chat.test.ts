@@ -201,7 +201,7 @@ describe("chatting api", () => {
       expect(diff.length).eq(1);
       expect(diff).containSubset([
         {
-          type: "GeneralChat",
+          type: "Diskusi Pribadi",
         },
       ]);
     });
@@ -222,7 +222,7 @@ describe("chatting api", () => {
       expect(diff.length).eq(1);
       expect(diff).containSubset([
         {
-          type: "ProjectChat",
+          type: "Diskusi Proyek",
         },
       ]);
     });

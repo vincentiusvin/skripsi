@@ -157,7 +157,7 @@ export class ReportService implements Transactable<ReportService> {
       user_id: report.sender_id,
       description: `Laporan anda telah ${translate_status} oleh pengelola website.
       Anda dapat membaca alasan lebih lanjut pada halaman laporan.`,
-      type: "ReportUpdate",
+      type: "Laporan",
       type_id: report.id,
     });
   }
@@ -172,7 +172,7 @@ export class ReportService implements Transactable<ReportService> {
       title: `Diskusi "${report.title}"`,
       user_id: report.sender_id,
       description: `Pengelola website telah membuka ruang diskusi untuk membahas laporan ${report.title} yang anda buat.`,
-      type: "ReportUpdate",
+      type: "Laporan",
       type_id: report.id,
     });
   }

@@ -93,7 +93,7 @@ export class FriendService implements Transactable<FriendService> {
       title: `Undangan teman dari "${sender.user_name}"`,
       user_id: recv_user_id,
       description: `Anda diundang untuk berteman oleh ${sender.user_name}. Anda dapat menerima atau mengabaikan permintaan ini.`,
-      type: "Friend",
+      type: "Teman",
       type_id: sender_user_id,
     });
   }
@@ -108,7 +108,7 @@ export class FriendService implements Transactable<FriendService> {
       title: `Undangan teman diterima oleh "${accepter.user_name}"`,
       user_id: sender_user_id,
       description: `Undangan pertemanan anda diterima oleh ${accepter.user_name}!.`,
-      type: "Friend",
+      type: "Teman",
       type_id: sender_user_id,
     });
   }

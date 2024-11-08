@@ -111,7 +111,7 @@ export class ChatService implements Transactable<ChatService> {
         this.notification_service.addNotification({
           title: `Pesan masuk di "${chatroom.chatroom_name}"`,
           description: `${msg.message}`,
-          type: chatroom.project_id != null ? "ProjectChat" : "GeneralChat",
+          type: chatroom.project_id != null ? "Diskusi Proyek" : "Diskusi Pribadi",
           type_id: chatroom.chatroom_id,
           user_id: user_id,
         }),

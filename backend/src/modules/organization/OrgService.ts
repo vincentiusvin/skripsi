@@ -170,7 +170,7 @@ export class OrgService implements Transactable<OrgService> {
       user_id,
       description: `Anda diundang untuk menjadi "Admin" di organisasi "${org.org_name}".
 Anda dapat menerima tawaran ini dan mengelola projek yang dijalankan oleh organisasi.`,
-      type: "OrgManage",
+      type: "Organisasi",
       type_id: org_id,
     });
   }

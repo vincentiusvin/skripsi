@@ -238,7 +238,7 @@ export class ContributionService implements Transactable<ContributionService> {
           description: `Terdapat perkembangan pada laporan kontribusi "${
             contrib.name
           } yang anda buat. Kontribusi tersebut ${message.toLocaleLowerCase()}"`,
-          type: "ContributionUpdate",
+          type: "Kontribusi",
           type_id: contribution_id,
         });
       }),
@@ -253,7 +253,7 @@ export class ContributionService implements Transactable<ContributionService> {
             title: `Kontribusi "${contrib.name}" ${message}`,
             user_id,
             description: `Terdapat perkembangan pada laporan kontribusi "${contrib.name}. Anda dapat mengevaluasi ulang kontribusi tersebut."`,
-            type: "ContributionUpdate",
+            type: "Kontribusi",
             type_id: contribution_id,
           });
         }),
@@ -277,7 +277,7 @@ export class ContributionService implements Transactable<ContributionService> {
           title: `Kontribusi "${contrib.name}" membutuhkan persetujuan anda!`,
           user_id,
           description: `Pengguna menambahkan laporan kontribusi "${contrib.name} di proyek "${project.project_name}". Anda dapat mengevaluasi kontribusi tersebut."`,
-          type: "ContributionUpdate",
+          type: "Kontribusi",
           type_id: contribution_id,
         });
       }),

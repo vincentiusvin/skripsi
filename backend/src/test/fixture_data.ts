@@ -355,13 +355,13 @@ export async function baseCase(db: Kysely<DB>) {
       {
         title: "Testing",
         description: "test desc",
-        type: "OrgManage",
+        type: "Proyek",
         user_id: notif_user.id,
       },
       {
         title: "Testing",
         description: "test desc",
-        type: "OrgManage",
+        type: "Organisasi",
         user_id: notif_user.id,
       },
     ])
