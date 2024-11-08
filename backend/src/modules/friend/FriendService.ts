@@ -2,7 +2,7 @@ import { AuthError, ClientError } from "../../helpers/error.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
-  notificationServiceFactory,
+  envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
 import { UserService, userServiceFactory } from "../user/UserService.js";
 import { FriendStatus } from "./FriendMisc.js";
@@ -12,7 +12,7 @@ export function friendServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const friend_repo = new FriendRepository(db);
   const user_service = userServiceFactory(transaction_manager);
-  const notification_service = notificationServiceFactory(transaction_manager);
+  const notification_service = envNotificationServiceFactory(transaction_manager);
 
   const friend_service = new FriendService(
     friend_repo,

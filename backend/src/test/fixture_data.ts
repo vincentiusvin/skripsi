@@ -90,6 +90,11 @@ export async function baseCase(db: Kysely<DB>) {
         password: hashed,
         email: "expiredban@example.com",
       },
+      {
+        name: "email chat user",
+        password: hashed,
+        email: "emailchat@example.com",
+      },
     ])
     .returning(["id", "name"])
     .execute();
@@ -115,6 +120,7 @@ export async function baseCase(db: Kysely<DB>) {
   const pref_user = { ...user_ids[11], password: orig_password };
   const contrib_user = { ...user_ids[12], password: orig_password };
   const expired_banned_user = { ...user_ids[13], password: orig_password };
+  const email_chat_user = { ...user_ids[14], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -415,6 +421,11 @@ export async function baseCase(db: Kysely<DB>) {
         preference_id: pref_map.find((x) => x.name === "friend_invite")!.id,
         value: "off",
       },
+      {
+        user_id: email_chat_user.id,
+        preference_id: pref_map.find((x) => x.name === "msg_notif")!.id,
+        value: "email",
+      },
     ])
     .execute();
 
@@ -461,6 +472,7 @@ export async function baseCase(db: Kysely<DB>) {
     empty_project,
     expired_banned_user,
     accepted_contribution,
+    email_chat_user,
     rejected_contribution,
     active_ban,
     expired_ban,

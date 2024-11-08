@@ -2,7 +2,7 @@ import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
-  notificationServiceFactory,
+  envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
 import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
 import { TaskRepository } from "./TaskRepository.js";
@@ -10,7 +10,7 @@ import { TaskRepository } from "./TaskRepository.js";
 export function taskServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const task_repo = new TaskRepository(db);
-  const notification_service = notificationServiceFactory(transaction_manager);
+  const notification_service = envNotificationServiceFactory(transaction_manager);
   const project_service = projectServiceFactory(transaction_manager);
   const task_service = new TaskService(
     task_repo,

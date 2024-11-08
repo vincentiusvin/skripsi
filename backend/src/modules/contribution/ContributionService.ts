@@ -2,7 +2,7 @@ import { AuthError, NotFoundError } from "../../helpers/error.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
-  notificationServiceFactory,
+  envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
 import { ProjectRoles } from "../project/ProjectMisc.js";
 import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
@@ -13,7 +13,7 @@ export function contributionServiceFactory(transaction_manager: TransactionManag
   const db = transaction_manager.getDB();
   const contribution_repo = new ContributionRepository(db);
   const project_service = projectServiceFactory(transaction_manager);
-  const notification_service = notificationServiceFactory(transaction_manager);
+  const notification_service = envNotificationServiceFactory(transaction_manager);
 
   const contribution_service = new ContributionService(
     contribution_repo,

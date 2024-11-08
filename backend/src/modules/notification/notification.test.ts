@@ -59,10 +59,11 @@ describe("notification api", () => {
   });
 });
 
-describe("notification service", () => {
+describe.only("notification service", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   let service: NotificationService;
+  let mocked_email: MockedEmailService;
   before(async () => {
     app = Application.getApplication();
   });
@@ -70,7 +71,9 @@ describe("notification service", () => {
   beforeEach(async () => {
     await clearDB(app.db);
     caseData = await baseCase(app.db);
-    service = getMockedEmailNotificationService(app.db);
+    const { email, notif } = getMockedEmailNotificationService(app.db);
+    mocked_email = email;
+    service = notif;
   });
 
   it("should be able to add notifications", async () => {
@@ -96,6 +99,69 @@ describe("notification service", () => {
     expect(notif).to.not.eq(undefined);
     expect(notif).to.deep.include(in_data);
   });
+
+  it("should be able to send email notifications", async () => {
+    const in_user = caseData.email_chat_user;
+    const in_data: {
+      title: string;
+      description: string;
+      type: NotificationTypes;
+      user_id: number;
+    } = {
+      title: "Notif baru",
+      description: "halo",
+      type: "GeneralChat",
+      user_id: in_user.id,
+    };
+
+    await service.addNotification(in_data);
+
+    expect(mocked_email.called).to.eq(1);
+  });
+
+  it("should be able to buffer email notifications when below threshold", async () => {
+    const buffer_iter_below_threshold = 4;
+    const in_user = caseData.email_chat_user;
+    for (let i = 0; i < buffer_iter_below_threshold; i++) {
+      const in_data: {
+        title: string;
+        description: string;
+        type: NotificationTypes;
+        user_id: number;
+      } = {
+        title: "Notif baru",
+        description: "halo",
+        type: "GeneralChat",
+        user_id: in_user.id,
+      };
+
+      await service.addNotification(in_data);
+    }
+
+    expect(mocked_email.called).to.eq(1);
+  });
+
+  it("should be able to buffer email notifications when above threshold", async () => {
+    const buffer_iter_above_threshold = 8;
+    const in_user = caseData.email_chat_user;
+    for (let i = 0; i < buffer_iter_above_threshold; i++) {
+      const in_data: {
+        title: string;
+        description: string;
+        type: NotificationTypes;
+        user_id: number;
+      } = {
+        title: "Notif baru",
+        description: "halo",
+        type: "GeneralChat",
+        user_id: in_user.id,
+      };
+
+      await service.addNotification(in_data);
+    }
+
+    expect(mocked_email.called).to.eq(2);
+  });
 });
 
 function putNotifications(notification_id: number, read: boolean, cookie: string) {
@@ -116,5 +182,9 @@ function getMockedEmailNotificationService(db: Kysely<DB>) {
   const notif_repo = new NotificationRepository(db);
   const user_service = userServiceFactory(tm);
   const pref_service = preferenceServiceFactory(tm);
-  return new NotificationService(notif_repo, new MockedEmailService(), user_service, pref_service);
+  const email_service = new MockedEmailService();
+  return {
+    notif: new NotificationService(notif_repo, email_service, user_service, pref_service, tm),
+    email: email_service,
+  };
 }

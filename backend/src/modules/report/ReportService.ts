@@ -3,7 +3,7 @@ import { Transactable, TransactionManager } from "../../helpers/transaction/tran
 import { ChatService, chatServiceFactory } from "../chatroom/ChatroomService.js";
 import {
   NotificationService,
-  notificationServiceFactory,
+  envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
 import { UserService, userServiceFactory } from "../user/UserService.js";
 import { ReportStatus } from "./ReportMisc.js";
@@ -13,7 +13,7 @@ export function reportServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const report_repo = new ReportRepository(db);
   const user_service = userServiceFactory(transaction_manager);
-  const notification_service = notificationServiceFactory(transaction_manager);
+  const notification_service = envNotificationServiceFactory(transaction_manager);
   const chat_service = chatServiceFactory(transaction_manager);
 
   const report_service = new ReportService(
