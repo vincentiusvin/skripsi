@@ -153,7 +153,7 @@ function App() {
                   <Route path={"/admin/manage-reports"} component={HandleReportsPage} />
                   <Route path={"/admin/manage-accounts"} component={ManageAccountsPage} />
                   <Route path={"/settings"} component={SettingsPage} />
-                  <Route path={"/guides/account"} component={GuidePage} />
+                  <Route path={"/guides/:guide"} component={GuidePage} />
                 </Switch>
               </Navigation>
             </LocalizationProvider>
