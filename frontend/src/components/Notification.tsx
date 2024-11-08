@@ -6,6 +6,7 @@ import {
   Card,
   CardActionArea,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -15,7 +16,11 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import { useState } from "react";
-import { useNotificationsGet, useNotificationsPut } from "../queries/notification_hooks.ts";
+import {
+  useNotificationsGet,
+  useNotificationsMassPut,
+  useNotificationsPut,
+} from "../queries/notification_hooks.ts";
 import StyledLink from "./StyledLink.tsx";
 
 type NotificationData = NonNullable<ReturnType<typeof useNotificationsGet>["data"]>[number];
@@ -129,6 +134,9 @@ function NotificationDialog(props: { user_id: number }) {
   const { data: notification } = useNotificationsGet({
     user_id,
   });
+  const { mutate: readAll } = useNotificationsMassPut({
+    user_id,
+  });
   const [openNotification, setOpenNotification] = useState(false);
   const unread = notification?.filter((x) => x.read == false).length;
   return (
@@ -168,6 +176,17 @@ function NotificationDialog(props: { user_id: number }) {
             <Skeleton />
           )}
         </DialogContent>
+        <DialogActions>
+          {unread != undefined ? (
+            unread > 0 ? (
+              <Button onClick={() => readAll({ read: true })}>Tanda Semua Sebagai Dibaca</Button>
+            ) : (
+              <Button onClick={() => readAll({ read: false })}>
+                Tanda Semua Sebagai Belum Dibaca
+              </Button>
+            )
+          ) : null}
+        </DialogActions>
       </Dialog>
     </>
   );
