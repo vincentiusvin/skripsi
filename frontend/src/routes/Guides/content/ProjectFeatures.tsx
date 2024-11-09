@@ -1,4 +1,4 @@
-import { Stack, Typography } from "@mui/material";
+import { Alert, Stack, Typography } from "@mui/material";
 import { ContentType } from "../type.tsx";
 
 const ProjectFeatures: ContentType = {
@@ -7,7 +7,12 @@ const ProjectFeatures: ContentType = {
     {
       title:
         "Apabila anda sudah terlibat sebagai pengelola ataupun kontributor dalam proyek, anda dapat mengugnakan fitur-fitur berikut:",
-      content: null,
+      content: (
+        <Alert severity="info">
+          Apabila menu-menu berikut tidak muncul pada sidebar anda, anda dapat mengganti konteks
+          sidebar ke proyek yang bersangkutan dengan menekan tombol dropdown di bagian atas sidebar.
+        </Alert>
+      ),
     },
     {
       title: "Diskusi mengenai proyek.",

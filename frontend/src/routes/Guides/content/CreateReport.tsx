@@ -15,7 +15,7 @@ const CreateReport: ContentType = {
       ),
     },
     {
-      title: 'Buka halaman laporan pada bagian "Jelajah" di sidebar.',
+      title: 'Buka halaman "Laporan" pada bagian "Jelajah" di sidebar.',
       content: (
         <Box>
           <Typography

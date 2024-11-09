@@ -51,6 +51,27 @@ const DevProject: ContentType = {
         </Stack>
       ),
     },
+    {
+      title: "Pastikan anda mematuhi aturan-aturan berikut dalam pengunaan website Dev4You:",
+      content: (
+        <Box>
+          <ul>
+            <li>
+              <Typography>
+                Anda tidak boleh menggunakan website ini untuk membuka jasa freelancing atau
+                pengerjaan proyek untuk uang.
+              </Typography>
+            </li>
+            <li>Hormati satu sama lain.</li>
+            <li>
+              Hormati hukum yang ada. Jangan menggunakan website ini untuk melaksanakan aktivitas
+              ilegal.
+            </li>
+          </ul>
+          Kegagalan dalam mematuhi aturan-aturan di atas dapat membuat akun anda ditangguhkan.
+        </Box>
+      ),
+    },
   ],
 };
 

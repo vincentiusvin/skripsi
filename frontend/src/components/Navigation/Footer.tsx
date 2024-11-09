@@ -56,6 +56,10 @@ const helps = [
         text: "Menambah pengurus organisasi",
         link: "/guides/org-org-members",
       },
+      {
+        text: "Meninjau laporan kontribusi",
+        link: "/guides/org-contribs",
+      },
     ],
   },
 ];
