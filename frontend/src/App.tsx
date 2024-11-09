@@ -20,6 +20,7 @@ import ContributionEditPage from "./routes/Contributions/ContributionEditPage.ts
 import ProjectsAddContributionPage from "./routes/Contributions/ProjectsAddContributionPage.tsx";
 import ProjectsContributionPage from "./routes/Contributions/ProjectsContributionPage.tsx";
 import DashboardPage from "./routes/DashboardPage.tsx";
+import GuidePage from "./routes/Guides/GuidePage.tsx";
 import LandingPage from "./routes/LandingPage.tsx";
 import LoginPage from "./routes/LoginPage.tsx";
 import OrgsAddPage from "./routes/Orgs/OrgsAddPage";
@@ -152,6 +153,7 @@ function App() {
                   <Route path={"/admin/manage-reports"} component={HandleReportsPage} />
                   <Route path={"/admin/manage-accounts"} component={ManageAccountsPage} />
                   <Route path={"/settings"} component={SettingsPage} />
+                  <Route path={"/guides/:guide"} component={GuidePage} />
                 </Switch>
               </Navigation>
             </LocalizationProvider>

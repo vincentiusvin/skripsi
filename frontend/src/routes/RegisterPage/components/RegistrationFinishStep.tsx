@@ -1,5 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import StyledLink from "../../../components/StyledLink.tsx";
 
 function RegistrationFinishStep() {
   return (
@@ -25,7 +26,9 @@ function RegistrationFinishStep() {
           <Typography variant="body1" mb={2}>
             Untuk pengurus organisasi nirlaba yang ingin mendaftarkan organisasinya.
           </Typography>
-          <Button variant="outlined">Pelajari lebih lanjut</Button>
+          <StyledLink to={"/guides/org-create"}>
+            <Button variant="outlined">Pelajari lebih lanjut</Button>
+          </StyledLink>
         </Grid>
         <Grid
           size={{
@@ -40,7 +43,9 @@ function RegistrationFinishStep() {
           <Typography variant="body1" mb={2}>
             Untuk developer yang ingin mulai terlibat dalam proyek yang sudah ada.
           </Typography>
-          <Button variant="outlined">Pelajari lebih lanjut</Button>
+          <StyledLink to={"/guides/dev-project"}>
+            <Button variant="outlined">Pelajari lebih lanjut</Button>
+          </StyledLink>
         </Grid>
       </Grid>
     </Box>

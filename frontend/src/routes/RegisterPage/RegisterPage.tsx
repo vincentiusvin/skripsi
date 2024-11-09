@@ -112,6 +112,14 @@ function Register() {
   const actualStep = step == undefined ? 0 : step;
   const isStepped = step !== undefined;
 
+  const { data: session } = useSessionGet();
+  if (session == undefined) {
+    return <Skeleton />;
+  }
+  if (session.logged && actualStep < 6) {
+    return <Redirect to={"/"} />;
+  }
+
   return (
     <RegistrationContext.Provider value={userState}>
       <Grid
@@ -176,13 +184,6 @@ function Register() {
 }
 
 function RegisterPage() {
-  const { data: session } = useSessionGet();
-  if (session == undefined) {
-    return <Skeleton />;
-  }
-  if (session.logged) {
-    return <Redirect to={"/"} />;
-  }
   return <Register />;
 }
 

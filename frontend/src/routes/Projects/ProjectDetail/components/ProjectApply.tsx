@@ -2,6 +2,7 @@ import { Add, Cancel, Check, Visibility } from "@mui/icons-material";
 import { Button, Skeleton, Stack, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useNavigation } from "../../../../components/Navigation/NavigationContext.ts";
+import { useOrgsDetailMembersGet } from "../../../../queries/org_hooks.ts";
 import {
   useProjectsDetailGet,
   useProjectsDetailMembersDelete,
@@ -18,6 +19,12 @@ function ProjectApply(props: { project_id: number; user_id: number }) {
   const { data: role } = useProjectsDetailMembersGet({
     user_id,
     project_id,
+  });
+
+  const { data: org_role } = useOrgsDetailMembersGet({
+    org_id: project!.org_id,
+    user_id,
+    enabled: project != undefined,
   });
 
   const { mutate: addMember } = useProjectsDetailMembersPut({
@@ -49,15 +56,22 @@ function ProjectApply(props: { project_id: number; user_id: number }) {
   }
 
   if (role.role === "Not Involved") {
+    let explain_text =
+      "Anda dapat mengirimkan permintaan untuk bergabung ke dalam proyek ini. Permintaan anda harus disetujui oleh pengurus proyek sebelum anda dapat masuk.";
+    let button_text = "Kirim Permintaan Bergabung";
+
+    if (org_role?.role === "Admin") {
+      explain_text =
+        "Sebagai pengurus organisasi, anda dapat bergabung dalam proyek ini sebagai admin dan mulai mengelola proyek.";
+      button_text = "Bergabung Sebagai Admin";
+    }
+
     return (
       <Stack spacing={2}>
         <Typography variant="h6" fontWeight={"bold"}>
           Bergabung
         </Typography>
-        <Typography variant="caption">
-          Anda dapat mengirimkan permintaan untuk bergabung ke dalam proyek ini. Permintaan anda
-          harus disetujui oleh pengurus proyek sebelum anda dapat masuk.
-        </Typography>
+        <Typography variant="caption">{explain_text}</Typography>
         <Button
           startIcon={<Add />}
           disabled={project.project_archived}
@@ -68,7 +82,7 @@ function ProjectApply(props: { project_id: number; user_id: number }) {
             });
           }}
         >
-          Kirim Permintaan Bergabung
+          {button_text}
         </Button>
       </Stack>
     );

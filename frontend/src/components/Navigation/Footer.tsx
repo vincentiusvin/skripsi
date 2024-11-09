@@ -19,7 +19,7 @@ const helps = [
         link: "/guides/friend",
       },
       {
-        text: "Mengajukan laporan",
+        text: "Melaporkan penyalahgunaan",
         link: "/guides/report",
       },
     ],
@@ -49,12 +49,16 @@ const helps = [
         link: "/guides/org-project",
       },
       {
-        text: "Menambah anggota proyek",
+        text: "Mengelola anggota proyek",
         link: "/guides/org-project-members",
       },
       {
-        text: "Menambah pengurus organisasi",
+        text: "Mengelola pengurus organisasi",
         link: "/guides/org-org-members",
+      },
+      {
+        text: "Meninjau laporan kontribusi",
+        link: "/guides/org-contribs",
       },
     ],
   },
