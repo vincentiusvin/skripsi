@@ -35,12 +35,7 @@ const OrgCreate: ContentType = {
     },
     {
       title: "Proses pendaftaran organisasi selesai!",
-      content: (
-        <Typography>
-          Anda dapat membukan menu mengenai organisasi anda dengan mengganti konteks sidebar ke
-          organisasi yang bersangkutan.
-        </Typography>
-      ),
+      content: null,
     },
     {
       title: "Pastikan anda mematuhi aturan-aturan berikut dalam pengunaan website Dev4You:",

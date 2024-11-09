@@ -6,6 +6,7 @@ import DevContribs from "./content/DevContribs.tsx";
 import DevProject from "./content/DevProject.tsx";
 import Friend from "./content/Friend.tsx";
 import OrgCreate from "./content/OrgCreate.tsx";
+import OrgProject from "./content/OrgProject.tsx";
 import ProjectFeatures from "./content/ProjectFeatures.tsx";
 import { ContentType } from "./type.tsx";
 
@@ -42,6 +43,7 @@ const GuideMapper = {
   "dev-contribs": DevContribs,
   "project-features": ProjectFeatures,
   "org-create": OrgCreate,
+  "org-project": OrgProject,
   friend: Friend,
 };
 

@@ -88,12 +88,17 @@ export function useOrgsUpdate(opts: { org_id: number; onSuccess?: () => void }) 
   });
 }
 
-export function useOrgsDetailMembersGet(opts: { org_id: number; user_id: number }) {
-  const { org_id, user_id } = opts;
+export function useOrgsDetailMembersGet(opts: {
+  enabled?: boolean;
+  org_id: number;
+  user_id: number;
+}) {
+  const { enabled, org_id, user_id } = opts;
   return useQuery({
     queryKey: orgKeys.detailMembers(org_id, user_id),
     queryFn: () =>
       new APIContext("OrgsDetailMembersDetailGet").fetch(`/api/orgs/${org_id}/users/${user_id}`),
+    enabled,
   });
 }
 
