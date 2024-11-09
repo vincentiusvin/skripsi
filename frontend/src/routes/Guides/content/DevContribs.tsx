@@ -6,12 +6,13 @@ const DevContribs: ContentType = {
   title: "Panduan Mengajukan Kontribusi",
   steps: [
     {
-      title: "Buka halaman proyek di mana anda tergabung menjadi anggota.",
-      content: null,
-    },
-    {
-      title: 'Tekan tombol "Kontribusi" di sidebar',
-      content: null,
+      title: 'Tekan tombol "Kontribusi" di sidebar proyek',
+      content: (
+        <Alert severity="info">
+          Apabila menu tersebut tidak muncul pada sidebar anda, anda dapat mengganti konteks sidebar
+          ke proyek yang bersangkutan dengan menekan tombol dropdown di bagian atas sidebar.
+        </Alert>
+      ),
     },
     {
       title: 'Tekan tombol "Tambah Kontribusi" di halaman tersebut',

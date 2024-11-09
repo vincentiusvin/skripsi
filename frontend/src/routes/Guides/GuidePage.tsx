@@ -5,6 +5,7 @@ import CreateReport from "./content/CreateReport.tsx";
 import DevContribs from "./content/DevContribs.tsx";
 import DevProject from "./content/DevProject.tsx";
 import Friend from "./content/Friend.tsx";
+import OrgContribs from "./content/OrgContribs.tsx";
 import OrgCreate from "./content/OrgCreate.tsx";
 import OrgOrgMembers from "./content/OrgOrgMembers.tsx";
 import OrgProject from "./content/OrgProject.tsx";
@@ -48,6 +49,7 @@ const GuideMapper = {
   "org-project": OrgProject,
   "org-project-members": OrgProjectMembers,
   "org-org-members": OrgOrgMembers,
+  "org-contribs": OrgContribs,
   friend: Friend,
 };
 

@@ -57,7 +57,7 @@ const OrgCreate: ContentType = {
                 Anda tidak boleh menolak laporan kontribusi kecuali jika laporan tersebut mengandung
                 informasi yang bersifat rahasia ataupun palsu. Baca lebih lengkap{" "}
               </Typography>
-              <ActualStyledLink to={"/org-contribs"}>di sini</ActualStyledLink>.
+              <ActualStyledLink to={"/guides/org-contribs"}>di sini</ActualStyledLink>.
             </li>
             <li>Hormati satu sama lain.</li>
             <li>

@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
+import { sessionKeys } from "./sesssion_hooks.ts";
 
 const userKeys = {
   all: () => ["users"] as const,
@@ -21,6 +22,9 @@ export function useUsersPost(opts?: { onSuccess?: () => void }) {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: userKeys.lists(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: sessionKeys.session(),
       });
 
       if (onSuccess) {

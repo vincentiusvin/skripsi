@@ -100,6 +100,7 @@ export class UserController extends Controller {
         throw new Error("Gagal menambahkan pengguna!");
       }
 
+      req.session.user_id = user_id.id;
       res.status(201).json(result);
     },
   });
