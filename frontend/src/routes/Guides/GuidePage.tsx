@@ -1,6 +1,7 @@
 import { Box, Step, StepContent, StepLabel, Stepper, Typography } from "@mui/material";
 import { Redirect, useParams } from "wouter";
 import CreateAccount from "./content/CreateAccount.tsx";
+import DevContribs from "./content/DevContribs.tsx";
 import DevProject from "./content/DevProject.tsx";
 import { ContentType } from "./type.tsx";
 
@@ -33,6 +34,7 @@ function Guide(props: { content: ContentType }) {
 const GuideMapper = {
   account: CreateAccount,
   "dev-project": DevProject,
+  "dev-contribs": DevContribs,
 };
 
 function GuidePage() {
