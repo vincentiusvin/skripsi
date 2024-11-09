@@ -19,7 +19,7 @@ const helps = [
         link: "/guides/friend",
       },
       {
-        text: "Mengajukan laporan",
+        text: "Melaporkan penyalahgunaan",
         link: "/guides/report",
       },
     ],
