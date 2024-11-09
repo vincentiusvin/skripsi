@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { ContentType } from "../type.tsx";
 
 const ProjectFeatures: ContentType = {
@@ -20,10 +20,16 @@ const ProjectFeatures: ContentType = {
     {
       title: "Melihat tugas yang perlu dikerjakan",
       content: (
-        <Typography>
-          Anda dapat membuka kanban board untuk melihat tugas proyek dengan menekan tombol
-          &quot;Tugas&quot; di sidebar.
-        </Typography>
+        <Stack>
+          <Typography>
+            Anda dapat membuka kanban board untuk melihat tugas proyek dengan menekan tombol
+            &quot;Tugas&quot; di sidebar.
+          </Typography>
+          <Typography mt={2}>
+            Anda dapat membagi pekerjaan yang perlu dilakukan kepada anggota dan melihat status
+            tugas-tugas yang sedang berjalan.
+          </Typography>
+        </Stack>
       ),
     },
     {
@@ -31,7 +37,8 @@ const ProjectFeatures: ContentType = {
       content: (
         <Typography>
           Anda dapat menambahkan bukti kontribusi ke profil anda (sebagai Developer) ataupun profil
-          anggota anda (sebagai pengurus) dengan menekan tombol &quot;Kontribusi&quot; di sidebar.
+          anggota anda (sebagai pengurus organisasi) dengan menekan tombol &quot;Kontribusi&quot; di
+          sidebar.
         </Typography>
       ),
     },

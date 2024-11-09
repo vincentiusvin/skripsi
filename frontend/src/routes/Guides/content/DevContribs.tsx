@@ -25,6 +25,9 @@ const DevContribs: ContentType = {
             Anda dapat menyertakan media pendukung mengenai kontribusi anda seperti screenshot,
             tautan ke website lain atau cuplikan kode.
           </Typography>
+          <Typography>
+            Anda juga dapat menambahkan anggota lain yang ikut terlibat dalam kontribusi tersebut.
+          </Typography>
           <Alert
             severity="warning"
             sx={{
