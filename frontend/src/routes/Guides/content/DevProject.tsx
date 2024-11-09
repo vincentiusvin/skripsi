@@ -6,7 +6,7 @@ const DevProject: ContentType = {
   title: "Panduan Keanggotaan Proyek",
   steps: [
     {
-      title: "Buka halaman register",
+      title: "Buka halaman proyek",
       content: (
         <Box>
           <Typography
@@ -14,43 +14,35 @@ const DevProject: ContentType = {
               display: "inline",
             }}
           >
-            Anda dapat membukanya lewat{" "}
+            Anda dapat mencari proyek-proyek yang ada lewat{" "}
           </Typography>
-          <ActualStyledLink to={"/register"}>link ini</ActualStyledLink>.
+          <ActualStyledLink to={"/projects"}>link ini</ActualStyledLink>.
         </Box>
       ),
     },
-    { title: "Masukkan informasi dan data diri anda", content: null },
     {
-      title: "Verifikasi email melalui kode OTP",
-      content: <Typography>Kode OTP akan dikirimkan melalui e-mail yang didaftarkan.</Typography>,
+      title: 'Tekan tombol "Kirim Permintaan Bergabung" di halaman proyek',
+      content: (
+        <Typography>
+          Permintaan anda akan ditangani oleh pengurus proyek. Anda akan mendapatkan notifikasi
+          apabila permintaan anda sudah diterima/ditolak.
+        </Typography>
+      ),
     },
     {
-      title: "Proses pendaftaran akun selesai!",
+      title: "Apabila anda diterima, anda dapat mulai berkontribusi di dalam proyek!",
       content: (
         <Stack>
-          <Typography mb={2}>Anda dapat login menggunakan akun baru anda.</Typography>
+          <Typography>
+            Anda dapat melihat tugas yang perlu dikerjakan dan berdiskusi mengenai proyek melalui
+            website ini.
+          </Typography>
           <Box>
-            <Typography
-              sx={{
-                display: "inline",
-              }}
-            >
-              Apabila anda merupakan pengurus organisasi anda dapat membaca lebih lanjut tentang
-              cara mendaftarkan organiasasi anda{" "}
+            <Typography>
+              Apabila anda sudah menyelesaikan sebuah pekerjaan, anda dapat mengajukan laporan
+              kontribusi. Baca lebih lengkap{" "}
             </Typography>
-            <ActualStyledLink to={"/guides/org-create"}>di sini</ActualStyledLink>.
-          </Box>
-          <Box>
-            <Typography
-              sx={{
-                display: "inline",
-              }}
-            >
-              Apabila anda merupakan developer anda dapat membaca lebih lanjut tentang cara mulai
-              berkontribusi{" "}
-            </Typography>
-            <ActualStyledLink to={"/guides/dev-project"}>di sini</ActualStyledLink>.
+            <ActualStyledLink to={"/guides/dev-contribs"}>di sini</ActualStyledLink>.
           </Box>
         </Stack>
       ),
