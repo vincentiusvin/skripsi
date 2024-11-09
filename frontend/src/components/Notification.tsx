@@ -26,24 +26,22 @@ import StyledLink from "./StyledLink.tsx";
 type NotificationData = NonNullable<ReturnType<typeof useNotificationsGet>["data"]>[number];
 
 function resolveNotificationLink(type: NotificationData["type"], type_id: number | null) {
-  const isProjectType = type === "ProjectManage" || type === "ProjectTask";
-
-  if (isProjectType && type_id != null) {
+  if (type === "Proyek" || type === "Tugas") {
     return `/projects/${type_id}`;
   }
-  if (type === "GeneralChat" || type === "ProjectChat") {
+  if (type === "Diskusi Pribadi" || type === "Diskusi Proyek") {
     return `/chatroom-forwarder/${type_id}`;
   }
-  if (type === "OrgManage") {
+  if (type === "Organisasi") {
     return `/orgs/${type_id}`;
   }
-  if (type === "ReportUpdate") {
+  if (type === "Laporan") {
     return `/reports/${type_id}`;
   }
-  if (type === "Friend") {
+  if (type === "Teman") {
     return `/users/${type_id}`;
   }
-  if (type === "ContributionUpdate") {
+  if (type === "Kontribusi") {
     return `/contributions/${type_id}`;
   }
 }
