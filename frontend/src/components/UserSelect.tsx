@@ -34,7 +34,7 @@ function UserSelect(props: {
       fullWidth
       options={options}
       multiple
-      onInputChange={(e, v) => {
+      onInputChange={(_, v) => {
         setKeyword(v);
       }}
       filterOptions={(x) => x}

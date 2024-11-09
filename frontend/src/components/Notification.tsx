@@ -196,7 +196,7 @@ function NotificationDialog(props: { user_id: number }) {
             scrollButtons="auto"
             allowScrollButtonsMobile
             value={filter}
-            onChange={(e, nv) => {
+            onChange={(_, nv) => {
               setFilter(nv);
             }}
           >
