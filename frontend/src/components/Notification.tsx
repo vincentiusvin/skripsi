@@ -12,6 +12,8 @@ import {
   IconButton,
   Skeleton,
   Stack,
+  Tab,
+  Tabs,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
@@ -127,6 +129,17 @@ function NotificationEntry(props: { notification_data: NotificationData; onClick
   );
 }
 
+const NotificationFilterOptions = [
+  "Semua",
+  "Proyek",
+  "Organisasi",
+  "Pesan",
+  "Laporan",
+  "Tugas",
+  "Kontribusi",
+  "Teman",
+] as const;
+
 function NotificationDialog(props: { user_id: number }) {
   const { user_id } = props;
   const { data: notification } = useNotificationsGet({
@@ -135,8 +148,23 @@ function NotificationDialog(props: { user_id: number }) {
   const { mutate: readAll } = useNotificationsMassPut({
     user_id,
   });
+  const [filter, setFilter] = useState<(typeof NotificationFilterOptions)[number]>("Semua");
   const [openNotification, setOpenNotification] = useState(false);
   const unread = notification?.filter((x) => x.read == false).length;
+
+  const filtered = notification?.filter((x) => {
+    if (filter === "Semua") {
+      return true;
+    }
+    if (x.type === filter) {
+      return true;
+    }
+    if (filter === "Pesan") {
+      return x.type === "Diskusi Pribadi" || x.type === "Diskusi Proyek";
+    }
+    return false;
+  });
+
   return (
     <>
       {unread != undefined ? (
@@ -160,9 +188,26 @@ function NotificationDialog(props: { user_id: number }) {
             },
           }}
         >
-          {notification != undefined ? (
+          <Tabs
+            sx={{
+              marginBottom: 2,
+            }}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            value={filter}
+            onChange={(e, nv) => {
+              setFilter(nv);
+            }}
+          >
+            {NotificationFilterOptions.map((x) => (
+              <Tab key={x} value={x} label={x} />
+            ))}
+          </Tabs>
+
+          {filtered != undefined ? (
             <Stack direction={"column"} spacing={2}>
-              {notification.map((x) => (
+              {filtered.map((x) => (
                 <NotificationEntry
                   key={x.id}
                   notification_data={x}
