@@ -49,11 +49,11 @@ const helps = [
         link: "/guides/org-project",
       },
       {
-        text: "Menambah anggota proyek",
+        text: "Mengelola anggota proyek",
         link: "/guides/org-project-members",
       },
       {
-        text: "Menambah pengurus organisasi",
+        text: "Mengelola pengurus organisasi",
         link: "/guides/org-org-members",
       },
       {
