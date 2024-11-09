@@ -4,6 +4,7 @@ import CreateAccount from "./content/CreateAccount.tsx";
 import CreateReport from "./content/CreateReport.tsx";
 import DevContribs from "./content/DevContribs.tsx";
 import DevProject from "./content/DevProject.tsx";
+import ProjectFeatures from "./content/ProjectFeatures.tsx";
 import { ContentType } from "./type.tsx";
 
 function Guide(props: { content: ContentType }) {
@@ -37,6 +38,7 @@ const GuideMapper = {
   report: CreateReport,
   "dev-project": DevProject,
   "dev-contribs": DevContribs,
+  "project-features": ProjectFeatures,
 };
 
 function GuidePage() {
