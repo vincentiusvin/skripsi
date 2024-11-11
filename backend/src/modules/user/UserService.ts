@@ -164,7 +164,7 @@ export class UserService {
         throw new ClientError("Anda sudah memverifikasi alamat email tersebut!");
       }
 
-      const otp_expired = dayjs(otp_data.created_at).add(5, "minute");
+      const otp_expired = dayjs(otp_data.created_at).add(15, "minute");
       const now = dayjs();
       if (now.isAfter(otp_expired)) {
         throw new ClientError("OTP sudah kedaluwarsa. Silahkan buat ulang kode OTP!");
