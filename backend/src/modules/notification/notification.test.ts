@@ -10,11 +10,8 @@ import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { MockedEmailService } from "../email/MockedEmailService.js";
-import { preferenceServiceFactory } from "../preferences/PreferenceService.js";
-import { envUserServiceFactory } from "../user/UserService.js";
 import { NotificationTypes } from "./NotificationMisc.js";
-import { NotificationRepository } from "./NotificationRepository.js";
-import { NotificationService } from "./NotificationService.js";
+import { NotificationService, notificationServiceFactory } from "./NotificationService.js";
 
 describe("notification api", () => {
   let app: Application;
@@ -215,12 +212,10 @@ function massPutNotifications(read: boolean, user_id: number, cookie: string) {
 
 function getMockedEmailNotificationService(db: Kysely<DB>) {
   const tm = new TransactionManager(db);
-  const notif_repo = new NotificationRepository(db);
-  const user_service = envUserServiceFactory(tm);
-  const pref_service = preferenceServiceFactory(tm);
   const email_service = new MockedEmailService();
+
   return {
-    notif: new NotificationService(notif_repo, email_service, user_service, pref_service, tm),
+    notif: notificationServiceFactory(tm, email_service),
     email: email_service,
   };
 }

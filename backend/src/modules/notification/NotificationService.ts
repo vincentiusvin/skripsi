@@ -13,7 +13,7 @@ export function envNotificationServiceFactory(transaction_manager: TransactionMa
   return notificationServiceFactory(transaction_manager, email_service);
 }
 
-function notificationServiceFactory(
+export function notificationServiceFactory(
   transaction_manager: TransactionManager,
   email_service: IEmailService,
 ) {

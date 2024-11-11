@@ -114,7 +114,7 @@ export class UserService {
 
   async addOTP(obj: { email: string }) {
     const { email } = obj;
-    return await this.transaction_manager.transaction(this as UserService, async (serv) => {
+    const result = await this.transaction_manager.transaction(this as UserService, async (serv) => {
       const same_email = await serv.findUserByEmail(email);
       if (same_email != undefined) {
         throw new ClientError("Sudah ada pengguna dengan email yang sama!");
@@ -124,13 +124,28 @@ export class UserService {
         otp: randomInt(100000, 1000000).toString(),
       });
     });
+    if (result == undefined) {
+      throw new Error("Gagal membuat OTP email!");
+    }
+
+    this.sendOTPMail(result.token);
+
+    return result;
   }
 
   async sendOTPMail(token: string) {
-    const otp = await this.user_repo.getOTP(token)
-    this.email_service.send_email({
-      sender:
-    })
+    const otp = await this.user_repo.getOTP(token);
+    if (!otp) {
+      throw new NotFoundError("Token tersebut invalid!");
+    }
+
+    await this.email_service.send_email({
+      sender: "noreply",
+      target: otp.email,
+      subject: "OTP Registrasi Dev4You",
+      html_content: `Berikut adalah kode OTP untuk proses registrasi anda<br/><b>${otp.token}</b><br/><br/>`,
+      text_content: `Berikut adalah kode OTP untuk proses registrasi anda: ${otp.token}`,
+    });
   }
 
   async verifyOTP(token: string, otp: string) {

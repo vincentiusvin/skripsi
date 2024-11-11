@@ -1,9 +1,14 @@
 import { expect } from "chai";
+import { Kysely } from "kysely";
 import { describe } from "mocha";
 import { Application } from "../../app.js";
+import { DB } from "../../db/db_types.js";
+import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
+import { MockedEmailService } from "../email/MockedEmailService.js";
+import { UserService, userServiceFactory } from "./UserService.js";
 
 describe("users api", () => {
   let app: Application;
@@ -41,11 +46,13 @@ describe("users api", () => {
     expect(result.user_name).to.eq(in_user.name);
   });
 
-  it("should be able to add user and login as them", async () => {
+  it("should be able to add user with verified otp and login as them", async () => {
+    const in_otp = caseData.otp[0];
     const in_obj: Parameters<typeof addUser>[0] = {
+      registration_token: in_otp.token,
       user_name: "testing_name",
       user_password: "testing_password",
-      user_email: "testing-actual-test@example.com",
+      user_email: in_otp.email,
       user_about_me: "saya suka makan ayam",
       user_education_level: "S1",
       user_school: "NUBIS University",
@@ -61,12 +68,14 @@ describe("users api", () => {
 
     const expected_obj = {
       ...in_obj,
+      registration_token: undefined,
       user_password: undefined,
       user_socials: in_obj.user_socials?.map((x) => ({
         social: x,
       })),
     };
     delete expected_obj.user_password;
+    delete expected_obj.registration_token;
 
     expect(send_req.status).eq(201);
     expect(success_login).to.not.eq("");
@@ -168,6 +177,24 @@ describe("users api", () => {
   });
 });
 
+describe("user service", () => {
+  let app: Application;
+  let caseData: Awaited<ReturnType<typeof baseCase>>;
+  let service: UserService;
+  let mocked_email: MockedEmailService;
+  before(async () => {
+    app = Application.getApplication();
+  });
+
+  beforeEach(async () => {
+    await clearDB(app.db);
+    caseData = await baseCase(app.db);
+    const { email, user } = getMockedUserService(app.db);
+    mocked_email = email;
+    service = user;
+  });
+});
+
 function getUsers() {
   return new APIContext("UsersGet").fetch("/api/users", {
     method: "GET",
@@ -218,9 +245,19 @@ function addUser(body: {
   user_socials?: string[];
   user_location?: string;
   user_workplace?: string;
+  registration_token: string;
 }) {
   return new APIContext("UsersPost").fetch("/api/users", {
     method: "POST",
     body,
   });
+}
+
+function getMockedUserService(db: Kysely<DB>) {
+  const tm = new TransactionManager(db);
+  const email_service = new MockedEmailService();
+  return {
+    user: userServiceFactory(tm, email_service),
+    email: email_service,
+  };
 }
