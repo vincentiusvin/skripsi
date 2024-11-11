@@ -34,6 +34,51 @@ export function useUsersPost(opts?: { onSuccess?: () => void }) {
   });
 }
 
+export function useOTPsPost(opts: { onSuccess?: (token: string) => void }) {
+  const { onSuccess } = opts;
+
+  return useMutation({
+    mutationFn: new APIContext("OTPsPost").bodyFetch("/api/otps", {
+      method: "POST",
+    }),
+    onSuccess: (data) => {
+      if (onSuccess) {
+        onSuccess(data.token);
+      }
+    },
+  });
+}
+
+export function useOTPsPut(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
+
+  return useMutation({
+    mutationFn: new APIContext("OTPsPut").bodyFetch("/api/otps", {
+      method: "PUT",
+    }),
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useOTPsResend(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
+
+  return useMutation({
+    mutationFn: new APIContext("OTPsMail").bodyFetch("/api/otps-mail", {
+      method: "PUT",
+    }),
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
 export function useUsersGet(opts?: { keyword?: string; page?: number; limit?: number }) {
   const { keyword, page, limit } = opts ?? {};
   const clean_keyword = keyword != undefined && keyword.length > 0 ? keyword : undefined;

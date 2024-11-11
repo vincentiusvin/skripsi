@@ -4,6 +4,7 @@ export type UserRegister = {
   email: string;
   username: string;
   password: string;
+  registration_token: string;
   education?: string;
   school?: string;
   website?: string;
@@ -18,6 +19,7 @@ export function useUserRegisterState() {
     password: "",
     social_medias: ["", ""],
     username: "",
+    registration_token: "",
   });
 }
 
@@ -27,6 +29,7 @@ export const RegistrationContext = createContext<ReturnType<typeof useUserRegist
     password: "",
     email: "",
     social_medias: [""],
+    registration_token: "",
   },
   () => {},
 ]);
