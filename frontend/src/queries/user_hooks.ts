@@ -70,7 +70,7 @@ export function useOTPsResend(opts: { onSuccess?: () => void }) {
 
   return useMutation({
     mutationFn: new APIContext("OTPsMail").bodyFetch("/api/otps-mail", {
-      method: "PUT",
+      method: "post",
     }),
     onSuccess: () => {
       if (onSuccess) {

@@ -4,7 +4,7 @@ import { OTPInput, REGEXP_ONLY_DIGITS } from "input-otp";
 import { padStart } from "lodash";
 import { enqueueSnackbar } from "notistack";
 import { useEffect, useState } from "react";
-import { useOTPToken, useOTPVerify } from "../../../queries/user_hooks.ts";
+import { useOTPToken, useOTPVerify, useOTPsResend } from "../../../queries/user_hooks.ts";
 import { useRegistrationContext } from "./context.tsx";
 
 function Timer(props: { until: dayjs.Dayjs }) {
@@ -44,6 +44,15 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
 
   const { data: otpToken } = useOTPToken({
     email: reg.email,
+  });
+
+  const { mutate: resend } = useOTPsResend({
+    onSuccess: () => {
+      enqueueSnackbar({
+        variant: "success",
+        message: "Berhasil mengirimkan ulang email!",
+      });
+    },
   });
 
   const { mutate: _verify } = useOTPVerify({
@@ -133,11 +142,35 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
           Valid selama: <Timer until={expired_at} />
         </Box>
       </Box>
+      <Stack
+        direction="row"
+        gap={1}
+        flexWrap={"wrap"}
+        alignItems={"center"}
+        justifyContent={"center"}
+      >
+        <Typography variant="body2">Tidak menerima email tersebut?</Typography>
+        <Button
+          onClick={() => {
+            resend({
+              token: otpToken.token,
+            });
+          }}
+          size="small"
+        >
+          Kirim Ulang
+        </Button>
+      </Stack>
       <Stack direction="row" spacing={2}>
         <Button fullWidth onClick={() => back()} variant="outlined">
           Mundur
         </Button>
-        <Button fullWidth onClick={() => cont()} variant="contained">
+        <Button
+          disabled={reg.registration_token.length === 0}
+          fullWidth
+          onClick={() => cont()}
+          variant="contained"
+        >
           Lanjut
         </Button>
       </Stack>

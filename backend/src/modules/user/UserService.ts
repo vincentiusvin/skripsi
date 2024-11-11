@@ -171,7 +171,7 @@ export class UserService {
       }
 
       if (otp_data.otp !== otp) {
-        throw new ClientError("Kode OTP tidak salah!");
+        throw new ClientError("Kode OTP yang anda masukkan salah!");
       }
 
       await serv.user_repo.updateOTP(token, {
