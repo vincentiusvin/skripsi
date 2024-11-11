@@ -47,7 +47,7 @@ describe("users api", () => {
   });
 
   it("should be able to add user with verified otp and login as them", async () => {
-    const in_otp = caseData.otp[0];
+    const in_otp = caseData.verified_otp;
     const in_obj: Parameters<typeof addUser>[0] = {
       registration_token: in_otp.token,
       user_name: "testing_name",
@@ -192,6 +192,36 @@ describe("user service", () => {
     const { email, user } = getMockedUserService(app.db);
     mocked_email = email;
     service = user;
+  });
+
+  it("should be able to send email on otp", async () => {
+    const in_otp = caseData.unverified_otp;
+    const expected_otp = in_otp.otp;
+
+    await service.sendOTPMail(in_otp.token);
+
+    const found_otp = mocked_email.mails.find((x) => {
+      return x.text_content.includes(expected_otp);
+    });
+    expect(found_otp).to.not.eq(undefined);
+  });
+
+  it("shouldn't be able to resend email on verified otp", async () => {
+    const in_otp = caseData.verified_otp;
+    const expected_otp = in_otp.otp;
+    let thrown = false;
+
+    try {
+      await service.sendOTPMail(in_otp.token);
+    } catch (e) {
+      thrown = true;
+    }
+
+    const found_otp = mocked_email.mails.find((x) => {
+      return x.text_content.includes(expected_otp);
+    });
+    expect(thrown).to.eq(true);
+    expect(found_otp).to.eq(undefined);
   });
 });
 

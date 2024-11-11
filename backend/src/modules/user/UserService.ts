@@ -138,13 +138,16 @@ export class UserService {
     if (!otp) {
       throw new NotFoundError("Token tersebut invalid!");
     }
+    if (otp.verified) {
+      throw new ClientError("OTP sudah diisi!");
+    }
 
     await this.email_service.send_email({
       sender: "noreply",
       target: otp.email,
       subject: "OTP Registrasi Dev4You",
-      html_content: `Berikut adalah kode OTP untuk proses registrasi anda<br/><b>${otp.token}</b><br/><br/>`,
-      text_content: `Berikut adalah kode OTP untuk proses registrasi anda: ${otp.token}`,
+      html_content: `Berikut adalah kode OTP untuk proses registrasi anda<br/><b>${otp.otp}</b><br/><br/>`,
+      text_content: `Berikut adalah kode OTP untuk proses registrasi anda: ${otp.otp}`,
     });
   }
 
