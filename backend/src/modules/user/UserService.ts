@@ -3,13 +3,24 @@ import { randomInt } from "crypto";
 import dayjs from "dayjs";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { TransactionManager } from "../../helpers/transaction/transaction.js";
-import { IEmailService } from "../email/EmailService.js";
+import { EmailService, IEmailService } from "../email/EmailService.js";
 import { UserRepository } from "./UserRepository.js";
 
-export function userServiceFactory(transaction_manager: TransactionManager) {
+export function envUserServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const user_repo = new UserRepository(db);
-  const user_service = new UserService(user_repo, transaction_manager);
+  const email_service = EmailService.fromEnv();
+  const user_service = new UserService(user_repo, email_service, transaction_manager);
+  return user_service;
+}
+
+export function userServiceFactory(
+  transaction_manager: TransactionManager,
+  email_service: IEmailService,
+) {
+  const db = transaction_manager.getDB();
+  const user_repo = new UserRepository(db);
+  const user_service = new UserService(user_repo, email_service, transaction_manager);
   return user_service;
 }
 
@@ -17,11 +28,19 @@ export class UserService {
   private user_repo: UserRepository;
   private transaction_manager: TransactionManager;
   private email_service: IEmailService;
-  constructor(user_repo: UserRepository, transaction_manager: TransactionManager) {
+  constructor(
+    user_repo: UserRepository,
+    email_service: IEmailService,
+    transaction_manager: TransactionManager,
+  ) {
     this.user_repo = user_repo;
+    this.email_service = email_service;
     this.transaction_manager = transaction_manager;
   }
-  factory = userServiceFactory;
+
+  factory(tm: TransactionManager) {
+    return userServiceFactory(tm, this.email_service);
+  }
 
   async isAdminUser(user_id: number): Promise<boolean> {
     const user = await this.user_repo.getUserDetail(user_id);
@@ -107,7 +126,12 @@ export class UserService {
     });
   }
 
-  async sendOTPMail(token: string) {}
+  async sendOTPMail(token: string) {
+    const otp = await this.user_repo.getOTP(token)
+    this.email_service.send_email({
+      sender:
+    })
+  }
 
   async verifyOTP(token: string, otp: string) {
     return await this.transaction_manager.transaction(this as UserService, async (serv) => {

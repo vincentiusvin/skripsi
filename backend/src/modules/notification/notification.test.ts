@@ -11,7 +11,7 @@ import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { MockedEmailService } from "../email/MockedEmailService.js";
 import { preferenceServiceFactory } from "../preferences/PreferenceService.js";
-import { userServiceFactory } from "../user/UserService.js";
+import { envUserServiceFactory } from "../user/UserService.js";
 import { NotificationTypes } from "./NotificationMisc.js";
 import { NotificationRepository } from "./NotificationRepository.js";
 import { NotificationService } from "./NotificationService.js";
@@ -216,7 +216,7 @@ function massPutNotifications(read: boolean, user_id: number, cookie: string) {
 function getMockedEmailNotificationService(db: Kysely<DB>) {
   const tm = new TransactionManager(db);
   const notif_repo = new NotificationRepository(db);
-  const user_service = userServiceFactory(tm);
+  const user_service = envUserServiceFactory(tm);
   const pref_service = preferenceServiceFactory(tm);
   const email_service = new MockedEmailService();
   return {

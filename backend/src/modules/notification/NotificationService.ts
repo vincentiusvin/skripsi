@@ -4,7 +4,7 @@ import logger from "../../helpers/logging.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import { EmailService, IEmailService } from "../email/EmailService.js";
 import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
-import { UserService, userServiceFactory } from "../user/UserService.js";
+import { UserService, envUserServiceFactory } from "../user/UserService.js";
 import { NotificationTypes, getPreferenceKeyFromNotificationType } from "./NotificationMisc.js";
 import { NotificationRepository } from "./NotificationRepository.js";
 
@@ -19,7 +19,7 @@ function notificationServiceFactory(
 ) {
   const db = transaction_manager.getDB();
   const notification_repo = new NotificationRepository(db);
-  const user_service = userServiceFactory(transaction_manager);
+  const user_service = envUserServiceFactory(transaction_manager);
   const preference_service = preferenceServiceFactory(transaction_manager);
   const notification_service = new NotificationService(
     notification_repo,

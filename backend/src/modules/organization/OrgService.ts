@@ -4,14 +4,14 @@ import {
   NotificationService,
   envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
-import { UserService, userServiceFactory } from "../user/UserService.js";
+import { UserService, envUserServiceFactory } from "../user/UserService.js";
 import { OrgRoles } from "./OrgMisc.js";
 import { OrgRepository } from "./OrgRepository.js";
 
 export function orgServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const org_repo = new OrgRepository(db);
-  const user_service = userServiceFactory(transaction_manager);
+  const user_service = envUserServiceFactory(transaction_manager);
   const notification_service = envNotificationServiceFactory(transaction_manager);
   const org_service = new OrgService(
     org_repo,

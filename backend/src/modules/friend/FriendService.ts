@@ -4,14 +4,14 @@ import {
   NotificationService,
   envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
-import { UserService, userServiceFactory } from "../user/UserService.js";
+import { UserService, envUserServiceFactory } from "../user/UserService.js";
 import { FriendStatus } from "./FriendMisc.js";
 import { FriendRepository } from "./FriendRepository.js";
 
 export function friendServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const friend_repo = new FriendRepository(db);
-  const user_service = userServiceFactory(transaction_manager);
+  const user_service = envUserServiceFactory(transaction_manager);
   const notification_service = envNotificationServiceFactory(transaction_manager);
 
   const friend_service = new FriendService(
