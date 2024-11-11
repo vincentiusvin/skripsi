@@ -3,6 +3,7 @@ import { randomInt } from "crypto";
 import dayjs from "dayjs";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { TransactionManager } from "../../helpers/transaction/transaction.js";
+import { IEmailService } from "../email/EmailService.js";
 import { UserRepository } from "./UserRepository.js";
 
 export function userServiceFactory(transaction_manager: TransactionManager) {
@@ -15,6 +16,7 @@ export function userServiceFactory(transaction_manager: TransactionManager) {
 export class UserService {
   private user_repo: UserRepository;
   private transaction_manager: TransactionManager;
+  private email_service: IEmailService;
   constructor(user_repo: UserRepository, transaction_manager: TransactionManager) {
     this.user_repo = user_repo;
     this.transaction_manager = transaction_manager;
@@ -104,6 +106,8 @@ export class UserService {
       });
     });
   }
+
+  async sendOTPMail(token: string) {}
 
   async verifyOTP(token: string, otp: string) {
     return await this.transaction_manager.transaction(this as UserService, async (serv) => {

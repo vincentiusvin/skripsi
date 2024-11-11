@@ -65,6 +65,21 @@ const UserCreationSchema = z.object({
   user_socials: z.string(defaultError("Media sosial tidak valid!")).min(1).url().array().optional(),
 });
 
+const OTPCreationSchema = z.object({
+  user_email: z.string(defaultError("Email tidak valid!")).min(1).email(),
+});
+
+// Tidak restful demi security
+// Token optimalnya masuk path di url
+const OTPUpdateSchema = z.object({
+  token: z.string(defaultError("Token tidak valid!")).uuid().min(1),
+  otp: z.string(defaultError("Kode OTP tidak valid!")).min(1),
+});
+
+const OTPResendSchema = z.object({
+  token: z.string(defaultError("Token tidak valid!")).uuid().min(1),
+});
+
 export class UserController extends Controller {
   private user_service: UserService;
   constructor(express_server: Express, user_service: UserService) {
@@ -80,6 +95,56 @@ export class UserController extends Controller {
       UsersDetailPut: this.UsersDetailPut,
     };
   }
+
+  OTPsPost = new Route({
+    method: "post",
+    path: "/api/otps",
+    schema: {
+      ReqBody: OTPCreationSchema.strict(),
+      ResBody: z.object({
+        token: z.string(),
+      }),
+    },
+    handler: async (req, res) => {
+      const { user_email } = req.body;
+
+      const result = await this.user_service.addOTP({ email: user_email });
+
+      res.status(201).json(result);
+    },
+  });
+
+  OTPsPut = new Route({
+    method: "put",
+    path: "/api/otps",
+    schema: {
+      ReqBody: OTPUpdateSchema.strict(),
+      ResBody: z.object({
+        msg: z.string(),
+      }),
+    },
+    handler: async (req, res) => {
+      const { otp, token } = req.body;
+      await this.user_service.verifyOTP(token, otp);
+      res.status(200).json({ msg: "Berhasil memverifikasi email!" });
+    },
+  });
+
+  OTPsMail = new Route({
+    method: "post",
+    path: "/api/otps-mail",
+    schema: {
+      ReqBody: OTPResendSchema.strict(),
+      ResBody: z.object({
+        msg: z.string(),
+      }),
+    },
+    handler: async (req, res) => {
+      const { token } = req.body;
+      await this.user_service.sendOTPMail(token);
+      res.status(200).json({ msg: "Berhasil mengirimkan email konfirmasi!" });
+    },
+  });
 
   UsersPost = new Route({
     method: "post",

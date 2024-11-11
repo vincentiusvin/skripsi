@@ -70,7 +70,7 @@ export class UserRepository {
         otp,
       })
       .returning("token")
-      .execute();
+      .executeTakeFirst();
   }
 
   async updateOTP(
