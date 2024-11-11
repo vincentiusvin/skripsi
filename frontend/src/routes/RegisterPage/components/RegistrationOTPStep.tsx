@@ -29,6 +29,10 @@ function Timer(props: { until: dayjs.Dayjs }) {
   const fmtMins = padStart(minutes.toString(), 2, "0");
   const fmtSecs = padStart(seconds.toString(), 2, "0");
 
+  if (diff <= 0) {
+    return <Typography color="error">SELESAI</Typography>;
+  }
+
   return (
     <Typography fontWeight={"bold"}>
       {fmtMins}:{fmtSecs}
