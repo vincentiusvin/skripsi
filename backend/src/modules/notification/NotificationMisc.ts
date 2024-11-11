@@ -36,3 +36,12 @@ export function getPreferenceKeyFromNotificationType(notification_type: Notifica
 
   return map[notification_type];
 }
+
+export type NotificationEmailStatus = "Sent" | "Buffered";
+
+export function parseNotificationEmailStatus(x: string): NotificationEmailStatus {
+  if (x === "Sent" || x === "Buffered") {
+    return x;
+  }
+  throw new Error(`Terdapat tipe notifikasi yang invalid: ${x}`);
+}
