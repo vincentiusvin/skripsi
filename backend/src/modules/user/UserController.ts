@@ -106,6 +106,7 @@ export class UserController extends Controller {
       ReqBody: OTPCreationSchema.strict(),
       ResBody: z.object({
         token: z.string(),
+        created_at: z.date(),
       }),
     },
     handler: async (req, res) => {

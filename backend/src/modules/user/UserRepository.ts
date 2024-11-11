@@ -69,7 +69,7 @@ export class UserRepository {
         email,
         otp,
       })
-      .returning("token")
+      .returning(["token", "created_at"])
       .executeTakeFirst();
   }
 

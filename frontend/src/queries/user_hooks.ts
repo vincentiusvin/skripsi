@@ -34,22 +34,23 @@ export function useUsersPost(opts?: { onSuccess?: () => void }) {
   });
 }
 
-export function useOTPsPost(opts: { onSuccess?: (token: string) => void }) {
-  const { onSuccess } = opts;
+export function useOTPToken(opts: { email: string }) {
+  const { email } = opts;
 
-  return useMutation({
-    mutationFn: new APIContext("OTPsPost").bodyFetch("/api/otps", {
-      method: "POST",
-    }),
-    onSuccess: (data) => {
-      if (onSuccess) {
-        onSuccess(data.token);
-      }
-    },
+  return useQuery({
+    queryKey: ["registration", email],
+    queryFn: () =>
+      new APIContext("OTPsPost").fetch("/api/otps", {
+        method: "POST",
+        body: {
+          user_email: email,
+        },
+      }),
+    staleTime: 60 * 60 * 1000,
   });
 }
 
-export function useOTPsPut(opts: { onSuccess?: () => void }) {
+export function useOTPVerify(opts: { onSuccess?: () => void }) {
   const { onSuccess } = opts;
 
   return useMutation({
