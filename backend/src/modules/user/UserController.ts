@@ -93,6 +93,9 @@ export class UserController extends Controller {
       UsersGet: this.UsersGet,
       UsersDetailGet: this.UsersDetailGet,
       UsersDetailPut: this.UsersDetailPut,
+      OTPsPost: this.OTPsPost,
+      OTPsMail: this.OTPsMail,
+      OTPsPut: this.OTPsPut,
     };
   }
 

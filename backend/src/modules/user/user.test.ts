@@ -3,6 +3,7 @@ import { Kysely } from "kysely";
 import { describe } from "mocha";
 import { Application } from "../../app.js";
 import { DB } from "../../db/db_types.js";
+import { sleep } from "../../helpers/misc.js";
 import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
@@ -175,6 +176,18 @@ describe("users api", () => {
     expect(update_req.status).eq(200);
     expect(success_login).to.not.eq("");
   });
+
+  it("should be able to verify otp", async () => {
+    const in_otp = caseData.unverified_otp;
+
+    const send_req = await verifyOTP({
+      token: in_otp.token,
+      otp: in_otp.otp,
+    });
+    await send_req.json();
+
+    expect(send_req.status).to.eq(200);
+  });
 });
 
 describe("user service", () => {
@@ -202,6 +215,20 @@ describe("user service", () => {
 
     const found_otp = mocked_email.mails.find((x) => {
       return x.text_content.includes(expected_otp);
+    });
+    expect(found_otp).to.not.eq(undefined);
+  });
+
+  it("should be able to insert new otp", async () => {
+    const in_email = "otp-test-insert@example.com";
+
+    await service.addOTP({ email: in_email });
+    await sleep(20);
+
+    const found_otp = mocked_email.mails.find((x) => {
+      const right_email = x.target === in_email;
+      const has_code = /[0-9]{6}/.test(x.text_content);
+      return has_code && right_email;
     });
     expect(found_otp).to.not.eq(undefined);
   });
@@ -260,6 +287,13 @@ function putUser(
 function getUserDetail(user_id: number) {
   return new APIContext("UsersDetailGet").fetch(`/api/users/${user_id}`, {
     method: "GET",
+  });
+}
+
+function verifyOTP(body: { token: string; otp: string }) {
+  return new APIContext("OTPsPut").fetch("/api/otps", {
+    method: "PUT",
+    body,
   });
 }
 
