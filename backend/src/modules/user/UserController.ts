@@ -51,6 +51,7 @@ const UserUpdateSchema = z.object({
 });
 
 const UserCreationSchema = z.object({
+  registration_token: z.string(defaultError("Token registrasi tidak valid!")).uuid(),
   user_name: z.string(defaultError("Nama pengguna tidak valid!")).min(1),
   user_password: z.string(defaultError("Password tidak valid!")).min(1),
   user_email: z.string(defaultError("Email tidak valid!")).min(1).email(),

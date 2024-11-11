@@ -136,6 +136,15 @@ export interface MsOrgs {
   phone: string;
 }
 
+export interface MsOtps {
+  created_at: Generated<Timestamp>;
+  email: string;
+  otp: string;
+  token: Generated<string>;
+  used: Generated<boolean>;
+  verified: Generated<boolean>;
+}
+
 export interface MsPreferences {
   id: Generated<number>;
   name: string;
@@ -274,6 +283,7 @@ export interface DB {
   ms_messages: MsMessages;
   ms_notifications: MsNotifications;
   ms_orgs: MsOrgs;
+  ms_otps: MsOtps;
   ms_preferences: MsPreferences;
   ms_project_events: MsProjectEvents;
   ms_projects: MsProjects;
