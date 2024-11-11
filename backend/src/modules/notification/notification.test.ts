@@ -73,7 +73,7 @@ describe("notification api", () => {
   });
 });
 
-describe("notification service", () => {
+describe.only("notification service", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   let service: NotificationService;
@@ -137,21 +137,23 @@ describe("notification service", () => {
   it("should be able to buffer email notifications when below threshold", async () => {
     const buffer_iter_below_threshold = 4;
     const in_user = caseData.email_chat_user;
-    for (let i = 0; i < buffer_iter_below_threshold; i++) {
-      const in_data: {
-        title: string;
-        description: string;
-        type: NotificationTypes;
-        user_id: number;
-      } = {
-        title: "Notif baru",
-        description: "halo",
-        type: "Diskusi Pribadi",
-        user_id: in_user.id,
-      };
+    const in_data: {
+      title: string;
+      description: string;
+      type: NotificationTypes;
+      user_id: number;
+    } = {
+      title: "Notif baru",
+      description: "halo",
+      type: "Diskusi Pribadi",
+      user_id: in_user.id,
+    };
 
-      await service.addNotification(in_data);
-    }
+    await Promise.all(
+      new Array(buffer_iter_below_threshold).fill(undefined).map(async () => {
+        await service.addNotification(in_data);
+      }),
+    );
 
     await sleep(20);
     expect(mocked_email.called).to.eq(1);
@@ -160,23 +162,26 @@ describe("notification service", () => {
   it("should be able to buffer email notifications when above threshold", async () => {
     const buffer_iter_above_threshold = 8;
     const in_user = caseData.email_chat_user;
-    for (let i = 0; i < buffer_iter_above_threshold; i++) {
-      const in_data: {
-        title: string;
-        description: string;
-        type: NotificationTypes;
-        user_id: number;
-      } = {
-        title: "Notif baru",
-        description: "halo",
-        type: "Diskusi Pribadi",
-        user_id: in_user.id,
-      };
+    const in_data: {
+      title: string;
+      description: string;
+      type: NotificationTypes;
+      user_id: number;
+    } = {
+      title: "Notif baru",
+      description: "halo",
+      type: "Diskusi Pribadi",
+      user_id: in_user.id,
+    };
 
-      await service.addNotification(in_data);
-    }
+    await Promise.all(
+      new Array(buffer_iter_above_threshold).fill(undefined).map(async () => {
+        await service.addNotification(in_data);
+      }),
+    );
 
     await sleep(20);
+    console.log(mocked_email.mails);
     expect(mocked_email.called).to.eq(2);
   });
 });
