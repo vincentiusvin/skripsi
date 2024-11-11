@@ -146,7 +146,7 @@ export class UserService {
       sender: "noreply",
       target: otp.email,
       subject: "OTP Registrasi Dev4You",
-      html_content: `Berikut adalah kode OTP untuk proses registrasi anda<br/><b>${otp.otp}</b><br/><br/>`,
+      html_content: `Berikut adalah kode OTP untuk proses registrasi anda:<br/><b>${otp.otp}</b><br/><br/>`,
       text_content: `Berikut adalah kode OTP untuk proses registrasi anda: ${otp.otp}`,
     });
   }
