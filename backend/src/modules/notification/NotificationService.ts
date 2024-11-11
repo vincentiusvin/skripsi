@@ -155,6 +155,13 @@ export class NotificationService implements Transactable<NotificationService> {
     return pref[key];
   }
 
+  /**
+   * Kita perlu pastiin email yang kekirim itu cuma 1, meskipun ada banyak request concurrent yang masuk.
+   * Caranya dengan nyalain serializable isolation.
+   *
+   * Commit pertama yang sukses bakal bikin yang lain gagal.
+   * Ga perlu dipusingin yang gagal, kita tetap aman dan gak perlu retry.
+   */
   private async shouldSendEmail(
     user_id: number,
     type: NotificationTypes,

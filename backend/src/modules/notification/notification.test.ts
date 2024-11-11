@@ -73,7 +73,7 @@ describe("notification api", () => {
   });
 });
 
-describe.only("notification service", () => {
+describe("notification service", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   let service: NotificationService;
@@ -180,8 +180,7 @@ describe.only("notification service", () => {
       }),
     );
 
-    await sleep(20);
-    console.log(mocked_email.mails);
+    await sleep(100);
     expect(mocked_email.called).to.eq(2);
   });
 });
