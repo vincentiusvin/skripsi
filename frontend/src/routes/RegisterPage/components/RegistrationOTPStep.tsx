@@ -1,6 +1,7 @@
 import { Box, Button, OutlinedInput, Skeleton, Stack, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { OTPInput, REGEXP_ONLY_DIGITS } from "input-otp";
+import { padStart } from "lodash";
 import { enqueueSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { useOTPToken, useOTPVerify } from "../../../queries/user_hooks.ts";
@@ -25,9 +26,12 @@ function Timer(props: { until: dayjs.Dayjs }) {
     };
   }, []);
 
+  const fmtMins = padStart(minutes.toString(), 2, "0");
+  const fmtSecs = padStart(seconds.toString(), 2, "0");
+
   return (
     <Typography fontWeight={"bold"}>
-      {minutes}:{seconds}
+      {fmtMins}:{fmtSecs}
     </Typography>
   );
 }
