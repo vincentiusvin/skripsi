@@ -1,4 +1,5 @@
 import { Button, Stack, TextField, Typography } from "@mui/material";
+import { isEqual } from "lodash";
 import { useDebounce } from "use-debounce";
 import StyledLink from "../../../components/StyledLink.tsx";
 import { handleOptionalStringCreation } from "../../../helpers/misc.ts";
@@ -17,7 +18,15 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
     300,
   );
 
-  const { data: valid } = useUserValidation(debouncedData);
+  const { data: valid, isLoading } = useUserValidation(debouncedData);
+
+  const isValidated =
+    reg.password !== "" &&
+    !isLoading &&
+    isEqual(debouncedData, {
+      email: reg.email,
+      name: reg.username,
+    });
 
   return (
     <Stack spacing={4}>
@@ -70,6 +79,7 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
         variant="contained"
         size="large"
         fullWidth
+        disabled={!isValidated}
         onClick={() => {
           cont();
         }}
