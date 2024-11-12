@@ -5,14 +5,14 @@ import {
   NotificationService,
   envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
-import { UserService, userServiceFactory } from "../user/UserService.js";
+import { UserService, envUserServiceFactory } from "../user/UserService.js";
 import { ReportStatus } from "./ReportMisc.js";
 import { ReportRepository } from "./ReportRepository.js";
 
 export function reportServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const report_repo = new ReportRepository(db);
-  const user_service = userServiceFactory(transaction_manager);
+  const user_service = envUserServiceFactory(transaction_manager);
   const notification_service = envNotificationServiceFactory(transaction_manager);
   const chat_service = chatServiceFactory(transaction_manager);
 

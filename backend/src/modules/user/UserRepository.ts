@@ -30,6 +30,15 @@ function userWithSocials(eb: ExpressionBuilder<DB, "ms_users">) {
   );
 }
 
+const defaultOTPFields = [
+  "ms_otps.token",
+  "ms_otps.email",
+  "ms_otps.otp",
+  "ms_otps.used",
+  "ms_otps.created_at",
+  "ms_otps.verified",
+] as const;
+
 export class UserRepository {
   private db: Kysely<DB>;
   constructor(db: Kysely<DB>) {
@@ -42,6 +51,44 @@ export class UserRepository {
       .select(reducedFields)
       .where("ms_users.name", "=", user_name)
       .executeTakeFirst();
+  }
+
+  async getOTP(token: string) {
+    return await this.db
+      .selectFrom("ms_otps")
+      .select(defaultOTPFields)
+      .where("ms_otps.token", "=", token)
+      .executeTakeFirst();
+  }
+
+  async addOTP(obj: { email: string; otp: string }) {
+    const { email, otp } = obj;
+    return await this.db
+      .insertInto("ms_otps")
+      .values({
+        email,
+        otp,
+      })
+      .returning(["token", "created_at"])
+      .executeTakeFirst();
+  }
+
+  async updateOTP(
+    token: string,
+    obj: {
+      verified?: boolean;
+      used?: boolean;
+    },
+  ) {
+    const { used, verified } = obj;
+    return await this.db
+      .updateTable("ms_otps")
+      .set({
+        verified,
+        used,
+      })
+      .where("token", "=", token)
+      .execute();
   }
 
   async findUserByEmail(email: string) {

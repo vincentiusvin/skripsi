@@ -1,4 +1,4 @@
-import { Kysely } from "kysely";
+import { IsolationLevel, Kysely } from "kysely";
 import { DB } from "../../db/db_types.js";
 
 /**
@@ -24,16 +24,23 @@ export class TransactionManager {
    * Pastiin yang dipakai cuma objek yang ada di parameter callback.
    * Jangan kebablasan pakai `this`
    */
-  async transaction<T extends Transactable<T>, R>(obj: T, cb: (x: T) => Promise<R>) {
+  async transaction<T extends Transactable<T>, R>(
+    obj: T,
+    cb: (x: T) => Promise<R>,
+    isolation_level: IsolationLevel = "read committed",
+  ) {
     if (this.db.isTransaction) {
       return await cb(obj); // serv === this
     }
 
-    return await this.db.transaction().execute(async (trx) => {
-      const tm = new TransactionManager(trx);
-      const service = obj.factory(tm);
-      return await cb(service); // serv === new object
-    });
+    return await this.db
+      .transaction()
+      .setIsolationLevel(isolation_level)
+      .execute(async (trx) => {
+        const tm = new TransactionManager(trx);
+        const service = obj.factory(tm);
+        return await cb(service); // serv === new object
+      });
   }
 }
 

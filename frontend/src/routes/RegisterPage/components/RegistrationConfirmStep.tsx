@@ -52,6 +52,7 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
       user_location: handleOptionalStringCreation(reg.location),
       user_workplace: handleOptionalStringCreation(reg.workplace),
       user_socials: links,
+      registration_token: reg.registration_token,
     });
   }
 

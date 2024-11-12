@@ -4,7 +4,7 @@ import logger from "../../helpers/logging.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import { EmailService, IEmailService } from "../email/EmailService.js";
 import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
-import { UserService, userServiceFactory } from "../user/UserService.js";
+import { UserService, envUserServiceFactory } from "../user/UserService.js";
 import { NotificationTypes, getPreferenceKeyFromNotificationType } from "./NotificationMisc.js";
 import { NotificationRepository } from "./NotificationRepository.js";
 
@@ -13,13 +13,13 @@ export function envNotificationServiceFactory(transaction_manager: TransactionMa
   return notificationServiceFactory(transaction_manager, email_service);
 }
 
-function notificationServiceFactory(
+export function notificationServiceFactory(
   transaction_manager: TransactionManager,
   email_service: IEmailService,
 ) {
   const db = transaction_manager.getDB();
   const notification_repo = new NotificationRepository(db);
-  const user_service = userServiceFactory(transaction_manager);
+  const user_service = envUserServiceFactory(transaction_manager);
   const preference_service = preferenceServiceFactory(transaction_manager);
   const notification_service = new NotificationService(
     notification_repo,
@@ -155,6 +155,103 @@ export class NotificationService implements Transactable<NotificationService> {
     return pref[key];
   }
 
+  /**
+   * Kita perlu pastiin email yang kekirim itu cuma 1, meskipun ada banyak request concurrent yang masuk.
+   * Caranya dengan nyalain serializable isolation.
+   *
+   * Commit pertama yang sukses bakal bikin yang lain gagal.
+   * Ga perlu dipusingin yang gagal, kita tetap aman dan gak perlu retry.
+   */
+  private async shouldSendEmail(
+    user_id: number,
+    type: NotificationTypes,
+    email: {
+      subject: string;
+      html_content: string;
+      text_content: string;
+    },
+  ) {
+    return await this.transaction_manager.transaction(
+      this as NotificationService,
+      async (serv) => {
+        const startDate = dayjs().startOf("week").toDate();
+        const endDate = dayjs().endOf("week").toDate();
+        const user = await serv.user_service.getUserDetail(user_id);
+        if (user == null) {
+          throw new NotFoundError("Gagal menemukan pengguna tersebut!");
+        }
+        if (user.user_email == null) {
+          return;
+        }
+
+        const unread_notifs = await serv.notificiation_repo.getNotifications({
+          user_id,
+          startDate,
+          endDate,
+          read: false,
+        });
+
+        const buffer_email = await serv.notificiation_repo.getNotificationBuffer({
+          startDate,
+          endDate,
+          user_id,
+          status: "Buffered",
+        });
+
+        const actual_email = await serv.notificiation_repo.getNotificationBuffer({
+          startDate,
+          endDate,
+          user_id,
+          status: "Sent",
+        });
+
+        const has_bufferred = buffer_email.length !== 0;
+        const has_sent = actual_email.length !== 0;
+        const is_bufferred_type = NOTIFICATION_TYPE_TO_BUFFER.includes(type);
+
+        // send if there are no notifications
+        if (!has_sent || !is_bufferred_type) {
+          logger.info(`Sending email notification to ${user_id}`, {
+            unread_notifications: unread_notifs.length,
+          });
+
+          await serv.notificiation_repo.addNotificationEmail({
+            type,
+            user_id,
+            status: "Sent",
+          });
+
+          return {
+            ...email,
+            sender: "noreply",
+            target: user.user_email,
+          };
+        }
+
+        if (!has_bufferred && unread_notifs.length >= NOTIFICATION_BUFFER_LENGTH) {
+          logger.info(`Sending buffer email to ${user_id}`, {
+            unread_notifications: unread_notifs.length,
+          });
+
+          await serv.notificiation_repo.addNotificationEmail({
+            type,
+            user_id,
+            status: "Buffered",
+          });
+
+          return {
+            target: user.user_email,
+            sender: "noreply",
+            subject: `${unread_notifs.length} Notifikasi Baru di Dev4You`,
+            html_content: `Anda memiliki ${unread_notifs.length} notifikasi baru yang belum dibaca di Dev4You!`,
+            text_content: `Anda memiliki ${unread_notifs.length} notifikasi baru yang belum dibaca di Dev4You!`,
+          };
+        }
+      },
+      "serializable",
+    );
+  }
+
   private async sendMail(
     user_id: number,
     type: NotificationTypes,
@@ -164,63 +261,10 @@ export class NotificationService implements Transactable<NotificationService> {
       text_content: string;
     },
   ) {
-    return await this.transaction_manager.transaction(this as NotificationService, async (serv) => {
-      const startDate = dayjs().startOf("week").toDate();
-      const endDate = dayjs().endOf("week").toDate();
-      const user = await serv.user_service.getUserDetail(user_id);
-      if (user == null) {
-        throw new NotFoundError("Gagal menemukan pengguna tersebut!");
-      }
-      if (user.user_email == null) {
-        return;
-      }
+    const email_to_send = await this.shouldSendEmail(user_id, type, email);
 
-      const unread_notifs = await serv.notificiation_repo.getNotifications({
-        user_id,
-        startDate,
-        endDate,
-        read: false,
-      });
-
-      const is_bufferred_type = NOTIFICATION_TYPE_TO_BUFFER.includes(type);
-
-      // send if there are no notifications
-      if (unread_notifs.length === 1 || !is_bufferred_type) {
-        logger.info(`Sending email notification to ${user_id}`, {
-          unread_notifications: unread_notifs.length,
-        });
-        return await serv.email_service.send_email({
-          ...email,
-          sender: "noreply",
-          target: user.user_email,
-        });
-      }
-
-      // otherwise buffer the message
-      const bufs = await serv.notificiation_repo.getNotificationBuffer({
-        startDate,
-        endDate,
-        user_id,
-      });
-
-      if (bufs.length === 0 && unread_notifs.length >= NOTIFICATION_BUFFER_LENGTH) {
-        logger.info(`Sending buffer email to ${user_id}`, {
-          unread_notifications: unread_notifs.length,
-          buffer_mark: bufs.length,
-        });
-        await serv.email_service.send_email({
-          target: user.user_email,
-          sender: "noreply",
-          subject: `${unread_notifs.length} Notifikasi Baru di Dev4You`,
-          html_content: `Anda memiliki ${unread_notifs.length} notifikasi baru yang belum dibaca di Dev4You!`,
-          text_content: `Anda memiliki ${unread_notifs.length} notifikasi baru yang belum dibaca di Dev4You!`,
-        });
-
-        await serv.notificiation_repo.addNotificationBufferMark({
-          type,
-          user_id,
-        });
-      }
-    });
+    if (email_to_send != undefined) {
+      await this.email_service.send_email(email_to_send);
+    }
   }
 }

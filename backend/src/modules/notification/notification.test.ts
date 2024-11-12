@@ -10,11 +10,8 @@ import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { MockedEmailService } from "../email/MockedEmailService.js";
-import { preferenceServiceFactory } from "../preferences/PreferenceService.js";
-import { userServiceFactory } from "../user/UserService.js";
 import { NotificationTypes } from "./NotificationMisc.js";
-import { NotificationRepository } from "./NotificationRepository.js";
-import { NotificationService } from "./NotificationService.js";
+import { NotificationService, notificationServiceFactory } from "./NotificationService.js";
 
 describe("notification api", () => {
   let app: Application;
@@ -140,21 +137,23 @@ describe("notification service", () => {
   it("should be able to buffer email notifications when below threshold", async () => {
     const buffer_iter_below_threshold = 4;
     const in_user = caseData.email_chat_user;
-    for (let i = 0; i < buffer_iter_below_threshold; i++) {
-      const in_data: {
-        title: string;
-        description: string;
-        type: NotificationTypes;
-        user_id: number;
-      } = {
-        title: "Notif baru",
-        description: "halo",
-        type: "Diskusi Pribadi",
-        user_id: in_user.id,
-      };
+    const in_data: {
+      title: string;
+      description: string;
+      type: NotificationTypes;
+      user_id: number;
+    } = {
+      title: "Notif baru",
+      description: "halo",
+      type: "Diskusi Pribadi",
+      user_id: in_user.id,
+    };
 
-      await service.addNotification(in_data);
-    }
+    await Promise.all(
+      new Array(buffer_iter_below_threshold).fill(undefined).map(async () => {
+        await service.addNotification(in_data);
+      }),
+    );
 
     await sleep(20);
     expect(mocked_email.called).to.eq(1);
@@ -163,23 +162,25 @@ describe("notification service", () => {
   it("should be able to buffer email notifications when above threshold", async () => {
     const buffer_iter_above_threshold = 8;
     const in_user = caseData.email_chat_user;
-    for (let i = 0; i < buffer_iter_above_threshold; i++) {
-      const in_data: {
-        title: string;
-        description: string;
-        type: NotificationTypes;
-        user_id: number;
-      } = {
-        title: "Notif baru",
-        description: "halo",
-        type: "Diskusi Pribadi",
-        user_id: in_user.id,
-      };
+    const in_data: {
+      title: string;
+      description: string;
+      type: NotificationTypes;
+      user_id: number;
+    } = {
+      title: "Notif baru",
+      description: "halo",
+      type: "Diskusi Pribadi",
+      user_id: in_user.id,
+    };
 
-      await service.addNotification(in_data);
-    }
+    await Promise.all(
+      new Array(buffer_iter_above_threshold).fill(undefined).map(async () => {
+        await service.addNotification(in_data);
+      }),
+    );
 
-    await sleep(20);
+    await sleep(100);
     expect(mocked_email.called).to.eq(2);
   });
 });
@@ -215,12 +216,10 @@ function massPutNotifications(read: boolean, user_id: number, cookie: string) {
 
 function getMockedEmailNotificationService(db: Kysely<DB>) {
   const tm = new TransactionManager(db);
-  const notif_repo = new NotificationRepository(db);
-  const user_service = userServiceFactory(tm);
-  const pref_service = preferenceServiceFactory(tm);
   const email_service = new MockedEmailService();
+
   return {
-    notif: new NotificationService(notif_repo, email_service, user_service, pref_service, tm),
+    notif: notificationServiceFactory(tm, email_service),
     email: email_service,
   };
 }

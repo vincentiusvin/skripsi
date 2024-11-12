@@ -1,6 +1,11 @@
 import { Kysely } from "kysely";
 import { DB } from "../../db/db_types.js";
-import { NotificationTypes, parseNotificationType } from "./NotificationMisc.js";
+import {
+  NotificationEmailStatus,
+  NotificationTypes,
+  parseNotificationEmailStatus,
+  parseNotificationType,
+} from "./NotificationMisc.js";
 
 const defaultNotificationFields = [
   "title",
@@ -13,7 +18,7 @@ const defaultNotificationFields = [
   "id",
 ] as const;
 
-const defaultNotificationBufferFields = ["id", "user_id", "type", "created_at"] as const;
+const defaultNotificationBufferFields = ["id", "user_id", "type", "created_at", "status"] as const;
 
 export class NotificationRepository {
   private db: Kysely<DB>;
@@ -21,13 +26,18 @@ export class NotificationRepository {
     this.db = db;
   }
 
-  async addNotificationBufferMark(opts: { user_id: number; type: NotificationTypes }) {
-    const { user_id, type } = opts;
+  async addNotificationEmail(opts: {
+    user_id: number;
+    type: NotificationTypes;
+    status: NotificationEmailStatus;
+  }) {
+    const { status, user_id, type } = opts;
     await this.db
-      .insertInto("notification_buffers")
+      .insertInto("notification_emails")
       .values({
         type,
         user_id,
+        status,
       })
       .execute();
   }
@@ -36,11 +46,12 @@ export class NotificationRepository {
     startDate?: Date;
     endDate?: Date;
     user_id?: number;
+    status?: NotificationEmailStatus;
     type?: NotificationTypes;
   }) {
-    const { startDate, endDate, type, user_id } = opts;
+    const { status, startDate, endDate, type, user_id } = opts;
     let query = this.db
-      .selectFrom("notification_buffers")
+      .selectFrom("notification_emails")
       .select(defaultNotificationBufferFields)
       .orderBy("created_at desc");
 
@@ -60,10 +71,15 @@ export class NotificationRepository {
       query = query.where("created_at", "<=", endDate);
     }
 
+    if (status != undefined) {
+      query = query.where("status", "=", status);
+    }
+
     const result = await query.execute();
     return result.map((x) => ({
       ...x,
       type: parseNotificationType(x.type),
+      status: parseNotificationEmailStatus(x.status),
     }));
   }
 
