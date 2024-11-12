@@ -1,5 +1,6 @@
 import { Button, Stack, TextField, Typography } from "@mui/material";
 import { isEqual } from "lodash";
+import { useState } from "react";
 import { useDebounce } from "use-debounce";
 import StyledLink from "../../../components/StyledLink.tsx";
 import { handleOptionalStringCreation } from "../../../helpers/misc.ts";
@@ -10,6 +11,8 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
   const [reg, setReg] = useRegistrationContext();
   const { cont } = props;
 
+  const [prevEmail] = useState(reg.email);
+
   const [debouncedData] = useDebounce(
     {
       email: handleOptionalStringCreation(reg.email),
@@ -17,6 +20,18 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
     },
     300,
   );
+
+  function continueRegis() {
+    if (prevEmail !== reg.email) {
+      setReg((x) => ({
+        ...x,
+        registration_token: "",
+        otp_at: undefined,
+        otp: undefined,
+      }));
+    }
+    cont();
+  }
 
   const { data: valid, isLoading } = useUserValidation(debouncedData);
 
@@ -81,7 +96,7 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
         fullWidth
         disabled={!isValidated}
         onClick={() => {
-          cont();
+          continueRegis();
         }}
       >
         Lanjut

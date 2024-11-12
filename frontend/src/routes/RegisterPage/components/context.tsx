@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { createContext, useContext, useState } from "react";
 
 export type UserRegister = {
@@ -11,6 +12,8 @@ export type UserRegister = {
   location?: string;
   workplace?: string;
   social_medias: string[];
+  otp?: string;
+  otp_at?: dayjs.Dayjs;
 };
 
 export function useUserRegisterState() {

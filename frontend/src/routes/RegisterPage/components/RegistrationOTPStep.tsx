@@ -7,10 +7,10 @@ import { useEffect, useState } from "react";
 import { useOTPToken, useOTPVerify, useOTPsResend } from "../../../queries/user_hooks.ts";
 import { useRegistrationContext } from "./context.tsx";
 
-function Timer(props: { until: dayjs.Dayjs }) {
-  const { until } = props;
+function Timer(props: { until: dayjs.Dayjs; frozen_at?: dayjs.Dayjs }) {
+  const { until, frozen_at } = props;
 
-  const [now, setNow] = useState(dayjs());
+  const [now, setNow] = useState(frozen_at ?? dayjs());
   const diff = until.diff(now, "seconds");
 
   const minutes = Math.floor(diff / 60);
@@ -18,13 +18,15 @@ function Timer(props: { until: dayjs.Dayjs }) {
 
   useEffect(() => {
     const id = setInterval(() => {
-      setNow(dayjs());
+      if (frozen_at == undefined) {
+        setNow(dayjs());
+      }
     });
 
     return () => {
       clearInterval(id);
     };
-  }, []);
+  }, [frozen_at]);
 
   const fmtMins = padStart(minutes.toString(), 2, "0");
   const fmtSecs = padStart(seconds.toString(), 2, "0");
@@ -34,7 +36,7 @@ function Timer(props: { until: dayjs.Dayjs }) {
   }
 
   return (
-    <Typography fontWeight={"bold"}>
+    <Typography fontWeight={"bold"} color={frozen_at != undefined ? "success" : undefined}>
       {fmtMins}:{fmtSecs}
     </Typography>
   );
@@ -44,7 +46,7 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
   const { back, cont } = props;
   const [reg, setReg] = useRegistrationContext();
 
-  const [otp, setOtp] = useState<string | undefined>(undefined);
+  const otp = reg.otp;
 
   const { data: otpToken } = useOTPToken({
     email: reg.email,
@@ -68,6 +70,7 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
       setReg((x) => ({
         ...x,
         registration_token: otpToken!.token,
+        otp_at: dayjs(),
       }));
     },
   });
@@ -102,7 +105,7 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
       <Typography variant="h5" fontWeight={"bold"} textAlign={"center"}>
         Kode OTP
       </Typography>
-      <Box>
+      <Box textAlign={"center"}>
         <Typography>
           Kami telah mengirim kode OTP ke alamat email anda di <b>{reg.email}</b>.
         </Typography>
@@ -112,8 +115,14 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
         <OTPInput
           autoFocus
           value={otp ?? ""}
+          disabled={reg.registration_token !== ""}
           maxLength={6}
-          onChange={(e) => setOtp(e)}
+          onChange={(e) => {
+            setReg((x) => ({
+              ...x,
+              otp: e,
+            }));
+          }}
           inputMode="numeric"
           pattern={REGEXP_ONLY_DIGITS}
           onComplete={verify}
@@ -143,7 +152,7 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
           )}
         />
         <Box mt={1}>
-          Valid selama: <Timer until={expired_at} />
+          Valid selama: <Timer frozen_at={reg.otp_at} until={expired_at} />
         </Box>
       </Box>
       <Stack
@@ -161,6 +170,7 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
             });
           }}
           size="small"
+          disabled={reg.registration_token !== ""}
         >
           Kirim Ulang
         </Button>
