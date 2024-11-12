@@ -7,20 +7,20 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   IconButton,
+  List,
   Menu,
   Paper,
   Skeleton,
   Snackbar,
   Stack,
-  Tab,
-  Tabs,
   TextField,
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Redirect } from "wouter";
 import ChatroomComponent from "../components/Chatroom/Chatroom.tsx";
 import {
@@ -28,6 +28,7 @@ import {
   ChangeNameDialog,
   LeaveRoom,
 } from "../components/Chatroom/ChatroomMisc.tsx";
+import ChatroomSidebar from "../components/Chatroom/ChatroomSidebar.tsx";
 import { useSearchParams, useStateSearch } from "../helpers/search.ts";
 import {
   useChatSocket,
@@ -135,7 +136,7 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | undefined>();
 
   return (
-    <Grid container minHeight={"inherit"} spacing={1}>
+    <Grid container minHeight={"inherit"} height={2} spacing={1}>
       <Snackbar open={!connected}>
         <Alert severity="error">
           <Typography>Koneksi chat terputus!</Typography>
@@ -147,22 +148,32 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
             xs: 4,
             lg: 2,
           }}
+          sx={{
+            overflow: "scroll",
+            height: "100%",
+            paddingRight: 2,
+          }}
         >
-          <AddRoomDialog user_id={user_id} />
-          <Tabs
-            variant="scrollable"
-            scrollButtons="auto"
-            orientation="vertical"
-            allowScrollButtonsMobile
-            value={activeRoom}
-            onChange={(_e, newRoomId) => {
-              setActiveRoom(newRoomId);
-            }}
-          >
-            {chatrooms?.map((x, i) => (
-              <Tab key={i} label={x.chatroom_name} wrapped value={x.chatroom_id} />
-            ))}
-          </Tabs>
+          <Box>
+            <AddRoomDialog user_id={user_id} />
+            <List>
+              {chatrooms?.map((x) => {
+                return (
+                  <Fragment key={x.chatroom_id}>
+                    <Divider />
+                    <ChatroomSidebar
+                      chatroom_id={x.chatroom_id}
+                      user_id={user_id}
+                      selected={x.chatroom_id === activeRoom}
+                      onClick={() => {
+                        setActiveRoom(x.chatroom_id);
+                      }}
+                    />
+                  </Fragment>
+                );
+              })}
+            </List>
+          </Box>
         </Grid>
       ) : null}
       <Grid

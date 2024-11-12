@@ -44,7 +44,7 @@ const MessageUpdateSchema = z.object({
 });
 
 const MessageCreationSchema = z.object({
-  message: z.string(defaultError("Pesan tidak boleh kosong!")).min(1),
+  message: z.string(defaultError("Pesan tidak boleh kosong!")),
   files: z
     .object(
       {
@@ -130,10 +130,6 @@ export class ChatController extends Controller {
       const project_id = Number(req.params.project_id);
       const sender_id = Number(req.session.user_id);
 
-      if (name.length === 0) {
-        throw new ClientError("Nama chatroom tidak boleh kosong!");
-      }
-
       const chatroom_id = await this.chat_service.addProjectChatroom(project_id, name, sender_id);
 
       if (!chatroom_id) {
@@ -184,10 +180,6 @@ export class ChatController extends Controller {
       const user_id_str = req.params.user_id;
       const user_id = Number(user_id_str);
       const sender_id = Number(req.session.user_id);
-
-      if (name.length === 0) {
-        throw new ClientError("Nama chatroom tidak boleh kosong!");
-      }
 
       const chatroom_id = await this.chat_service.addUserChatroom(user_id, name, sender_id);
 
