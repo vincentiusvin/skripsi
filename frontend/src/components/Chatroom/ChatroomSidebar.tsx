@@ -42,7 +42,10 @@ function ChatroomSidebar(props: {
   const users = chatroom.chatroom_users.map((x) => x.user_id);
   const members = users.length;
   let avatar: ReactNode;
-  if (members <= 1) {
+  if (chatroom.project_id != null) {
+    const img = avatarFallback({ label: chatroom.chatroom_name, seed: chatroom_id });
+    avatar = <Avatar src={img} />;
+  } else if (members <= 1) {
     const user_to_show = users.filter((x) => x !== user_id)[0] ?? user_id;
     avatar = <UserAvatar user_id={user_to_show} />;
   } else {

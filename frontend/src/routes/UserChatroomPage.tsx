@@ -154,26 +154,24 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
             paddingRight: 2,
           }}
         >
-          <Box>
-            <AddRoomDialog user_id={user_id} />
-            <List>
-              {chatrooms?.map((x) => {
-                return (
-                  <Fragment key={x.chatroom_id}>
-                    <Divider />
-                    <ChatroomSidebar
-                      chatroom_id={x.chatroom_id}
-                      user_id={user_id}
-                      selected={x.chatroom_id === activeRoom}
-                      onClick={() => {
-                        setActiveRoom(x.chatroom_id);
-                      }}
-                    />
-                  </Fragment>
-                );
-              })}
-            </List>
-          </Box>
+          <AddRoomDialog user_id={user_id} />
+          <List>
+            {chatrooms?.map((x) => {
+              return (
+                <Fragment key={x.chatroom_id}>
+                  <Divider />
+                  <ChatroomSidebar
+                    chatroom_id={x.chatroom_id}
+                    user_id={user_id}
+                    selected={x.chatroom_id === activeRoom}
+                    onClick={() => {
+                      setActiveRoom(x.chatroom_id);
+                    }}
+                  />
+                </Fragment>
+              );
+            })}
+          </List>
         </Grid>
       ) : null}
       <Grid

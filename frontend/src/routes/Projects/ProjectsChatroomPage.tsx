@@ -7,23 +7,24 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   IconButton,
+  List,
   Menu,
   Paper,
   Skeleton,
   Snackbar,
   Stack,
-  Tab,
-  Tabs,
   TextField,
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useParams } from "wouter";
 import ChatroomComponent from "../../components/Chatroom/Chatroom.tsx";
 import { ChangeNameDialog, DeleteRoom } from "../../components/Chatroom/ChatroomMisc.tsx";
+import ChatroomSidebar from "../../components/Chatroom/ChatroomSidebar.tsx";
 import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
 import {
   useChatSocket,
@@ -130,28 +131,37 @@ function ChatroomWrapper(props: { user_id: number; project_id: number }) {
           <Typography>Koneksi chat terputus!</Typography>
         </Alert>
       </Snackbar>
-      <Grid container minHeight={"inherit"} spacing={1}>
+      <Grid container minHeight={"inherit"} spacing={1} height={2}>
         {sideOpen || selectedChatroom == undefined ? (
           <Grid
             size={{
               xs: 4,
               lg: 2,
             }}
+            sx={{
+              overflow: "scroll",
+              height: "100%",
+              paddingRight: 2,
+            }}
           >
             <CreateProjectChatroomDialog project_id={project_id} />
-            <Tabs
-              orientation="vertical"
-              scrollButtons="auto"
-              allowScrollButtonsMobile
-              value={activeRoom}
-              onChange={(_e, newRoomId) => {
-                setActiveRoom(newRoomId);
-              }}
-            >
-              {chatrooms?.map((x, i) => (
-                <Tab key={i} label={x.chatroom_name} value={x.chatroom_id} />
-              ))}
-            </Tabs>
+            <List>
+              {chatrooms?.map((x) => {
+                return (
+                  <Fragment key={x.chatroom_id}>
+                    <Divider />
+                    <ChatroomSidebar
+                      chatroom_id={x.chatroom_id}
+                      user_id={user_id}
+                      selected={x.chatroom_id === activeRoom}
+                      onClick={() => {
+                        setActiveRoom(x.chatroom_id);
+                      }}
+                    />
+                  </Fragment>
+                );
+              })}
+            </List>
           </Grid>
         ) : null}
         <Grid
