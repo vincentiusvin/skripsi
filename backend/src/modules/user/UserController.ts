@@ -96,6 +96,7 @@ export class UserController extends Controller {
       OTPsPost: this.OTPsPost,
       OTPsMail: this.OTPsMail,
       OTPsPut: this.OTPsPut,
+      UsersValidate: this.UsersValidate,
     };
   }
 
@@ -172,6 +173,28 @@ export class UserController extends Controller {
 
       req.session.user_id = user_id.id;
       res.status(201).json(result);
+    },
+  });
+
+  UsersValidate = new Route({
+    method: "get",
+    path: "/api/users-validation",
+    schema: {
+      ResBody: z.object({
+        name: z.string().optional(),
+        email: z.string().optional(),
+      }),
+      ReqQuery: z.object({
+        name: z.string().optional(),
+        email: z.string().optional(),
+      }),
+    },
+    handler: async (req, res) => {
+      const { name, email } = req.query;
+
+      const result = await this.user_service.validateUser({ user_name: name, user_email: email });
+
+      res.status(200).json(result);
     },
   });
 

@@ -1,10 +1,24 @@
 import { Button, Stack, TextField, Typography } from "@mui/material";
+import { useDebounce } from "use-debounce";
 import StyledLink from "../../../components/StyledLink.tsx";
+import { handleOptionalStringCreation } from "../../../helpers/misc.ts";
+import { useUserValidation } from "../../../queries/user_hooks.ts";
 import { useRegistrationContext } from "./context.tsx";
 
 function RegistrationCredentialStep(props: { cont: () => void }) {
   const [reg, setReg] = useRegistrationContext();
   const { cont } = props;
+
+  const [debouncedData] = useDebounce(
+    {
+      email: handleOptionalStringCreation(reg.email),
+      name: handleOptionalStringCreation(reg.username),
+    },
+    300,
+  );
+
+  const { data: valid } = useUserValidation(debouncedData);
+
   return (
     <Stack spacing={4}>
       <Typography variant="h5" fontWeight={"bold"} textAlign={"center"}>
@@ -18,6 +32,8 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
             email: e.target.value,
           }));
         }}
+        error={valid?.email != undefined}
+        helperText={valid?.email}
         required
         label="Email"
         fullWidth
@@ -25,6 +41,8 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
       <TextField
         required
         fullWidth
+        error={valid?.name != undefined}
+        helperText={valid?.name}
         value={reg.username}
         onChange={(e) =>
           setReg((x) => ({

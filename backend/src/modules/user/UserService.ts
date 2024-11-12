@@ -1,6 +1,7 @@
 import { compareSync, hashSync } from "bcryptjs";
 import { randomInt } from "crypto";
 import dayjs from "dayjs";
+import { z } from "zod";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { EmailService, IEmailService } from "../email/EmailService.js";
@@ -64,6 +65,38 @@ export class UserService {
 
   async findUserByName(name: string) {
     return await this.user_repo.findUserByName(name);
+  }
+
+  async validateUser(obj: { user_name?: string; user_email?: string }) {
+    const { user_name, user_email } = obj;
+
+    const retval: {
+      name?: string;
+      email?: string;
+    } = {};
+
+    if (user_name) {
+      const name_valid = z.string().min(1).safeParse(user_name);
+
+      if (!name_valid.success) {
+        retval.name = "Nama tersebut invalid!";
+      } else {
+        const same_name = await this.findUserByName(user_name);
+        retval.name = same_name ? "Nama tersebut sudah dipakai pengguna lain!" : undefined;
+      }
+    }
+    if (user_email) {
+      const email_valid = z.string().email().min(1).safeParse(user_email);
+
+      if (!email_valid.success) {
+        retval.email = "Alamat email tersebut invalid!";
+      } else {
+        const same_email = await this.findUserByEmail(user_email);
+        retval.email = same_email ? "Email tersebut sudah dipakai pengguna lain!" : undefined;
+      }
+    }
+
+    return retval;
   }
 
   async addUser(obj: {

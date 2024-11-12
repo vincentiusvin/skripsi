@@ -65,6 +65,22 @@ export function useOTPVerify(opts: { onSuccess?: () => void }) {
   });
 }
 
+export function useUserValidation(opts: { email?: string; name?: string }) {
+  const { email, name } = opts;
+
+  return useQuery({
+    queryKey: ["validation", { email, name }],
+    queryFn: () =>
+      new APIContext("UsersValidate").fetch("/api/users-validation", {
+        method: "get",
+        query: {
+          email,
+          name,
+        },
+      }),
+  });
+}
+
 export function useOTPsResend(opts: { onSuccess?: () => void }) {
   const { onSuccess } = opts;
 
