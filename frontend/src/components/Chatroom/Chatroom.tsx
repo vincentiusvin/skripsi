@@ -1,4 +1,4 @@
-import { Alert, Snackbar, Stack, Typography } from "@mui/material";
+import { Alert, Snackbar, Stack, Theme, Typography, useMediaQuery } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useState } from "react";
 import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
@@ -29,6 +29,8 @@ function useRoomSelection(allowed_rooms: number[]) {
 function Chatroom(props: { user_id: number; allowed_rooms: number[]; project_id?: number }) {
   const { user_id, allowed_rooms, project_id } = props;
 
+  const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
+
   const [connected, setConnected] = useState(false);
   useChatSocket({
     userId: user_id,
@@ -43,6 +45,17 @@ function Chatroom(props: { user_id: number; allowed_rooms: number[]; project_id?
   const [selectedRoom, setSelectedRoom] = useRoomSelection(allowed_rooms);
   const [sideOpen, setSideOpen] = useState(false);
 
+  let showSidebar;
+  let showChat;
+
+  if (responsive) {
+    showChat = selectedRoom !== false;
+    showSidebar = !showChat;
+  } else {
+    showSidebar = sideOpen || selectedRoom === false;
+    showChat = true;
+  }
+
   return (
     <Grid container minHeight={"inherit"} height={2} spacing={1}>
       <Snackbar open={!connected}>
@@ -50,9 +63,9 @@ function Chatroom(props: { user_id: number; allowed_rooms: number[]; project_id?
           <Typography>Koneksi chat terputus!</Typography>
         </Alert>
       </Snackbar>
-      {sideOpen || selectedRoom === false ? (
+      {showSidebar ? (
         <Grid
-          size={3}
+          size={"grow"}
           sx={{
             overflow: "scroll",
             height: "100%",
@@ -68,24 +81,29 @@ function Chatroom(props: { user_id: number; allowed_rooms: number[]; project_id?
           />
         </Grid>
       ) : null}
-      <Grid size={sideOpen ? 9 : 12}>
-        {selectedRoom !== false && (
-          <Stack height={"100%"} display={"flex"}>
-            <ChatroomHeader
-              back={sideOpen}
-              chatroom_id={selectedRoom}
-              onLeave={() => {
-                setSelectedRoom(false);
-              }}
-              setBack={(x) => {
-                setSideOpen(x);
-              }}
-              user_id={user_id}
-            />
-            <ChatroomContent chatroom_id={selectedRoom} />
-          </Stack>
-        )}
-      </Grid>
+      {showChat ? (
+        <Grid size={showSidebar ? 9 : 12}>
+          {selectedRoom !== false && (
+            <Stack height={"100%"} display={"flex"}>
+              <ChatroomHeader
+                back={sideOpen}
+                chatroom_id={selectedRoom}
+                onLeave={() => {
+                  setSelectedRoom(false);
+                }}
+                setBack={(x) => {
+                  setSideOpen(x);
+                  if (responsive) {
+                    setSelectedRoom(false);
+                  }
+                }}
+                user_id={user_id}
+              />
+              <ChatroomContent chatroom_id={selectedRoom} />
+            </Stack>
+          )}
+        </Grid>
+      ) : null}
     </Grid>
   );
 }
