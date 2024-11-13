@@ -80,9 +80,10 @@ function OrgRow(props: { user_id: number; org_id: number }) {
     org_id,
     user_id,
   });
-  const { data: projects } = useProjectsGet({
+  const { data: projects_raw } = useProjectsGet({
     org_id,
   });
+  const projects = projects_raw?.result;
   const { data: org } = useOrgDetailGet({
     id: org_id,
   });
@@ -122,9 +123,10 @@ function OrgRow(props: { user_id: number; org_id: number }) {
 
 function ProjectInfoCard(props: { user_id: number }) {
   const { user_id } = props;
-  const { data: projects } = useProjectsGet({
+  const { data: projects_raw } = useProjectsGet({
     user_id,
   });
+  const projects = projects_raw?.result;
 
   if (!projects) {
     return <Skeleton />;

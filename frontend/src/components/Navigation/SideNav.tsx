@@ -50,9 +50,10 @@ import {
 function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
   const { user_id, showAll } = props;
 
-  const { data: projects } = useProjectsGet({
+  const { data: projects_raw } = useProjectsGet({
     user_id: showAll ? undefined : user_id,
   });
+  const projects = projects_raw?.result;
 
   const { data: user } = useUsersDetailGet({
     user_id,

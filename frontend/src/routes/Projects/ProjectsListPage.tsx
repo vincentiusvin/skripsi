@@ -16,13 +16,14 @@ function ProjectListPage() {
 
   const [debouncedKeyword] = useDebounce(keyword, 250);
 
-  const { data } = useProjectsGet({
+  const { data: projects_raw } = useProjectsGet({
     user_id: personal === "true" && session?.logged ? session.user_id : undefined,
     keyword:
       typeof debouncedKeyword === "string" && debouncedKeyword.length
         ? debouncedKeyword
         : undefined,
   });
+  const projects = projects_raw?.result;
 
   return (
     <Grid container spacing={2}>
@@ -90,7 +91,7 @@ function ProjectListPage() {
           }}
         />
       </Grid>
-      {data?.map((x) => (
+      {projects?.map((x) => (
         <Grid
           key={x.project_id}
           size={{
