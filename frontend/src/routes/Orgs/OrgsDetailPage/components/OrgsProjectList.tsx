@@ -18,7 +18,7 @@ function OrgsProjectList(props: { org_id: number }) {
   return (
     <Stack spacing={2}>
       <Typography variant="h6" fontWeight={"bold"}>
-        Proyek
+        Proyek ({projects.length})
       </Typography>
       <Divider />
       <Grid container spacing={2}>

@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import OrgCard from "../../../../components/Cards/OrgCard.tsx";
+import StyledLink from "../../../../components/StyledLink.tsx";
 import { useOrgsGet } from "../../../../queries/org_hooks.ts";
 
 function UserOrgsList(props: { user_id: number }) {
@@ -41,7 +42,9 @@ function UserOrgsList(props: { user_id: number }) {
           {orgs.length !== 0 ? (
             <Stack gap={2}>
               {orgs.map((x) => (
-                <OrgCard org_id={x.org_id} key={x.org_id} />
+                <StyledLink to={`/orgs/${x.org_id}`} key={x.org_id}>
+                  <OrgCard org_id={x.org_id} />
+                </StyledLink>
               ))}
             </Stack>
           ) : (

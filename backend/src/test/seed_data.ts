@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 
+import { hashSync } from "bcryptjs";
 import { Kysely } from "kysely";
 import { DB } from "../db/db_types.js";
 
@@ -77,7 +78,7 @@ async function addProjects(db: Kysely<DB>) {
 
         return members.map((user_id) => ({
           project_id: id,
-          role: faker.helpers.arrayElement(["Admin", "Dev", "Invited"]),
+          role: faker.helpers.arrayElement(["Admin", "Dev", "Invited", "Pending"]),
           user_id,
         }));
       }),
@@ -148,13 +149,14 @@ async function addOrgs(db: Kysely<DB>) {
 
 async function addUsers(db: Kysely<DB>) {
   const users_to_gen = 200;
+  const pw = hashSync("halo");
   await db
     .insertInto("ms_users")
     .values(
       looper(users_to_gen, () => ({
         email: faker.internet.email(),
         name: faker.internet.username(),
-        password: faker.internet.password(),
+        password: pw,
         location: faker.location.city(),
         about_me: faker.person.bio(),
         image: faker.image.avatar(),

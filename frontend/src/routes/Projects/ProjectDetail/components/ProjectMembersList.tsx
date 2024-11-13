@@ -9,17 +9,16 @@ function ProjectMembersList(props: { project_id: number }) {
   if (!project) {
     return <Skeleton />;
   }
+  const users = project.project_members.filter((x) => x.role === "Admin" || x.role === "Dev");
 
   return (
     <Stack spacing={2}>
       <Typography variant="h6" fontWeight={"bold"}>
-        Anggota
+        Anggota ({users.length})
       </Typography>
-      {project.project_members
-        .filter((x) => x.role === "Admin" || x.role === "Dev")
-        .map((x) => {
-          return <ProjectMember key={x.user_id} project_id={project_id} user_id={x.user_id} />;
-        })}
+      {users.map((x) => {
+        return <ProjectMember key={x.user_id} project_id={project_id} user_id={x.user_id} />;
+      })}
     </Stack>
   );
 }
