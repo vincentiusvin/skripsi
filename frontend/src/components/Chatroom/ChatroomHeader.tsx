@@ -2,7 +2,7 @@ import { ArrowLeft, ArrowRight, MoreVert } from "@mui/icons-material";
 import { IconButton, Menu, Paper, Skeleton, Stack, Typography } from "@mui/material";
 import { useState } from "react";
 import { useChatroomsDetailGet } from "../../queries/chat_hooks.ts";
-import { AddMembersDialog, ChangeNameDialog, LeaveRoom } from "./ChatroomMisc.tsx";
+import { AddMembersDialog, ChangeNameDialog, DeleteRoom, LeaveRoom } from "./ChatroomMisc.tsx";
 
 function ChatroomHeader(props: {
   chatroom_id: number;
@@ -56,16 +56,26 @@ function ChatroomHeader(props: {
           anchorEl={menuAnchor}
           onClose={() => setMenuAnchor(undefined)}
         >
-          <AddMembersDialog chatroom_id={chatroom_id} />
+          {room.project_id === undefined ? <AddMembersDialog chatroom_id={chatroom_id} /> : null}
           <ChangeNameDialog chatroom_id={chatroom_id} />
-          <LeaveRoom
-            chatroom_id={chatroom_id}
-            user_id={user_id}
-            onLeave={() => {
-              setMenuAnchor(undefined);
-              onLeave();
-            }}
-          />
+          {room.project_id !== undefined ? (
+            <DeleteRoom
+              chatroom_id={chatroom_id}
+              onLeave={() => {
+                setMenuAnchor(undefined);
+                onLeave();
+              }}
+            />
+          ) : (
+            <LeaveRoom
+              chatroom_id={chatroom_id}
+              user_id={user_id}
+              onLeave={() => {
+                setMenuAnchor(undefined);
+                onLeave();
+              }}
+            />
+          )}
         </Menu>
         <IconButton variant="outlined" onClick={(e) => setMenuAnchor(e.currentTarget)}>
           <MoreVert />
