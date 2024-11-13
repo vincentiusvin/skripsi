@@ -14,6 +14,7 @@
     "db:int:generate-types": "kysely-codegen --env-file=../.env --out-file ./src/db/db_types.d.ts",
     "db:int:migrate": "tsx --env-file=../.env src/migrate.ts",
     "db:dummy": "tsx --env-file=../.env src/dummy.ts",
+    "db:seed": "tsx --env-file=../.env src/seed.ts",
     "db:latest": "npm run db:int:migrate latest && npm run db:int:generate-types",
     "db:init": "npm run db:int:migrate init && npm run db:int:generate-types"
   },
