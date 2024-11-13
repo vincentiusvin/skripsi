@@ -107,20 +107,26 @@ export class ProjectController extends Controller {
         keyword: z.string().optional(),
         ...zodPagination(),
       }),
-      ResBody: ProjectResponseSchema.array(),
+      ResBody: z.object({
+        result: ProjectResponseSchema.array(),
+        total: z.number(),
+      }),
     },
     handler: async (req, res) => {
       const { limit, org_id, user_id, keyword, page } = req.query;
 
-      const result = await this.project_service.getProjects({
+      const opts = {
         org_id: org_id != undefined ? Number(org_id) : undefined,
         user_id: user_id != undefined ? Number(user_id) : undefined,
         limit: limit != undefined ? Number(limit) : undefined,
         page: limit != undefined ? Number(page) : undefined,
         keyword,
-      });
+      };
 
-      res.status(200).json(result);
+      const result = await this.project_service.getProjects(opts);
+      const count = await this.project_service.countProjects(opts);
+
+      res.status(200).json({ result, total: Number(count.count) });
     },
   });
   ProjectsDetailGet = new Route({

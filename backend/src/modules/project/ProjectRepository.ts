@@ -167,7 +167,7 @@ export class ProjectRepository {
   }) {
     let query = this.db.selectFrom("ms_projects").select((eb) => eb.fn.countAll().as("count"));
     query = this.applyFilterToQuery(query, filter);
-    return query.execute();
+    return query.executeTakeFirstOrThrow();
   }
 
   async getProjects(filter?: {
