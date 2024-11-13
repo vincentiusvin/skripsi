@@ -35,7 +35,7 @@ async function addContribs(db: Kysely<DB>) {
         const members = faker.helpers.arrayElements(
           users.map((x) => x.id),
           {
-            min: 0,
+            min: 1,
             max: 8,
           },
         );
