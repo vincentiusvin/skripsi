@@ -1,9 +1,10 @@
 import { SearchOutlined } from "@mui/icons-material";
-import { InputAdornment, Tab, Tabs, TextField, Typography } from "@mui/material";
+import { InputAdornment, Pagination, Tab, Tabs, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useDebounce } from "use-debounce";
 import ProjectCard from "../../components/Cards/ProjectCard.tsx";
-import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
+import { countTotalPages } from "../../helpers/misc.ts";
+import { useSearchParams, useStatePagination, useStateSearch } from "../../helpers/search.ts";
 import { useProjectsGet } from "../../queries/project_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 
@@ -13,11 +14,15 @@ function ProjectListPage() {
   const searchHook = useSearchParams();
   const [personal, setPersonal] = useStateSearch("personal", searchHook);
   const [keyword, setKeyword] = useStateSearch("keyword", searchHook);
+  const { page, setPage } = useStatePagination(searchHook);
 
   const [debouncedKeyword] = useDebounce(keyword, 250);
 
   const { data: projects_raw } = useProjectsGet({
+    keepPrev: true,
     user_id: personal === "true" && session?.logged ? session.user_id : undefined,
+    limit: 12,
+    page,
     keyword:
       typeof debouncedKeyword === "string" && debouncedKeyword.length
         ? debouncedKeyword
@@ -104,6 +109,13 @@ function ProjectListPage() {
           <ProjectCard project_id={x.project_id} />
         </Grid>
       ))}
+      <Grid size={12}>
+        <Pagination
+          count={countTotalPages(projects_raw?.total, 10)}
+          page={page}
+          onChange={(_, p) => setPage(p)}
+        />
+      </Grid>
     </Grid>
   );
 }

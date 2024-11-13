@@ -116,14 +116,12 @@ export class ProjectRepository {
   applyFilterToQuery<T extends SelectQueryBuilder<DB, "ms_projects", object>>(
     query: T,
     filter?: {
-      limit?: number;
       org_id?: number;
       user_id?: number;
       keyword?: string;
-      page?: number;
     },
   ) {
-    const { page, org_id, user_id, keyword, limit } = filter || {};
+    const { org_id, user_id, keyword } = filter || {};
 
     if (org_id != undefined) {
       query = query.where("org_id", "=", Number(org_id)) as T;
@@ -146,28 +144,14 @@ export class ProjectRepository {
       query = query.where("ms_projects.name", "ilike", `%${keyword}%`) as T;
     }
 
-    if (limit != undefined) {
-      query = query.limit(limit) as T;
-    }
-
-    if (page != undefined && limit != undefined) {
-      const offset = (page - 1) * limit;
-      query = query.offset(offset) as T;
-    }
-
     return query;
   }
 
-  async countProjects(filter?: {
-    limit?: number;
-    org_id?: number;
-    user_id?: number;
-    keyword?: string;
-    page?: number;
-  }) {
+  async countProjects(filter?: { org_id?: number; user_id?: number; keyword?: string }) {
     let query = this.db.selectFrom("ms_projects").select((eb) => eb.fn.countAll().as("count"));
     query = this.applyFilterToQuery(query, filter);
-    return query.executeTakeFirstOrThrow();
+
+    return await query.executeTakeFirstOrThrow();
   }
 
   async getProjects(filter?: {
@@ -177,6 +161,8 @@ export class ProjectRepository {
     keyword?: string;
     page?: number;
   }) {
+    const { page, limit } = filter ?? {};
+
     let query = this.db
       .selectFrom("ms_projects")
       .select((eb) => [
@@ -187,6 +173,15 @@ export class ProjectRepository {
       .orderBy("created_at desc");
 
     query = this.applyFilterToQuery(query, filter);
+
+    if (limit != undefined) {
+      query = query.limit(limit);
+    }
+
+    if (page != undefined && limit != undefined) {
+      const offset = (page - 1) * limit;
+      query = query.offset(offset);
+    }
     return query.execute();
   }
 

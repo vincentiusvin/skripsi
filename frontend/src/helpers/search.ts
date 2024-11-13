@@ -37,3 +37,15 @@ export function useStateSearch<T>(key: string, paramsHook: ReturnType<typeof use
 
   return [search[key], setStateSearch] as const;
 }
+
+export function useStatePagination(paramsHook: ReturnType<typeof useSearchParams>) {
+  const [_page, setPage] = useStateSearch<number>("page", paramsHook);
+
+  let page = Number(_page);
+  page = page >= 1 ? page : 1;
+
+  return {
+    page,
+    setPage,
+  };
+}
