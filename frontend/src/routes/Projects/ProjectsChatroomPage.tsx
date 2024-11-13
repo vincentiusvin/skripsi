@@ -1,4 +1,6 @@
 import { Skeleton } from "@mui/material";
+import { useState } from "react";
+import { useDebounce } from "use-debounce";
 import { useParams } from "wouter";
 import Chatroom from "../../components/Chatroom/Chatroom.tsx";
 import { useProjectsDetailChatroomsGet } from "../../queries/chat_hooks.ts";
@@ -7,15 +9,24 @@ import AuthorizeProjects, { RedirectBack } from "./components/AuthorizeProjects.
 
 function ProjectChatroom(props: { user_id: number; project_id: number }) {
   const { project_id, user_id } = props;
-  const { data: chatrooms } = useProjectsDetailChatroomsGet({ project_id });
+  const [keyword, setKeyword] = useState<string | undefined>(undefined);
+  const [debouncedKeyword] = useDebounce(keyword, 300);
+  const { data: chatrooms } = useProjectsDetailChatroomsGet({
+    project_id,
+    keyword: debouncedKeyword,
+  });
 
-  if (chatrooms == undefined) {
-    return <Skeleton />;
-  }
+  const room_ids = chatrooms?.map((x) => x.chatroom_id) ?? [];
 
-  const room_ids = chatrooms.map((x) => x.chatroom_id);
-
-  return <Chatroom project_id={project_id} user_id={user_id} allowed_rooms={room_ids} />;
+  return (
+    <Chatroom
+      keyword={keyword}
+      onChangeKeyword={(x) => setKeyword(x)}
+      project_id={project_id}
+      user_id={user_id}
+      allowed_rooms={room_ids}
+    />
+  );
 }
 
 function ProjectsChatroomPage() {

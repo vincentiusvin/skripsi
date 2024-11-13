@@ -1,13 +1,16 @@
+import { SearchOutlined } from "@mui/icons-material";
 import {
   Avatar,
-  Box,
   Divider,
+  InputAdornment,
   List,
   ListItem,
   ListItemAvatar,
   ListItemButton,
   ListItemText,
   Skeleton,
+  Stack,
+  TextField,
 } from "@mui/material";
 import { Fragment, ReactNode } from "react";
 import avatarFallback from "../../helpers/avatar_fallback.tsx";
@@ -93,10 +96,37 @@ function ChatroomSidebar(props: {
   selectedRoom: number | false;
   onChange: (x: number) => void;
   project_id?: number;
+  keyword?: string;
+  onChangeKeyword?: (x: string) => void;
 }) {
-  const { project_id, allowed_rooms, user_id, selectedRoom, onChange } = props;
+  const { project_id, allowed_rooms, user_id, selectedRoom, onChange, keyword, onChangeKeyword } =
+    props;
+
   return (
-    <Box>
+    <Stack gap={2}>
+      <TextField
+        sx={{
+          mt: 1,
+        }}
+        fullWidth
+        label={"Cari ruangan"}
+        value={keyword ?? ""}
+        slotProps={{
+          input: {
+            endAdornment: (
+              <InputAdornment position="start">
+                <SearchOutlined />
+              </InputAdornment>
+            ),
+          },
+        }}
+        onChange={(e) => {
+          const keyword = e.currentTarget.value;
+          if (onChangeKeyword) {
+            onChangeKeyword(keyword);
+          }
+        }}
+      />
       <AddRoomDialog user_id={user_id} project_id={project_id} />
       <List>
         {allowed_rooms.map((chatroom_id) => {
@@ -115,7 +145,7 @@ function ChatroomSidebar(props: {
           );
         })}
       </List>
-    </Box>
+    </Stack>
   );
 }
 

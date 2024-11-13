@@ -26,8 +26,14 @@ function useRoomSelection(allowed_rooms: number[]) {
   }
 }
 
-function Chatroom(props: { user_id: number; allowed_rooms: number[]; project_id?: number }) {
-  const { user_id, allowed_rooms, project_id } = props;
+function Chatroom(props: {
+  keyword?: string;
+  onChangeKeyword?: (x: string) => void;
+  user_id: number;
+  allowed_rooms: number[];
+  project_id?: number;
+}) {
+  const { keyword, onChangeKeyword, user_id, allowed_rooms, project_id } = props;
 
   const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
 
@@ -73,6 +79,8 @@ function Chatroom(props: { user_id: number; allowed_rooms: number[]; project_id?
           }}
         >
           <ChatroomSidebar
+            keyword={keyword}
+            onChangeKeyword={onChangeKeyword}
             project_id={project_id}
             onChange={(x) => setSelectedRoom(x)}
             selectedRoom={selectedRoom}
