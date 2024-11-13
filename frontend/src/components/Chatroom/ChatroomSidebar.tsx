@@ -92,11 +92,12 @@ function ChatroomSidebar(props: {
   user_id: number;
   selectedRoom: number | false;
   onChange: (x: number) => void;
+  project_id?: number;
 }) {
-  const { allowed_rooms, user_id, selectedRoom, onChange } = props;
+  const { project_id, allowed_rooms, user_id, selectedRoom, onChange } = props;
   return (
     <Box>
-      <AddRoomDialog user_id={user_id} />
+      <AddRoomDialog user_id={user_id} project_id={project_id} />
       <List>
         {allowed_rooms.map((chatroom_id) => {
           return (

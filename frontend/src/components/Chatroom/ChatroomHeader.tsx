@@ -32,11 +32,11 @@ function ChatroomHeader(props: {
       <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
         {back ? (
           <IconButton variant="outlined" onClick={() => setBack(false)}>
-            <ArrowLeft />
+            <ArrowRight />
           </IconButton>
         ) : (
           <IconButton variant="outlined" onClick={() => setBack(true)}>
-            <ArrowRight />
+            <ArrowLeft />
           </IconButton>
         )}
         <Typography

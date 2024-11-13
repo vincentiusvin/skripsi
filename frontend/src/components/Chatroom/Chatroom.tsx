@@ -26,8 +26,8 @@ function useRoomSelection(allowed_rooms: number[]) {
   }
 }
 
-function Chatroom(props: { user_id: number; allowed_rooms: number[] }) {
-  const { user_id, allowed_rooms } = props;
+function Chatroom(props: { user_id: number; allowed_rooms: number[]; project_id?: number }) {
+  const { user_id, allowed_rooms, project_id } = props;
 
   const [connected, setConnected] = useState(false);
   useChatSocket({
@@ -60,6 +60,7 @@ function Chatroom(props: { user_id: number; allowed_rooms: number[] }) {
           }}
         >
           <ChatroomSidebar
+            project_id={project_id}
             onChange={(x) => setSelectedRoom(x)}
             selectedRoom={selectedRoom}
             allowed_rooms={allowed_rooms}
@@ -71,13 +72,13 @@ function Chatroom(props: { user_id: number; allowed_rooms: number[] }) {
         {selectedRoom !== false && (
           <Stack height={"100%"} display={"flex"}>
             <ChatroomHeader
-              back={true}
+              back={sideOpen}
               chatroom_id={selectedRoom}
               onLeave={() => {
                 setSelectedRoom(false);
               }}
-              setBack={() => {
-                setSideOpen(true);
+              setBack={(x) => {
+                setSideOpen(x);
               }}
               user_id={user_id}
             />
