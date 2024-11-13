@@ -145,8 +145,8 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
       {sideOpen || selectedChatroom == undefined ? (
         <Grid
           size={{
-            xs: 4,
-            lg: 2,
+            xs: 3,
+            lg: 3,
           }}
           sx={{
             overflow: "scroll",
@@ -176,8 +176,8 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
       ) : null}
       <Grid
         size={{
-          xs: sideOpen ? 8 : 12,
-          lg: sideOpen ? 10 : 12,
+          xs: sideOpen ? 9 : 12,
+          lg: sideOpen ? 9 : 12,
         }}
       >
         {selectedChatroom && (
