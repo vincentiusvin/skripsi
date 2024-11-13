@@ -1,17 +1,21 @@
 import {
   Avatar,
+  Box,
+  Divider,
+  List,
   ListItem,
   ListItemAvatar,
   ListItemButton,
   ListItemText,
   Skeleton,
 } from "@mui/material";
-import { ReactNode } from "react";
+import { Fragment, ReactNode } from "react";
 import avatarFallback from "../../helpers/avatar_fallback.tsx";
 import { useChatroomsDetailGet, useChatroomsDetailMessagesGet } from "../../queries/chat_hooks.ts";
 import UserAvatar from "../UserAvatar.tsx";
+import { AddRoomDialog } from "./ChatroomMisc.tsx";
 
-function ChatroomSidebar(props: {
+function ChatroomSelection(props: {
   chatroom_id: number;
   user_id: number;
   selected?: boolean;
@@ -80,6 +84,37 @@ function ChatroomSidebar(props: {
         ></ListItemText>
       </ListItemButton>
     </ListItem>
+  );
+}
+
+function ChatroomSidebar(props: {
+  allowed_rooms: number[];
+  user_id: number;
+  selectedRoom: number | false;
+  onChange: (x: number) => void;
+}) {
+  const { allowed_rooms, user_id, selectedRoom, onChange } = props;
+  return (
+    <Box>
+      <AddRoomDialog user_id={user_id} />
+      <List>
+        {allowed_rooms.map((chatroom_id) => {
+          return (
+            <Fragment key={chatroom_id}>
+              <Divider />
+              <ChatroomSelection
+                chatroom_id={chatroom_id}
+                user_id={user_id}
+                selected={chatroom_id === selectedRoom}
+                onClick={() => {
+                  onChange(chatroom_id);
+                }}
+              />
+            </Fragment>
+          );
+        })}
+      </List>
+    </Box>
   );
 }
 

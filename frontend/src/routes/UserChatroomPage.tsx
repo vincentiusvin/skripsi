@@ -22,13 +22,13 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { Fragment, useState } from "react";
 import { Redirect } from "wouter";
-import ChatroomComponent from "../components/Chatroom/Chatroom.tsx";
+import ChatroomContent from "../components/Chatroom/ChatroomContent.tsx";
 import {
   AddMembersDialog,
   ChangeNameDialog,
   LeaveRoom,
 } from "../components/Chatroom/ChatroomMisc.tsx";
-import ChatroomSidebar from "../components/Chatroom/ChatroomSidebar.tsx";
+import ChatroomSelection from "../components/Chatroom/ChatroomSidebar.tsx";
 import { useSearchParams, useStateSearch } from "../helpers/search.ts";
 import {
   useChatSocket,
@@ -160,7 +160,7 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
               return (
                 <Fragment key={x.chatroom_id}>
                   <Divider />
-                  <ChatroomSidebar
+                  <ChatroomSelection
                     chatroom_id={x.chatroom_id}
                     user_id={user_id}
                     selected={x.chatroom_id === activeRoom}
@@ -226,7 +226,7 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
                 </IconButton>
               </Stack>
             </Paper>
-            <ChatroomComponent chatroom_id={selectedChatroom.chatroom_id} />
+            <ChatroomContent chatroom_id={selectedChatroom.chatroom_id} />
           </Stack>
         )}
       </Grid>
