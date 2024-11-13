@@ -6,7 +6,7 @@ import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("chatting api", () => {
+describe.only("chatting api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
 

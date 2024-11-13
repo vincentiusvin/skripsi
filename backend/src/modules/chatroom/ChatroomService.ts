@@ -179,8 +179,8 @@ export class ChatService implements Transactable<ChatService> {
     return await this.repo.getChatroomByID(chatroom_id);
   }
 
-  async getProjectChatrooms(project_id: number) {
-    return await this.repo.getProjectChatrooms(project_id);
+  async getProjectChatrooms(opts: { project_id: number; keyword?: string }) {
+    return await this.repo.getChatrooms(opts);
   }
 
   async addProjectChatroom(project_id: number, chatroom_name: string, sender_id: number) {
@@ -194,8 +194,8 @@ export class ChatService implements Transactable<ChatService> {
     });
   }
 
-  async getUserChatrooms(user_id: number) {
-    return await this.repo.getUserChatrooms(user_id);
+  async getUserChatrooms(opts: { user_id: number; keyword?: string }) {
+    return await this.repo.getChatrooms(opts);
   }
 
   async getFile(file_id: number, sender_id: number) {
