@@ -95,7 +95,7 @@ export interface MsContributions {
 }
 
 export interface MsContributionsUsers {
-  contributions_id: Generated<number>;
+  contributions_id: number;
   user_id: number;
 }
 
@@ -136,6 +136,15 @@ export interface MsOrgs {
   phone: string;
 }
 
+export interface MsOtps {
+  created_at: Generated<Timestamp>;
+  email: string;
+  otp: string;
+  token: Generated<string>;
+  used: Generated<boolean>;
+  verified: Generated<boolean>;
+}
+
 export interface MsPreferences {
   id: Generated<number>;
   name: string;
@@ -149,6 +158,8 @@ export interface MsProjectEvents {
 }
 
 export interface MsProjects {
+  archived: Generated<boolean>;
+  content: string | null;
   created_at: Generated<Timestamp>;
   description: string;
   id: Generated<number>;
@@ -198,13 +209,24 @@ export interface MsUsers {
   about_me: string | null;
   created_at: Generated<Timestamp>;
   education_level: string | null;
-  email: string | null;
+  email: string;
   id: Generated<number>;
   image: string | null;
   is_admin: Generated<boolean>;
+  location: string | null;
   name: string;
   password: string;
   school: string | null;
+  website: string | null;
+  workplace: string | null;
+}
+
+export interface NotificationEmails {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  status: string;
+  type: string;
+  user_id: number;
 }
 
 export interface OrgsUsers {
@@ -233,6 +255,12 @@ export interface Session {
   sid: string;
 }
 
+export interface SocialsUsers {
+  created_at: Generated<Timestamp>;
+  social: string;
+  user_id: number;
+}
+
 export interface TasksUsers {
   created_at: Generated<Timestamp>;
   task_id: number;
@@ -256,6 +284,7 @@ export interface DB {
   ms_messages: MsMessages;
   ms_notifications: MsNotifications;
   ms_orgs: MsOrgs;
+  ms_otps: MsOtps;
   ms_preferences: MsPreferences;
   ms_project_events: MsProjectEvents;
   ms_projects: MsProjects;
@@ -264,9 +293,11 @@ export interface DB {
   ms_task_buckets: MsTaskBuckets;
   ms_tasks: MsTasks;
   ms_users: MsUsers;
+  notification_emails: NotificationEmails;
   orgs_users: OrgsUsers;
   preferences_users: PreferencesUsers;
   projects_users: ProjectsUsers;
   session: Session;
+  socials_users: SocialsUsers;
   tasks_users: TasksUsers;
 }

@@ -15,6 +15,29 @@ export class SuspensionRepository {
     this.db = db;
   }
 
+  async purgeSession(user_id: number) {
+    return await this.db
+      .deleteFrom("session")
+      .where((eb) => eb(eb.cast("sess", "jsonb"), "@@", `$[*].user_id == ${user_id}`))
+      .execute();
+  }
+
+  async getLongestActiveSuspension(opts: { user_id: number }) {
+    const { user_id } = opts;
+    return await this.db
+      .selectFrom("ms_suspensions")
+      .select(defaultSuspensionFields)
+      .where((eb) =>
+        eb.and([
+          eb("ms_suspensions.user_id", "=", user_id),
+          eb("ms_suspensions.suspended_until", ">", new Date()),
+        ]),
+      )
+      .orderBy("ms_suspensions.suspended_until desc")
+      .limit(1)
+      .executeTakeFirst();
+  }
+
   async addSuspension(opts: { reason: string; user_id: number; suspended_until: Date }) {
     const { reason, user_id, suspended_until } = opts;
     return await this.db

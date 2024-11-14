@@ -13,7 +13,7 @@ describe("task api", () => {
   });
 
   beforeEach(async () => {
-    await clearDB(app);
+    await clearDB(app.db);
     caseData = await baseCase(app.db);
   });
 
@@ -207,6 +207,21 @@ describe("task api", () => {
     expect(result.name).eq(in_name);
   });
 
+  it("should be able to reset tasks to a default configuration", async () => {
+    const in_user = caseData.admin_user;
+    const in_project = caseData.empty_project;
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const send_req = await resetProjectBucket(in_project.id, cookie);
+    await send_req.json();
+
+    const read_req = await getBuckets(in_project.id, cookie);
+    const result = await read_req.json();
+
+    expect(send_req.status).eq(200);
+    expect(result.length).not.eq(0);
+  });
+
   it("should be able to delete bucket and get by detail", async () => {
     const in_bucket = caseData.bucket_empty;
     const in_user = caseData.dev_user;
@@ -391,6 +406,18 @@ function updateBucket(bucket_id: number, data: { name?: string }, cookie: string
       cookie: cookie,
     },
     body: data,
+    credentials: "include",
+    method: "put",
+  });
+}
+function resetProjectBucket(project_id: number, cookie: string) {
+  return new APIContext("ProjectsDetailBucketsReset").fetch(`/api/projects/${project_id}/buckets`, {
+    headers: {
+      cookie: cookie,
+    },
+    body: {
+      state: "default",
+    },
     credentials: "include",
     method: "put",
   });

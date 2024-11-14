@@ -1,11 +1,59 @@
 import type { Express } from "express";
-import { ZodType, z } from "zod";
+import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
 import { validateLogged } from "../../helpers/validate.js";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
-import { OrgRoles, org_roles, parseRole } from "./OrgMisc.js";
+import {
+  defaultError,
+  zodPagination,
+  zodStringReadableAsNumber,
+} from "../../helpers/validators.js";
+import { org_roles } from "./OrgMisc.js";
 import { OrgService } from "./OrgService.js";
+
+const OrgUpdateSchema = z.object({
+  org_name: z.string(defaultError("Nama tidak valid!")).min(1).optional(),
+  org_description: z.string(defaultError("Deskripsi tidak valid!")).min(1).optional(),
+  org_address: z.string(defaultError("Alamat tidak valid!")).min(1).optional(),
+  org_phone: z.string(defaultError("Nomor telepon tidak valid!")).min(1).optional(),
+  org_image: z.string(defaultError("Gambar tidak valid!")).nullable().optional(),
+  org_categories: z.number(defaultError("Kategori organisasi tidak valid!")).array().optional(),
+});
+
+const OrgCreationSchema = z.object({
+  org_name: z.string(defaultError("Nama tidak valid!")).min(1),
+  org_description: z.string(defaultError("Deskripsi tidak valid!")).min(1),
+  org_address: z.string(defaultError("Alamat tidak valid!")).min(1),
+  org_phone: z.string(defaultError("Nomor telepon tidak valid!")).min(1),
+  org_image: z.string(defaultError("Gambar tidak valid!")).optional(),
+  org_categories: z.number(defaultError("Kategori organisasi tidak valid!")).array().optional(),
+});
+
+const OrgResponseSchema = z.object({
+  org_id: z.number(),
+  org_name: z.string(),
+  org_description: z.string(),
+  org_address: z.string(),
+  org_phone: z.string(),
+  org_image: z.string().nullable(),
+  org_categories: z.array(
+    z.object({
+      category_name: z.string(),
+      category_id: z.number(),
+    }),
+  ),
+  org_users: z
+    .object({
+      user_id: z.number(),
+      user_role: z.enum(org_roles).or(z.literal("Not Involved")),
+    })
+    .array(),
+});
+
+const OrgMemberParamSchema = z.object({
+  org_id: zodStringReadableAsNumber("Nomor organisasi tidak valid!"),
+  user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!"),
+});
 
 export class OrgController extends Controller {
   private org_service: OrgService;
@@ -21,7 +69,6 @@ export class OrgController extends Controller {
       OrgsDetailGet: this.OrgsDetailGet,
       OrgsCategoriesGet: this.OrgsCategoriesGet,
       OrgsUpdate: this.OrgsUpdate,
-      OrgsDelete: this.OrgsDelete,
       OrgsDetailMembersDetailGet: this.OrgsDetailMembersDetailGet,
       OrgsDetailMembersDetailPut: this.OrgsDetailMembersDetailPut,
       OrgsDetailMembersDetailDelete: this.OrgsDetailMembersDetailDelete,
@@ -32,42 +79,8 @@ export class OrgController extends Controller {
     method: "post",
     path: "/api/orgs",
     schema: {
-      ReqBody: z.object({
-        org_name: z
-          .string({ message: "Nama invalid!" })
-          .min(1, { message: "Nama tidak boleh kosong!" }),
-        org_description: z
-          .string({ message: "Deskripsi invalid!" })
-          .min(1, { message: "Deskripsi tidak boleh kosong!" }),
-        org_address: z
-          .string({ message: "Alamat invalid!" })
-          .min(1, { message: "Alamat tidak boleh kosong!" }),
-        org_phone: z
-          .string({ message: "Nomor telefon invalid!" })
-          .min(1, { message: "Nomor telefon tidak boleh kosong!" }),
-        org_image: z.string({ message: "Gambar invalid!" }).min(1).optional(),
-        org_categories: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
-      }),
-      ResBody: z.object({
-        org_id: z.number(),
-        org_name: z.string(),
-        org_description: z.string(),
-        org_address: z.string(),
-        org_phone: z.string(),
-        org_image: z.string().nullable(),
-        org_categories: z.array(
-          z.object({
-            category_name: z.string(),
-            category_id: z.number(),
-          }),
-        ),
-        org_users: z
-          .object({
-            user_id: z.number(),
-            user_role: z.enum(org_roles).or(z.literal("Not Involved")),
-          })
-          .array(),
-      }),
+      ReqBody: OrgCreationSchema,
+      ResBody: OrgResponseSchema,
     },
     priors: [validateLogged],
     handler: async (req, res) => {
@@ -99,38 +112,30 @@ export class OrgController extends Controller {
     path: "/api/orgs",
     schema: {
       ReqQuery: z.object({
-        user_id: zodStringReadableAsNumber("Id pengguna invalid!").optional(),
+        user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!").optional(),
+        keyword: z.string(defaultError("Nama organisasi tidak valid!")).min(1).optional(),
+        ...zodPagination(),
       }),
-      ResBody: z
-        .object({
-          org_id: z.number(),
-          org_name: z.string(),
-          org_description: z.string(),
-          org_address: z.string(),
-          org_phone: z.string(),
-          org_image: z.string().nullable(),
-          org_categories: z.array(
-            z.object({
-              category_name: z.string(),
-              category_id: z.number(),
-            }),
-          ),
-          org_users: z
-            .object({
-              user_id: z.number(),
-              user_role: z.enum(org_roles).or(z.literal("Not Involved")),
-            })
-            .array(),
-        })
-        .array(),
+      ResBody: z.object({
+        result: OrgResponseSchema.array(),
+        total: z.number(),
+      }),
     },
 
     handler: async (req, res) => {
-      const { user_id } = req.query;
-      const result = await this.org_service.getOrgs({
+      const { page, limit, user_id, keyword } = req.query;
+
+      const opts = {
         user_id: user_id != undefined ? Number(user_id) : undefined,
-      });
-      res.status(200).json(result);
+        keyword: keyword != undefined && keyword.length > 0 ? keyword : undefined,
+        limit: limit != undefined ? Number(limit) : undefined,
+        page: limit != undefined ? Number(page) : undefined,
+      };
+
+      const result = await this.org_service.getOrgs(opts);
+      const count = await this.org_service.countOrgs(opts);
+
+      res.status(200).json({ result, total: Number(count.count) });
     },
   });
   OrgsDetailGet = new Route({
@@ -138,28 +143,9 @@ export class OrgController extends Controller {
     path: "/api/orgs/:org_id",
     schema: {
       Params: z.object({
-        org_id: zodStringReadableAsNumber("ID tidak valid!"),
+        org_id: zodStringReadableAsNumber("Nomor organisasi tidak valid!"),
       }),
-      ResBody: z.object({
-        org_id: z.number(),
-        org_name: z.string(),
-        org_description: z.string(),
-        org_address: z.string(),
-        org_phone: z.string(),
-        org_image: z.string().nullable(),
-        org_categories: z.array(
-          z.object({
-            category_name: z.string(),
-            category_id: z.number(),
-          }),
-        ),
-        org_users: z
-          .object({
-            user_id: z.number(),
-            user_role: z.enum(org_roles).or(z.literal("Not Involved")),
-          })
-          .array(),
-      }),
+      ResBody: OrgResponseSchema,
     },
     handler: async (req, res) => {
       const org_id = Number(req.params.org_id);
@@ -191,48 +177,10 @@ export class OrgController extends Controller {
 
   OrgsUpdate = new Route({
     schema: {
-      ResBody: z.object({
-        org_id: z.number(),
-        org_name: z.string(),
-        org_description: z.string(),
-        org_address: z.string(),
-        org_phone: z.string(),
-        org_image: z.string().nullable(),
-        org_categories: z.array(
-          z.object({
-            category_name: z.string(),
-            category_id: z.number(),
-          }),
-        ),
-        org_users: z
-          .object({
-            user_id: z.number(),
-            user_role: z.enum(org_roles).or(z.literal("Not Involved")),
-          })
-          .array(),
-      }),
+      ReqBody: OrgUpdateSchema,
+      ResBody: OrgResponseSchema,
       Params: z.object({
-        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
-      }),
-      ReqBody: z.object({
-        org_name: z
-          .string({ message: "Nama invalid!" })
-          .min(1, { message: "Nama tidak boleh kosong!" })
-          .optional(),
-        org_description: z
-          .string({ message: "Deskripsi invalid!" })
-          .min(1, { message: "Deskripsi tidak boleh kosong!" })
-          .optional(),
-        org_address: z
-          .string({ message: "Alamat invalid!" })
-          .min(1, { message: "Alamat tidak boleh kosong!" })
-          .optional(),
-        org_phone: z
-          .string({ message: "Nomor telefon invalid!" })
-          .min(1, { message: "Nomor telefon tidak boleh kosong!" })
-          .optional(),
-        org_image: z.string({ message: "Deskripsi invalid!" }).optional(),
-        org_categories: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
+        org_id: zodStringReadableAsNumber("Nomor organisasi tidak valid!"),
       }),
     },
     method: "put",
@@ -260,33 +208,11 @@ export class OrgController extends Controller {
       res.status(200).json(updated);
     },
   });
-  OrgsDelete = new Route({
-    method: "delete",
-    path: "/api/orgs/:org_id",
-    schema: {
-      ResBody: z.object({
-        msg: z.string(),
-      }),
-      Params: z.object({
-        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
-      }),
-    },
-    handler: async (req, res) => {
-      const org_id = Number(req.params.org_id);
-      const sender_id = req.session.user_id!;
-
-      await this.org_service.deleteOrg(org_id, sender_id);
-      res.status(200).json({ msg: "Organisasi berhasil di hapus" });
-    },
-  });
   OrgsDetailMembersDetailGet = new Route({
     method: "get",
     path: "/api/orgs/:org_id/users/:user_id",
     schema: {
-      Params: z.object({
-        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
-        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
-      }),
+      Params: OrgMemberParamSchema,
       ResBody: z.object({
         role: z.enum(org_roles).or(z.literal("Not Involved")),
       }),
@@ -308,15 +234,9 @@ export class OrgController extends Controller {
         role: z.enum(org_roles).or(z.literal("Not Involved")),
       }),
       ReqBody: z.object({
-        role: z
-          .string()
-          .min(1)
-          .transform((arg) => parseRole(arg)) as ZodType<OrgRoles>,
+        role: z.enum(org_roles, defaultError("Peran anggota tidak valid!")),
       }),
-      Params: z.object({
-        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
-        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
-      }),
+      Params: OrgMemberParamSchema,
     },
     handler: async (req, res) => {
       const { org_id: org_id_str, user_id: user_id_str } = req.params;
@@ -335,10 +255,7 @@ export class OrgController extends Controller {
     method: "delete",
     path: "/api/orgs/:org_id/users/:user_id",
     schema: {
-      Params: z.object({
-        org_id: zodStringReadableAsNumber("ID organisasi tidak valid!"),
-        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
-      }),
+      Params: OrgMemberParamSchema,
       ResBody: z.object({
         role: z.enum(org_roles).or(z.literal("Not Involved")),
       }),

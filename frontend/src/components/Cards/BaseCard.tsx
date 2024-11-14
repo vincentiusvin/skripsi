@@ -56,7 +56,7 @@ function BaseCard(props: {
         >
           {title}
         </Typography>
-        <Typography variant="body2" color={"GrayText"}>
+        <Typography variant="body2" color={"textSecondary"}>
           {subtitle}
         </Typography>
       </Stack>

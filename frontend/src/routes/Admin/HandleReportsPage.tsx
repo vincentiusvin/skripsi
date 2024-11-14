@@ -4,24 +4,34 @@ import {
   Button,
   Collapse,
   Divider,
+  FormControl,
   IconButton,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Skeleton,
   Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
+  TableFooter,
   TableHead,
+  TablePagination,
   TableRow,
   TextField,
+  Toolbar,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
+import useQueryPagination from "../../components/QueryPagination/hook.ts";
 import StyledLink from "../../components/StyledLink.tsx";
 import UserLabel from "../../components/UserLabel.tsx";
+import { restrictToEnum } from "../../helpers/misc.ts";
+import { useStateSearch } from "../../helpers/search.ts";
 import { useReportsGet, useReportsPut } from "../../queries/report_hooks.ts";
 import ReportStatusChip from "../Reports/components/ReportStatus.tsx";
 import AuthorizeAdmin from "./components/AuthorizeAdmins.tsx";
@@ -174,11 +184,11 @@ function ReportRow(props: {
         </TableCell>
         <TableCell>
           {open ? (
-            <IconButton size="small" onClick={() => setOpen(false)}>
+            <IconButton variant="outlined" size="small" onClick={() => setOpen(false)}>
               <KeyboardArrowUp />
             </IconButton>
           ) : (
-            <IconButton size="small" onClick={() => setOpen(true)}>
+            <IconButton variant="outlined" size="small" onClick={() => setOpen(true)}>
               <KeyboardArrowDown />
             </IconButton>
           )}
@@ -244,33 +254,96 @@ function ReportRow(props: {
   );
 }
 
-function HandleReports() {
-  const { data: reports } = useReportsGet({});
+const validStatus = ["Semua", "Pending", "Rejected", "Resolved"] as const;
+type ValidStatus = (typeof validStatus)[number];
 
-  if (!reports) {
-    return <Skeleton />;
+function HandleReports() {
+  const [page, setPage] = useQueryPagination();
+  const limit = 10;
+  const [_status, setStatus] = useStateSearch<ValidStatus>("status");
+  let status: ValidStatus = "Semua";
+  if (restrictToEnum(_status, validStatus)) {
+    status = _status;
   }
 
+  const { data: reports_raw } = useReportsGet({
+    limit,
+    page,
+    status: status !== "Semua" ? status : undefined,
+  });
+  const reports = reports_raw?.result;
+
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Nama Laporan</TableCell>
-            <TableCell>Dibuat Oleh</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Tanggal Diterima</TableCell>
-            <TableCell>Tanggal Selesai</TableCell>
-            <TableCell />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {reports.map((report) => (
-            <ReportRow report={report} key={report.id} />
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Box>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
+        Laporan
+      </Typography>
+      <Paper>
+        <Toolbar
+          sx={{
+            display: "flex",
+            my: 2,
+          }}
+        >
+          <Typography variant="h6" flexGrow={1}>
+            Daftar Laporan
+          </Typography>
+          <FormControl>
+            <InputLabel>Status</InputLabel>
+            <Select
+              size="small"
+              value={status}
+              label="Status"
+              onChange={(e) => {
+                setStatus(e.target.value as ValidStatus);
+                setPage(1);
+              }}
+            >
+              <MenuItem value={"Semua"}>Semua</MenuItem>
+              <MenuItem value={"Pending"}>Menunggu</MenuItem>
+              <MenuItem value={"Rejected"}>Ditolak</MenuItem>
+              <MenuItem value={"Resolved"}>Diterima</MenuItem>
+            </Select>
+          </FormControl>
+        </Toolbar>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Nama Laporan</TableCell>
+                <TableCell>Dibuat Oleh</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Tanggal Diterima</TableCell>
+                <TableCell>Tanggal Selesai</TableCell>
+                <TableCell />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {reports !== undefined ? (
+                reports.map((report) => <ReportRow report={report} key={report.id} />)
+              ) : (
+                <Skeleton />
+              )}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TablePagination
+                  showFirstButton
+                  showLastButton
+                  rowsPerPage={limit}
+                  rowsPerPageOptions={[limit]}
+                  count={reports_raw?.total ?? -1}
+                  page={page - 1}
+                  onPageChange={(_, p) => {
+                    setPage(p + 1);
+                  }}
+                ></TablePagination>
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </TableContainer>
+      </Paper>
+    </Box>
   );
 }
 

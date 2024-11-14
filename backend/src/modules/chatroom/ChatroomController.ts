@@ -5,7 +5,7 @@ import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { validateLogged } from "../../helpers/validate.js";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import { defaultError, zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { ServerToClientEvents, ServerType } from "../../sockets.js";
 import { ChatService } from "./ChatroomService.js";
 
@@ -14,6 +14,64 @@ import { ChatService } from "./ChatroomService.js";
 
 // Kalau chatroomnya berkaitan dengan projek, validasi pakai daftar member projek.
 // Kalau chatroomnya bukan, validasi pakai daftar member chatroom
+
+const MessageResponseSchema = z.object({
+  id: z.number(),
+  message: z.string(),
+  created_at: z.date(),
+  user_id: z.number(),
+  is_edited: z.boolean(),
+  files: z
+    .object({
+      id: z.number(),
+      filename: z.string(),
+    })
+    .array(),
+});
+
+const MessageUpdateSchema = z.object({
+  message: z.string(defaultError("Pesan tidak boleh kosong!")).min(1).optional(),
+  files: z
+    .object(
+      {
+        filename: z.string(),
+        content: z.string(),
+      },
+      defaultError("Format lampiran tidak valid!"),
+    )
+    .array()
+    .optional(),
+});
+
+const MessageCreationSchema = z.object({
+  message: z.string(defaultError("Pesan tidak boleh kosong!")),
+  files: z
+    .object(
+      {
+        filename: z.string(),
+        content: z.string(),
+      },
+      defaultError("Format lampiran tidak valid!"),
+    )
+    .array()
+    .optional(),
+});
+
+const ChatroomParamsSchema = z.object({
+  chatroom_id: zodStringReadableAsNumber("Nomor ruang chat tidak valid!"),
+});
+
+const ChatroomResponseSchema = z.object({
+  project_id: z.number().nullable(),
+  chatroom_id: z.number(),
+  chatroom_name: z.string(),
+  chatroom_created_at: z.date(),
+  chatroom_users: z
+    .object({
+      user_id: z.number(),
+    })
+    .array(),
+});
 
 export class ChatController extends Controller {
   private socket_server: ServerType;
@@ -60,31 +118,17 @@ export class ChatController extends Controller {
     priors: [validateLogged],
     schema: {
       ReqBody: z.object({
-        name: z.string({ message: "Nama tidak valid!" }).min(1, "Nama tidak boleh kosong!"),
+        name: z.string(defaultError("Nama ruang chat tidak valid!")).min(1),
       }),
       Params: z.object({
-        project_id: zodStringReadableAsNumber("ID proyek tidak valid!"),
+        project_id: zodStringReadableAsNumber("Nomor proyek tidak valid!"),
       }),
-      ResBody: z.object({
-        project_id: z.number().nullable(),
-        chatroom_id: z.number(),
-        chatroom_name: z.string(),
-        chatroom_created_at: z.date(),
-        chatroom_users: z
-          .object({
-            user_id: z.number(),
-          })
-          .array(),
-      }),
+      ResBody: ChatroomResponseSchema,
     },
     handler: async (req, res) => {
       const name = req.body.name;
       const project_id = Number(req.params.project_id);
       const sender_id = Number(req.session.user_id);
-
-      if (name.length === 0) {
-        throw new ClientError("Nama chatroom tidak boleh kosong!");
-      }
 
       const chatroom_id = await this.chat_service.addProjectChatroom(project_id, name, sender_id);
 
@@ -108,26 +152,23 @@ export class ChatController extends Controller {
     path: "/api/projects/:project_id/chatrooms",
     schema: {
       Params: z.object({
-        project_id: zodStringReadableAsNumber("ID proyek tidak valid!"),
+        project_id: zodStringReadableAsNumber("Nomor proyek tidak valid!"),
       }),
-      ResBody: z
-        .object({
-          project_id: z.number().nullable(),
-          chatroom_id: z.number(),
-          chatroom_name: z.string(),
-          chatroom_created_at: z.date(),
-          chatroom_users: z
-            .object({
-              user_id: z.number(),
-            })
-            .array(),
-        })
-        .array(),
+      ReqQuery: z.object({
+        keyword: z.string(defaultError("Nama ruang chat tidak valid!")).min(1).optional(),
+      }),
+      ResBody: ChatroomResponseSchema.array(),
     },
     handler: async (req, res) => {
-      const project_id = req.params.project_id;
-      const result = await this.chat_service.getProjectChatrooms(Number(project_id));
-      res.json(result);
+      const { project_id: project_id_raw } = req.params;
+      const project_id = Number(project_id_raw);
+      const { keyword } = req.query;
+
+      const result = await this.chat_service.getProjectChatrooms({
+        project_id,
+        keyword,
+      });
+      res.status(200).json(result);
     },
   });
   UsersDetailChatroomsPost = new Route({
@@ -136,14 +177,12 @@ export class ChatController extends Controller {
     priors: [validateLogged],
     schema: {
       Params: z.object({
-        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
+        user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!"),
       }),
       ReqBody: z.object({
-        name: z.string().min(1),
+        name: z.string(defaultError("Nama ruang chat tidak valid!")).min(1),
       }),
-      ResBody: z.object({
-        msg: z.string(),
-      }),
+      ResBody: ChatroomResponseSchema,
     },
     handler: async (req, res) => {
       const name = req.body.name;
@@ -151,18 +190,14 @@ export class ChatController extends Controller {
       const user_id = Number(user_id_str);
       const sender_id = Number(req.session.user_id);
 
-      if (name.length === 0) {
-        throw new ClientError("Nama chatroom tidak boleh kosong!");
-      }
-
       const chatroom_id = await this.chat_service.addUserChatroom(user_id, name, sender_id);
 
       const members = await this.chat_service.getAllowedListeners(chatroom_id);
       await this.broadcastEvent(members, "roomUpdate");
 
-      res.status(201).json({
-        msg: "Room created!",
-      });
+      const result = await this.chat_service.getChatroomByID(chatroom_id);
+
+      res.status(201).json(result);
     },
   });
   UsersDetailChatroomsGet = new Route({
@@ -171,26 +206,23 @@ export class ChatController extends Controller {
     priors: [validateLogged],
     schema: {
       Params: z.object({
-        user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
+        user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!"),
       }),
-      ResBody: z
-        .object({
-          project_id: z.number().nullable(),
-          chatroom_id: z.number(),
-          chatroom_name: z.string(),
-          chatroom_created_at: z.date(),
-          chatroom_users: z
-            .object({
-              user_id: z.number(),
-            })
-            .array(),
-        })
-        .array(),
+      ReqQuery: z.object({
+        keyword: z.string(defaultError("Nama ruang chat tidak valid!")).min(1).optional(),
+      }),
+      ResBody: ChatroomResponseSchema.array(),
     },
     handler: async (req, res) => {
-      const user_id = req.params.user_id;
-      const result = await this.chat_service.getUserChatrooms(Number(user_id));
-      res.json(result);
+      const { user_id: user_id_raw } = req.params;
+      const user_id = Number(user_id_raw);
+      const { keyword } = req.query;
+
+      const result = await this.chat_service.getUserChatrooms({
+        user_id,
+        keyword,
+      });
+      res.status(200).json(result);
     },
   });
 
@@ -199,20 +231,8 @@ export class ChatController extends Controller {
     path: "/api/chatrooms/:chatroom_id",
     priors: [validateLogged],
     schema: {
-      Params: z.object({
-        chatroom_id: zodStringReadableAsNumber("ID chatroom tidak valid!"),
-      }),
-      ResBody: z.object({
-        project_id: z.number().nullable(),
-        chatroom_id: z.number(),
-        chatroom_name: z.string(),
-        chatroom_created_at: z.date(),
-        chatroom_users: z
-          .object({
-            user_id: z.number(),
-          })
-          .array(),
-      }),
+      Params: ChatroomParamsSchema,
+      ResBody: ChatroomResponseSchema,
     },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str } = req.params;
@@ -235,16 +255,12 @@ export class ChatController extends Controller {
     path: "/api/chatrooms/:chatroom_id",
     priors: [validateLogged],
     schema: {
-      Params: z.object({
-        chatroom_id: zodStringReadableAsNumber("ID chatroom tidak valid!"),
-      }),
+      Params: ChatroomParamsSchema,
       ReqBody: z.object({
-        name: z.string({ message: "Nama invalid!" }).min(1).optional(),
-        user_ids: z.array(z.number(), { message: "ID pengguna invalid!" }).optional(),
+        name: z.string(defaultError("Nama ruang chat tidak valid!")).min(1).optional(),
+        user_ids: z.number(defaultError("Nomor pengguna tidak valid!")).array().optional(),
       }),
-      ResBody: z.object({
-        msg: z.string(),
-      }),
+      ResBody: ChatroomResponseSchema,
     },
     handler: async (req, res) => {
       const { name, user_ids } = req.body;
@@ -260,9 +276,9 @@ export class ChatController extends Controller {
 
       await this.broadcastEvent(users_to_notify, "roomUpdate");
 
-      res.status(200).json({
-        msg: "Update successful!",
-      });
+      const result = await this.chat_service.getChatroomByID(chatroom_id);
+
+      res.status(200).json(result);
     },
   });
   ChatroomsDetailDelete = new Route({
@@ -270,9 +286,7 @@ export class ChatController extends Controller {
     path: "/api/chatrooms/:chatroom_id",
     priors: [validateLogged],
     schema: {
-      Params: z.object({
-        chatroom_id: zodStringReadableAsNumber("ID chatroom tidak valid!"),
-      }),
+      Params: ChatroomParamsSchema,
       ResBody: z.object({
         msg: z.string(),
       }),
@@ -297,32 +311,9 @@ export class ChatController extends Controller {
     path: "/api/chatrooms/:chatroom_id/messages",
     priors: [validateLogged],
     schema: {
-      Params: z.object({
-        chatroom_id: zodStringReadableAsNumber("ID chatroom tidak valid!"),
-      }),
-      ReqBody: z.object({
-        message: z.string({ message: "Isi pesan tidak valid!" }),
-        files: z
-          .object({
-            filename: z.string(),
-            content: z.string(),
-          })
-          .array()
-          .optional(),
-      }),
-      ResBody: z.object({
-        id: z.number(),
-        message: z.string(),
-        created_at: z.date(),
-        user_id: z.number(),
-        is_edited: z.boolean(),
-        files: z
-          .object({
-            id: z.number(),
-            filename: z.string(),
-          })
-          .array(),
-      }),
+      Params: ChatroomParamsSchema,
+      ReqBody: MessageCreationSchema,
+      ResBody: MessageResponseSchema,
     },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str } = req.params;
@@ -362,35 +353,11 @@ export class ChatController extends Controller {
     priors: [validateLogged],
     schema: {
       Params: z.object({
-        chatroom_id: zodStringReadableAsNumber("ID chatroom tidak valid!"),
-        message_id: zodStringReadableAsNumber("ID pesan tidak valid!"),
+        chatroom_id: zodStringReadableAsNumber("Nomor ruang chat tidak valid!"),
+        message_id: zodStringReadableAsNumber("Nomor pesan tidak valid!"),
       }),
-      ReqBody: z.object({
-        message: z
-          .string({ message: "Isi pesan tidak valid!" })
-          .min(1, "Pesan tidak boleh kosong!")
-          .optional(),
-        files: z
-          .object({
-            filename: z.string(),
-            content: z.string(),
-          })
-          .array()
-          .optional(),
-      }),
-      ResBody: z.object({
-        id: z.number(),
-        message: z.string(),
-        created_at: z.date(),
-        user_id: z.number(),
-        is_edited: z.boolean(),
-        files: z
-          .object({
-            id: z.number(),
-            filename: z.string(),
-          })
-          .array(),
-      }),
+      ResBody: MessageResponseSchema,
+      ReqBody: MessageUpdateSchema,
     },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str, message_id: message_id_str } = req.params;
@@ -419,23 +386,9 @@ export class ChatController extends Controller {
     priors: [validateLogged],
     schema: {
       Params: z.object({
-        chatroom_id: zodStringReadableAsNumber("ID chatroom tidak valid!"),
+        chatroom_id: zodStringReadableAsNumber("Nomor ruang chat tidak valid!"),
       }),
-      ResBody: z
-        .object({
-          id: z.number(),
-          message: z.string(),
-          created_at: z.date(),
-          user_id: z.number(),
-          is_edited: z.boolean(),
-          files: z
-            .object({
-              id: z.number(),
-              filename: z.string(),
-            })
-            .array(),
-        })
-        .array(),
+      ResBody: MessageResponseSchema.array(),
     },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str } = req.params;
@@ -458,7 +411,7 @@ export class ChatController extends Controller {
     schema: {
       ResBody: z.undefined(),
       Params: z.object({
-        file_id: zodStringReadableAsNumber("ID file invalid!"),
+        file_id: zodStringReadableAsNumber("Nomor file invalid!"),
       }),
     },
     handler: async (req, res) => {

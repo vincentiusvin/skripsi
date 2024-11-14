@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { API } from "../../../backend/src/routes";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
@@ -33,17 +33,27 @@ export function useProjectsDetailGet(opts: {
   });
 }
 
-export function useProjectsGet(opts?: { org_id?: number; user_id?: number; keyword?: string }) {
-  const { org_id, user_id, keyword } = opts || {};
+export function useProjectsGet(opts?: {
+  limit?: number;
+  page?: number;
+  org_id?: number;
+  user_id?: number;
+  keyword?: string;
+  keepPrev?: boolean;
+}) {
+  const { keepPrev, org_id, user_id, keyword, limit, page } = opts || {};
 
   return useQuery({
     queryKey: projectKeys.list(opts),
+    placeholderData: keepPrev ? keepPreviousData : undefined,
     queryFn: () =>
       new APIContext("ProjectsGet").fetch("/api/projects", {
         query: {
-          ...(org_id && { org_id: org_id.toString() }),
-          ...(user_id && { user_id: user_id.toString() }),
-          ...(keyword && { keyword }),
+          keyword: keyword,
+          org_id: org_id != undefined ? org_id.toString() : undefined,
+          user_id: user_id != undefined ? user_id.toString() : undefined,
+          limit: limit != undefined ? limit.toString() : undefined,
+          page: page != undefined ? page.toString() : undefined,
         },
       }),
   });
@@ -140,22 +150,6 @@ export function useProjectsDetailPut(opts: { project_id: number; onSuccess?: () 
     mutationFn: new APIContext("ProjectsDetailPut").bodyFetch(`/api/projects/${project_id}`, {
       method: "PUT",
     }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: projectKeys.all() });
-      if (onSuccess) {
-        onSuccess();
-      }
-    },
-  });
-}
-
-export function useProjectsDetailDelete(opts: { project_id: number; onSuccess?: () => void }) {
-  const { onSuccess, project_id } = opts;
-  return useMutation({
-    mutationFn: () =>
-      new APIContext("ProjectsDetailDelete").fetch(`/api/projects/${project_id}`, {
-        method: "DELETE",
-      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: projectKeys.all() });
       if (onSuccess) {

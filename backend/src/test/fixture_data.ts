@@ -23,54 +23,77 @@ export async function baseCase(db: Kysely<DB>) {
       {
         name: "org user",
         password: hashed,
+        email: "orguser@example.com",
       },
       {
         name: "external user",
         password: hashed,
+        email: "extuser@example.com",
       },
       {
         name: "chat user",
         password: hashed,
+        email: "chatuser@example.com",
       },
       {
         name: "project dev",
         password: hashed,
+        email: "projectdev@example.com",
       },
       {
         name: "project admin",
         password: hashed,
+        email: "projectadmin@example.com",
       },
       {
         name: "friend send",
         password: hashed,
+        email: "friendsend@example.com",
       },
       {
         name: "friend pending",
         password: hashed,
+        email: "friendpending@example.com",
       },
       {
         name: "friend acc",
         password: hashed,
+        email: "friendacc@example.com",
       },
       {
         name: "notif user",
         password: hashed,
+        email: "notifuser@example.com",
       },
       {
         name: "report user",
         password: hashed,
+        email: "reportuser@example.com",
       },
       {
         name: "banned user",
         password: hashed,
+        email: "banneduser@example.com",
       },
       {
         name: "pref user",
         password: hashed,
+        email: "prefuser@example.com",
       },
       {
         name: "contrib user",
         password: hashed,
+        email: "contribuser@example.com",
+      },
+      {
+        name: "expired ban user",
+        password: hashed,
+        email: "expiredban@example.com",
+      },
+      {
+        name: "email chat user",
+        password: hashed,
+        email: "emailchat@example.com",
       },
     ])
     .returning(["id", "name"])
@@ -96,6 +119,8 @@ export async function baseCase(db: Kysely<DB>) {
   const banned_user = { ...user_ids[10], password: orig_password };
   const pref_user = { ...user_ids[11], password: orig_password };
   const contrib_user = { ...user_ids[12], password: orig_password };
+  const expired_banned_user = { ...user_ids[13], password: orig_password };
+  const email_chat_user = { ...user_ids[14], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -113,15 +138,25 @@ export async function baseCase(db: Kysely<DB>) {
     ])
     .execute();
 
-  const project = await db
+  const projects = await db
     .insertInto("ms_projects")
-    .values({
-      description: "very awesome project",
-      name: "testing project",
-      org_id: org.id,
-    })
+    .values([
+      {
+        description: "very awesome project",
+        name: "testing project",
+        org_id: org.id,
+      },
+      {
+        description: "very awesome project",
+        name: "testing project",
+        org_id: org.id,
+      },
+    ])
     .returning(["id", "name"])
-    .executeTakeFirstOrThrow();
+    .execute();
+
+  const project = projects[0];
+  const empty_project = projects[1];
 
   await db
     .insertInto("projects_users")
@@ -316,12 +351,20 @@ export async function baseCase(db: Kysely<DB>) {
 
   const notifications = await db
     .insertInto("ms_notifications")
-    .values({
-      title: "Testing",
-      description: "test desc",
-      type: "OrgManage",
-      user_id: notif_user.id,
-    })
+    .values([
+      {
+        title: "Testing",
+        description: "test desc",
+        type: "Proyek",
+        user_id: notif_user.id,
+      },
+      {
+        title: "Testing",
+        description: "test desc",
+        type: "Organisasi",
+        user_id: notif_user.id,
+      },
+    ])
     .returning(["id", "title", "description", "type", "user_id"])
     .execute();
 
@@ -352,9 +395,16 @@ export async function baseCase(db: Kysely<DB>) {
         suspended_until: dayjs().add(100, "day").toDate(),
         user_id: banned_user.id,
       },
+      {
+        reason: "Sudah expired",
+        suspended_until: dayjs().subtract(100, "day").toDate(),
+        user_id: expired_banned_user.id,
+      },
     ])
     .returning(["id", "ms_suspensions.reason", "ms_suspensions.suspended_until"])
     .execute();
+  const active_ban = bans[0];
+  const expired_ban = bans[1];
 
   const pref_map = await db
     .selectFrom("ms_preferences")
@@ -379,6 +429,11 @@ export async function baseCase(db: Kysely<DB>) {
         preference_id: pref_map.find((x) => x.name === "friend_invite")!.id,
         value: "off",
       },
+      {
+        user_id: email_chat_user.id,
+        preference_id: pref_map.find((x) => x.name === "msg_notif")!.id,
+        value: "email",
+      },
     ])
     .execute();
 
@@ -393,7 +448,28 @@ export async function baseCase(db: Kysely<DB>) {
     preferences[x.name] = x.value;
   });
 
+  const verified_otp = await db
+    .insertInto("ms_otps")
+    .values({
+      email: "email-otp1@example.com",
+      otp: "123456",
+      verified: true,
+    })
+    .returning(["token", "email", "otp", "verified"])
+    .executeTakeFirstOrThrow();
+
+  const unverified_otp = await db
+    .insertInto("ms_otps")
+    .values({
+      email: "email-otp2@example.com",
+      otp: "89765",
+    })
+    .returning(["token", "email", "otp", "verified"])
+    .executeTakeFirstOrThrow();
+
   return {
+    verified_otp,
+    unverified_otp,
     project_chat,
     org,
     preferences,
@@ -422,9 +498,13 @@ export async function baseCase(db: Kysely<DB>) {
     reports,
     contrib_user,
     report_user,
+    empty_project,
+    expired_banned_user,
     accepted_contribution,
+    email_chat_user,
     rejected_contribution,
-    bans,
+    active_ban,
+    expired_ban,
     banned_user,
   };
 }

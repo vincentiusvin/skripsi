@@ -129,37 +129,35 @@ export class TaskRepository {
     start_at?: string;
   }) {
     const { order, users, bucket_id, name, description, end_at, start_at } = data;
-    return await this.db.transaction().execute(async (trx) => {
-      const res = await trx
-        .insertInto("ms_tasks")
-        .values({
-          bucket_id: Number(bucket_id),
-          order,
-          name,
-          description,
-          end_at,
-          start_at,
-        })
-        .returning("id")
-        .executeTakeFirst();
+    const res = await this.db
+      .insertInto("ms_tasks")
+      .values({
+        bucket_id: Number(bucket_id),
+        order,
+        name,
+        description,
+        end_at,
+        start_at,
+      })
+      .returning("id")
+      .executeTakeFirst();
 
-      if (!res) {
-        throw new Error("Gagal memasukkan data!");
-      }
+    if (!res) {
+      throw new Error("Gagal memasukkan data!");
+    }
 
-      if (users != undefined) {
-        for (const user_id of users) {
-          await trx
-            .insertInto("tasks_users")
-            .values({
-              task_id: res.id,
-              user_id,
-            })
-            .execute();
-        }
+    if (users != undefined) {
+      for (const user_id of users) {
+        await this.db
+          .insertInto("tasks_users")
+          .values({
+            task_id: res.id,
+            user_id,
+          })
+          .execute();
       }
-      return res;
-    });
+    }
+    return res;
   }
 
   /**
@@ -185,50 +183,48 @@ export class TaskRepository {
       bucket_id?: number;
       name?: string;
       users?: number[];
-      description?: string;
+      description?: string | null;
       start_at?: string | null;
       end_at?: string | null;
     },
   ) {
     const { bucket_id, name, users, description, start_at, end_at, order } = data;
-    await this.db.transaction().execute(async (trx) => {
-      if (
-        bucket_id !== undefined ||
-        description !== undefined ||
-        end_at !== undefined ||
-        name !== undefined ||
-        order !== undefined ||
-        start_at !== undefined
-      ) {
-        trx
-          .updateTable("ms_tasks")
-          .set({
-            bucket_id,
-            description,
-            end_at,
-            name,
-            order,
-            start_at,
-          })
-          .where("ms_tasks.id", "=", task_id)
+    if (
+      bucket_id !== undefined ||
+      description !== undefined ||
+      end_at !== undefined ||
+      name !== undefined ||
+      order !== undefined ||
+      start_at !== undefined
+    ) {
+      this.db
+        .updateTable("ms_tasks")
+        .set({
+          bucket_id,
+          description,
+          end_at,
+          name,
+          order,
+          start_at,
+        })
+        .where("ms_tasks.id", "=", task_id)
+        .execute();
+    }
+
+    if (users != undefined) {
+      await this.db.deleteFrom("tasks_users").where("task_id", "=", task_id).execute();
+      if (users.length) {
+        await this.db
+          .insertInto("tasks_users")
+          .values(
+            users.map((user_id) => ({
+              task_id,
+              user_id,
+            })),
+          )
           .execute();
       }
-
-      if (users != undefined) {
-        await trx.deleteFrom("tasks_users").where("task_id", "=", task_id).execute();
-        if (users.length) {
-          await trx
-            .insertInto("tasks_users")
-            .values(
-              users.map((user_id) => ({
-                task_id,
-                user_id,
-              })),
-            )
-            .execute();
-        }
-      }
-    });
+    }
   }
 
   async getBuckets(opts: { project_id?: number }) {
@@ -252,6 +248,7 @@ export class TaskRepository {
         name: name,
         project_id: Number(project_id),
       })
-      .execute();
+      .returning("ms_task_buckets.id")
+      .executeTakeFirst();
   }
 }

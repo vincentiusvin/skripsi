@@ -1,6 +1,7 @@
-import { ExpressionBuilder, Kysely, RawBuilder } from "kysely";
+import { ExpressionBuilder, Kysely, RawBuilder, SelectQueryBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
+import { paginateQuery } from "../../helpers/pagination.js";
 import { OrgRoles, parseRole } from "./OrgMisc.js";
 
 const defaultOrgFields = [
@@ -42,17 +43,11 @@ export class OrgRepository {
     this.db = db;
   }
 
-  getOrgs(filter?: { user_id?: number }) {
-    const { user_id } = filter ?? {};
-
-    let query = this.db
-      .selectFrom("ms_orgs")
-      .select((eb) => [
-        ...defaultOrgFields,
-        orgWithCategories(eb).as("org_categories"),
-        orgWithUsers(eb).as("org_users"),
-      ]);
-
+  applyFilterToQuery<O>(
+    query: SelectQueryBuilder<DB, "ms_orgs", O>,
+    filter?: { keyword?: string; user_id?: number },
+  ) {
+    const { user_id, keyword } = filter || {};
     if (user_id) {
       query = query.where((eb) =>
         eb(
@@ -65,6 +60,38 @@ export class OrgRepository {
         ),
       );
     }
+
+    if (keyword != undefined && keyword.length !== 0) {
+      query = query.where("ms_orgs.name", "ilike", `%${keyword}%`);
+    }
+
+    return query;
+  }
+
+  async countOrgs(filter?: { keyword?: string; user_id?: number }) {
+    const { keyword, user_id } = filter || {};
+    let query = this.db.selectFrom("ms_orgs").select((eb) => eb.fn.countAll().as("count"));
+    query = this.applyFilterToQuery(query, { keyword, user_id });
+    return await query.executeTakeFirstOrThrow();
+  }
+
+  getOrgs(filter?: { keyword?: string; user_id?: number; page?: number; limit?: number }) {
+    const { keyword, user_id, page, limit } = filter ?? {};
+
+    let query = this.db
+      .selectFrom("ms_orgs")
+      .select((eb) => [
+        ...defaultOrgFields,
+        orgWithCategories(eb).as("org_categories"),
+        orgWithUsers(eb).as("org_users"),
+      ]);
+
+    query = this.applyFilterToQuery(query, { keyword, user_id });
+
+    query = paginateQuery(query, {
+      page,
+      limit,
+    });
 
     return query.execute();
   }
@@ -105,45 +132,43 @@ export class OrgRepository {
     firstUser: number,
   ) {
     const { org_name, org_address, org_description, org_phone, org_categories, org_image } = obj;
-    return await this.db.transaction().execute(async (trx) => {
-      const org = await trx
-        .insertInto("ms_orgs")
-        .values({
-          name: org_name,
-          description: org_description,
-          address: org_address,
-          phone: org_phone,
-          ...(org_image && { image: org_image }),
-        })
-        .returning(["ms_orgs.id"])
-        .executeTakeFirst();
+    const org = await this.db
+      .insertInto("ms_orgs")
+      .values({
+        name: org_name,
+        description: org_description,
+        address: org_address,
+        phone: org_phone,
+        ...(org_image && { image: org_image }),
+      })
+      .returning(["ms_orgs.id"])
+      .executeTakeFirst();
 
-      if (!org) {
-        throw new Error("Data not inserted!");
-      }
+    if (!org) {
+      throw new Error("Data not inserted!");
+    }
 
-      if (org_categories && org_categories.length) {
-        await trx
-          .insertInto("categories_orgs")
-          .values(
-            org_categories.map((cat_id) => ({
-              org_id: org.id,
-              category_id: cat_id,
-            })),
-          )
-          .execute();
-      }
-
-      await trx
-        .insertInto("orgs_users")
-        .values({
-          user_id: firstUser,
-          org_id: org.id,
-          role: "Admin",
-        })
+    if (org_categories && org_categories.length) {
+      await this.db
+        .insertInto("categories_orgs")
+        .values(
+          org_categories.map((cat_id) => ({
+            org_id: org.id,
+            category_id: cat_id,
+          })),
+        )
         .execute();
-      return org;
-    });
+    }
+
+    await this.db
+      .insertInto("orgs_users")
+      .values({
+        user_id: firstUser,
+        org_id: org.id,
+        role: "Admin",
+      })
+      .execute();
+    return org;
   }
 
   async getCategories() {
@@ -160,62 +185,51 @@ export class OrgRepository {
       org_description?: string;
       org_address?: string;
       org_phone?: string;
-      org_image?: string;
+      org_image?: string | null;
       org_category?: number[];
     },
   ) {
-    const { org_name, org_description, org_address, org_phone, org_image, org_category } = obj;
+    const { org_category, ...rest } = obj;
 
-    await this.db.transaction().execute(async (trx) => {
-      if (
-        org_name != undefined ||
-        org_description != undefined ||
-        org_address != undefined ||
-        org_phone != undefined ||
-        org_image != undefined
-      ) {
-        const org = await trx
-          .updateTable("ms_orgs")
-          .set({
-            name: org_name,
-            description: org_description,
-            address: org_address,
-            phone: org_phone,
-            ...(org_image && { image: org_image }),
-          })
-          .where("id", "=", id)
-          .executeTakeFirst();
+    const need_main_update = Object.values(rest).some((x) => x !== undefined);
 
-        if (!org) {
-          throw new Error("Data tidak update!");
-        }
+    if (need_main_update) {
+      const { org_name, org_description, org_address, org_phone, org_image } = rest;
+      const org = await this.db
+        .updateTable("ms_orgs")
+        .set({
+          name: org_name,
+          description: org_description,
+          address: org_address,
+          phone: org_phone,
+          image: org_image,
+        })
+        .where("id", "=", id)
+        .executeTakeFirst();
+
+      if (!org) {
+        throw new Error("Data tidak update!");
       }
+    }
 
-      if (org_category) {
-        await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
+    if (org_category) {
+      await this.db.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
 
-        if (org_category.length) {
-          await trx
-            .insertInto("categories_orgs")
-            .values(
-              org_category.map((cat_id) => ({
-                org_id: id,
-                category_id: cat_id,
-              })),
-            )
-            .execute();
-        }
+      if (org_category.length) {
+        await this.db
+          .insertInto("categories_orgs")
+          .values(
+            org_category.map((cat_id) => ({
+              org_id: id,
+              category_id: cat_id,
+            })),
+          )
+          .execute();
       }
-    });
+    }
   }
   async deleteOrg(id: number) {
-    await this.db.transaction().execute(async (trx) => {
-      await trx.deleteFrom("ms_task_buckets").where("id", "=", id).execute();
-      await trx.deleteFrom("ms_projects").where("org_id", "=", id).execute();
-      await trx.deleteFrom("categories_orgs").where("org_id", "=", id).execute();
-      await trx.deleteFrom("orgs_users").where("org_id", "=", id).execute();
-      await trx.deleteFrom("ms_orgs").where("id", "=", id).execute();
-    });
+    await this.db.deleteFrom("ms_orgs").where("id", "=", id).execute();
   }
   async getMemberRole(org_id: number, user_id: number): Promise<OrgRoles> {
     const res = await this.db

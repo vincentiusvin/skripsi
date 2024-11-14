@@ -1,5 +1,6 @@
 import { Check, Close, Email } from "@mui/icons-material";
 import {
+  Box,
   List,
   ListItem,
   ListItemIcon,
@@ -9,6 +10,7 @@ import {
   Switch,
   ToggleButton,
   ToggleButtonGroup,
+  Typography,
 } from "@mui/material";
 import { Redirect } from "wouter";
 import { useSessionGet } from "../queries/sesssion_hooks.ts";
@@ -148,45 +150,49 @@ function Settings(props: { user_id: number }) {
       ],
     },
   ] as const;
-  console.log(settings);
 
   return (
-    <List>
-      {settings.map((section, s) => {
-        return [
-          <ListSubheader key={s}>{section.section}</ListSubheader>,
-          section.entries.map((setting, i) => (
-            <ListItem key={`${s}-${i}`}>
-              <ListItemText primary={setting.title} secondary={setting.description} />
-              <ListItemIcon>
-                {setting.type === "switch" ? (
-                  <Switch
-                    checked={setting.value}
-                    onChange={(e) => {
-                      setting.onChange(e.target.checked);
-                    }}
-                  />
-                ) : setting.type === "choice" ? (
-                  <ToggleButtonGroup
-                    exclusive
-                    value={setting.value}
-                    onChange={(_, v) => {
-                      setting.onChange(v);
-                    }}
-                  >
-                    {setting.choice.map((x) => (
-                      <ToggleButton value={x} key={x}>
-                        {x === "off" ? <Close /> : x === "on" ? <Check /> : <Email />}
-                      </ToggleButton>
-                    ))}
-                  </ToggleButtonGroup>
-                ) : null}
-              </ListItemIcon>
-            </ListItem>
-          )),
-        ];
-      })}
-    </List>
+    <Box>
+      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"}>
+        Preferensi
+      </Typography>
+      <List>
+        {settings.map((section, s) => {
+          return [
+            <ListSubheader key={s}>{section.section}</ListSubheader>,
+            section.entries.map((setting, i) => (
+              <ListItem key={`${s}-${i}`}>
+                <ListItemText primary={setting.title} secondary={setting.description} />
+                <ListItemIcon>
+                  {setting.type === "switch" ? (
+                    <Switch
+                      checked={setting.value}
+                      onChange={(e) => {
+                        setting.onChange(e.target.checked);
+                      }}
+                    />
+                  ) : setting.type === "choice" ? (
+                    <ToggleButtonGroup
+                      exclusive
+                      value={setting.value}
+                      onChange={(_, v) => {
+                        setting.onChange(v);
+                      }}
+                    >
+                      {setting.choice.map((x) => (
+                        <ToggleButton value={x} key={x}>
+                          {x === "off" ? <Close /> : x === "on" ? <Check /> : <Email />}
+                        </ToggleButton>
+                      ))}
+                    </ToggleButtonGroup>
+                  ) : null}
+                </ListItemIcon>
+              </ListItem>
+            )),
+          ];
+        })}
+      </List>
+    </Box>
   );
 }
 

@@ -1,13 +1,14 @@
 import { ReadablePreference } from "../preferences/PreferenceRepository.js";
 
-const notification_types = [
-  "OrgManage",
-  "ProjectManage",
-  "ProjectTask",
-  "ProjectChat",
-  "GeneralChat",
-  "ReportUpdate",
-  "Friend",
+export const notification_types = [
+  "Organisasi",
+  "Proyek",
+  "Tugas",
+  "Diskusi Proyek",
+  "Diskusi Pribadi",
+  "Laporan",
+  "Teman",
+  "Kontribusi",
 ] as const;
 export type NotificationTypes = (typeof notification_types)[number];
 
@@ -21,14 +22,26 @@ export function parseNotificationType(type: string): NotificationTypes {
 
 export function getPreferenceKeyFromNotificationType(notification_type: NotificationTypes) {
   const map = {
-    ProjectManage: "project_notif",
-    OrgManage: "org_notif",
-    GeneralChat: "msg_notif",
-    ProjectChat: "msg_notif",
-    ReportUpdate: "report_notif",
-    ProjectTask: "task_notif",
-    Friend: "friend_notif",
-  } as Record<NotificationTypes[number], keyof ReadablePreference>;
+    Proyek: "project_notif",
+    Organisasi: "org_notif",
+    "Diskusi Pribadi": "msg_notif",
+    "Diskusi Proyek": "msg_notif",
+    Tugas: "task_notif",
+    Kontribusi: "contrib_notif",
+    Laporan: "report_notif",
+    Teman: "friend_notif",
+  } as {
+    [n in NotificationTypes]: keyof ReadablePreference;
+  };
 
   return map[notification_type];
+}
+
+export type NotificationEmailStatus = "Sent" | "Buffered";
+
+export function parseNotificationEmailStatus(x: string): NotificationEmailStatus {
+  if (x === "Sent" || x === "Buffered") {
+    return x;
+  }
+  throw new Error(`Terdapat tipe notifikasi yang invalid: ${x}`);
 }

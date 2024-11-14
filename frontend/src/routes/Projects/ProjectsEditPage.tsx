@@ -14,6 +14,8 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
+import RichEditor from "../../components/RichEditor.tsx";
+import { handleOptionalStringUpdate } from "../../helpers/misc.ts";
 import {
   useProjectsCategoriesGet,
   useProjectsDetailGet,
@@ -25,6 +27,7 @@ function ProjectsEdit(props: { project_id: number }) {
   const { project_id } = props;
   const [projectName, setProjectName] = useState<string | undefined>();
   const [projectDesc, setProjectDesc] = useState<string | undefined>();
+  const [projectContent, setProjectContent] = useState<string | undefined>();
   const [projectCategory, setProjectCategory] = useState<number[] | undefined>();
 
   const [, setLocation] = useLocation();
@@ -50,6 +53,7 @@ function ProjectsEdit(props: { project_id: number }) {
       project_desc: projectDesc,
       project_name: projectName,
       category_id: projectCategory,
+      project_content: handleOptionalStringUpdate(projectContent),
     });
   }
 
@@ -63,28 +67,30 @@ function ProjectsEdit(props: { project_id: number }) {
     <Grid container spacing={2}>
       <Grid size={12}>
         <Typography variant="h4" fontWeight={"bold"} align="center">
-          Edit Project
+          Edit Proyek
         </Typography>
       </Grid>
       <Grid size={12}>
         <Stack spacing={4}>
           <TextField
+            required
             fullWidth
             onChange={(e) => setProjectName(e.target.value)}
-            label="Name"
+            label="Nama Proyek"
             value={projectName ?? oldData.project_name}
           ></TextField>
           <TextField
+            required
             fullWidth
             onChange={(e) => setProjectDesc(e.target.value)}
-            label="Description"
+            label="Deskripsi Singkat"
             value={projectDesc ?? oldData.project_desc}
           ></TextField>
           <FormControl>
             <InputLabel>Category</InputLabel>
             <Select
               value={projectCategory ?? oldData.project_categories.map((x) => x.category_id)}
-              label="Category"
+              label="Kategori"
               multiple
               onChange={(e) => setProjectCategory(e.target.value as number[])}
             >
@@ -96,6 +102,11 @@ function ProjectsEdit(props: { project_id: number }) {
                 ))}
             </Select>
           </FormControl>
+          <RichEditor
+            label="Detail Proyek"
+            onBlur={(x) => setProjectContent(x)}
+            defaultValue={projectContent ?? oldData.project_content ?? ""}
+          />
         </Stack>
       </Grid>
       <Grid size={12}>

@@ -1,6 +1,7 @@
-import { ExpressionBuilder, Kysely, RawBuilder } from "kysely";
+import { ExpressionBuilder, Kysely, RawBuilder, SelectQueryBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
+import { paginateQuery } from "../../helpers/pagination.js";
 import { ProjectRoles, parseRole } from "./ProjectMisc.js";
 
 const defaultProjectFields = [
@@ -8,6 +9,8 @@ const defaultProjectFields = [
   "ms_projects.name as project_name",
   "ms_projects.org_id",
   "ms_projects.description as project_desc",
+  "ms_projects.archived as project_archived",
+  "ms_projects.content as project_content",
 ] as const;
 
 const defaultProjectEventFields = ["id", "project_id", "event", "created_at"] as const;
@@ -111,23 +114,22 @@ export class ProjectRepository {
       .execute();
   }
 
-  async getProjects(filter?: { org_id?: number; user_id?: number; keyword?: string }) {
+  applyFilterToQuery<O>(
+    query: SelectQueryBuilder<DB, "ms_projects", O>,
+    filter?: {
+      org_id?: number;
+      user_id?: number;
+      keyword?: string;
+    },
+  ) {
     const { org_id, user_id, keyword } = filter || {};
 
-    let projects = this.db
-      .selectFrom("ms_projects")
-      .select((eb) => [
-        ...defaultProjectFields,
-        projectWithMembers(eb).as("project_members"),
-        projectWithCategories(eb).as("project_categories"),
-      ]);
-
     if (org_id != undefined) {
-      projects = projects.where("org_id", "=", Number(org_id));
+      query = query.where("org_id", "=", Number(org_id));
     }
 
     if (user_id != undefined) {
-      projects = projects.where((eb) =>
+      query = query.where((eb) =>
         eb(
           "ms_projects.id",
           "in",
@@ -140,10 +142,45 @@ export class ProjectRepository {
     }
 
     if (keyword != undefined) {
-      projects = projects.where("ms_projects.name", "ilike", `%${keyword}%`);
+      query = query.where("ms_projects.name", "ilike", `%${keyword}%`);
     }
 
-    return await projects.execute();
+    return query;
+  }
+
+  async countProjects(filter?: { org_id?: number; user_id?: number; keyword?: string }) {
+    let query = this.db.selectFrom("ms_projects").select((eb) => eb.fn.countAll().as("count"));
+    query = this.applyFilterToQuery(query, filter);
+
+    return await query.executeTakeFirstOrThrow();
+  }
+
+  async getProjects(filter?: {
+    limit?: number;
+    org_id?: number;
+    user_id?: number;
+    keyword?: string;
+    page?: number;
+  }) {
+    const { page, limit } = filter ?? {};
+
+    let query = this.db
+      .selectFrom("ms_projects")
+      .select((eb) => [
+        ...defaultProjectFields,
+        projectWithMembers(eb).as("project_members"),
+        projectWithCategories(eb).as("project_categories"),
+      ])
+      .orderBy("created_at desc");
+
+    query = this.applyFilterToQuery(query, filter);
+
+    query = paginateQuery(query, {
+      page,
+      limit,
+    });
+
+    return query.execute();
   }
 
   async getProjectByID(project_id: number) {
@@ -163,37 +200,37 @@ export class ProjectRepository {
     org_id: number;
     project_desc: string;
     category_id?: number[];
+    project_content?: string;
   }) {
-    const { project_name, org_id, project_desc, category_id } = obj;
+    const { project_name, org_id, project_desc, category_id, project_content } = obj;
 
-    return await this.db.transaction().execute(async (trx) => {
-      const prj = await trx
-        .insertInto("ms_projects")
-        .values({
-          description: project_desc,
-          name: project_name,
-          org_id,
-        })
-        .returning("id")
-        .executeTakeFirst();
+    const prj = await this.db
+      .insertInto("ms_projects")
+      .values({
+        description: project_desc,
+        name: project_name,
+        content: project_content,
+        org_id,
+      })
+      .returning("id")
+      .executeTakeFirst();
 
-      if (!prj) {
-        throw new Error("Failed to insert project");
-      }
+    if (!prj) {
+      throw new Error("Failed to insert project");
+    }
 
-      if (category_id && category_id.length) {
-        await trx
-          .insertInto("categories_projects")
-          .values(
-            category_id.map((cat_id) => ({
-              project_id: prj.id,
-              category_id: cat_id,
-            })),
-          )
-          .execute();
-      }
-      return prj.id;
-    });
+    if (category_id && category_id.length) {
+      await this.db
+        .insertInto("categories_projects")
+        .values(
+          category_id.map((cat_id) => ({
+            project_id: prj.id,
+            category_id: cat_id,
+          })),
+        )
+        .execute();
+    }
+    return prj.id;
   }
 
   async updateProject(
@@ -202,38 +239,48 @@ export class ProjectRepository {
       project_name?: string;
       project_desc?: string;
       category_id?: number[];
+      project_archived?: boolean;
+      project_content?: string | null;
     },
   ) {
-    const { project_name, project_desc, category_id } = obj;
+    const { project_content, project_archived, project_name, project_desc, category_id } = obj;
 
-    return await this.db.transaction().execute(async (trx) => {
-      if (project_name != undefined || project_desc != undefined) {
-        await trx
-          .updateTable("ms_projects")
-          .set({
-            description: project_desc,
-            name: project_name,
-          })
-          .where("ms_projects.id", "=", project_id)
-          .executeTakeFirst();
+    if (
+      project_content != undefined ||
+      project_name != undefined ||
+      project_desc != undefined ||
+      project_archived != undefined
+    ) {
+      await this.db
+        .updateTable("ms_projects")
+        .set({
+          description: project_desc,
+          name: project_name,
+          archived: project_archived,
+          content: project_content,
+        })
+        .where("ms_projects.id", "=", project_id)
+        .executeTakeFirst();
+    }
+
+    if (category_id) {
+      await this.db
+        .deleteFrom("categories_projects")
+        .where("project_id", "=", project_id)
+        .execute();
+
+      if (category_id.length) {
+        await this.db
+          .insertInto("categories_projects")
+          .values(
+            category_id.map((cat_id) => ({
+              project_id,
+              category_id: cat_id,
+            })),
+          )
+          .execute();
       }
-
-      if (category_id) {
-        await trx.deleteFrom("categories_projects").where("project_id", "=", project_id).execute();
-
-        if (category_id.length) {
-          await trx
-            .insertInto("categories_projects")
-            .values(
-              category_id.map((cat_id) => ({
-                project_id,
-                category_id: cat_id,
-              })),
-            )
-            .execute();
-        }
-      }
-    });
+    }
   }
 
   async deleteProject(project_id: number) {

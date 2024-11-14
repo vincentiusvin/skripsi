@@ -1,5 +1,6 @@
 import { Delete, Edit, Logout, People } from "@mui/icons-material";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -18,13 +19,13 @@ import {
   useChatroomsDetailDelete,
   useChatroomsDetailGet,
   useChatroomsDetailPut,
+  useProjectsDetailChatroomsPost,
+  useUsersDetailChatroomsPost,
 } from "../../queries/chat_hooks.ts";
-import { useUsersGet } from "../../queries/user_hooks.ts";
 import UserSelect from "../UserSelect.tsx";
 
 export function AddMembersDialog(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
-  const { data: users } = useUsersGet();
 
   const { data: chatroom } = useChatroomsDetailGet({ chatroom_id });
 
@@ -35,18 +36,22 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
         variant: "success",
         message: <Typography>Ruangan berhasil diedit!</Typography>,
       });
-      setEditRoomMembersOpen(false);
+      reset();
     },
   });
   const [editRoomMembersOpen, setEditRoomMembersOpen] = useState(false);
   const [newUsers, setNewUsers] = useState<number[] | undefined>();
 
-  if (!chatroom || !users) {
+  function reset() {
+    setEditRoomMembersOpen(false);
+    setNewUsers(undefined);
+  }
+
+  if (!chatroom) {
     return <Skeleton />;
   }
 
   const chatroom_users = chatroom.chatroom_users.map((x) => x.user_id);
-  const all_users = users.map((x) => x.user_id);
 
   return (
     <>
@@ -54,22 +59,24 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
         <ListItemIcon>
           <People />
         </ListItemIcon>
-        <ListItemText>Add Members</ListItemText>
+        <ListItemText>Edit Anggota</ListItemText>
       </MenuItem>
-      <Dialog open={editRoomMembersOpen} onClose={() => setEditRoomMembersOpen(false)}>
-        <DialogTitle>Tambah pengguna</DialogTitle>
+      <Dialog open={editRoomMembersOpen} onClose={() => reset()}>
+        <DialogTitle>Edit Anggota</DialogTitle>
         <DialogContent
           sx={{
             minWidth: 350,
           }}
         >
-          <UserSelect
-            current_users={newUsers ?? chatroom_users}
-            allowed_users={all_users}
-            onChange={(newUsers) => {
-              setNewUsers(newUsers);
-            }}
-          />
+          <Box pt={2}>
+            <UserSelect
+              label={"Anggota"}
+              current_users={newUsers ?? chatroom_users}
+              onChange={(newUsers) => {
+                setNewUsers(newUsers);
+              }}
+            />
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button
@@ -98,6 +105,7 @@ export function ChangeNameDialog(props: { chatroom_id: number }) {
         variant: "success",
         message: <Typography>Ruangan berhasil diedit!</Typography>,
       });
+      reset();
     },
   });
   const [editRoomNameOpen, setEditRoomNameOpen] = useState(false);
@@ -106,24 +114,32 @@ export function ChangeNameDialog(props: { chatroom_id: number }) {
     return <Skeleton />;
   }
 
+  function reset() {
+    setEditRoomName(undefined);
+    setEditRoomNameOpen(false);
+  }
+
   return (
     <>
       <MenuItem onClick={() => setEditRoomNameOpen(true)}>
         <ListItemIcon>
           <Edit />
         </ListItemIcon>
-        <ListItemText> Rename </ListItemText>
+        <ListItemText>Edit Ruangan</ListItemText>
       </MenuItem>
 
-      <Dialog open={editRoomNameOpen} onClose={() => setEditRoomNameOpen(false)}>
-        <DialogTitle>Rename room</DialogTitle>
+      <Dialog open={editRoomNameOpen} onClose={() => reset()}>
+        <DialogTitle>Edit ruangan</DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            value={editRoomName ?? chatroom.chatroom_name}
-            onChange={(e) => setEditRoomName(e.target.value)}
-            label="Room name"
-          />
+          <Box pt={2}>
+            <TextField
+              required
+              fullWidth
+              value={editRoomName ?? chatroom.chatroom_name}
+              onChange={(e) => setEditRoomName(e.target.value)}
+              label="Nama Ruangan"
+            />
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button
@@ -131,10 +147,9 @@ export function ChangeNameDialog(props: { chatroom_id: number }) {
               editRoom({
                 name: editRoomName,
               });
-              setEditRoomNameOpen(false);
             }}
           >
-            Rename Room
+            Simpan
           </Button>
         </DialogActions>
       </Dialog>
@@ -173,7 +188,7 @@ export function LeaveRoom(props: { chatroom_id: number; user_id: number; onLeave
       <ListItemIcon>
         <Logout />
       </ListItemIcon>
-      <ListItemText>Leave</ListItemText>
+      <ListItemText>Keluar</ListItemText>
     </MenuItem>
   );
 }
@@ -209,5 +224,99 @@ export function DeleteRoom(props: { chatroom_id: number; onLeave?: () => void })
       </ListItemIcon>
       <ListItemText>Hapus</ListItemText>
     </MenuItem>
+  );
+}
+
+function AddUserRoom(props: { user_id: number; name: string; onSuccess: () => void }) {
+  const { user_id, onSuccess, name } = props;
+  const { mutate: createUserRoom } = useUsersDetailChatroomsPost({
+    user_id: user_id,
+    onSuccess,
+  });
+
+  return (
+    <Button
+      onClick={() =>
+        createUserRoom({
+          name,
+        })
+      }
+    >
+      Buat ruangan
+    </Button>
+  );
+}
+
+function AddProjectRoom(props: { project_id: number; name: string; onSuccess: () => void }) {
+  const { project_id, onSuccess, name } = props;
+  const { mutate: createProjectRoom } = useProjectsDetailChatroomsPost({
+    project_id,
+    onSuccess,
+  });
+
+  return (
+    <Button
+      onClick={() =>
+        createProjectRoom({
+          name,
+        })
+      }
+    >
+      Buat ruangan
+    </Button>
+  );
+}
+
+export function AddRoomDialog(props: { user_id: number; project_id?: number }) {
+  const { user_id, project_id } = props;
+
+  const [addRoomOpen, setAddRoomOpen] = useState(false);
+  const [addRoomName, setAddRoomName] = useState("");
+
+  function reset() {
+    setAddRoomName("");
+    setAddRoomOpen(false);
+  }
+
+  function roomCreated() {
+    enqueueSnackbar({
+      message: <Typography>Ruang chat berhasil dibuat!</Typography>,
+      variant: "success",
+    });
+    reset();
+  }
+
+  return (
+    <>
+      <Dialog open={addRoomOpen} onClose={() => reset()}>
+        <DialogTitle>Tambah ruangan baru</DialogTitle>
+        <DialogContent>
+          <Box pt={2}>
+            <TextField
+              fullWidth
+              onChange={(e) => setAddRoomName(e.target.value)}
+              label="Nama Ruangan"
+              required
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          {project_id !== undefined ? (
+            <AddProjectRoom name={addRoomName} onSuccess={roomCreated} project_id={project_id} />
+          ) : (
+            <AddUserRoom name={addRoomName} onSuccess={roomCreated} user_id={user_id} />
+          )}
+        </DialogActions>
+      </Dialog>
+      <Button
+        fullWidth
+        variant="contained"
+        onClick={() => {
+          setAddRoomOpen(true);
+        }}
+      >
+        Tambah Ruangan
+      </Button>
+    </>
   );
 }

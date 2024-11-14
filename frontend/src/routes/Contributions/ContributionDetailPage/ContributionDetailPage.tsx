@@ -1,8 +1,9 @@
-import { Divider, Skeleton, Stack, Typography } from "@mui/material";
+import { Box, Divider, ListItemButton, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import dayjs from "dayjs";
 import { useParams } from "wouter";
 import ProjectCard from "../../../components/Cards/ProjectCard.tsx";
+import RichViewer from "../../../components/RichViewer.tsx";
 import StyledLink from "../../../components/StyledLink.tsx";
 import UserLabel from "../../../components/UserLabel.tsx";
 import { useContributionsDetailGet } from "../../../queries/contribution_hooks.ts";
@@ -41,7 +42,13 @@ function ContributionDetail(props: { contribution_id: number }) {
             marginY: 2,
           }}
         />
-        <Typography textAlign="center">{contrib.description}</Typography>
+        <Box
+          sx={{
+            paddingX: 2,
+          }}
+        >
+          <RichViewer>{contrib.description}</RichViewer>
+        </Box>
       </Grid>
       <Grid
         size={{
@@ -65,7 +72,9 @@ function ContributionDetail(props: { contribution_id: number }) {
             </Typography>
             {contrib.user_ids.map((x) => (
               <StyledLink to={`/users/${x.user_id}`} key={x.user_id}>
-                <UserLabel user_id={x.user_id} />
+                <ListItemButton>
+                  <UserLabel user_id={x.user_id} />
+                </ListItemButton>
               </StyledLink>
             ))}
           </Stack>

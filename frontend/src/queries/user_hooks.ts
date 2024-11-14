@@ -1,11 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
+import { sessionKeys } from "./sesssion_hooks.ts";
 
 const userKeys = {
   all: () => ["users"] as const,
   lists: () => [...userKeys.all(), "list"] as const,
-  list: (opts: { keyword: string | undefined }) => [...userKeys.all(), "list", opts] as const,
+  list: (opts: { keyword?: string; page?: number; limit?: number }) =>
+    [...userKeys.all(), "list", opts] as const,
   details: () => [...userKeys.all(), "detail"] as const,
   detail: (user_id: number) => [...userKeys.details(), user_id] as const,
   preferences: (user_id: number) => [...userKeys.detail(user_id), "prefs"] as const,
@@ -21,6 +23,9 @@ export function useUsersPost(opts?: { onSuccess?: () => void }) {
       queryClient.invalidateQueries({
         queryKey: userKeys.lists(),
       });
+      queryClient.invalidateQueries({
+        queryKey: sessionKeys.session(),
+      });
 
       if (onSuccess) {
         onSuccess();
@@ -29,15 +34,79 @@ export function useUsersPost(opts?: { onSuccess?: () => void }) {
   });
 }
 
-export function useUsersGet(opts?: { keyword?: string }) {
-  const { keyword } = opts ?? {};
+export function useOTPToken(opts: { email: string }) {
+  const { email } = opts;
+
+  return useQuery({
+    queryKey: ["registration", email],
+    queryFn: () =>
+      new APIContext("OTPsPost").fetch("/api/otps", {
+        method: "POST",
+        body: {
+          user_email: email,
+        },
+      }),
+    staleTime: 60 * 60 * 1000,
+  });
+}
+
+export function useOTPVerify(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
+
+  return useMutation({
+    mutationFn: new APIContext("OTPsPut").bodyFetch("/api/otps", {
+      method: "PUT",
+    }),
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useUserValidation(opts: { email?: string; name?: string }) {
+  const { email, name } = opts;
+
+  return useQuery({
+    queryKey: ["validation", { email, name }],
+    queryFn: () =>
+      new APIContext("UsersValidate").fetch("/api/users-validation", {
+        method: "get",
+        query: {
+          email,
+          name,
+        },
+      }),
+  });
+}
+
+export function useOTPsResend(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
+
+  return useMutation({
+    mutationFn: new APIContext("OTPsMail").bodyFetch("/api/otps-mail", {
+      method: "post",
+    }),
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useUsersGet(opts?: { keyword?: string; page?: number; limit?: number }) {
+  const { keyword, page, limit } = opts ?? {};
   const clean_keyword = keyword != undefined && keyword.length > 0 ? keyword : undefined;
   return useQuery({
-    queryKey: userKeys.list({ keyword: clean_keyword }),
+    queryKey: userKeys.list({ keyword: clean_keyword, page, limit }),
     queryFn: () =>
       new APIContext("UsersGet").fetch("/api/users", {
         query: {
           keyword: clean_keyword,
+          page: page?.toString(),
+          limit: limit?.toString(),
         },
       }),
   });

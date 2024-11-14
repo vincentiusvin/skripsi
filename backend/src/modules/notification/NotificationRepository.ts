@@ -1,6 +1,11 @@
 import { Kysely } from "kysely";
 import { DB } from "../../db/db_types.js";
-import { NotificationTypes, parseNotificationType } from "./NotificationMisc.js";
+import {
+  NotificationEmailStatus,
+  NotificationTypes,
+  parseNotificationEmailStatus,
+  parseNotificationType,
+} from "./NotificationMisc.js";
 
 const defaultNotificationFields = [
   "title",
@@ -13,14 +18,79 @@ const defaultNotificationFields = [
   "id",
 ] as const;
 
+const defaultNotificationBufferFields = ["id", "user_id", "type", "created_at", "status"] as const;
+
 export class NotificationRepository {
   private db: Kysely<DB>;
   constructor(db: Kysely<DB>) {
     this.db = db;
   }
 
-  async getNotifications(opts: { user_id?: number; read?: boolean }) {
-    const { user_id, read } = opts;
+  async addNotificationEmail(opts: {
+    user_id: number;
+    type: NotificationTypes;
+    status: NotificationEmailStatus;
+  }) {
+    const { status, user_id, type } = opts;
+    await this.db
+      .insertInto("notification_emails")
+      .values({
+        type,
+        user_id,
+        status,
+      })
+      .execute();
+  }
+
+  async getNotificationBuffer(opts: {
+    startDate?: Date;
+    endDate?: Date;
+    user_id?: number;
+    status?: NotificationEmailStatus;
+    type?: NotificationTypes;
+  }) {
+    const { status, startDate, endDate, type, user_id } = opts;
+    let query = this.db
+      .selectFrom("notification_emails")
+      .select(defaultNotificationBufferFields)
+      .orderBy("created_at desc");
+
+    if (user_id != undefined) {
+      query = query.where("user_id", "=", user_id);
+    }
+
+    if (type != undefined) {
+      query = query.where("type", "=", parseNotificationType(type));
+    }
+
+    if (startDate != undefined) {
+      query = query.where("created_at", ">=", startDate);
+    }
+
+    if (endDate != undefined) {
+      query = query.where("created_at", "<=", endDate);
+    }
+
+    if (status != undefined) {
+      query = query.where("status", "=", status);
+    }
+
+    const result = await query.execute();
+    return result.map((x) => ({
+      ...x,
+      type: parseNotificationType(x.type),
+      status: parseNotificationEmailStatus(x.status),
+    }));
+  }
+
+  async getNotifications(opts: {
+    startDate?: Date;
+    endDate?: Date;
+    user_id?: number;
+    read?: boolean;
+    type?: NotificationTypes;
+  }) {
+    const { startDate, endDate, type, user_id, read } = opts;
     let query = this.db
       .selectFrom("ms_notifications")
       .select(defaultNotificationFields)
@@ -32,6 +102,18 @@ export class NotificationRepository {
 
     if (read != undefined) {
       query = query.where("read", "=", read);
+    }
+
+    if (type != undefined) {
+      query = query.where("type", "=", parseNotificationType(type));
+    }
+
+    if (startDate != undefined) {
+      query = query.where("created_at", ">=", startDate);
+    }
+
+    if (endDate != undefined) {
+      query = query.where("created_at", "<=", endDate);
     }
 
     const result = await query.execute();
@@ -90,6 +172,16 @@ export class NotificationRepository {
         type_id,
       })
       .where("id", "=", notification_id)
+      .execute();
+  }
+
+  async massUpdateNotificationStatus(read: boolean, user_id: number) {
+    return await this.db
+      .updateTable("ms_notifications")
+      .set({
+        read,
+      })
+      .where("ms_notifications.user_id", "=", user_id)
       .execute();
   }
 

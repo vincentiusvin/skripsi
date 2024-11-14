@@ -6,37 +6,45 @@ import {
   Card,
   CardActionArea,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
   Skeleton,
   Stack,
+  Tab,
+  Tabs,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { useState } from "react";
-import { useNotificationsGet, useNotificationsPut } from "../queries/notification_hooks.ts";
+import {
+  useNotificationsGet,
+  useNotificationsMassPut,
+  useNotificationsPut,
+} from "../queries/notification_hooks.ts";
 import StyledLink from "./StyledLink.tsx";
 
 type NotificationData = NonNullable<ReturnType<typeof useNotificationsGet>["data"]>[number];
 
 function resolveNotificationLink(type: NotificationData["type"], type_id: number | null) {
-  const isProjectType = type === "ProjectManage" || type === "ProjectTask";
-
-  if (isProjectType && type_id != null) {
+  if (type === "Proyek" || type === "Tugas") {
     return `/projects/${type_id}`;
   }
-  if (type === "GeneralChat" || type === "ProjectChat") {
+  if (type === "Diskusi Pribadi" || type === "Diskusi Proyek") {
     return `/chatroom-forwarder/${type_id}`;
   }
-  if (type === "OrgManage") {
+  if (type === "Organisasi") {
     return `/orgs/${type_id}`;
   }
-  if (type === "ReportUpdate") {
+  if (type === "Laporan") {
     return `/reports/${type_id}`;
   }
-  if (type === "Friend") {
+  if (type === "Teman") {
     return `/users/${type_id}`;
+  }
+  if (type === "Kontribusi") {
+    return `/contributions/${type_id}`;
   }
 }
 
@@ -121,23 +129,52 @@ function NotificationEntry(props: { notification_data: NotificationData; onClick
   );
 }
 
+const NotificationFilterOptions = [
+  "Semua",
+  "Proyek",
+  "Organisasi",
+  "Pesan",
+  "Laporan",
+  "Tugas",
+  "Kontribusi",
+  "Teman",
+] as const;
+
 function NotificationDialog(props: { user_id: number }) {
   const { user_id } = props;
   const { data: notification } = useNotificationsGet({
     user_id,
   });
+  const { mutate: readAll } = useNotificationsMassPut({
+    user_id,
+  });
+  const [filter, setFilter] = useState<(typeof NotificationFilterOptions)[number]>("Semua");
   const [openNotification, setOpenNotification] = useState(false);
   const unread = notification?.filter((x) => x.read == false).length;
+
+  const filtered = notification?.filter((x) => {
+    if (filter === "Semua") {
+      return true;
+    }
+    if (x.type === filter) {
+      return true;
+    }
+    if (filter === "Pesan") {
+      return x.type === "Diskusi Pribadi" || x.type === "Diskusi Proyek";
+    }
+    return false;
+  });
+
   return (
     <>
       {unread != undefined ? (
         <Badge badgeContent={unread} color="primary">
-          <IconButton onClick={() => setOpenNotification(true)}>
+          <IconButton variant="outlined" onClick={() => setOpenNotification(true)}>
             <Notifications />
           </IconButton>
         </Badge>
       ) : (
-        <IconButton onClick={() => setOpenNotification(true)}>
+        <IconButton variant="outlined" onClick={() => setOpenNotification(true)}>
           <Notifications />
         </IconButton>
       )}
@@ -151,9 +188,26 @@ function NotificationDialog(props: { user_id: number }) {
             },
           }}
         >
-          {notification != undefined ? (
+          <Tabs
+            sx={{
+              marginBottom: 2,
+            }}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            value={filter}
+            onChange={(_, nv) => {
+              setFilter(nv);
+            }}
+          >
+            {NotificationFilterOptions.map((x) => (
+              <Tab key={x} value={x} label={x} />
+            ))}
+          </Tabs>
+
+          {filtered != undefined ? (
             <Stack direction={"column"} spacing={2}>
-              {notification.map((x) => (
+              {filtered.map((x) => (
                 <NotificationEntry
                   key={x.id}
                   notification_data={x}
@@ -165,6 +219,17 @@ function NotificationDialog(props: { user_id: number }) {
             <Skeleton />
           )}
         </DialogContent>
+        <DialogActions>
+          {unread != undefined ? (
+            unread > 0 ? (
+              <Button onClick={() => readAll({ read: true })}>Tanda Semua Sebagai Dibaca</Button>
+            ) : (
+              <Button onClick={() => readAll({ read: false })}>
+                Tanda Semua Sebagai Belum Dibaca
+              </Button>
+            )
+          ) : null}
+        </DialogActions>
       </Dialog>
     </>
   );

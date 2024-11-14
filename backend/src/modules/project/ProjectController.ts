@@ -2,9 +2,54 @@ import type { Express } from "express";
 import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import {
+  defaultError,
+  zodPagination,
+  zodStringReadableAsNumber,
+} from "../../helpers/validators.js";
 import { ProjectRoles, parseRole, project_roles } from "./ProjectMisc.js";
 import { ProjectService } from "./ProjectService.js";
+
+const ProjectResponseSchema = z.object({
+  org_id: z.number(),
+  project_id: z.number(),
+  project_archived: z.boolean(),
+  project_content: z.string().nullable(),
+  project_name: z.string(),
+  project_desc: z.string(),
+  project_members: z
+    .object({
+      user_id: z.number(),
+      role: z.enum(project_roles).or(z.literal("Not Involved")),
+    })
+    .array(),
+  project_categories: z
+    .object({
+      category_name: z.string(),
+      category_id: z.number(),
+    })
+    .array(),
+});
+
+const ProjectUpdateSchema = z.object({
+  project_name: z.string(defaultError("Nama proyek tidak valid!")).min(1).optional(),
+  project_desc: z.string(defaultError("Deskripsi proyek tidak valid!")).min(1).optional(),
+  project_content: z
+    .string(defaultError("Konten proyek tidak valid!"))
+    .min(1)
+    .nullable()
+    .optional(),
+  category_id: z.number(defaultError("Kategori proyek tidak valid!")).array().optional(),
+  project_archived: z.boolean(defaultError("Status arsip proyek tidak valid!")).optional(),
+});
+
+const ProjectCreationSchema = z.object({
+  project_name: z.string(defaultError("Nama proyek tidak valid!")).min(1),
+  org_id: z.number(defaultError("Nomor organisasi tidak valid!")),
+  project_desc: z.string(defaultError("Deskripsi proyek tidak valid!")).min(1),
+  category_id: z.number(defaultError("Kategori proyek tidak valid!")).array().optional(),
+  project_content: z.string(defaultError("Konten proyek tidak valid!")).min(1).optional(),
+});
 
 export class ProjectController extends Controller {
   private project_service: ProjectService;
@@ -19,7 +64,6 @@ export class ProjectController extends Controller {
       ProjectsGet: this.ProjectsGet,
       ProjectsDetailGet: this.ProjectsDetailGet,
       ProjectsDetailPut: this.ProjectsDetailPut,
-      ProjectsDetailDelete: this.ProjectsDetailDelete,
       ProjectsDetailMembersGet: this.ProjectsDetailMembersGet,
       ProjectsDetailMembersPut: this.ProjectsDetailMembersPut,
       ProjectsDetailMembersDelete: this.ProjectsDetailMembersDelete,
@@ -28,13 +72,20 @@ export class ProjectController extends Controller {
     };
   }
   ProjectsPost = new Route({
+    method: "post",
+    path: "/api/projects",
+    schema: {
+      ReqBody: ProjectCreationSchema,
+      ResBody: ProjectResponseSchema,
+    },
     handler: async (req, res) => {
-      const { project_name, org_id, project_desc, category_id } = req.body;
+      const { project_content, project_name, org_id, project_desc, category_id } = req.body;
       const sender_id = req.session.user_id!;
 
       const project_id = await this.project_service.addProject(
         {
           org_id,
+          project_content,
           project_desc,
           project_name,
           category_id,
@@ -45,36 +96,6 @@ export class ProjectController extends Controller {
       const result = await this.project_service.getProjectByID(project_id);
       res.status(201).json(result);
     },
-    method: "post",
-    path: "/api/projects",
-    schema: {
-      ReqBody: z.object({
-        project_name: z.string({ message: "Nama invalid!" }).min(1, "Nama tidak boleh kosong!"),
-        org_id: z.number({ message: "Organisasi invalid!" }),
-        project_desc: z
-          .string({ message: "Deskripsi invalid!" })
-          .min(1, "Deskripsi tidak boleh kosong!"),
-        category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
-      }),
-      ResBody: z.object({
-        org_id: z.number(),
-        project_id: z.number(),
-        project_name: z.string(),
-        project_desc: z.string(),
-        project_members: z
-          .object({
-            user_id: z.number(),
-            role: z.enum(project_roles).or(z.literal("Not Involved")),
-          })
-          .array(),
-        project_categories: z
-          .object({
-            category_name: z.string(),
-            category_id: z.number(),
-          })
-          .array(),
-      }),
-    },
   });
   ProjectsGet = new Route({
     method: "get",
@@ -84,38 +105,28 @@ export class ProjectController extends Controller {
         org_id: zodStringReadableAsNumber("Organisasi yang dimasukkan tidak valid!").optional(),
         user_id: zodStringReadableAsNumber("Pengguna yang dimasukkan tidak valid!").optional(),
         keyword: z.string().optional(),
+        ...zodPagination(),
       }),
-      ResBody: z
-        .object({
-          org_id: z.number(),
-          project_id: z.number(),
-          project_name: z.string(),
-          project_desc: z.string(),
-          project_members: z
-            .object({
-              user_id: z.number(),
-              role: z.enum(project_roles).or(z.literal("Not Involved")),
-            })
-            .array(),
-          project_categories: z
-            .object({
-              category_name: z.string(),
-              category_id: z.number(),
-            })
-            .array(),
-        })
-        .array(),
+      ResBody: z.object({
+        result: ProjectResponseSchema.array(),
+        total: z.number(),
+      }),
     },
     handler: async (req, res) => {
-      const { org_id, user_id, keyword } = req.query;
+      const { limit, org_id, user_id, keyword, page } = req.query;
 
-      const result = await this.project_service.getProjects({
+      const opts = {
         org_id: org_id != undefined ? Number(org_id) : undefined,
         user_id: user_id != undefined ? Number(user_id) : undefined,
+        limit: limit != undefined ? Number(limit) : undefined,
+        page: limit != undefined ? Number(page) : undefined,
         keyword,
-      });
+      };
 
-      res.status(200).json(result);
+      const result = await this.project_service.getProjects(opts);
+      const count = await this.project_service.countProjects(opts);
+
+      res.status(200).json({ result, total: Number(count.count) });
     },
   });
   ProjectsDetailGet = new Route({
@@ -125,24 +136,7 @@ export class ProjectController extends Controller {
       Params: z.object({
         project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
       }),
-      ResBody: z.object({
-        org_id: z.number(),
-        project_id: z.number(),
-        project_name: z.string(),
-        project_desc: z.string(),
-        project_members: z
-          .object({
-            user_id: z.number(),
-            role: z.enum(project_roles).or(z.literal("Not Involved")),
-          })
-          .array(),
-        project_categories: z
-          .object({
-            category_name: z.string(),
-            category_id: z.number(),
-          })
-          .array(),
-      }),
+      ResBody: ProjectResponseSchema,
     },
     handler: async (req, res) => {
       const project_id = req.params.project_id;
@@ -186,35 +180,8 @@ export class ProjectController extends Controller {
       Params: z.object({
         project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
       }),
-      ReqBody: z.object({
-        project_name: z
-          .string({ message: "Nama invalid!" })
-          .min(1, "Nama tidak boleh kosong!")
-          .optional(),
-        project_desc: z
-          .string({ message: "Deskripsi invalid!" })
-          .min(1, "Deskripsi tidak boleh kosong!")
-          .optional(),
-        category_id: z.array(z.number(), { message: "Kategori invalid!" }).optional(),
-      }),
-      ResBody: z.object({
-        org_id: z.number(),
-        project_id: z.number(),
-        project_name: z.string(),
-        project_desc: z.string(),
-        project_members: z
-          .object({
-            user_id: z.number(),
-            role: z.enum(project_roles).or(z.literal("Not Involved")),
-          })
-          .array(),
-        project_categories: z
-          .object({
-            category_name: z.string(),
-            category_id: z.number(),
-          })
-          .array(),
-      }),
+      ReqBody: ProjectUpdateSchema,
+      ResBody: ProjectResponseSchema,
     },
     handler: async (req, res) => {
       const project_id = Number(req.params.project_id);
@@ -226,26 +193,6 @@ export class ProjectController extends Controller {
       const result = await this.project_service.getProjectByID(project_id);
 
       res.status(200).json(result);
-    },
-  });
-  ProjectsDetailDelete = new Route({
-    method: "delete",
-    path: "/api/projects/:project_id",
-    schema: {
-      Params: z.object({
-        project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
-      }),
-      ResBody: z.object({
-        msg: z.string(),
-      }),
-    },
-    handler: async (req, res) => {
-      const project_id = Number(req.params.project_id);
-      const sender_id = req.session.user_id!;
-
-      await this.project_service.deleteProject(project_id, sender_id);
-
-      res.status(200).json({ msg: "Projek berhasil dihapus!" });
     },
   });
 

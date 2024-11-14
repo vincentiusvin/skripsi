@@ -4,11 +4,12 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
-import UserSelect from "../../components/UserSelect.tsx";
+import RichEditor from "../../components/RichEditor.tsx";
 import {
   useContributionsDetailGet,
   useContributionsDetailPut,
 } from "../../queries/contribution_hooks.ts";
+import ContributionSelectPeople from "./components/ContributionUserSelect.tsx";
 
 function ContributionEdit(props: { contribution_id: number }) {
   const { contribution_id } = props;
@@ -71,27 +72,22 @@ function ContributionEdit(props: { contribution_id: number }) {
         <Stack spacing={4}>
           <TextField
             fullWidth
-            label="Judul"
+            label="Judul Kontribusi"
             value={contributionName ?? contribs.name}
             onChange={(e) => setContributionName(e.target.value)}
             required
           />
-          <TextField
-            fullWidth
-            label="Deskripsi"
-            value={contributionDesc ?? contribs.description}
-            onChange={(e) => setContributionDesc(e.target.value)}
-            required
-            multiline
-            minRows={4}
-          />
-          <UserSelect
-            label="Kontributor"
-            allowed_users={[1, 2, 3]}
-            onChange={(x) => {
+          <ContributionSelectPeople
+            value={contributionUsers ?? contribs_users}
+            project_id={contribs.project_id}
+            setValue={(x) => {
               setContributionUsers(x);
             }}
-            current_users={contributionUsers ?? contribs_users}
+          />
+          <RichEditor
+            label="Deskripsi Kontribusi *"
+            defaultValue={contributionDesc ?? contribs.description}
+            onBlur={(x) => setContributionDesc(x)}
           />
         </Stack>
       </Grid>

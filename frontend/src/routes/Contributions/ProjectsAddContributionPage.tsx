@@ -4,10 +4,11 @@ import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
-import UserSelect from "../../components/UserSelect.tsx";
+import RichEditor from "../../components/RichEditor.tsx";
 import { useContributionsPost } from "../../queries/contribution_hooks.ts";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import AuthorizeProjects from "../Projects/components/AuthorizeProjects.tsx";
+import ContributionSelectPeople from "./components/ContributionUserSelect.tsx";
 
 function ProjectsAddContribution(props: { project_id: number }) {
   const { project_id } = props;
@@ -57,24 +58,17 @@ function ProjectsAddContribution(props: { project_id: number }) {
             onChange={(e) => setContributionName(e.target.value)}
             required
           />
-          <TextField
-            fullWidth
-            label="Deskripsi"
-            value={contributionDesc}
-            onChange={(e) => setContributionDesc(e.target.value)}
-            required
-            multiline
-            minRows={4}
-          />
-          <UserSelect
-            label="Kontributor"
-            allowed_users={project.project_members
-              .filter((x) => x.role === "Dev")
-              .map((x) => x.user_id)}
-            onChange={(x) => {
+          <ContributionSelectPeople
+            value={contributionUsers}
+            project_id={project_id}
+            setValue={(x) => {
               setContributionUsers(x);
             }}
-            current_users={contributionUsers}
+          />
+          <RichEditor
+            label="Deskripsi Kontribusi *"
+            defaultValue={contributionDesc}
+            onBlur={(x) => setContributionDesc(x)}
           />
         </Stack>
       </Grid>

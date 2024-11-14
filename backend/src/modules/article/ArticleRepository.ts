@@ -65,22 +65,20 @@ export class ArticleRepository {
     articles_user_id: number;
   }) {
     const { articles_name, articles_description, articles_content, articles_user_id } = obj;
-    return await this.db.transaction().execute(async (trx) => {
-      const article = await trx
-        .insertInto("ms_articles")
-        .values({
-          name: articles_name,
-          description: articles_description,
-          content: articles_content,
-          user_id: articles_user_id,
-        })
-        .returning(["ms_articles.id"])
-        .executeTakeFirst();
-      if (!article) {
-        throw new Error("Data not inserted");
-      }
-      return article;
-    });
+    const article = await this.db
+      .insertInto("ms_articles")
+      .values({
+        name: articles_name,
+        description: articles_description,
+        content: articles_content,
+        user_id: articles_user_id,
+      })
+      .returning(["ms_articles.id"])
+      .executeTakeFirst();
+    if (!article) {
+      throw new Error("Data not inserted");
+    }
+    return article;
   }
 
   async updateArticle(
@@ -92,23 +90,21 @@ export class ArticleRepository {
     },
   ) {
     const { articles_name, articles_description, articles_content } = obj;
-    return await this.db.transaction().execute(async (trx) => {
-      if (
-        articles_name != undefined ||
-        articles_description != undefined ||
-        articles_content != undefined
-      ) {
-        await trx
-          .updateTable("ms_articles")
-          .set({
-            name: articles_name,
-            description: articles_description,
-            content: articles_content,
-          })
-          .where("ms_articles.id", "=", article_id)
-          .executeTakeFirst();
-      }
-    });
+    if (
+      articles_name != undefined ||
+      articles_description != undefined ||
+      articles_content != undefined
+    ) {
+      await this.db
+        .updateTable("ms_articles")
+        .set({
+          name: articles_name,
+          description: articles_description,
+          content: articles_content,
+        })
+        .where("ms_articles.id", "=", article_id)
+        .executeTakeFirst();
+    }
   }
 
   async deleteArticle(article_id: number) {
@@ -120,23 +116,21 @@ export class ArticleRepository {
 
   async upvotesPost(obj: { article_id: number; user_id: number }) {
     const { article_id, user_id } = obj;
-    return await this.db.transaction().execute(async (trx) => {
-      let upvotes;
-      if (article_id != undefined || user_id != undefined) {
-        upvotes = await trx
-          .insertInto("ms_articles_likes")
-          .values({
-            article_id: article_id,
-            user_id: user_id,
-          })
-          .returning(["ms_articles_likes.article_id", "ms_articles_likes.user_id"])
-          .execute();
-        if (!upvotes) {
-          throw new Error("upvote failed");
-        }
+    let upvotes;
+    if (article_id != undefined || user_id != undefined) {
+      upvotes = await this.db
+        .insertInto("ms_articles_likes")
+        .values({
+          article_id: article_id,
+          user_id: user_id,
+        })
+        .returning(["ms_articles_likes.article_id", "ms_articles_likes.user_id"])
+        .execute();
+      if (!upvotes) {
+        throw new Error("upvote failed");
       }
-      return upvotes;
-    });
+    }
+    return upvotes;
   }
 
   async upvotesDelete(article_id: number, user_id: number) {

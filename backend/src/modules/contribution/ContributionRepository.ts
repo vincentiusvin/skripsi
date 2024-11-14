@@ -1,6 +1,7 @@
 import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types";
+import { paginateQuery } from "../../helpers/pagination.js";
 import { ContributionStatus, parseContribStatus } from "./ContributionMisc.js";
 
 const defaultContributionFields = (eb: ExpressionBuilder<DB, "ms_contributions">) =>
@@ -29,10 +30,20 @@ export class ContributionRepository {
     this.db = db;
   }
 
-  async getContributions(user_id?: number, project_id?: number) {
-    let query = this.db.selectFrom("ms_contributions").select(defaultContributionFields);
+  async getContributions(opts: {
+    status?: ContributionStatus;
+    page?: number;
+    limit?: number;
+    user_id?: number;
+    project_id?: number;
+  }) {
+    const { user_id, project_id, status, limit, page } = opts;
+    let query = this.db
+      .selectFrom("ms_contributions")
+      .select(defaultContributionFields)
+      .orderBy("created_at desc");
 
-    if (user_id !== undefined) {
+    if (user_id != undefined) {
       query = query.where((eb) =>
         eb(
           "ms_contributions.id",
@@ -45,9 +56,19 @@ export class ContributionRepository {
       );
     }
 
-    if (project_id !== undefined) {
+    if (project_id != undefined) {
       query = query.where("ms_contributions.project_id", "=", project_id);
     }
+
+    if (status != undefined) {
+      query = query.where("ms_contributions.status", "=", status);
+    }
+
+    query = paginateQuery(query, {
+      page,
+      limit,
+    });
+
     const result = await query.execute();
 
     return result.map((x) => {
@@ -85,32 +106,30 @@ export class ContributionRepository {
     users: number[],
   ) {
     const { status, name, description, project_id } = obj;
-    return await this.db.transaction().execute(async (trx) => {
-      const cont = await trx
-        .insertInto("ms_contributions")
-        .values({
-          name: name,
-          description: description,
-          project_id: project_id,
-          status: status,
-        })
-        .returning(["ms_contributions.id"])
-        .executeTakeFirst();
+    const cont = await this.db
+      .insertInto("ms_contributions")
+      .values({
+        name: name,
+        description: description,
+        project_id: project_id,
+        status: status,
+      })
+      .returning(["ms_contributions.id"])
+      .executeTakeFirst();
 
-      if (!cont) {
-        throw new Error("Data not inserted!");
-      }
-      for (const x of users) {
-        await trx
-          .insertInto("ms_contributions_users")
-          .values({
-            user_id: x,
-            contributions_id: cont.id,
-          })
-          .execute();
-      }
-      return cont;
-    });
+    if (!cont) {
+      throw new Error("Data not inserted!");
+    }
+    for (const x of users) {
+      await this.db
+        .insertInto("ms_contributions_users")
+        .values({
+          user_id: x,
+          contributions_id: cont.id,
+        })
+        .execute();
+    }
+    return cont;
   }
 
   async updateContribution(
@@ -124,33 +143,34 @@ export class ContributionRepository {
     },
   ) {
     const { name, description, project_id, user_ids, status } = obj;
-    return await this.db.transaction().execute(async (trx) => {
-      const cont = await trx
-        .updateTable("ms_contributions")
-        .set({
-          name,
-          description,
-          project_id,
-          status,
-        })
-        .where("id", "=", id)
-        .executeTakeFirst();
+    const cont = await this.db
+      .updateTable("ms_contributions")
+      .set({
+        name,
+        description,
+        project_id,
+        status,
+      })
+      .where("id", "=", id)
+      .executeTakeFirst();
 
-      if (!cont) {
-        throw new Error("Data not updated!");
+    if (!cont) {
+      throw new Error("Data not updated!");
+    }
+    if (user_ids != undefined) {
+      await this.db
+        .deleteFrom("ms_contributions_users")
+        .where("contributions_id", "=", id)
+        .execute();
+      for (const x of user_ids) {
+        await this.db
+          .insertInto("ms_contributions_users")
+          .values({
+            user_id: x,
+            contributions_id: id,
+          })
+          .execute();
       }
-      if (user_ids != undefined) {
-        await trx.deleteFrom("ms_contributions_users").where("contributions_id", "=", id).execute();
-        for (const x of user_ids) {
-          await trx
-            .insertInto("ms_contributions_users")
-            .values({
-              user_id: x,
-              contributions_id: id,
-            })
-            .execute();
-        }
-      }
-    });
+    }
   }
 }

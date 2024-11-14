@@ -35,6 +35,7 @@ function UserReportEdit(props: { report_id: number }) {
         onChange={(e) => {
           setTitle(e.target.value);
         }}
+        required
         label="Judul Laporan"
       ></TextField>
       <TextField
@@ -44,6 +45,7 @@ function UserReportEdit(props: { report_id: number }) {
         }}
         label="Informasi Tambahan"
         multiline
+        required
         minRows={3}
       ></TextField>
       <Button
@@ -55,7 +57,7 @@ function UserReportEdit(props: { report_id: number }) {
           });
         }}
       >
-        Submit
+        Kirim
       </Button>
     </Stack>
   );

@@ -16,6 +16,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
+import RichEditor from "../../components/RichEditor.tsx";
 import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { useOrgsCategoriesGet, useOrgsPost } from "../../queries/org_hooks";
@@ -25,15 +26,15 @@ function OrgsAddPage() {
   const [orgDesc, setOrgDesc] = useState("");
   const [orgAddress, setOrgAddress] = useState("");
   const [orgPhone, setOrgPhone] = useState("");
-  const [orgImage, setOrgImage] = useState<string | null>(null);
-  const [orgCategory, setOrgCategory] = useState<number | null>(null);
+  const [orgImage, setOrgImage] = useState<string | undefined>();
+  const [orgCategory, setOrgCategory] = useState<number[] | undefined>();
 
   const [, setLocation] = useLocation();
 
   const { mutate: orgsPost } = useOrgsPost({
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Added successful!</Typography>,
+        message: <Typography>Organisasi berhasil ditambahkan!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });
@@ -45,10 +46,10 @@ function OrgsAddPage() {
     orgsPost({
       org_name: orgName,
       org_address: orgAddress,
-      org_categories: orgCategory != null ? [orgCategory] : [],
+      org_categories: orgCategory,
       org_phone: orgPhone,
       org_description: orgDesc,
-      org_image: orgImage !== null ? orgImage : undefined,
+      org_image: orgImage,
     });
   }
 
@@ -83,7 +84,7 @@ function OrgsAddPage() {
             }}
             onChange={async (file) => {
               const b64 = file ? await fileToBase64DataURL(file) : null;
-              setOrgImage(b64);
+              setOrgImage(b64 ?? undefined);
             }}
           >
             {orgImage ? (
@@ -110,7 +111,9 @@ function OrgsAddPage() {
                     height: 100,
                   }}
                 />
-                <Typography>Drag and Drop or Click to upload an image!</Typography>
+                <Typography textAlign={"center"}>
+                  Tarik atau tekan di sini untuk mengupload gambar!
+                </Typography>
               </Stack>
             )}
           </ImageDropzone>
@@ -126,29 +129,28 @@ function OrgsAddPage() {
           <TextField
             fullWidth
             onChange={(e) => setOrgName(e.target.value)}
-            label="Name"
-          ></TextField>
-          <TextField
-            fullWidth
-            onChange={(e) => setOrgDesc(e.target.value)}
-            label="Description"
+            required
+            label="Nama Organisasi"
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgAddress(e.target.value)}
-            label="Address"
+            required
+            label="Alamat"
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgPhone(e.target.value)}
-            label="Phone"
+            required
+            label="Nomor Telepon"
           ></TextField>
           <FormControl>
-            <InputLabel id="demo-simple-select-label">Category</InputLabel>
+            <InputLabel>Kategori</InputLabel>
             <Select
-              value={orgCategory}
-              onChange={(e) => setOrgCategory(Number(e.target.value))}
-              label="Category"
+              value={orgCategory ?? []}
+              multiple
+              onChange={(e) => setOrgCategory(e.target.value as number[])}
+              label="Kategori"
             >
               {categories &&
                 categories.map((category) => (
@@ -159,6 +161,13 @@ function OrgsAddPage() {
             </Select>
           </FormControl>
         </Stack>
+      </Grid>
+      <Grid size={12}>
+        <RichEditor
+          label={"Tentang Organisasi"}
+          defaultValue={orgDesc}
+          onBlur={(x) => setOrgDesc(x)}
+        ></RichEditor>
       </Grid>
       <Grid size={12}>
         <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addOrg()}>

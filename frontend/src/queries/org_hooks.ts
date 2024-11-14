@@ -6,7 +6,8 @@ import { queryClient } from "../helpers/queryclient";
 const orgKeys = {
   all: () => ["orgs"] as const,
   lists: () => [...orgKeys.all(), "list"] as const,
-  list: (opts?: { user_id?: number }) => [...orgKeys.all(), "list", opts] as const,
+  list: (opts?: { user_id?: number; keyword?: string }) =>
+    [...orgKeys.all(), "list", opts] as const,
   details: () => [...orgKeys.all(), "detail"] as const,
   detail: (org_id: number) => [...orgKeys.details(), org_id] as const,
   detailMembers: (org_id: number, user_id: number) => [
@@ -32,17 +33,23 @@ export function useOrgDetailGet(opts: {
   });
 }
 
-export function useOrgsGet(opts?: { user_id?: number }) {
-  const { user_id } = opts ?? {};
+export function useOrgsGet(opts?: {
+  limit?: number;
+  page?: number;
+  user_id?: number;
+  keyword?: string;
+}) {
+  const { user_id, keyword, limit, page } = opts ?? {};
   return useQuery({
-    queryKey: user_id ? orgKeys.list({ user_id }) : orgKeys.list(),
+    queryKey: orgKeys.list(opts),
     queryFn: () =>
       new APIContext("OrgsGet").fetch("/api/orgs", {
-        query: user_id
-          ? {
-              user_id: user_id.toString(),
-            }
-          : undefined,
+        query: {
+          user_id: user_id?.toString(),
+          keyword: keyword != undefined && keyword.length !== 0 ? keyword : undefined,
+          limit: limit != undefined && !Number.isNaN(limit) ? limit.toString() : undefined,
+          page: page != undefined && !Number.isNaN(page) ? page.toString() : undefined,
+        },
       }),
   });
 }
@@ -73,61 +80,32 @@ export function useOrgsCategoriesGet(opts: {
   });
 }
 
-export function useOrgsUpdate(opts: {
-  id: number;
-  name?: string;
-  desc?: string;
-  address?: string;
-  phone?: string;
-  categories?: number[];
-  image?: string;
-  onSuccess?: () => void;
+export function useOrgsUpdate(opts: { org_id: number; onSuccess?: () => void }) {
+  const { org_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: new APIContext("OrgsUpdate").bodyFetch(`/api/orgs/${org_id}`, {
+      method: "PUT",
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orgKeys.all() });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useOrgsDetailMembersGet(opts: {
+  enabled?: boolean;
+  org_id: number;
+  user_id: number;
 }) {
-  const { id, name, desc, address, phone, image, onSuccess, categories } = opts;
-  return useMutation({
-    mutationFn: () =>
-      new APIContext("OrgsUpdate").fetch(`/api/orgs/${id}`, {
-        method: "PUT",
-        body: {
-          org_name: name,
-          org_description: desc,
-          org_address: address,
-          org_phone: phone,
-          org_categories: categories,
-          ...(image && { org_image: image }),
-        },
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orgKeys.all() });
-      if (onSuccess) {
-        onSuccess();
-      }
-    },
-  });
-}
-
-export function useOrgsDelete(opts: { id: number; onSuccess?: () => void }) {
-  const { id, onSuccess } = opts;
-  return useMutation({
-    mutationFn: () =>
-      new APIContext("OrgsDelete").fetch(`/api/orgs/${id}`, {
-        method: "DELETE",
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: orgKeys.all() });
-      if (onSuccess) {
-        onSuccess();
-      }
-    },
-  });
-}
-
-export function useOrgsDetailMembersGet(opts: { org_id: number; user_id: number }) {
-  const { org_id, user_id } = opts;
+  const { enabled, org_id, user_id } = opts;
   return useQuery({
     queryKey: orgKeys.detailMembers(org_id, user_id),
     queryFn: () =>
       new APIContext("OrgsDetailMembersDetailGet").fetch(`/api/orgs/${org_id}/users/${user_id}`),
+    enabled,
   });
 }
 

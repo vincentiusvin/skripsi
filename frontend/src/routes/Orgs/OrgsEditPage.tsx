@@ -17,7 +17,9 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
+import RichEditor from "../../components/RichEditor.tsx";
 import { fileToBase64DataURL } from "../../helpers/file";
+import { handleOptionalStringUpdate } from "../../helpers/misc.ts";
 import { useOrgDetailGet, useOrgsCategoriesGet, useOrgsUpdate } from "../../queries/org_hooks";
 import AuthorizeOrgs from "./components/AuthorizeOrgs.tsx";
 
@@ -36,16 +38,10 @@ function OrgsEdit(props: { org_id: number }) {
   });
 
   const { mutate: editOrg } = useOrgsUpdate({
-    id: org_id,
-    name: orgName,
-    desc: orgDesc,
-    address: orgAddress,
-    phone: orgPhone,
-    categories: orgCategory,
-    image: orgImage,
+    org_id,
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Edit successful!</Typography>,
+        message: <Typography>Organisasi berhasil diubah!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });
@@ -113,7 +109,9 @@ function OrgsEdit(props: { org_id: number }) {
                     height: 100,
                   }}
                 />
-                <Typography>Drag and Drop or Click to upload an image!</Typography>
+                <Typography textAlign={"center"}>
+                  Tarik atau tekan di sini untuk mengupload gambar!
+                </Typography>
               </Stack>
             )}
           </ImageDropzone>
@@ -129,32 +127,29 @@ function OrgsEdit(props: { org_id: number }) {
           <TextField
             fullWidth
             onChange={(e) => setOrgName(e.target.value)}
-            label="Name"
+            required
+            label="Nama Organisasi"
             value={orgName ?? org_data.org_name}
           ></TextField>
           <TextField
             fullWidth
-            onChange={(e) => setOrgDesc(e.target.value)}
-            label="Description"
-            value={orgDesc ?? org_data.org_description}
-          ></TextField>
-          <TextField
-            fullWidth
             onChange={(e) => setOrgAddress(e.target.value)}
-            label="Address"
+            required
+            label="Alamat"
             value={orgAddress ?? org_data.org_address}
           ></TextField>
           <TextField
             fullWidth
             onChange={(e) => setOrgPhone(e.target.value)}
-            label="Phone"
+            required
+            label="Nomor Telepon"
             value={orgPhone ?? org_data.org_phone}
           ></TextField>
           <FormControl>
-            <InputLabel>Category</InputLabel>
+            <InputLabel>Kategori</InputLabel>
             <Select
               onChange={(e) => setOrgCategory(e.target.value as number[])}
-              label="Category"
+              label="Kategori"
               multiple
               value={orgCategory ?? org_data.org_categories.map((x) => x.category_id)}
             >
@@ -169,7 +164,28 @@ function OrgsEdit(props: { org_id: number }) {
         </Stack>
       </Grid>
       <Grid size={12}>
-        <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => editOrg()}>
+        <RichEditor
+          label={"Tentang Organisasi"}
+          defaultValue={orgDesc ?? org_data.org_description}
+          onBlur={(x) => setOrgDesc(x)}
+        ></RichEditor>
+      </Grid>
+      <Grid size={12}>
+        <Button
+          variant="contained"
+          fullWidth
+          endIcon={<Save />}
+          onClick={() =>
+            editOrg({
+              org_name: orgName,
+              org_description: orgDesc,
+              org_address: orgAddress,
+              org_phone: orgPhone,
+              org_categories: orgCategory,
+              org_image: handleOptionalStringUpdate(orgImage),
+            })
+          }
+        >
           Simpan
         </Button>
       </Grid>

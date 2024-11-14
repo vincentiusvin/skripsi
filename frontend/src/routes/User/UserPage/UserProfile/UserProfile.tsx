@@ -1,8 +1,11 @@
-import { Email, School } from "@mui/icons-material";
+import { Email, Language, Place, School, Work } from "@mui/icons-material";
 import { Avatar, Paper, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useLocation } from "wouter";
+import StringLabel from "../../../../components/StringLabel.tsx";
+import avatarFallback from "../../../../helpers/avatar_fallback.tsx";
 import { APIError } from "../../../../helpers/fetch.ts";
+import { LinkIcons, linkParser } from "../../../../helpers/linker.tsx";
 import { useUsersDetailGet } from "../../../../queries/user_hooks.ts";
 import UserFriendList from "./UserProfileFriend.tsx";
 import FriendShortcut from "./UserProfileManageFriend.tsx";
@@ -28,16 +31,65 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
     return <Skeleton />;
   }
 
+  const image =
+    userDetail.user_image ??
+    avatarFallback({ label: userDetail.user_name, seed: userDetail.user_id });
+
+  const socials_with_icon = userDetail.user_socials.map(({ social }) => {
+    const type = linkParser(social);
+    return {
+      label: type !== "Other" ? type : "Link",
+      icon: LinkIcons[type],
+      value: social,
+      link: social,
+    };
+  });
+
+  const basic_data = [
+    {
+      link: `mailto:${userDetail.user_email}`,
+      icon: <Email />,
+      label: "Email",
+      value: userDetail.user_email,
+    },
+    {
+      icon: <Place />,
+      label: "Lokasi",
+      value: userDetail.user_location ?? undefined,
+    },
+    {
+      icon: <Work />,
+      label: "Tempat Kerja",
+      value: userDetail.user_workplace ?? undefined,
+    },
+    {
+      icon: <School />,
+      label: "Tingkat Pendidkan",
+      value: userDetail.user_education_level ?? undefined,
+    },
+    {
+      icon: <School />,
+      label: "Sekolah/Universitas",
+      value: userDetail.user_school ?? undefined,
+    },
+    {
+      icon: <Language />,
+      label: "Website",
+      link: userDetail.user_website ?? undefined,
+      value: userDetail.user_website ?? undefined,
+    },
+  ];
+
   return (
-    <Grid container rowGap={2}>
+    <Grid container spacing={2}>
       <Grid
         size={{
           xs: 12,
-          md: 4,
+          lg: 4,
         }}
       >
         <Stack alignItems={"center"} spacing={2}>
-          <Avatar src={userDetail.user_image ?? ""} sx={{ width: 256, height: 256 }}></Avatar>
+          <Avatar src={image} sx={{ width: 256, height: 256 }}></Avatar>
           {our_id != undefined ? (
             <FriendShortcut our_user_id={our_id} viewed_user_id={userDetail.user_id} />
           ) : null}
@@ -49,10 +101,10 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
       <Grid
         size={{
           xs: 12,
-          md: 8,
+          lg: 8,
         }}
       >
-        <Stack gap={4}>
+        <Stack spacing={4}>
           <Paper
             sx={{
               px: 4,
@@ -62,33 +114,40 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
             <Typography variant="h4" fontWeight={"bold"}>
               {userDetail.user_name}
             </Typography>
-            <Stack direction="row" gap={2}>
-              <Email />
-              {
-                <Typography variant="body1">
-                  {userDetail.user_email ? userDetail.user_email : "Belum ada informasi"}
-                </Typography>
-              }
-            </Stack>
-            <Stack direction="row" gap={2}>
-              <School />
-              <Typography variant="body1">
-                {userDetail.user_education_level ? (
-                  <Typography component={"span"} sx={{ textDecoration: "underline" }}>
-                    {userDetail.user_education_level}
-                  </Typography>
-                ) : null}
-                {userDetail.user_education_level && userDetail.user_school ? " di " : null}
-                {userDetail.user_school ? (
-                  <Typography component={"span"} sx={{ textDecoration: "underline" }}>
-                    {userDetail.user_school}
-                  </Typography>
-                ) : null}
-                {!userDetail.user_education_level && !userDetail.user_school
-                  ? "Belum ada informasi"
-                  : null}
-              </Typography>
-            </Stack>
+            <Grid container spacing={2} mt={2}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Stack spacing={1}>
+                  <Typography variant="h6">Data Diri</Typography>
+                  {basic_data.map((x, i) => (
+                    <StringLabel
+                      key={i}
+                      link={x.link}
+                      icon={x.icon}
+                      label={x.label}
+                      value={x.value}
+                    />
+                  ))}
+                </Stack>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Stack spacing={1}>
+                  <Typography variant="h6">Media Sosial</Typography>
+                  {socials_with_icon.length !== 0 ? (
+                    socials_with_icon.map((x, i) => (
+                      <StringLabel
+                        link={x.link}
+                        icon={x.icon}
+                        label={x.label}
+                        value={x.value}
+                        key={i}
+                      />
+                    ))
+                  ) : (
+                    <Typography color="textSecondary">Belum diisi</Typography>
+                  )}
+                </Stack>
+              </Grid>
+            </Grid>
           </Paper>
           <Paper
             sx={{
@@ -99,7 +158,11 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
             <Typography variant="h6" fontWeight={"bold"} textAlign={"center"}>
               Tentang
             </Typography>
-            <Typography>
+            <Typography
+              sx={{
+                whiteSpace: "pre-wrap",
+              }}
+            >
               {userDetail.user_about_me ? userDetail.user_about_me : "Belum ada informasi"}
             </Typography>
           </Paper>

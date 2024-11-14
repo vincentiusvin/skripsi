@@ -4,7 +4,6 @@ import { Application } from "../../app.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
-import { OrgRoles } from "./OrgMisc.js";
 
 describe("organization api", () => {
   let app: Application;
@@ -14,7 +13,7 @@ describe("organization api", () => {
   });
 
   beforeEach(async () => {
-    await clearDB(app);
+    await clearDB(app.db);
     caseData = await baseCase(app.db);
   });
 
@@ -23,7 +22,7 @@ describe("organization api", () => {
     const expected_org = caseData.org.id;
 
     const read_req = await getOrgs(cookie);
-    const result = await read_req.json();
+    const { result } = await read_req.json();
     const found_org = result.find((x) => x.org_id === expected_org);
 
     expect(read_req.status).eq(200);
@@ -53,7 +52,7 @@ describe("organization api", () => {
     await send_req.json();
 
     const read_req = await getOrgs(cookie);
-    const result = await read_req.json();
+    const { result } = await read_req.json();
     const found_org = result.find((x) => x.org_name === in_name);
 
     expect(read_req.status).eq(200);
@@ -89,21 +88,6 @@ describe("organization api", () => {
     expect(result.org_name).eq(in_name);
     expect(result.org_address).eq(in_addr);
     expect(result.org_categories.map((x) => x.category_id)).to.deep.eq(in_category);
-  });
-
-  it("should be able to delete", async () => {
-    const in_org = caseData.org;
-    const in_admin = caseData.org_user;
-
-    const cookie = await getLoginCookie(in_admin.name, in_admin.password);
-    const send_req = await deleteOrg(in_org.id, cookie);
-    const read_req = await getOrgs(cookie);
-    const result = await read_req.json();
-    const found_org = result.find((x) => x.org_id === caseData.org.id);
-
-    expect(send_req.status).to.eq(200);
-    expect(read_req.status).eq(200);
-    expect(found_org).to.eq(undefined);
   });
 
   it("should be able to invite new org member", async () => {
@@ -249,17 +233,7 @@ function getOrgDetail(org_id: number, cookie: string) {
   });
 }
 
-function deleteOrg(org_id: number, cookie: string) {
-  return new APIContext("OrgsDelete").fetch(`/api/orgs/${org_id}`, {
-    headers: {
-      cookie: cookie,
-    },
-    credentials: "include",
-    method: "delete",
-  });
-}
-
-function assignMember(org_id: number, user_id: number, role: OrgRoles, cookie: string) {
+function assignMember(org_id: number, user_id: number, role: "Admin" | "Invited", cookie: string) {
   return new APIContext("OrgsDetailMembersDetailPut").fetch(
     `/api/orgs/${org_id}/users/${user_id}`,
     {

@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import avatarFallback from "../../helpers/avatar_fallback.tsx";
 import { useUsersDetailGet } from "../../queries/user_hooks.ts";
 import BaseCard from "./BaseCard.tsx";
 
@@ -9,10 +10,16 @@ function UserCard(props: { user_id: number; subtitle?: ReactNode; sidebar?: Reac
   if (user_data == undefined) {
     return <BaseCard isLoading={user_data == undefined} />;
   } else {
+    const image =
+      user_data.user_image ??
+      avatarFallback({
+        label: user_data.user_name,
+        seed: user_data.user_id,
+      });
     return (
       <BaseCard
         isLoading={false}
-        image={user_data.user_image ?? undefined}
+        image={image}
         link={`/users/${user_id}`}
         sidebar={sidebar}
         subtitle={subtitle}

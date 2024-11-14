@@ -54,6 +54,7 @@ function UserReportAdd() {
               setTitle(e.target.value);
             }}
             label="Judul Laporan"
+            required
           ></TextField>
           <TextField
             value={desc}
@@ -61,6 +62,7 @@ function UserReportAdd() {
               setDesc(e.target.value);
             }}
             label="Informasi Tambahan"
+            required
             multiline
             minRows={3}
           ></TextField>

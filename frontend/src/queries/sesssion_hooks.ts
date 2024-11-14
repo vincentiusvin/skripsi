@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 
-const sessionKeys = {
+export const sessionKeys = {
   session: () => ["session"] as const,
 };
 
