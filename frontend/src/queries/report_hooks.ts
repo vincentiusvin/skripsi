@@ -5,19 +5,27 @@ import { queryClient } from "../helpers/queryclient.tsx";
 const reportKeys = {
   all: () => ["reports"] as const,
   lists: () => [...reportKeys.all(), "list"] as const,
-  list: (opts: { user_id?: number }) => [...reportKeys.lists(), opts] as const,
+  list: (opts: unknown) => [...reportKeys.lists(), opts] as const,
   details: () => [...reportKeys.all(), "detail"] as const,
   detail: (report_id: number) => [...reportKeys.details(), report_id] as const,
 };
 
-export function useReportsGet(opts: { user_id?: number }) {
-  const { user_id } = opts;
+export function useReportsGet(opts: {
+  limit?: number;
+  page?: number;
+  user_id?: number;
+  status?: "Pending" | "Rejected" | "Resolved";
+}) {
+  const { status, user_id, page, limit } = opts;
   return useQuery({
     queryKey: reportKeys.list(opts),
     queryFn: () =>
       new APIContext("ReportsGet").fetch("/api/reports", {
         query: {
           user_id: user_id?.toString(),
+          limit: limit?.toString(),
+          page: page?.toString(),
+          status,
         },
       }),
   });

@@ -1,12 +1,17 @@
 import { Add } from "@mui/icons-material";
 import {
   Avatar,
+  Box,
   Button,
+  FormControl,
+  InputLabel,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  MenuItem,
   Paper,
+  Select,
   Skeleton,
   Stack,
   Typography,
@@ -16,6 +21,8 @@ import dayjs from "dayjs";
 import { Redirect } from "wouter";
 import reportImg from "../../assets/report.png";
 import StyledLink from "../../components/StyledLink.tsx";
+import { restrictToEnum } from "../../helpers/misc.ts";
+import { useStateSearch } from "../../helpers/search.ts";
 import { useReportsGet } from "../../queries/report_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import ReportStatusChip from "./components/ReportStatus.tsx";
@@ -62,11 +69,23 @@ function ReportEntry(props: {
   );
 }
 
+const validStatus = ["Semua", "Pending", "Rejected", "Resolved"] as const;
+type ValidStatus = (typeof validStatus)[number];
+
 function UserReport(props: { user_id: number }) {
   const { user_id } = props;
-  const { data: reports } = useReportsGet({
+
+  const [_status, setStatus] = useStateSearch<ValidStatus>("status");
+  let status: ValidStatus = "Semua";
+  if (restrictToEnum(_status, validStatus)) {
+    status = _status;
+  }
+
+  const { data: reports_raw } = useReportsGet({
     user_id,
+    status: status !== "Semua" ? status : undefined,
   });
+  const reports = reports_raw?.result;
 
   if (!reports) {
     return <Skeleton />;
@@ -122,10 +141,32 @@ function UserReport(props: { user_id: number }) {
           </Grid>
         </Grid>
       </Paper>
-      <Typography variant="h6">Daftar Laporan</Typography>
+      <Typography flexGrow={1} variant="h6">
+        Laporan Anda ({reports_raw.total})
+      </Typography>
+      <Box>
+        <FormControl>
+          <InputLabel>Status</InputLabel>
+          <Select
+            size="small"
+            value={status}
+            label="Status"
+            onChange={(e) => {
+              setStatus(e.target.value as "Semua" | "Pending" | "Rejected" | "Resolved");
+            }}
+          >
+            <MenuItem value={"Semua"}>Semua</MenuItem>
+            <MenuItem value={"Pending"}>Menunggu</MenuItem>
+            <MenuItem value={"Rejected"}>Ditolak</MenuItem>
+            <MenuItem value={"Resolved"}>Diterima</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
       {reports.length === 0 ? (
         <Typography variant="h6" textAlign={"center"}>
-          Anda belum pernah membuat laporan!
+          {status === "Semua"
+            ? "Anda belum pernah membuat laporan!"
+            : "Tidak menemukan laporan dengan kriteria tersebut!"}
         </Typography>
       ) : (
         reports.map((x) => <ReportEntry report={x} key={x.id} />)
