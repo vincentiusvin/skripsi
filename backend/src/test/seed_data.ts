@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 
+import { randomBytes } from "crypto";
 import { Kysely } from "kysely";
 import { DB } from "../db/db_types.js";
 
@@ -9,6 +10,92 @@ function looper<T>(times: number, func: (i: number) => T) {
     ret.push(func(i));
   }
   return ret;
+}
+
+async function addChatrooms(db: Kysely<DB>) {
+  const chats_to_gen = 200;
+  const users = await db.selectFrom("ms_users").select("id").execute();
+  const projects = await db.selectFrom("ms_projects").select("id").execute();
+
+  const chat_ids = await db
+    .insertInto("ms_chatrooms")
+    .values(
+      looper(chats_to_gen, () => ({
+        name: faker.company.buzzPhrase(),
+        project_id: faker.helpers.maybe(() => faker.helpers.arrayElement(projects).id),
+      })),
+    )
+    .returning("id")
+    .execute();
+
+  const chat_users = await db
+    .insertInto("chatrooms_users")
+    .values(
+      chat_ids.flatMap(({ id }) => {
+        const members = faker.helpers.arrayElements(
+          users.map((x) => x.id),
+          {
+            min: 1,
+            max: 25,
+          },
+        );
+        return members.map((user_id) => ({
+          chatroom_id: id,
+          user_id,
+        }));
+      }),
+    )
+    .returning(["user_id", "chatroom_id"])
+    .execute();
+
+  const messages_to_gen = 10000;
+  const message_ids = await db
+    .insertInto("ms_messages")
+    .values(
+      looper(messages_to_gen, () => {
+        const picked = faker.helpers.arrayElement(chat_users);
+
+        return {
+          chatroom_id: picked.chatroom_id,
+          user_id: picked.user_id,
+          message: faker.lorem.paragraph({
+            max: 10,
+            min: 1,
+          }),
+          created_at: faker.date.past(),
+        };
+      }),
+    )
+    .returning("ms_messages.id")
+    .execute();
+
+  await db
+    .insertInto("ms_chatroom_files")
+    .values(
+      message_ids.flatMap(({ id: message_id }) => {
+        const has_file = faker.datatype.boolean(0.2);
+        if (!has_file) {
+          return [];
+        }
+
+        const files_to_add = faker.number.int({
+          min: 1,
+          max: 5,
+        });
+
+        return looper(files_to_add, () => ({
+          filename: faker.system.commonFileName(),
+          content: randomBytes(
+            faker.number.int({
+              min: 1,
+              max: 10000,
+            }),
+          ),
+          message_id,
+        }));
+      }),
+    )
+    .execute();
 }
 
 async function addContribs(db: Kysely<DB>) {
@@ -22,7 +109,7 @@ async function addContribs(db: Kysely<DB>) {
         name: faker.hacker.adjective() + " " + faker.hacker.noun(),
         project_id: faker.helpers.arrayElement(projects).id,
         status: faker.helpers.arrayElement(["Approved", "Pending", "Revision", "Rejected"]),
-        description: faker.hacker.phrase(),
+        description: faker.lorem.paragraphs(10),
       })),
     )
     .returning("id")
@@ -62,7 +149,7 @@ async function addProjects(db: Kysely<DB>) {
       looper(projects_to_gen, () => ({
         description: faker.company.buzzPhrase(),
         name: faker.internet.domainWord(),
-        content: faker.commerce.productDescription(),
+        content: faker.lorem.paragraphs(10),
         org_id: faker.helpers.arrayElement(orgs).id,
       })),
     )
@@ -109,7 +196,7 @@ async function addOrgs(db: Kysely<DB>) {
     .values(
       looper(orgs_to_gen, () => ({
         address: faker.location.streetAddress(),
-        description: faker.company.buzzPhrase(),
+        description: faker.lorem.paragraphs(10),
         name: faker.company.name(),
         phone: faker.phone.number(),
         image: faker.image.avatar(),
@@ -172,6 +259,7 @@ async function seedData(db: Kysely<DB>) {
   await addOrgs(db);
   await addProjects(db);
   await addContribs(db);
+  await addChatrooms(db);
 }
 
 export default seedData;
