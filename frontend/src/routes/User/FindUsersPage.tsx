@@ -8,9 +8,10 @@ import { useUsersGet } from "../../queries/user_hooks.ts";
 function FindUsers() {
   const [keyword, setKeyword] = useStateSearch("keyword");
   const [debouncedKeyword] = useDebounce(keyword, 300);
-  const { data: users } = useUsersGet({
+  const { data: users_raw } = useUsersGet({
     keyword: debouncedKeyword?.toString(),
   });
+  const users = users_raw?.result;
 
   return (
     <Stack spacing={2}>

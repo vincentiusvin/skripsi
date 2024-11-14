@@ -25,9 +25,10 @@ function InviteMembersDialog(props: { project_id: number }) {
   const [inviteMembers, setInviteMembers] = useState(false);
   const [keyword, setKeyword] = useState<string>("");
   const [debouncedKeyword] = useDebounce(keyword, 300);
-  const { data: users } = useUsersGet({
+  const { data: users_raw } = useUsersGet({
     keyword: debouncedKeyword,
   });
+  const users = users_raw?.result;
 
   if (project == undefined) {
     return <Skeleton />;

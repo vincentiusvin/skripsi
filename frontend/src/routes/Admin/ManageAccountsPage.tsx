@@ -314,7 +314,8 @@ function AccountRow(props: {
 }
 
 function ManageAccounts() {
-  const { data: users } = useUsersGet();
+  const { data: users_raw } = useUsersGet();
+  const users = users_raw?.result;
 
   if (!users) {
     return <Skeleton />;
