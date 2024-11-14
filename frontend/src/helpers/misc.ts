@@ -1,12 +1,5 @@
 import { useState } from "react";
 
-export function countTotalPages(total: number | undefined, limit: number) {
-  if (total == undefined) {
-    return -1;
-  }
-  return Math.ceil(total / limit) - 1;
-}
-
 export function useList<T>(init: T[]) {
   const [list, setList] = useState(init);
 
