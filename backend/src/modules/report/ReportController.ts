@@ -56,6 +56,7 @@ export class ReportController extends Controller {
     schema: {
       ReqQuery: z.object({
         user_id: zodStringReadableAsNumber("Pengguna tidak valid!").optional(),
+        status: z.enum(report_status, defaultError("Status laporan tidak valid!")).optional(),
         ...zodPagination(),
       }),
       ResBody: z.object({
