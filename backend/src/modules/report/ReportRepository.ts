@@ -1,5 +1,6 @@
-import { Kysely } from "kysely";
+import { Kysely, SelectQueryBuilder } from "kysely";
 import { DB } from "../../db/db_types.js";
+import { paginateQuery } from "../../helpers/pagination.js";
 import { ReportStatus, parseReportStatus } from "./ReportMisc.js";
 
 const defaultReportFields = [
@@ -20,14 +21,40 @@ export class ReportRepository {
     this.db = db;
   }
 
-  async getReports(opts: { user_id?: number }) {
-    const { user_id } = opts;
-    let query = this.db.selectFrom("ms_reports").select(defaultReportFields).orderBy("id asc");
-
+  applyFilterToQuery<O>(
+    query: SelectQueryBuilder<DB, "ms_reports", O>,
+    filter: { user_id?: number; status?: ReportStatus },
+  ) {
+    const { user_id, status } = filter;
     if (user_id != undefined) {
       query = query.where("ms_reports.sender_id", "=", user_id);
     }
+    if (status != undefined) {
+      query = query.where("ms_reports.status", "=", status);
+    }
+    return query;
+  }
 
+  async countReports(opts: { user_id?: number; status?: ReportStatus }) {
+    const { user_id, status } = opts;
+    let query = this.db.selectFrom("ms_reports").select((eb) => eb.fn.countAll().as("count"));
+    query = this.applyFilterToQuery(query, { user_id, status });
+    return await query.executeTakeFirstOrThrow();
+  }
+
+  async getReports(opts: {
+    page?: number;
+    limit?: number;
+    user_id?: number;
+    status?: ReportStatus;
+  }) {
+    const { user_id, status, page, limit } = opts;
+    let query = this.db.selectFrom("ms_reports").select(defaultReportFields).orderBy("id asc");
+    query = this.applyFilterToQuery(query, { user_id, status });
+    query = paginateQuery(query, {
+      limit,
+      page,
+    });
     const result = await query.execute();
 
     return result.map((x) => ({

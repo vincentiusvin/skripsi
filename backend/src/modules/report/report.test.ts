@@ -5,7 +5,7 @@ import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 import { ReportStatus } from "./ReportMisc.js";
 
-describe("report api", () => {
+describe.only("report api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -23,7 +23,7 @@ describe("report api", () => {
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
     const read_req = await getReports({ user_id: in_user.id }, cookie);
-    const result = await read_req.json();
+    const { result } = await read_req.json();
 
     expect(read_req.status).eq(200);
     const found = result.find((x) => x.id === in_report.id);
