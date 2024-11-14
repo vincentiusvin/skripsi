@@ -66,11 +66,12 @@ export class ReportController extends Controller {
     },
     handler: async (req, res) => {
       const sender_id = Number(req.session.user_id!);
-      const { page, limit, user_id: user_id_str } = req.query;
+      const { status, page, limit, user_id: user_id_str } = req.query;
       const filter = {
         user_id: user_id_str != undefined ? Number(user_id_str) : undefined,
         limit: limit != undefined ? Number(limit) : undefined,
         page: limit != undefined ? Number(page) : undefined,
+        status,
       };
 
       const result = await this.report_service.getReports(filter, sender_id);
