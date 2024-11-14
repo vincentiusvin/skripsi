@@ -4,18 +4,24 @@ import Grid from "@mui/material/Grid2";
 import { useDebounce } from "use-debounce";
 import charityImg from "../../assets/charity.png";
 import OrgCard from "../../components/Cards/OrgCard.tsx";
+import QueryPagination from "../../components/QueryPagination.tsx";
+import useQueryPagination from "../../components/QueryPagination/hook.ts";
 import StyledLink from "../../components/StyledLink.tsx";
-import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
+import { useStateSearch } from "../../helpers/search.ts";
 import { useOrgsGet } from "../../queries/org_hooks";
 
 function OrgsListPage() {
-  const searchHook = useSearchParams();
-  const [keyword, setKeyword] = useStateSearch("keyword", searchHook);
+  const [keyword, setKeyword] = useStateSearch("keyword");
   const [debouncedKeyword] = useDebounce(keyword, 250);
 
-  const { data } = useOrgsGet({
+  const [page, setPage] = useQueryPagination();
+  const limit = 10;
+  const { data: orgs_raw } = useOrgsGet({
     keyword: debouncedKeyword?.toString(),
+    limit,
+    page,
   });
+  const orgs = orgs_raw?.result;
 
   return (
     <Stack spacing={2}>
@@ -89,11 +95,12 @@ function OrgsListPage() {
             } else {
               setKeyword(undefined);
             }
+            setPage(1);
           }}
         />
       </Stack>
       <Grid container spacing={2} mt={2}>
-        {data?.map((x) => (
+        {orgs?.map((x) => (
           <Grid
             key={x.org_id}
             size={{
@@ -106,6 +113,7 @@ function OrgsListPage() {
           </Grid>
         ))}
       </Grid>
+      <QueryPagination total={orgs_raw?.total} limit={limit} />
     </Stack>
   );
 }

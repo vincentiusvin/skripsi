@@ -1,7 +1,7 @@
 import { Alert, Snackbar, Stack, Theme, Typography, useMediaQuery } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useState } from "react";
-import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
+import { useStateSearch } from "../../helpers/search.ts";
 import { useChatSocket } from "../../queries/chat_hooks.ts";
 import ChatroomContent from "./ChatroomContent.tsx";
 import ChatroomHeader from "./ChatroomHeader.tsx";
@@ -10,8 +10,7 @@ import ChatroomSidebar from "./ChatroomSidebar.tsx";
 function useRoomSelection(allowed_rooms: number[]) {
   let activeRoom: false | number = false;
 
-  const searchHook = useSearchParams();
-  const [activeRoomRaw, setActiveRoom] = useStateSearch("room", searchHook);
+  const [activeRoomRaw, setActiveRoom] = useStateSearch("room");
   const tryNumber = Number(activeRoomRaw);
   if (!Number.isNaN(tryNumber)) {
     activeRoom = tryNumber;

@@ -1,10 +1,10 @@
 import { useState } from "react";
 
-export function countTotalPages(total: number | undefined, limit: number) {
-  if (total == undefined) {
-    return -1;
-  }
-  return Math.ceil(total / limit) - 1;
+export function restrictToEnum<T extends Readonly<unknown[]>>(
+  obj: unknown,
+  options: T,
+): obj is T[number] {
+  return options.includes(obj as T[number]);
 }
 
 export function useList<T>(init: T[]) {

@@ -1,7 +1,11 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
-import { defaultError, zodStringReadableAsNumber } from "../../helpers/validators.js";
+import {
+  defaultError,
+  zodPagination,
+  zodStringReadableAsNumber,
+} from "../../helpers/validators.js";
 import { report_status } from "./ReportMisc.js";
 import { ReportService } from "./ReportService.js";
 
@@ -52,18 +56,28 @@ export class ReportController extends Controller {
     schema: {
       ReqQuery: z.object({
         user_id: zodStringReadableAsNumber("Pengguna tidak valid!").optional(),
+        status: z.enum(report_status, defaultError("Status laporan tidak valid!")).optional(),
+        ...zodPagination(),
       }),
-      ResBody: ReportResponseSchema.array(),
+      ResBody: z.object({
+        result: ReportResponseSchema.array(),
+        total: z.number(),
+      }),
     },
     handler: async (req, res) => {
       const sender_id = Number(req.session.user_id!);
-      const { user_id: user_id_str } = req.query;
-      const result = await this.report_service.getReports(
-        { user_id: user_id_str != undefined ? Number(user_id_str) : undefined },
-        sender_id,
-      );
+      const { status, page, limit, user_id: user_id_str } = req.query;
+      const filter = {
+        user_id: user_id_str != undefined ? Number(user_id_str) : undefined,
+        limit: limit != undefined ? Number(limit) : undefined,
+        page: limit != undefined ? Number(page) : undefined,
+        status,
+      };
 
-      res.status(200).json(result);
+      const result = await this.report_service.getReports(filter, sender_id);
+      const count = await this.report_service.countReports(filter, sender_id);
+
+      res.status(200).json({ result, total: Number(count.count) });
     },
   });
   ReportsDetailGet = new Route({

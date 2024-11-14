@@ -1,6 +1,7 @@
 import { ExpressionBuilder, Kysely, RawBuilder, SelectQueryBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
+import { paginateQuery } from "../../helpers/pagination.js";
 import { ProjectRoles, parseRole } from "./ProjectMisc.js";
 
 const defaultProjectFields = [
@@ -113,8 +114,8 @@ export class ProjectRepository {
       .execute();
   }
 
-  applyFilterToQuery<T extends SelectQueryBuilder<DB, "ms_projects", object>>(
-    query: T,
+  applyFilterToQuery<O>(
+    query: SelectQueryBuilder<DB, "ms_projects", O>,
     filter?: {
       org_id?: number;
       user_id?: number;
@@ -124,7 +125,7 @@ export class ProjectRepository {
     const { org_id, user_id, keyword } = filter || {};
 
     if (org_id != undefined) {
-      query = query.where("org_id", "=", Number(org_id)) as T;
+      query = query.where("org_id", "=", Number(org_id));
     }
 
     if (user_id != undefined) {
@@ -137,11 +138,11 @@ export class ProjectRepository {
             .select("projects_users.project_id")
             .where("projects_users.user_id", "=", Number(user_id)),
         ),
-      ) as T;
+      );
     }
 
     if (keyword != undefined) {
-      query = query.where("ms_projects.name", "ilike", `%${keyword}%`) as T;
+      query = query.where("ms_projects.name", "ilike", `%${keyword}%`);
     }
 
     return query;
@@ -174,14 +175,11 @@ export class ProjectRepository {
 
     query = this.applyFilterToQuery(query, filter);
 
-    if (limit != undefined) {
-      query = query.limit(limit);
-    }
+    query = paginateQuery(query, {
+      page,
+      limit,
+    });
 
-    if (page != undefined && limit != undefined) {
-      const offset = (page - 1) * limit;
-      query = query.offset(offset);
-    }
     return query.execute();
   }
 

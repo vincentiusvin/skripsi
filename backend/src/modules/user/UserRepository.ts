@@ -1,6 +1,7 @@
-import { ExpressionBuilder, Kysely } from "kysely";
+import { ExpressionBuilder, Kysely, SelectQueryBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
+import { paginateQuery } from "../../helpers/pagination.js";
 
 const defaultUserFields = (eb: ExpressionBuilder<DB, "ms_users">) =>
   [
@@ -99,10 +100,11 @@ export class UserRepository {
       .executeTakeFirst();
   }
 
-  async getUsers(opts?: { is_admin?: boolean; keyword?: string; limit?: number; page?: number }) {
-    const { page, limit, is_admin, keyword } = opts ?? {};
-    let query = this.db.selectFrom("ms_users").select(defaultUserFields);
-
+  applyFilterToQuery<O>(
+    query: SelectQueryBuilder<DB, "ms_users", O>,
+    filter?: { keyword?: string; is_admin?: boolean },
+  ) {
+    const { is_admin, keyword } = filter ?? {};
     if (is_admin) {
       query = query.where("is_admin", "=", is_admin);
     }
@@ -111,14 +113,26 @@ export class UserRepository {
       query = query.where("ms_users.name", "ilike", `%${keyword}%`);
     }
 
-    if (limit != undefined) {
-      query = query.limit(limit);
-    }
+    return query;
+  }
 
-    if (page != undefined && limit != undefined) {
-      const offset = (page - 1) * limit;
-      query = query.offset(offset);
-    }
+  async countUsers(opts?: { is_admin?: boolean; keyword?: string }) {
+    const { is_admin, keyword } = opts ?? {};
+
+    let query = this.db.selectFrom("ms_users").select((eb) => eb.fn.countAll().as("count"));
+    query = this.applyFilterToQuery(query, { is_admin, keyword });
+    return await query.executeTakeFirstOrThrow();
+  }
+
+  async getUsers(opts?: { is_admin?: boolean; keyword?: string; limit?: number; page?: number }) {
+    const { page, limit, is_admin, keyword } = opts ?? {};
+    let query = this.db.selectFrom("ms_users").select(defaultUserFields);
+
+    query = this.applyFilterToQuery(query, { is_admin, keyword });
+    query = paginateQuery(query, {
+      page,
+      limit,
+    });
 
     return await query.execute();
   }

@@ -1,27 +1,28 @@
 import { SearchOutlined } from "@mui/icons-material";
-import { InputAdornment, Pagination, Tab, Tabs, TextField, Typography } from "@mui/material";
+import { InputAdornment, Tab, Tabs, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useDebounce } from "use-debounce";
 import ProjectCard from "../../components/Cards/ProjectCard.tsx";
-import { countTotalPages } from "../../helpers/misc.ts";
-import { useSearchParams, useStatePagination, useStateSearch } from "../../helpers/search.ts";
+import QueryPagination from "../../components/QueryPagination.tsx";
+import useQueryPagination from "../../components/QueryPagination/hook.ts";
+import { useStateSearch } from "../../helpers/search.ts";
 import { useProjectsGet } from "../../queries/project_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 
 function ProjectListPage() {
   const { data: session } = useSessionGet();
 
-  const searchHook = useSearchParams();
-  const [personal, setPersonal] = useStateSearch("personal", searchHook);
-  const [keyword, setKeyword] = useStateSearch("keyword", searchHook);
-  const { page, setPage } = useStatePagination(searchHook);
+  const limit = 12;
+  const [personal, setPersonal] = useStateSearch<string>("personal");
+  const [keyword, setKeyword] = useStateSearch<string>("keyword");
+  const [page, setPage] = useQueryPagination();
 
   const [debouncedKeyword] = useDebounce(keyword, 250);
 
   const { data: projects_raw } = useProjectsGet({
     keepPrev: true,
     user_id: personal === "true" && session?.logged ? session.user_id : undefined,
-    limit: 12,
+    limit,
     page,
     keyword:
       typeof debouncedKeyword === "string" && debouncedKeyword.length
@@ -61,6 +62,7 @@ function ProjectListPage() {
             } else {
               setPersonal(undefined);
             }
+            setPage(1);
           }}
         >
           <Tab label={"Semua Proyek"} value={"all"} />
@@ -93,6 +95,7 @@ function ProjectListPage() {
             } else {
               setKeyword(undefined);
             }
+            setPage(1);
           }}
         />
       </Grid>
@@ -110,11 +113,7 @@ function ProjectListPage() {
         </Grid>
       ))}
       <Grid size={12}>
-        <Pagination
-          count={countTotalPages(projects_raw?.total, 10)}
-          page={page}
-          onChange={(_, p) => setPage(p)}
-        />
+        <QueryPagination limit={limit} total={projects_raw?.total} />
       </Grid>
     </Grid>
   );

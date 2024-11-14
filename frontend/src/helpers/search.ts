@@ -7,7 +7,13 @@ export function useSearchParams() {
 
   const [location, setLocation] = useLocation();
 
-  function setSearchParams(obj: unknown) {
+  function setSearchParams(fn: (prev: typeof parsedSearch) => unknown) {
+    const newestSearch = parse(window.location.search, {
+      ignoreQueryPrefix: true,
+    });
+
+    const obj = fn(newestSearch);
+
     const queryString = stringify(obj);
     if (queryString.length) {
       setLocation(location + "?" + queryString, {
@@ -23,29 +29,19 @@ export function useSearchParams() {
   return [parsedSearch, setSearchParams] as const;
 }
 
-export function useStateSearch<T>(key: string, paramsHook: ReturnType<typeof useSearchParams>) {
-  const [search, setSearch] = paramsHook;
+export function useStateSearch<T>(key: string) {
+  const [search, setSearch] = useSearchParams();
 
-  function setStateSearch(val: T) {
+  function setStateSearch(val: T | undefined) {
     if (val !== undefined) {
-      setSearch({ ...search, [key]: val });
+      setSearch((old) => ({ ...old, [key]: val }));
     } else {
-      delete search[key];
-      setSearch(search);
+      setSearch((old) => {
+        delete old[key];
+        return old;
+      });
     }
   }
 
   return [search[key], setStateSearch] as const;
-}
-
-export function useStatePagination(paramsHook: ReturnType<typeof useSearchParams>) {
-  const [_page, setPage] = useStateSearch<number>("page", paramsHook);
-
-  let page = Number(_page);
-  page = page >= 1 ? page : 1;
-
-  return {
-    page,
-    setPage,
-  };
 }

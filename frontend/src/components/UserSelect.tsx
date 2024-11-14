@@ -15,7 +15,8 @@ function UserSelect(props: {
 
   const [keyword, setKeyword] = useState<string | undefined>(undefined);
   const [debouncedKeyword] = useDebounce(keyword, 300);
-  const { data: users } = useUsersGet({ keyword: debouncedKeyword });
+  const { data: users_raw } = useUsersGet({ keyword: debouncedKeyword });
+  const users = users_raw?.result;
 
   let options: number[] = [];
   if (users != undefined) {

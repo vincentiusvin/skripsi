@@ -59,9 +59,10 @@ function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
     user_id,
   });
 
-  const { data: orgs } = useOrgsGet({
+  const { data: orgs_raw } = useOrgsGet({
     user_id: showAll ? undefined : user_id,
   });
+  const orgs = orgs_raw?.result;
 
   const options: {
     title: string;

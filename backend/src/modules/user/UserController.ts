@@ -202,7 +202,10 @@ export class UserController extends Controller {
     method: "get",
     path: "/api/users",
     schema: {
-      ResBody: UserResponseSchema.array(),
+      ResBody: z.object({
+        result: UserResponseSchema.array(),
+        total: z.number(),
+      }),
       ReqQuery: z.object({
         keyword: z.string().optional(),
         ...zodPagination(),
@@ -210,12 +213,15 @@ export class UserController extends Controller {
     },
     handler: async (req, res) => {
       const { keyword, page, limit } = req.query;
-      const result = await this.user_service.getUsers({
+      const opts = {
         keyword,
         page: page !== undefined ? Number(page) : undefined,
         limit: limit !== undefined ? Number(limit) : undefined,
-      });
-      res.status(200).json(result);
+      };
+
+      const result = await this.user_service.getUsers(opts);
+      const count = await this.user_service.countUsers(opts);
+      res.status(200).json({ result, total: Number(count.count) });
     },
   });
   UsersDetailGet = new Route({

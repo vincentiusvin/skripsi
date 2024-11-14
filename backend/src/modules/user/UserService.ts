@@ -262,6 +262,10 @@ export class UserService {
     return await this.user_repo.getUsers(opts);
   }
 
+  async countUsers(opts?: { is_admin?: boolean; keyword?: string }) {
+    return await this.user_repo.countUsers(opts);
+  }
+
   async isAllowedToModify(user_id: number, sender_id: number) {
     if (user_id == sender_id) {
       return true;

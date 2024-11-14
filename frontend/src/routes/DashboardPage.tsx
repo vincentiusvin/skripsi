@@ -63,7 +63,11 @@ function ProjectRow(props: { user_id: number; project_id: number }) {
       <TableCell>{project.project_name}</TableCell>
       <TableCell>{role.role}</TableCell>
       <TableCell>
-        <Chip color="success" label="Aktif" />
+        {project.project_archived ? (
+          <Chip color="warning" label="Diarsipkan" />
+        ) : (
+          <Chip color="success" label="Aktif" />
+        )}
       </TableCell>
       <TableCell>
         <StyledLink to={`/projects/${project_id}`}>
@@ -196,9 +200,10 @@ function ProjectInfoCard(props: { user_id: number }) {
 
 function OrgInfoCard(props: { user_id: number }) {
   const { user_id } = props;
-  const { data: orgs } = useOrgsGet({
+  const { data: orgs_raw } = useOrgsGet({
     user_id,
   });
+  const orgs = orgs_raw?.result;
 
   if (!orgs) {
     return <Skeleton />;
