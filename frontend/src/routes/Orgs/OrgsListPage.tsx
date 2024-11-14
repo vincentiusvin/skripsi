@@ -12,9 +12,10 @@ function OrgsListPage() {
   const [keyword, setKeyword] = useStateSearch("keyword");
   const [debouncedKeyword] = useDebounce(keyword, 250);
 
-  const { data } = useOrgsGet({
+  const { data: orgs_raw } = useOrgsGet({
     keyword: debouncedKeyword?.toString(),
   });
+  const orgs = orgs_raw?.result;
 
   return (
     <Stack spacing={2}>
@@ -92,7 +93,7 @@ function OrgsListPage() {
         />
       </Stack>
       <Grid container spacing={2} mt={2}>
-        {data?.map((x) => (
+        {orgs?.map((x) => (
           <Grid
             key={x.org_id}
             size={{

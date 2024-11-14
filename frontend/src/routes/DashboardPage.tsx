@@ -196,9 +196,10 @@ function ProjectInfoCard(props: { user_id: number }) {
 
 function OrgInfoCard(props: { user_id: number }) {
   const { user_id } = props;
-  const { data: orgs } = useOrgsGet({
+  const { data: orgs_raw } = useOrgsGet({
     user_id,
   });
+  const orgs = orgs_raw?.result;
 
   if (!orgs) {
     return <Skeleton />;
