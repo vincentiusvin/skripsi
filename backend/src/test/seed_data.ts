@@ -12,6 +12,21 @@ function looper<T>(times: number, func: (i: number) => T) {
   return ret;
 }
 
+async function addBans(db: Kysely<DB>) {
+  const users = await db.selectFrom("ms_users").select("id").execute();
+  const bans_to_add = 50;
+  await db
+    .insertInto("ms_suspensions")
+    .values(
+      looper(bans_to_add, () => ({
+        reason: faker.lorem.sentence({ min: 1, max: 5 }),
+        suspended_until: faker.date.anytime(),
+        user_id: faker.helpers.arrayElement(users).id,
+      })),
+    )
+    .execute();
+}
+
 async function addChatrooms(db: Kysely<DB>) {
   const chats_to_gen = 200;
   const users = await db.selectFrom("ms_users").select("id").execute();
@@ -99,13 +114,14 @@ async function addChatrooms(db: Kysely<DB>) {
 }
 
 async function addContribs(db: Kysely<DB>) {
+  const contribs_to_add = 1000;
   const users = await db.selectFrom("ms_users").select("id").execute();
   const projects = await db.selectFrom("ms_projects").select("id").execute();
 
   const contrib_id = await db
     .insertInto("ms_contributions")
     .values(
-      looper(100, () => ({
+      looper(contribs_to_add, () => ({
         name: faker.hacker.adjective() + " " + faker.hacker.noun(),
         project_id: faker.helpers.arrayElement(projects).id,
         status: faker.helpers.arrayElement(["Approved", "Pending", "Revision", "Rejected"]),
@@ -251,6 +267,7 @@ async function addUsers(db: Kysely<DB>) {
         education_level: "Graduate",
       })),
     )
+    .returning("id")
     .execute();
 }
 
@@ -260,6 +277,7 @@ async function seedData(db: Kysely<DB>) {
   await addProjects(db);
   await addContribs(db);
   await addChatrooms(db);
+  await addBans(db);
 }
 
 export default seedData;
