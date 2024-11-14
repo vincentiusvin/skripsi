@@ -196,6 +196,7 @@ async function addProjects(db: Kysely<DB>) {
         name: faker.internet.domainWord(),
         content: faker.lorem.paragraphs(10),
         org_id: faker.helpers.arrayElement(orgs).id,
+        archived: faker.datatype.boolean(0.25),
       })),
     )
     .returning("id")
