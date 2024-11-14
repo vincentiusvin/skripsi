@@ -7,7 +7,13 @@ export function useSearchParams() {
 
   const [location, setLocation] = useLocation();
 
-  function setSearchParams(obj: unknown) {
+  function setSearchParams(fn: (prev: typeof parsedSearch) => unknown) {
+    const newestSearch = parse(window.location.search, {
+      ignoreQueryPrefix: true,
+    });
+
+    const obj = fn(newestSearch);
+
     const queryString = stringify(obj);
     if (queryString.length) {
       setLocation(location + "?" + queryString, {
@@ -26,12 +32,14 @@ export function useSearchParams() {
 export function useStateSearch<T>(key: string) {
   const [search, setSearch] = useSearchParams();
 
-  function setStateSearch(val: T) {
+  function setStateSearch(val: T | undefined) {
     if (val !== undefined) {
-      setSearch({ ...search, [key]: val });
+      setSearch((old) => ({ ...old, [key]: val }));
     } else {
-      delete search[key];
-      setSearch(search);
+      setSearch((old) => {
+        delete old[key];
+        return old;
+      });
     }
   }
 

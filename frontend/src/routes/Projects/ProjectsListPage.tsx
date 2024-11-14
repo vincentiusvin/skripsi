@@ -13,9 +13,9 @@ function ProjectListPage() {
   const { data: session } = useSessionGet();
 
   const limit = 12;
-  const [personal, setPersonal] = useStateSearch("personal");
-  const [keyword, setKeyword] = useStateSearch("keyword");
-  const [page] = useQueryPagination();
+  const [personal, setPersonal] = useStateSearch<string>("personal");
+  const [keyword, setKeyword] = useStateSearch<string>("keyword");
+  const [page, setPage] = useQueryPagination();
 
   const [debouncedKeyword] = useDebounce(keyword, 250);
 
@@ -62,6 +62,7 @@ function ProjectListPage() {
             } else {
               setPersonal(undefined);
             }
+            setPage(1);
           }}
         >
           <Tab label={"Semua Proyek"} value={"all"} />
@@ -94,6 +95,7 @@ function ProjectListPage() {
             } else {
               setKeyword(undefined);
             }
+            setPage(1);
           }}
         />
       </Grid>

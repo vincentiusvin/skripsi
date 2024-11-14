@@ -4,6 +4,8 @@ import Grid from "@mui/material/Grid2";
 import { useDebounce } from "use-debounce";
 import charityImg from "../../assets/charity.png";
 import OrgCard from "../../components/Cards/OrgCard.tsx";
+import QueryPagination from "../../components/QueryPagination.tsx";
+import useQueryPagination from "../../components/QueryPagination/hook.ts";
 import StyledLink from "../../components/StyledLink.tsx";
 import { useStateSearch } from "../../helpers/search.ts";
 import { useOrgsGet } from "../../queries/org_hooks";
@@ -12,8 +14,12 @@ function OrgsListPage() {
   const [keyword, setKeyword] = useStateSearch("keyword");
   const [debouncedKeyword] = useDebounce(keyword, 250);
 
+  const [page] = useQueryPagination();
+  const limit = 10;
   const { data: orgs_raw } = useOrgsGet({
     keyword: debouncedKeyword?.toString(),
+    limit,
+    page,
   });
   const orgs = orgs_raw?.result;
 
@@ -106,6 +112,7 @@ function OrgsListPage() {
           </Grid>
         ))}
       </Grid>
+      <QueryPagination total={orgs_raw?.total} limit={limit} />
     </Stack>
   );
 }

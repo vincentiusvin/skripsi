@@ -6,7 +6,7 @@ function useQueryPagination() {
   let page = Number(_page);
   page = page >= 1 ? page : 1;
 
-  return [page, setPage] as [number, (x: number) => void];
+  return [page, setPage] as [typeof page, typeof setPage];
 }
 
 export default useQueryPagination;

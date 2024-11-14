@@ -33,15 +33,22 @@ export function useOrgDetailGet(opts: {
   });
 }
 
-export function useOrgsGet(opts?: { user_id?: number; keyword?: string }) {
-  const { user_id, keyword } = opts ?? {};
+export function useOrgsGet(opts?: {
+  limit?: number;
+  page?: number;
+  user_id?: number;
+  keyword?: string;
+}) {
+  const { user_id, keyword, limit, page } = opts ?? {};
   return useQuery({
-    queryKey: orgKeys.list({ user_id, keyword }),
+    queryKey: orgKeys.list(opts),
     queryFn: () =>
       new APIContext("OrgsGet").fetch("/api/orgs", {
         query: {
           user_id: user_id?.toString(),
           keyword: keyword != undefined && keyword.length !== 0 ? keyword : undefined,
+          limit: limit != undefined && !Number.isNaN(limit) ? limit.toString() : undefined,
+          page: page != undefined && !Number.isNaN(page) ? page.toString() : undefined,
         },
       }),
   });
