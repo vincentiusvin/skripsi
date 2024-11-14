@@ -31,6 +31,7 @@ import {
   TablePagination,
   TableRow,
   TextField,
+  Toolbar,
   Typography,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
@@ -346,60 +347,73 @@ function ManageAccounts() {
       <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
         Atur Pengguna
       </Typography>
-      <TextField
-        sx={{
-          mt: 1,
-          mb: 2,
-        }}
-        value={keyword}
-        label={"Cari pengguna"}
-        slotProps={{
-          input: {
-            endAdornment: (
-              <InputAdornment position="start">
-                <SearchOutlined />
-              </InputAdornment>
-            ),
-          },
-        }}
-        onChange={(e) => {
-          setKeyword(e.target.value);
-          setPage(1);
-        }}
-      />
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Pengguna</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Aktif Sejak</TableCell>
-              <TableCell>Ditangguhkan Hingga</TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users != undefined ? (
-              users.map((user) => <AccountRow user={user} key={user.user_id} />)
-            ) : (
-              <Skeleton />
-            )}
-          </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TablePagination
-                rowsPerPage={limit}
-                rowsPerPageOptions={[limit]}
-                count={users_raw?.total ?? -1}
-                page={page - 1}
-                onPageChange={(_, p) => {
-                  setPage(p + 1);
-                }}
-              ></TablePagination>
-            </TableRow>
-          </TableFooter>
-        </Table>
-      </TableContainer>
+      <Paper>
+        <Toolbar
+          sx={{
+            display: "flex",
+          }}
+        >
+          <Typography variant="h6" flexGrow={1}>
+            Daftar Pengguna
+          </Typography>
+          <TextField
+            size="small"
+            sx={{
+              my: 2,
+            }}
+            value={keyword}
+            label={"Cari pengguna"}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="start">
+                    <SearchOutlined />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            onChange={(e) => {
+              setKeyword(e.target.value);
+              setPage(1);
+            }}
+          />
+        </Toolbar>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Pengguna</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Aktif Sejak</TableCell>
+                <TableCell>Ditangguhkan Hingga</TableCell>
+                <TableCell />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {users != undefined ? (
+                users.map((user) => <AccountRow user={user} key={user.user_id} />)
+              ) : (
+                <Skeleton />
+              )}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TablePagination
+                  showFirstButton
+                  showLastButton
+                  rowsPerPage={limit}
+                  rowsPerPageOptions={[limit]}
+                  count={users_raw?.total ?? -1}
+                  page={page - 1}
+                  onPageChange={(_, p) => {
+                    setPage(p + 1);
+                  }}
+                ></TablePagination>
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </TableContainer>
+      </Paper>
     </Box>
   );
 }
