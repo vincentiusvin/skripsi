@@ -2,12 +2,11 @@ import { SearchOutlined } from "@mui/icons-material";
 import { InputAdornment, Skeleton, Stack, TextField, Typography } from "@mui/material";
 import { useDebounce } from "use-debounce";
 import UserCard from "../../components/Cards/UserCard.tsx";
-import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
+import { useStateSearch } from "../../helpers/search.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
 
 function FindUsers() {
-  const search = useSearchParams();
-  const [keyword, setKeyword] = useStateSearch("keyword", search);
+  const [keyword, setKeyword] = useStateSearch("keyword");
   const [debouncedKeyword] = useDebounce(keyword, 300);
   const { data: users } = useUsersGet({
     keyword: debouncedKeyword?.toString(),

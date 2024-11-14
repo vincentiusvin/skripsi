@@ -23,8 +23,8 @@ export function useSearchParams() {
   return [parsedSearch, setSearchParams] as const;
 }
 
-export function useStateSearch<T>(key: string, paramsHook: ReturnType<typeof useSearchParams>) {
-  const [search, setSearch] = paramsHook;
+export function useStateSearch<T>(key: string) {
+  const [search, setSearch] = useSearchParams();
 
   function setStateSearch(val: T) {
     if (val !== undefined) {

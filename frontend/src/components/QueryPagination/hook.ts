@@ -1,8 +1,7 @@
-import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
+import { useStateSearch } from "../../helpers/search.ts";
 
 function useQueryPagination() {
-  const paramsHook = useSearchParams();
-  const [_page, setPage] = useStateSearch<number>("page", paramsHook);
+  const [_page, setPage] = useStateSearch<number>("page");
 
   let page = Number(_page);
   page = page >= 1 ? page : 1;

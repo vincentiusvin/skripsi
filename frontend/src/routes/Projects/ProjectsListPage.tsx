@@ -5,17 +5,16 @@ import { useDebounce } from "use-debounce";
 import ProjectCard from "../../components/Cards/ProjectCard.tsx";
 import QueryPagination from "../../components/QueryPagination.tsx";
 import useQueryPagination from "../../components/QueryPagination/hook.ts";
-import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
+import { useStateSearch } from "../../helpers/search.ts";
 import { useProjectsGet } from "../../queries/project_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 
 function ProjectListPage() {
   const { data: session } = useSessionGet();
 
-  const searchHook = useSearchParams();
   const limit = 12;
-  const [personal, setPersonal] = useStateSearch("personal", searchHook);
-  const [keyword, setKeyword] = useStateSearch("keyword", searchHook);
+  const [personal, setPersonal] = useStateSearch("personal");
+  const [keyword, setKeyword] = useStateSearch("keyword");
   const [page] = useQueryPagination();
 
   const [debouncedKeyword] = useDebounce(keyword, 250);

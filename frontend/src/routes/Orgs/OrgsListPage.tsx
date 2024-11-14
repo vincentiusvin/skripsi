@@ -5,12 +5,11 @@ import { useDebounce } from "use-debounce";
 import charityImg from "../../assets/charity.png";
 import OrgCard from "../../components/Cards/OrgCard.tsx";
 import StyledLink from "../../components/StyledLink.tsx";
-import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
+import { useStateSearch } from "../../helpers/search.ts";
 import { useOrgsGet } from "../../queries/org_hooks";
 
 function OrgsListPage() {
-  const searchHook = useSearchParams();
-  const [keyword, setKeyword] = useStateSearch("keyword", searchHook);
+  const [keyword, setKeyword] = useStateSearch("keyword");
   const [debouncedKeyword] = useDebounce(keyword, 250);
 
   const { data } = useOrgsGet({
