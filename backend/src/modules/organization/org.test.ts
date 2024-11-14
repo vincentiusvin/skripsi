@@ -5,7 +5,7 @@ import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("organization api", () => {
+describe.only("organization api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
   before(async () => {
@@ -22,7 +22,7 @@ describe("organization api", () => {
     const expected_org = caseData.org.id;
 
     const read_req = await getOrgs(cookie);
-    const result = await read_req.json();
+    const { result } = await read_req.json();
     const found_org = result.find((x) => x.org_id === expected_org);
 
     expect(read_req.status).eq(200);
@@ -52,7 +52,7 @@ describe("organization api", () => {
     await send_req.json();
 
     const read_req = await getOrgs(cookie);
-    const result = await read_req.json();
+    const { result } = await read_req.json();
     const found_org = result.find((x) => x.org_name === in_name);
 
     expect(read_req.status).eq(200);

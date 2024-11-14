@@ -1,4 +1,4 @@
-import { ExpressionBuilder, Kysely, RawBuilder } from "kysely";
+import { ExpressionBuilder, Kysely, RawBuilder, SelectQueryBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
 import { OrgRoles, parseRole } from "./OrgMisc.js";
@@ -42,17 +42,11 @@ export class OrgRepository {
     this.db = db;
   }
 
-  getOrgs(filter?: { keyword?: string; user_id?: number }) {
-    const { keyword, user_id } = filter ?? {};
-
-    let query = this.db
-      .selectFrom("ms_orgs")
-      .select((eb) => [
-        ...defaultOrgFields,
-        orgWithCategories(eb).as("org_categories"),
-        orgWithUsers(eb).as("org_users"),
-      ]);
-
+  applyFilterToQuery<T extends SelectQueryBuilder<DB, "ms_orgs", object>>(
+    query: T,
+    filter?: { keyword?: string; user_id?: number },
+  ) {
+    const { user_id, keyword } = filter || {};
     if (user_id) {
       query = query.where((eb) =>
         eb(
@@ -63,11 +57,43 @@ export class OrgRepository {
             .select("orgs_users.org_id")
             .where("orgs_users.user_id", "=", user_id),
         ),
-      );
+      ) as T;
     }
 
     if (keyword != undefined && keyword.length !== 0) {
-      query = query.where("ms_orgs.name", "ilike", `%${keyword}%`);
+      query = query.where("ms_orgs.name", "ilike", `%${keyword}%`) as T;
+    }
+
+    return query;
+  }
+
+  async countOrgs(filter?: { keyword?: string; user_id?: number }) {
+    const { keyword, user_id } = filter || {};
+    let query = this.db.selectFrom("ms_orgs").select((eb) => eb.fn.countAll().as("count"));
+    query = this.applyFilterToQuery(query, { keyword, user_id });
+    return await query.executeTakeFirstOrThrow();
+  }
+
+  getOrgs(filter?: { keyword?: string; user_id?: number; page?: number; limit?: number }) {
+    const { keyword, user_id, page, limit } = filter ?? {};
+
+    let query = this.db
+      .selectFrom("ms_orgs")
+      .select((eb) => [
+        ...defaultOrgFields,
+        orgWithCategories(eb).as("org_categories"),
+        orgWithUsers(eb).as("org_users"),
+      ]);
+
+    query = this.applyFilterToQuery(query, { keyword, user_id });
+
+    if (limit != undefined) {
+      query = query.limit(limit);
+    }
+
+    if (page != undefined && limit != undefined) {
+      const offset = (page - 1) * limit;
+      query = query.offset(offset);
     }
 
     return query.execute();
