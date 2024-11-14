@@ -95,7 +95,7 @@ export interface MsContributions {
 }
 
 export interface MsContributionsUsers {
-  contributions_id: Generated<number>;
+  contributions_id: number;
   user_id: number;
 }
 

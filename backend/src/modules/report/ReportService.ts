@@ -108,9 +108,26 @@ export class ReportService implements Transactable<ReportService> {
     });
   }
 
-  async getReports(
+  async countReports(
     opts: {
       user_id?: number;
+      status?: ReportStatus;
+    },
+    sender_id: number,
+  ) {
+    const is_admin = await this.user_service.isAdminUser(sender_id);
+    if (!is_admin && opts.user_id !== sender_id) {
+      throw new AuthError("Anda hanya boleh membaca laporan buatan anda sendiri!");
+    }
+    return await this.report_repo.countReports(opts);
+  }
+
+  async getReports(
+    opts: {
+      page?: number;
+      limit?: number;
+      user_id?: number;
+      status?: ReportStatus;
     },
     sender_id: number,
   ) {

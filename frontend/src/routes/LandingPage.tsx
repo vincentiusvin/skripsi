@@ -86,10 +86,11 @@ function NewestContributions() {
 }
 
 function NewestProjects() {
-  const { data: projects } = useProjectsGet({
+  const { data: projects_raw } = useProjectsGet({
     limit: 5,
     page: 1,
   });
+  const projects = projects_raw?.result;
 
   return (
     <Box

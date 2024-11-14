@@ -28,7 +28,7 @@ describe("users api", () => {
     const in_user = caseData.plain_user;
 
     const res = await getUsers();
-    const result = await res.json();
+    const { result } = await res.json();
     const found = result.find((x) => x.user_id === in_user.id);
 
     expect(res.status).eq(200);

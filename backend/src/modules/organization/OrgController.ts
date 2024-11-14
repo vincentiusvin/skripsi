@@ -3,7 +3,11 @@ import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
 import { validateLogged } from "../../helpers/validate.js";
-import { defaultError, zodStringReadableAsNumber } from "../../helpers/validators.js";
+import {
+  defaultError,
+  zodPagination,
+  zodStringReadableAsNumber,
+} from "../../helpers/validators.js";
 import { org_roles } from "./OrgMisc.js";
 import { OrgService } from "./OrgService.js";
 
@@ -110,17 +114,28 @@ export class OrgController extends Controller {
       ReqQuery: z.object({
         user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!").optional(),
         keyword: z.string(defaultError("Nama organisasi tidak valid!")).min(1).optional(),
+        ...zodPagination(),
       }),
-      ResBody: OrgResponseSchema.array(),
+      ResBody: z.object({
+        result: OrgResponseSchema.array(),
+        total: z.number(),
+      }),
     },
 
     handler: async (req, res) => {
-      const { user_id, keyword } = req.query;
-      const result = await this.org_service.getOrgs({
+      const { page, limit, user_id, keyword } = req.query;
+
+      const opts = {
         user_id: user_id != undefined ? Number(user_id) : undefined,
         keyword: keyword != undefined && keyword.length > 0 ? keyword : undefined,
-      });
-      res.status(200).json(result);
+        limit: limit != undefined ? Number(limit) : undefined,
+        page: limit != undefined ? Number(page) : undefined,
+      };
+
+      const result = await this.org_service.getOrgs(opts);
+      const count = await this.org_service.countOrgs(opts);
+
+      res.status(200).json({ result, total: Number(count.count) });
     },
   });
   OrgsDetailGet = new Route({

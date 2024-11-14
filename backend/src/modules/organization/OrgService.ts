@@ -41,8 +41,12 @@ export class OrgService implements Transactable<OrgService> {
   }
   factory = orgServiceFactory;
 
-  async getOrgs(filter?: { keyword?: string; user_id?: number }) {
+  async getOrgs(filter?: { keyword?: string; user_id?: number; page?: number; limit?: number }) {
     return await this.org_repo.getOrgs(filter);
+  }
+
+  async countOrgs(filter?: { keyword?: string; user_id?: number }) {
+    return await this.org_repo.countOrgs(filter);
   }
 
   async getOrgByID(id: number) {

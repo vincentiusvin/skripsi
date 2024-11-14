@@ -130,6 +130,10 @@ export class ProjectService implements Transactable<ProjectService> {
     await this.unassignMember(project_id, user_id);
   }
 
+  countProjects(filter?: { org_id?: number; user_id?: number; keyword?: string }) {
+    return this.project_repo.countProjects(filter);
+  }
+
   getProjects(filter?: {
     page?: number;
     limit?: number;

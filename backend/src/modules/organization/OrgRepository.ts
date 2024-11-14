@@ -1,6 +1,7 @@
-import { ExpressionBuilder, Kysely, RawBuilder } from "kysely";
+import { ExpressionBuilder, Kysely, RawBuilder, SelectQueryBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
+import { paginateQuery } from "../../helpers/pagination.js";
 import { OrgRoles, parseRole } from "./OrgMisc.js";
 
 const defaultOrgFields = [
@@ -42,17 +43,11 @@ export class OrgRepository {
     this.db = db;
   }
 
-  getOrgs(filter?: { keyword?: string; user_id?: number }) {
-    const { keyword, user_id } = filter ?? {};
-
-    let query = this.db
-      .selectFrom("ms_orgs")
-      .select((eb) => [
-        ...defaultOrgFields,
-        orgWithCategories(eb).as("org_categories"),
-        orgWithUsers(eb).as("org_users"),
-      ]);
-
+  applyFilterToQuery<O>(
+    query: SelectQueryBuilder<DB, "ms_orgs", O>,
+    filter?: { keyword?: string; user_id?: number },
+  ) {
+    const { user_id, keyword } = filter || {};
     if (user_id) {
       query = query.where((eb) =>
         eb(
@@ -69,6 +64,34 @@ export class OrgRepository {
     if (keyword != undefined && keyword.length !== 0) {
       query = query.where("ms_orgs.name", "ilike", `%${keyword}%`);
     }
+
+    return query;
+  }
+
+  async countOrgs(filter?: { keyword?: string; user_id?: number }) {
+    const { keyword, user_id } = filter || {};
+    let query = this.db.selectFrom("ms_orgs").select((eb) => eb.fn.countAll().as("count"));
+    query = this.applyFilterToQuery(query, { keyword, user_id });
+    return await query.executeTakeFirstOrThrow();
+  }
+
+  getOrgs(filter?: { keyword?: string; user_id?: number; page?: number; limit?: number }) {
+    const { keyword, user_id, page, limit } = filter ?? {};
+
+    let query = this.db
+      .selectFrom("ms_orgs")
+      .select((eb) => [
+        ...defaultOrgFields,
+        orgWithCategories(eb).as("org_categories"),
+        orgWithUsers(eb).as("org_users"),
+      ]);
+
+    query = this.applyFilterToQuery(query, { keyword, user_id });
+
+    query = paginateQuery(query, {
+      page,
+      limit,
+    });
 
     return query.execute();
   }

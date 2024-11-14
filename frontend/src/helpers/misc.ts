@@ -1,5 +1,12 @@
 import { useState } from "react";
 
+export function restrictToEnum<T extends Readonly<unknown[]>>(
+  obj: unknown,
+  options: T,
+): obj is T[number] {
+  return options.includes(obj as T[number]);
+}
+
 export function useList<T>(init: T[]) {
   const [list, setList] = useState(init);
 

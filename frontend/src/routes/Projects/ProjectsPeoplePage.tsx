@@ -25,9 +25,10 @@ function InviteMembersDialog(props: { project_id: number }) {
   const [inviteMembers, setInviteMembers] = useState(false);
   const [keyword, setKeyword] = useState<string>("");
   const [debouncedKeyword] = useDebounce(keyword, 300);
-  const { data: users } = useUsersGet({
+  const { data: users_raw } = useUsersGet({
     keyword: debouncedKeyword,
   });
+  const users = users_raw?.result;
 
   if (project == undefined) {
     return <Skeleton />;
@@ -139,7 +140,7 @@ function ProjectPeople(props: { project_id: number }) {
       {memberTypes.map((x, i) => (
         <Fragment key={i}>
           <Typography variant="h6" textAlign={"center"}>
-            {x.name}
+            {x.name} ({x.members.length})
           </Typography>
           {x.members.length ? (
             <Grid container width={"85%"} margin={"0 auto"} spacing={2} columnSpacing={4}>
