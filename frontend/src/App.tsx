@@ -15,6 +15,7 @@ import { queryClient } from "./helpers/queryclient";
 import { ThemeContext } from "./helpers/theme.ts";
 import HandleReportsPage from "./routes/Admin/HandleReportsPage.tsx";
 import ManageAccountsPage from "./routes/Admin/ManageAccountsPage.tsx";
+import ArticlesHomePage from "./routes/Articles/ArticlesListPage.tsx";
 import AuthPage from "./routes/AuthPage";
 import ChatroomForwarderPage from "./routes/ChatroomForwarder.tsx";
 import ContributionDetailPage from "./routes/Contributions/ContributionDetailPage/ContributionDetailPage.tsx";
@@ -171,6 +172,7 @@ function App() {
                     <Route path={"/manage-reports"} component={HandleReportsPage} />
                     <Route path={"/manage-accounts"} component={ManageAccountsPage} />
                     <Route path={"/settings"} component={SettingsPage} />
+                    <Route path={"/articles"} component={ArticlesHomePage} />
                   </Switch>
                 </Box>
               </Stack>
