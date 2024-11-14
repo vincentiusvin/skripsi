@@ -12,6 +12,35 @@ function looper<T>(times: number, func: (i: number) => T) {
   return ret;
 }
 
+async function addReports(db: Kysely<DB>) {
+  const report_to_gen = 100;
+  const users = await db.selectFrom("ms_users").select("id").execute();
+  const rooms = await db.selectFrom("ms_chatrooms").select("id").execute();
+
+  await db
+    .insertInto("ms_reports")
+    .values(
+      looper(report_to_gen, () => {
+        return {
+          title: faker.company.buzzPhrase(),
+          description: faker.lorem.paragraph(),
+          sender_id: faker.helpers.arrayElement(users).id,
+          chatroom_id: faker.helpers.maybe(() => faker.helpers.arrayElement(rooms).id, {
+            probability: 0.2,
+          }),
+          ...(faker.datatype.boolean()
+            ? {
+                status: faker.helpers.arrayElement(["Rejected", "Resolved"]),
+                resolved_at: faker.date.past(),
+                resolution: faker.lorem.sentence(),
+              }
+            : { status: "Pending" }),
+        };
+      }),
+    )
+    .execute();
+}
+
 async function addBans(db: Kysely<DB>) {
   const users = await db.selectFrom("ms_users").select("id").execute();
   const bans_to_add = 50;
@@ -278,6 +307,7 @@ async function seedData(db: Kysely<DB>) {
   await addContribs(db);
   await addChatrooms(db);
   await addBans(db);
+  await addReports(db);
 }
 
 export default seedData;
