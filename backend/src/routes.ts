@@ -26,12 +26,12 @@ import { suspensionServiceFactory } from "./modules/suspensions/SuspensionServic
 import { TaskController } from "./modules/task/TaskController.js";
 import { taskServiceFactory } from "./modules/task/TaskService.js";
 import { UserController } from "./modules/user/UserController.js";
-import { userServiceFactory } from "./modules/user/UserService.js";
+import { envUserServiceFactory } from "./modules/user/UserService.js";
 
 export function registerControllers(app: Application) {
   const tm = new TransactionManager(app.db);
 
-  const user_service = userServiceFactory(tm);
+  const user_service = envUserServiceFactory(tm);
   const preference_service = preferenceServiceFactory(tm);
   const notification_service = envNotificationServiceFactory(tm);
   const org_service = orgServiceFactory(tm);

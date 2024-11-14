@@ -24,9 +24,10 @@ function InviteMembersDialog(props: { org_id: number }) {
   const { data: org } = useOrgDetailGet({ id: org_id });
   const [keyword, setKeyword] = useState<string>("");
   const [debouncedKeyword] = useDebounce(keyword, 300);
-  const { data: users } = useUsersGet({
+  const { data: users_raw } = useUsersGet({
     keyword: debouncedKeyword,
   });
+  const users = users_raw?.result;
   const [inviteMembers, setInviteMembers] = useState(false);
 
   function reset() {

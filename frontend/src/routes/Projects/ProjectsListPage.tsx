@@ -3,26 +3,33 @@ import { InputAdornment, Tab, Tabs, TextField, Typography } from "@mui/material"
 import Grid from "@mui/material/Grid2";
 import { useDebounce } from "use-debounce";
 import ProjectCard from "../../components/Cards/ProjectCard.tsx";
-import { useSearchParams, useStateSearch } from "../../helpers/search.ts";
+import QueryPagination from "../../components/QueryPagination.tsx";
+import useQueryPagination from "../../components/QueryPagination/hook.ts";
+import { useStateSearch } from "../../helpers/search.ts";
 import { useProjectsGet } from "../../queries/project_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 
 function ProjectListPage() {
   const { data: session } = useSessionGet();
 
-  const searchHook = useSearchParams();
-  const [personal, setPersonal] = useStateSearch("personal", searchHook);
-  const [keyword, setKeyword] = useStateSearch("keyword", searchHook);
+  const limit = 12;
+  const [personal, setPersonal] = useStateSearch<string>("personal");
+  const [keyword, setKeyword] = useStateSearch<string>("keyword");
+  const [page, setPage] = useQueryPagination();
 
   const [debouncedKeyword] = useDebounce(keyword, 250);
 
-  const { data } = useProjectsGet({
+  const { data: projects_raw } = useProjectsGet({
+    keepPrev: true,
     user_id: personal === "true" && session?.logged ? session.user_id : undefined,
+    limit,
+    page,
     keyword:
       typeof debouncedKeyword === "string" && debouncedKeyword.length
         ? debouncedKeyword
         : undefined,
   });
+  const projects = projects_raw?.result;
 
   return (
     <Grid container spacing={2}>
@@ -55,6 +62,7 @@ function ProjectListPage() {
             } else {
               setPersonal(undefined);
             }
+            setPage(1);
           }}
         >
           <Tab label={"Semua Proyek"} value={"all"} />
@@ -87,10 +95,11 @@ function ProjectListPage() {
             } else {
               setKeyword(undefined);
             }
+            setPage(1);
           }}
         />
       </Grid>
-      {data?.map((x) => (
+      {projects?.map((x) => (
         <Grid
           key={x.project_id}
           size={{
@@ -103,6 +112,9 @@ function ProjectListPage() {
           <ProjectCard project_id={x.project_id} />
         </Grid>
       ))}
+      <Grid size={12}>
+        <QueryPagination limit={limit} total={projects_raw?.total} />
+      </Grid>
     </Grid>
   );
 }

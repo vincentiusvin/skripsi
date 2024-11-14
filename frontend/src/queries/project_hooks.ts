@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { API } from "../../../backend/src/routes";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
@@ -39,11 +39,13 @@ export function useProjectsGet(opts?: {
   org_id?: number;
   user_id?: number;
   keyword?: string;
+  keepPrev?: boolean;
 }) {
-  const { org_id, user_id, keyword, limit, page } = opts || {};
+  const { keepPrev, org_id, user_id, keyword, limit, page } = opts || {};
 
   return useQuery({
     queryKey: projectKeys.list(opts),
+    placeholderData: keepPrev ? keepPreviousData : undefined,
     queryFn: () =>
       new APIContext("ProjectsGet").fetch("/api/projects", {
         query: {

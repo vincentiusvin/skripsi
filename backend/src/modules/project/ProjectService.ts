@@ -6,14 +6,14 @@ import {
 } from "../notification/NotificationService.js";
 import { OrgService, orgServiceFactory } from "../organization/OrgService.js";
 import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
-import { UserService, userServiceFactory } from "../user/UserService.js";
+import { UserService, envUserServiceFactory } from "../user/UserService.js";
 import { ProjectRoles } from "./ProjectMisc.js";
 import { ProjectRepository } from "./ProjectRepository.js";
 
 export function projectServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const project_repo = new ProjectRepository(db);
-  const user_service = userServiceFactory(transaction_manager);
+  const user_service = envUserServiceFactory(transaction_manager);
   const preference_service = preferenceServiceFactory(transaction_manager);
   const notification_service = envNotificationServiceFactory(transaction_manager);
   const org_service = orgServiceFactory(transaction_manager);
@@ -128,6 +128,10 @@ export class ProjectService implements Transactable<ProjectService> {
       throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
     }
     await this.unassignMember(project_id, user_id);
+  }
+
+  countProjects(filter?: { org_id?: number; user_id?: number; keyword?: string }) {
+    return this.project_repo.countProjects(filter);
   }
 
   getProjects(filter?: {

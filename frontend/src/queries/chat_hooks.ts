@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { API } from "../../../backend/src/routes";
 import type { MessageData } from "../../../backend/src/sockets";
 import { APIContext } from "../helpers/fetch";
+import { handleOptionalStringCreation } from "../helpers/misc.ts";
 import { queryClient } from "../helpers/queryclient";
 import { socket } from "../helpers/socket";
 
@@ -136,23 +137,38 @@ export function useProjectsDetailChatroomsPost(opts: {
 
 export function useUsersDetailChatroomsGet(opts: {
   user_id: number | undefined;
+  keyword?: string;
   retry?: (failureCount: number, error: Error) => boolean;
 }) {
-  const { user_id, retry } = opts;
+  const { user_id, keyword, retry } = opts;
+
+  const cleanedKeyword = handleOptionalStringCreation(keyword);
+
   return useQuery({
-    queryKey: chatKeys.list({ user_id }),
+    queryKey: chatKeys.list({ user_id, keyword: cleanedKeyword }),
     queryFn: () =>
-      new APIContext("UsersDetailChatroomsGet").fetch(`/api/users/${user_id}/chatrooms`),
+      new APIContext("UsersDetailChatroomsGet").fetch(`/api/users/${user_id}/chatrooms`, {
+        query: {
+          keyword: cleanedKeyword,
+        },
+      }),
     retry: retry,
   });
 }
 
-export function useProjectsDetailChatroomsGet(opts: { project_id: number }) {
-  const { project_id } = opts;
+export function useProjectsDetailChatroomsGet(opts: { project_id: number; keyword?: string }) {
+  const { project_id, keyword } = opts;
+
+  const cleanedKeyword = handleOptionalStringCreation(keyword);
+
   return useQuery({
-    queryKey: chatKeys.list({ project_id }),
+    queryKey: chatKeys.list({ project_id, keyword: cleanedKeyword }),
     queryFn: () =>
-      new APIContext("ProjectsDetailChatroomsGet").fetch(`/api/projects/${project_id}/chatrooms`),
+      new APIContext("ProjectsDetailChatroomsGet").fetch(`/api/projects/${project_id}/chatrooms`, {
+        query: {
+          keyword: cleanedKeyword,
+        },
+      }),
   });
 }
 

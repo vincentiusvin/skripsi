@@ -1,4 +1,12 @@
-import { Add, Delete, Edit, KeyboardArrowDown, KeyboardArrowUp, Save } from "@mui/icons-material";
+import {
+  Add,
+  Delete,
+  Edit,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  Save,
+  SearchOutlined,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -10,6 +18,7 @@ import {
   DialogTitle,
   Divider,
   IconButton,
+  InputAdornment,
   Paper,
   Skeleton,
   Stack,
@@ -17,17 +26,23 @@ import {
   TableBody,
   TableCell,
   TableContainer,
+  TableFooter,
   TableHead,
+  TablePagination,
   TableRow,
   TextField,
+  Toolbar,
   Typography,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
+import { useDebounce } from "use-debounce";
+import useQueryPagination from "../../components/QueryPagination/hook.ts";
 import StyledLink from "../../components/StyledLink.tsx";
 import UserLabel from "../../components/UserLabel.tsx";
+import { useStateSearch } from "../../helpers/search.ts";
 import {
   useSuspensionsDetailDelete,
   useSuspensionsDetailGet,
@@ -314,35 +329,91 @@ function AccountRow(props: {
 }
 
 function ManageAccounts() {
-  const { data: users } = useUsersGet();
+  const limit = 10;
+  const [page, setPage] = useQueryPagination();
+  const [keyword, setKeyword] = useStateSearch<string>("keyword");
 
-  if (!users) {
-    return <Skeleton />;
-  }
+  const [debouncedKeyword] = useDebounce(keyword, 300);
+
+  const { data: users_raw } = useUsersGet({
+    limit,
+    page,
+    keyword: debouncedKeyword?.toString(),
+  });
+  const users = users_raw?.result;
 
   return (
     <Box>
       <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
         Atur Pengguna
       </Typography>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Pengguna</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Aktif Sejak</TableCell>
-              <TableCell>Ditangguhkan Hingga</TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.map((user) => (
-              <AccountRow user={user} key={user.user_id} />
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Paper>
+        <Toolbar
+          sx={{
+            display: "flex",
+          }}
+        >
+          <Typography variant="h6" flexGrow={1}>
+            Daftar Pengguna
+          </Typography>
+          <TextField
+            size="small"
+            sx={{
+              my: 2,
+            }}
+            value={keyword}
+            label={"Cari pengguna"}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="start">
+                    <SearchOutlined />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            onChange={(e) => {
+              setKeyword(e.target.value);
+              setPage(1);
+            }}
+          />
+        </Toolbar>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Pengguna</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Aktif Sejak</TableCell>
+                <TableCell>Ditangguhkan Hingga</TableCell>
+                <TableCell />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {users != undefined ? (
+                users.map((user) => <AccountRow user={user} key={user.user_id} />)
+              ) : (
+                <Skeleton />
+              )}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TablePagination
+                  showFirstButton
+                  showLastButton
+                  rowsPerPage={limit}
+                  rowsPerPageOptions={[limit]}
+                  count={users_raw?.total ?? -1}
+                  page={page - 1}
+                  onPageChange={(_, p) => {
+                    setPage(p + 1);
+                  }}
+                ></TablePagination>
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </TableContainer>
+      </Paper>
     </Box>
   );
 }

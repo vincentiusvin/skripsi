@@ -1,6 +1,7 @@
 import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types";
+import { paginateQuery } from "../../helpers/pagination.js";
 import { ContributionStatus, parseContribStatus } from "./ContributionMisc.js";
 
 const defaultContributionFields = (eb: ExpressionBuilder<DB, "ms_contributions">) =>
@@ -63,14 +64,10 @@ export class ContributionRepository {
       query = query.where("ms_contributions.status", "=", status);
     }
 
-    if (limit != undefined) {
-      query = query.limit(limit);
-    }
-
-    if (page != undefined && limit != undefined) {
-      const offset = (page - 1) * limit;
-      query = query.offset(offset);
-    }
+    query = paginateQuery(query, {
+      page,
+      limit,
+    });
 
     const result = await query.execute();
 

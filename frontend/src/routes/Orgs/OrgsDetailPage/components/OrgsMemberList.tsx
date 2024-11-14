@@ -12,18 +12,18 @@ function OrgsMemberList(props: { org_id: number }) {
     return <Skeleton />;
   }
 
+  const users = data.org_users.filter((x) => x.user_role === "Admin");
+
   return (
     <Stack spacing={2}>
       <Typography variant="h6" fontWeight={"bold"}>
-        Pengurus
+        Pengurus ({users.length})
       </Typography>
       <Divider />
       <Stack spacing={1}>
-        {data.org_users
-          .filter((x) => x.user_role === "Admin")
-          .map((x) => (
-            <OrgMember key={x.user_id} user_id={x.user_id} org_id={org_id} />
-          ))}
+        {users.map((x) => (
+          <OrgMember key={x.user_id} user_id={x.user_id} org_id={org_id} />
+        ))}
       </Stack>
     </Stack>
   );

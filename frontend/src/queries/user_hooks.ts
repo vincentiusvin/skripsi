@@ -34,6 +34,68 @@ export function useUsersPost(opts?: { onSuccess?: () => void }) {
   });
 }
 
+export function useOTPToken(opts: { email: string }) {
+  const { email } = opts;
+
+  return useQuery({
+    queryKey: ["registration", email],
+    queryFn: () =>
+      new APIContext("OTPsPost").fetch("/api/otps", {
+        method: "POST",
+        body: {
+          user_email: email,
+        },
+      }),
+    staleTime: 60 * 60 * 1000,
+  });
+}
+
+export function useOTPVerify(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
+
+  return useMutation({
+    mutationFn: new APIContext("OTPsPut").bodyFetch("/api/otps", {
+      method: "PUT",
+    }),
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useUserValidation(opts: { email?: string; name?: string }) {
+  const { email, name } = opts;
+
+  return useQuery({
+    queryKey: ["validation", { email, name }],
+    queryFn: () =>
+      new APIContext("UsersValidate").fetch("/api/users-validation", {
+        method: "get",
+        query: {
+          email,
+          name,
+        },
+      }),
+  });
+}
+
+export function useOTPsResend(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
+
+  return useMutation({
+    mutationFn: new APIContext("OTPsMail").bodyFetch("/api/otps-mail", {
+      method: "post",
+    }),
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
 export function useUsersGet(opts?: { keyword?: string; page?: number; limit?: number }) {
   const { keyword, page, limit } = opts ?? {};
   const clean_keyword = keyword != undefined && keyword.length > 0 ? keyword : undefined;

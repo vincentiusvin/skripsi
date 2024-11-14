@@ -6,9 +6,10 @@ import { useProjectsGet } from "../../../../queries/project_hooks.ts";
 function OrgsProjectList(props: { org_id: number }) {
   const { org_id } = props;
 
-  const { data: projects } = useProjectsGet({
+  const { data: projects_raw } = useProjectsGet({
     org_id: org_id,
   });
+  const projects = projects_raw?.result;
 
   if (!projects) {
     return <Skeleton />;
@@ -17,7 +18,7 @@ function OrgsProjectList(props: { org_id: number }) {
   return (
     <Stack spacing={2}>
       <Typography variant="h6" fontWeight={"bold"}>
-        Proyek
+        Proyek ({projects.length})
       </Typography>
       <Divider />
       <Grid container spacing={2}>

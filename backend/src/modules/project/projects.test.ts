@@ -22,7 +22,7 @@ describe("projects api", () => {
 
   it("should be able to get projects", async () => {
     const read_req = await getProjects();
-    const result = await read_req.json();
+    const { result } = await read_req.json();
     const found = result.find((x) => x.org_id === caseData.org.id);
 
     expect(read_req.status).eq(200);

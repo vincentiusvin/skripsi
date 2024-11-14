@@ -14,9 +14,10 @@ import { useProjectsGet } from "../../../../queries/project_hooks.ts";
 
 function UserProjectsList(props: { user_id: number }) {
   const { user_id } = props;
-  const { data: projects } = useProjectsGet({
+  const { data: projects_raw } = useProjectsGet({
     user_id,
   });
+  const projects = projects_raw?.result;
 
   const [modalOpen, setModalOpen] = useState(false);
 

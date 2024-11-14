@@ -6,13 +6,13 @@ import {
 } from "../notification/NotificationService.js";
 import { PreferenceService, preferenceServiceFactory } from "../preferences/PreferenceService.js";
 import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
-import { UserService, userServiceFactory } from "../user/UserService.js";
+import { UserService, envUserServiceFactory } from "../user/UserService.js";
 import { ChatRepository } from "./ChatroomRepository.js";
 
 export function chatServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const chat_repo = new ChatRepository(db);
-  const user_service = userServiceFactory(transaction_manager);
+  const user_service = envUserServiceFactory(transaction_manager);
   const preference_service = preferenceServiceFactory(transaction_manager);
   const notification_service = envNotificationServiceFactory(transaction_manager);
   const project_service = projectServiceFactory(transaction_manager);
@@ -179,8 +179,8 @@ export class ChatService implements Transactable<ChatService> {
     return await this.repo.getChatroomByID(chatroom_id);
   }
 
-  async getProjectChatrooms(project_id: number) {
-    return await this.repo.getProjectChatrooms(project_id);
+  async getProjectChatrooms(opts: { project_id: number; keyword?: string }) {
+    return await this.repo.getChatrooms(opts);
   }
 
   async addProjectChatroom(project_id: number, chatroom_name: string, sender_id: number) {
@@ -194,8 +194,8 @@ export class ChatService implements Transactable<ChatService> {
     });
   }
 
-  async getUserChatrooms(user_id: number) {
-    return await this.repo.getUserChatrooms(user_id);
+  async getUserChatrooms(opts: { user_id: number; keyword?: string }) {
+    return await this.repo.getChatrooms(opts);
   }
 
   async getFile(file_id: number, sender_id: number) {

@@ -222,24 +222,28 @@ export class ChatRepository {
       .executeTakeFirst();
   }
 
-  async getProjectChatrooms(project_id: number) {
-    return await this.db
-      .selectFrom("ms_chatrooms")
-      .select((eb) => [...defaultChatroomFields, chatroomWithUsers(eb).as("chatroom_users")])
-      .orderBy("chatroom_id", "desc")
-      .where("project_id", "=", project_id)
-      .execute();
-  }
+  async getChatrooms(opts: { project_id?: number; user_id?: number; keyword?: string }) {
+    const { project_id, user_id, keyword } = opts;
 
-  async getUserChatrooms(user_id: number) {
-    return await this.db
+    let query = this.db
       .selectFrom("ms_chatrooms")
       .select((eb) => [...defaultChatroomFields, chatroomWithUsers(eb).as("chatroom_users")])
-      .orderBy("chatroom_id", "desc")
-      .where("ms_chatrooms.id", "in", (eb) =>
+      .orderBy("chatroom_id", "desc");
+
+    if (project_id != undefined) {
+      query = query.where("project_id", "=", project_id);
+    }
+    if (user_id != undefined) {
+      query = query.where("ms_chatrooms.id", "in", (eb) =>
         eb.selectFrom("chatrooms_users").select("chatroom_id").where("user_id", "=", user_id),
-      )
-      .execute();
+      );
+    }
+
+    if (keyword != undefined) {
+      query = query.where("ms_chatrooms.name", "ilike", `%${keyword}%`);
+    }
+
+    return await query.execute();
   }
 
   async addUserChatroom(user_id: number, chatroom_name: string) {

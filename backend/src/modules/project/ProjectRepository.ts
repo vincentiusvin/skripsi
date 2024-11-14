@@ -1,6 +1,7 @@
-import { ExpressionBuilder, Kysely, RawBuilder } from "kysely";
+import { ExpressionBuilder, Kysely, RawBuilder, SelectQueryBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
+import { paginateQuery } from "../../helpers/pagination.js";
 import { ProjectRoles, parseRole } from "./ProjectMisc.js";
 
 const defaultProjectFields = [
@@ -113,30 +114,22 @@ export class ProjectRepository {
       .execute();
   }
 
-  async getProjects(filter?: {
-    limit?: number;
-    org_id?: number;
-    user_id?: number;
-    keyword?: string;
-    page?: number;
-  }) {
-    const { page, org_id, user_id, keyword, limit } = filter || {};
-
-    let projects = this.db
-      .selectFrom("ms_projects")
-      .select((eb) => [
-        ...defaultProjectFields,
-        projectWithMembers(eb).as("project_members"),
-        projectWithCategories(eb).as("project_categories"),
-      ])
-      .orderBy("created_at desc");
+  applyFilterToQuery<O>(
+    query: SelectQueryBuilder<DB, "ms_projects", O>,
+    filter?: {
+      org_id?: number;
+      user_id?: number;
+      keyword?: string;
+    },
+  ) {
+    const { org_id, user_id, keyword } = filter || {};
 
     if (org_id != undefined) {
-      projects = projects.where("org_id", "=", Number(org_id));
+      query = query.where("org_id", "=", Number(org_id));
     }
 
     if (user_id != undefined) {
-      projects = projects.where((eb) =>
+      query = query.where((eb) =>
         eb(
           "ms_projects.id",
           "in",
@@ -149,19 +142,45 @@ export class ProjectRepository {
     }
 
     if (keyword != undefined) {
-      projects = projects.where("ms_projects.name", "ilike", `%${keyword}%`);
+      query = query.where("ms_projects.name", "ilike", `%${keyword}%`);
     }
 
-    if (limit != undefined) {
-      projects = projects.limit(limit);
-    }
+    return query;
+  }
 
-    if (page != undefined && limit != undefined) {
-      const offset = (page - 1) * limit;
-      projects = projects.offset(offset);
-    }
+  async countProjects(filter?: { org_id?: number; user_id?: number; keyword?: string }) {
+    let query = this.db.selectFrom("ms_projects").select((eb) => eb.fn.countAll().as("count"));
+    query = this.applyFilterToQuery(query, filter);
 
-    return await projects.execute();
+    return await query.executeTakeFirstOrThrow();
+  }
+
+  async getProjects(filter?: {
+    limit?: number;
+    org_id?: number;
+    user_id?: number;
+    keyword?: string;
+    page?: number;
+  }) {
+    const { page, limit } = filter ?? {};
+
+    let query = this.db
+      .selectFrom("ms_projects")
+      .select((eb) => [
+        ...defaultProjectFields,
+        projectWithMembers(eb).as("project_members"),
+        projectWithCategories(eb).as("project_categories"),
+      ])
+      .orderBy("created_at desc");
+
+    query = this.applyFilterToQuery(query, filter);
+
+    query = paginateQuery(query, {
+      page,
+      limit,
+    });
+
+    return query.execute();
   }
 
   async getProjectByID(project_id: number) {

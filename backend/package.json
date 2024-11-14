@@ -14,6 +14,7 @@
     "db:int:generate-types": "kysely-codegen --env-file=../.env --out-file ./src/db/db_types.d.ts",
     "db:int:migrate": "tsx --env-file=../.env src/migrate.ts",
     "db:dummy": "tsx --env-file=../.env src/dummy.ts",
+    "db:seed": "tsx --env-file=../.env src/seed.ts",
     "db:latest": "npm run db:int:migrate latest && npm run db:int:generate-types",
     "db:init": "npm run db:int:migrate init && npm run db:int:generate-types"
   },
@@ -37,6 +38,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.2.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/chai": "^4.3.19",
     "@types/chai-subset": "^1.3.5",
