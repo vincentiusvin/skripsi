@@ -1,6 +1,7 @@
 import { ExpressionBuilder, Kysely, SelectQueryBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
+import { paginateQuery } from "../../helpers/pagination.js";
 
 const defaultUserFields = (eb: ExpressionBuilder<DB, "ms_users">) =>
   [
@@ -99,17 +100,17 @@ export class UserRepository {
       .executeTakeFirst();
   }
 
-  applyFilterToQuery<T extends SelectQueryBuilder<DB, "ms_users", object>>(
-    query: T,
+  applyFilterToQuery<O>(
+    query: SelectQueryBuilder<DB, "ms_users", O>,
     filter?: { keyword?: string; is_admin?: boolean },
   ) {
     const { is_admin, keyword } = filter ?? {};
     if (is_admin) {
-      query = query.where("is_admin", "=", is_admin) as T;
+      query = query.where("is_admin", "=", is_admin);
     }
 
     if (keyword != undefined) {
-      query = query.where("ms_users.name", "ilike", `%${keyword}%`) as T;
+      query = query.where("ms_users.name", "ilike", `%${keyword}%`);
     }
 
     return query;
@@ -128,15 +129,10 @@ export class UserRepository {
     let query = this.db.selectFrom("ms_users").select(defaultUserFields);
 
     query = this.applyFilterToQuery(query, { is_admin, keyword });
-
-    if (limit != undefined) {
-      query = query.limit(limit);
-    }
-
-    if (page != undefined && limit != undefined) {
-      const offset = (page - 1) * limit;
-      query = query.offset(offset);
-    }
+    query = paginateQuery(query, {
+      page,
+      limit,
+    });
 
     return await query.execute();
   }
