@@ -11,7 +11,7 @@ import { clearDB } from "../../test/setup-test.js";
 import { MockedEmailService } from "../email/MockedEmailService.js";
 import { UserService, userServiceFactory } from "./UserService.js";
 
-describe("users api", () => {
+describe.only("users api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
 
@@ -28,7 +28,7 @@ describe("users api", () => {
     const in_user = caseData.plain_user;
 
     const res = await getUsers();
-    const result = await res.json();
+    const { result } = await res.json();
     const found = result.find((x) => x.user_id === in_user.id);
 
     expect(res.status).eq(200);

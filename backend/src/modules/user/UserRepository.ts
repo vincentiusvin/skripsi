@@ -1,4 +1,4 @@
-import { ExpressionBuilder, Kysely } from "kysely";
+import { ExpressionBuilder, Kysely, SelectQueryBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
 
@@ -99,17 +99,35 @@ export class UserRepository {
       .executeTakeFirst();
   }
 
+  applyFilterToQuery<T extends SelectQueryBuilder<DB, "ms_users", object>>(
+    query: T,
+    filter?: { keyword?: string; is_admin?: boolean },
+  ) {
+    const { is_admin, keyword } = filter ?? {};
+    if (is_admin) {
+      query = query.where("is_admin", "=", is_admin) as T;
+    }
+
+    if (keyword != undefined) {
+      query = query.where("ms_users.name", "ilike", `%${keyword}%`) as T;
+    }
+
+    return query;
+  }
+
+  async countUsers(opts?: { is_admin?: boolean; keyword?: string }) {
+    const { is_admin, keyword } = opts ?? {};
+
+    let query = this.db.selectFrom("ms_users").select((eb) => eb.fn.countAll().as("count"));
+    query = this.applyFilterToQuery(query, { is_admin, keyword });
+    return await query.executeTakeFirstOrThrow();
+  }
+
   async getUsers(opts?: { is_admin?: boolean; keyword?: string; limit?: number; page?: number }) {
     const { page, limit, is_admin, keyword } = opts ?? {};
     let query = this.db.selectFrom("ms_users").select(defaultUserFields);
 
-    if (is_admin) {
-      query = query.where("is_admin", "=", is_admin);
-    }
-
-    if (keyword != undefined) {
-      query = query.where("ms_users.name", "ilike", `%${keyword}%`);
-    }
+    query = this.applyFilterToQuery(query, { is_admin, keyword });
 
     if (limit != undefined) {
       query = query.limit(limit);
