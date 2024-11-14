@@ -14,7 +14,7 @@ function OrgsListPage() {
   const [keyword, setKeyword] = useStateSearch("keyword");
   const [debouncedKeyword] = useDebounce(keyword, 250);
 
-  const [page] = useQueryPagination();
+  const [page, setPage] = useQueryPagination();
   const limit = 10;
   const { data: orgs_raw } = useOrgsGet({
     keyword: debouncedKeyword?.toString(),
@@ -95,6 +95,7 @@ function OrgsListPage() {
             } else {
               setKeyword(undefined);
             }
+            setPage(1);
           }}
         />
       </Stack>
