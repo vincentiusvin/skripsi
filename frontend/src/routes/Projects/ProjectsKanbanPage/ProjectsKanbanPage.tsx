@@ -303,7 +303,7 @@ function Kanban(props: { project_id: number }) {
         <Stack direction={"row"} spacing={5} flexGrow={1} pb={8} overflow={"scroll"} pt={2}>
           {tempTasksData.map(({ bucket, tasks }, i) => (
             <Box key={bucket.id}>
-              <Stack spacing={1} width={"250px"} direction={"row"} alignItems={"center"}>
+              <Stack spacing={1} direction={"row"} alignItems={"center"}>
                 <Typography
                   flexGrow={1}
                   variant="h6"
