@@ -23,17 +23,25 @@ export type KanbanData = {
 
 export type KanbanActions =
   | {
-      type: "move";
+      type: "move-over-task";
       task_id: number;
-      over_id: number;
+      over_task_id: number;
+    }
+  | {
+      type: "move-over-container";
+      task_id: number;
+      over_container_id: number;
     }
   | {
       type: "lift";
       task_id: number;
     }
   | {
+      type: "unlift";
+    }
+  | {
       type: "replace";
-      task_id: number;
+      data: KanbanData;
     };
 
 export function findTaskFromBucket(buckets: KanbanData["buckets"], task_id: number) {
@@ -46,7 +54,7 @@ export function findTaskFromBucket(buckets: KanbanData["buckets"], task_id: numb
   return undefined;
 }
 
-function reducer(state: KanbanData, action: KanbanActions): KanbanData {
+export function kanbanReducer(state: KanbanData, action: KanbanActions): KanbanData {
   const { buckets, draggedTask } = state;
 
   if (action.type === "lift") {
@@ -62,21 +70,79 @@ function reducer(state: KanbanData, action: KanbanActions): KanbanData {
       },
     };
   }
-  if (action.type === "move") {
-    const origin_bucket = findTaskFromBucket(buckets, action.task_id);
-    const target_bucket = findTaskFromBucket(buckets, action.over_id);
 
+  if (action.type === "unlift") {
+    return {
+      ...state,
+      draggedTask: undefined,
+    };
+  }
+
+  if (action.type === "replace") {
+    return action.data;
+  }
+
+  if (action.type === "move-over-task") {
     const cloned = structuredClone(buckets);
+
+    // delete from prev
+    const origin = findTaskFromBucket(cloned, action.task_id);
+    if (origin == undefined) {
+      return state;
+    }
+    const task = origin.bucket.tasks[origin.index];
+    origin.bucket.tasks = origin.bucket.tasks.filter((x) => x.id !== action.task_id);
+
+    // insert to new at idx
+    const target = findTaskFromBucket(cloned, action.over_task_id);
+    if (target == undefined) {
+      return state;
+    }
+    target.bucket.tasks = target.bucket.tasks.flatMap((x, i) =>
+      i !== target.index ? [x] : [task, x],
+    );
+
+    return {
+      ...draggedTask,
+      buckets: cloned,
+    };
+  }
+
+  if (action.type === "move-over-container") {
+    const cloned = structuredClone(buckets);
+
+    // delete from prev
+    const origin = findTaskFromBucket(cloned, action.task_id);
+    if (origin == undefined) {
+      return state;
+    }
+    const task = origin.bucket.tasks[origin.index];
+    origin.bucket.tasks = origin.bucket.tasks.filter((x) => x.id !== action.task_id);
+
+    // insert to new at idx
+    const target = cloned.find((x) => x.id === action.over_container_id);
+    if (target == undefined) {
+      return state;
+    }
+    target.tasks = target.tasks.concat(task);
+
+    return {
+      ...draggedTask,
+      buckets: cloned,
+    };
   }
 
   return state;
 }
 
 export function useKanbanReducer() {
-  return useReducer(reducer, { buckets: [] });
+  return useReducer(kanbanReducer, { buckets: [] });
 }
 
-export const KanbanContext = createContext<ReturnType<typeof useKanbanReducer>>([{}, () => {}]);
+export const KanbanContext = createContext<ReturnType<typeof useKanbanReducer>>([
+  { buckets: [] },
+  () => {},
+]);
 
 export function useKanbanContext() {
   return useContext(KanbanContext);
