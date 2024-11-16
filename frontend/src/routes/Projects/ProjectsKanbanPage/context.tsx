@@ -7,9 +7,11 @@ export type KanbanData = {
   };
   buckets: {
     id: number;
+    unique_id: string;
     name: string;
     tasks: {
       id: number;
+      unique_id: string;
       name: string;
       description: string | null;
       end_at: Date | null;
