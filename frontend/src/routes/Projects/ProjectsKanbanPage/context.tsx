@@ -57,7 +57,7 @@ export function findTaskFromBucket(buckets: KanbanData["buckets"], task_id: numb
 }
 
 export function kanbanReducer(state: KanbanData, action: KanbanActions): KanbanData {
-  const { buckets, draggedTask } = state;
+  const { buckets } = state;
 
   if (action.type === "lift") {
     const associated_bucket = findTaskFromBucket(buckets, action.task_id);
@@ -105,7 +105,10 @@ export function kanbanReducer(state: KanbanData, action: KanbanActions): KanbanD
     );
 
     return {
-      ...draggedTask,
+      draggedTask: {
+        task_bucket: target.bucket.id,
+        task_id: action.task_id,
+      },
       buckets: cloned,
     };
   }
@@ -129,7 +132,10 @@ export function kanbanReducer(state: KanbanData, action: KanbanActions): KanbanD
     target.tasks = target.tasks.concat(task);
 
     return {
-      ...draggedTask,
+      draggedTask: {
+        task_bucket: action.over_container_id,
+        task_id: action.task_id,
+      },
       buckets: cloned,
     };
   }

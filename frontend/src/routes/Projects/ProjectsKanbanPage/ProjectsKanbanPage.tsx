@@ -205,10 +205,6 @@ function Kanban(props: { project_id: number }) {
             return;
           }
 
-          dispatch({
-            type: "unlift",
-          });
-
           const nextTaskID: number | undefined = foundTask.bucket.tasks[foundTask.index + 1]?.id;
 
           updateTask({
@@ -217,11 +213,11 @@ function Kanban(props: { project_id: number }) {
             before_id: nextTaskID,
           });
         }}
-        onDragCancel={() =>
+        onDragCancel={() => {
           dispatch({
             type: "unlift",
-          })
-        }
+          });
+        }}
         onDragOver={({ over, active }) => {
           if (
             over == null ||
