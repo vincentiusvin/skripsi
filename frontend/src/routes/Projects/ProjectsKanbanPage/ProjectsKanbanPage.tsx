@@ -122,7 +122,7 @@ function Bucket(props: { bucket_id: number; project_id: number }) {
               : "transparent",
         }}
       >
-        <Stack spacing={5} height={1}>
+        <Stack spacing={5} height={1} width={300}>
           {me.tasks.map((task) => (
             <DraggableTask key={task.id} task_id={task.id} project_id={project_id}></DraggableTask>
           ))}
