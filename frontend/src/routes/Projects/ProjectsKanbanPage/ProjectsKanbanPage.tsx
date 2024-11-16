@@ -55,8 +55,11 @@ function DraggableTask(props: { task_id: number; project_id: number }) {
   });
 
   let handleProps: object | undefined = undefined;
+
+  // dont pass listener if it doesn't need to listen.
+  // to avoid rerenders
+  // this is so cursed
   if (draggedTask == undefined || draggedTask.task_id === task_id) {
-    // pass listener if undefined
     handleProps = {
       ...listeners,
       ref: activatorRef,
