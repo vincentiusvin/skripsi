@@ -13,7 +13,8 @@ export function useSessionGet() {
   });
 }
 
-export function useSessionDelete() {
+export function useSessionDelete(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
   return useMutation({
     mutationFn: () =>
       new APIContext("SessionDelete").fetch("/api/session", {
@@ -21,6 +22,9 @@ export function useSessionDelete() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: sessionKeys.session() });
+      if (onSuccess) {
+        onSuccess();
+      }
     },
   });
 }
