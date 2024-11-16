@@ -1,6 +1,7 @@
 import { DragIndicator } from "@mui/icons-material";
 import { AvatarGroup, Box, IconButton, Paper, Skeleton, Stack, Typography } from "@mui/material";
 import dayjs from "dayjs";
+import { memo } from "react";
 import UserAvatar from "../../../components/UserAvatar.tsx";
 import avatarFallback from "../../../helpers/avatar_fallback.tsx";
 import { useTasksDetailGet } from "../../../queries/task_hooks.ts";
@@ -10,10 +11,9 @@ function Task(props: {
   task_id: number;
   project_id: number;
   isDragged?: boolean;
-  fullProps?: object;
   handleProps?: object;
 }) {
-  const { project_id, task_id, isDragged, fullProps, handleProps } = props;
+  const { project_id, task_id, isDragged, handleProps } = props;
 
   const { data: task } = useTasksDetailGet({ task_id });
 
@@ -23,7 +23,6 @@ function Task(props: {
 
   return (
     <Paper
-      {...fullProps}
       sx={{
         width: 300,
         px: 2,
@@ -116,4 +115,4 @@ function Task(props: {
   );
 }
 
-export default Task;
+export default memo(Task);

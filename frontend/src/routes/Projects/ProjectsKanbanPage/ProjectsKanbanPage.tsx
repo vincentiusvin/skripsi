@@ -17,7 +17,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Alert, Box, Button, Stack, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useParams } from "wouter";
 import {
   useFormattedTasks,
@@ -46,39 +46,39 @@ function DraggableTask(props: { task_id: number; project_id: number }) {
   const {
     attributes,
     listeners,
-    setActivatorNodeRef: activatorRef,
     setNodeRef: draggableRef,
+    setActivatorNodeRef: activatorRef,
     transform,
     transition,
   } = useSortable({
     id: me.unique_id,
   });
 
-  const { handleProps, fullProps } = useMemo(() => {
-    return {
-      handleProps: {
-        ref: activatorRef,
-        ...listeners,
-      },
-      fullProps: {
-        ref: draggableRef,
-        ...attributes,
-        style: {
-          transform: CSS.Transform.toString(transform),
-          transition,
-        },
-      },
+  let handleProps: object | undefined = undefined;
+  if (draggedTask == undefined || draggedTask.task_id === task_id) {
+    // pass listener if undefined
+    handleProps = {
+      ...listeners,
+      ref: activatorRef,
     };
-  }, [activatorRef, listeners, draggableRef, attributes, transform, transition]);
+  }
 
   return (
-    <Task
-      project_id={project_id}
-      task_id={task_id}
-      isDragged={draggedTask?.task_id === task_id}
-      handleProps={handleProps}
-      fullProps={fullProps}
-    />
+    <Box
+      ref={draggableRef}
+      {...attributes}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+    >
+      <Task
+        project_id={project_id}
+        task_id={task_id}
+        isDragged={draggedTask?.task_id === task_id}
+        handleProps={handleProps}
+      />
+    </Box>
   );
 }
 
