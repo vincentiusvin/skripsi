@@ -22,6 +22,7 @@ import ProjectCard from "../components/Cards/ProjectCard.tsx";
 import StyledLink from "../components/StyledLink.tsx";
 import { useContributionsGet } from "../queries/contribution_hooks.ts";
 import { useProjectsGet } from "../queries/project_hooks.ts";
+import { useSessionGet } from "../queries/sesssion_hooks.ts";
 
 const landingData = [
   {
@@ -173,6 +174,8 @@ function NewestProjects() {
 }
 
 function HugeTitle() {
+  const { data: session_data } = useSessionGet();
+
   return (
     <Box
       sx={{
@@ -212,34 +215,36 @@ function HugeTitle() {
         <Typography variant="h6" fontWeight={"light"} textAlign={"center"}>
           Di mana <b>developer relawan</b> dan <b>organisasi nirlaba</b> bertemu
         </Typography>
-        <Stack direction="row" justifyContent={"center"} spacing={4}>
-          <StyledLink to={"/login"}>
-            <Button
-              variant="contained"
-              sx={{
-                fontSize: 16,
-                paddingX: 8,
-                paddingY: 1,
-              }}
-              color="secondary"
-            >
-              Masuk
-            </Button>
-          </StyledLink>
-          <StyledLink to="/register">
-            <Button
-              sx={{
-                fontSize: 16,
-                paddingX: 8,
-                paddingY: 1,
-              }}
-              color="primary"
-              variant="contained"
-            >
-              Daftar
-            </Button>
-          </StyledLink>
-        </Stack>
+        {!session_data?.logged ? (
+          <Stack direction="row" justifyContent={"center"} spacing={4}>
+            <StyledLink to={"/login"}>
+              <Button
+                variant="contained"
+                sx={{
+                  fontSize: 16,
+                  paddingX: 8,
+                  paddingY: 1,
+                }}
+                color="secondary"
+              >
+                Masuk
+              </Button>
+            </StyledLink>
+            <StyledLink to="/register">
+              <Button
+                sx={{
+                  fontSize: 16,
+                  paddingX: 8,
+                  paddingY: 1,
+                }}
+                color="primary"
+                variant="contained"
+              >
+                Daftar
+              </Button>
+            </StyledLink>
+          </Stack>
+        ) : null}
       </Stack>
     </Box>
   );
