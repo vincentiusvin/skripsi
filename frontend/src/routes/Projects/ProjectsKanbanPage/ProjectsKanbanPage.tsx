@@ -17,7 +17,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Alert, Box, Button, Stack, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams } from "wouter";
 import {
   useFormattedTasks,
@@ -42,6 +42,7 @@ function DraggableTask(props: { task_id: number; project_id: number }) {
   const { buckets, draggedTask } = kanbanState;
   const { bucket, index } = findTaskFromBucket(buckets, task_id)!;
   const me = bucket.tasks[index];
+
   const {
     attributes,
     listeners,
@@ -53,25 +54,30 @@ function DraggableTask(props: { task_id: number; project_id: number }) {
     id: me.unique_id,
   });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  const { handleProps, fullProps } = useMemo(() => {
+    return {
+      handleProps: {
+        ref: activatorRef,
+        ...listeners,
+      },
+      fullProps: {
+        ref: draggableRef,
+        ...attributes,
+        style: {
+          transform: CSS.Transform.toString(transform),
+          transition,
+        },
+      },
+    };
+  }, [activatorRef, listeners, draggableRef, attributes, transform, transition]);
 
   return (
     <Task
       project_id={project_id}
       task_id={task_id}
       isDragged={draggedTask?.task_id === task_id}
-      handleProps={{
-        ref: activatorRef,
-        ...listeners,
-      }}
-      fullProps={{
-        ref: draggableRef,
-        ...attributes,
-        style,
-      }}
+      handleProps={handleProps}
+      fullProps={fullProps}
     />
   );
 }
@@ -270,6 +276,9 @@ function Kanban(props: { project_id: number }) {
             if (activeType !== "task" || Number.isNaN(activeId) || Number.isNaN(overId)) {
               return;
             }
+            const isBelowOverItem =
+              active.rect.current.translated &&
+              active.rect.current.translated.top > over.rect.top + over.rect.height;
 
             if (overType === "bucket") {
               dispatch({
@@ -282,6 +291,7 @@ function Kanban(props: { project_id: number }) {
                 type: "move-over-task",
                 over_task_id: overId,
                 task_id: activeId,
+                below: !!isBelowOverItem,
               });
             }
           }}

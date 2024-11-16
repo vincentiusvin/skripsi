@@ -28,6 +28,7 @@ export type KanbanActions =
       type: "move-over-task";
       task_id: number;
       over_task_id: number;
+      below?: boolean;
     }
   | {
       type: "move-over-container";
@@ -101,7 +102,7 @@ export function kanbanReducer(state: KanbanData, action: KanbanActions): KanbanD
       return state;
     }
     target.bucket.tasks = target.bucket.tasks.flatMap((x, i) =>
-      i !== target.index ? [x] : [task, x],
+      i !== target.index ? [x] : action.below ? [x, task] : [task, x],
     );
 
     return {
