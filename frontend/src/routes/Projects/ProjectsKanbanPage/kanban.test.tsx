@@ -3,6 +3,7 @@ import { KanbanData, findTaskFromBucket, kanbanReducer } from "./context.tsx";
 function makeTask(id: number) {
   return {
     id,
+    unique_id: `task-${id}`,
     name: `task${id}`,
     description: `desc${id}`,
     end_at: null,
@@ -15,16 +16,19 @@ const state: KanbanData = {
   buckets: [
     {
       id: 1,
+      unique_id: `bucket-1`,
       name: "Backlog",
       tasks: [makeTask(1), makeTask(2), makeTask(3)],
     },
     {
       id: 2,
+      unique_id: `bucket-2`,
       name: "Doing",
       tasks: [makeTask(4), makeTask(5), makeTask(6)],
     },
     {
       id: 3,
+      unique_id: `bucket-3`,
       name: "Done",
       tasks: [],
     },
