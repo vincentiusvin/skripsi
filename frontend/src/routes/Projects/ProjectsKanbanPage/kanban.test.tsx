@@ -75,10 +75,11 @@ describe("kanban logic", () => {
       if (task_id_1 == task_id_2) {
         continue;
       }
-      it(`should be able to move task ${task_id_1} to be above ${task_id_2}`, () => {
+      it(`should be able to move task ${task_id_1} to occupy the position of task ${task_id_2}`, () => {
         const in_task_id = task_id_1;
         const in_over_task_id = task_id_2;
 
+        const overLoc = findTaskFromBucket(state.buckets, in_over_task_id);
         const result = kanbanReducer(state, {
           type: "move-over-task",
           task_id: in_task_id,
@@ -89,7 +90,7 @@ describe("kanban logic", () => {
         // should be in the new place
         expect(newLoc).to.not.eq(undefined);
         expect(newLoc?.bucket.tasks[newLoc.index].id).to.eq(in_task_id);
-        expect(newLoc?.bucket.tasks[newLoc.index + 1].id).to.eq(in_over_task_id);
+        expect(newLoc?.index).to.eq(overLoc?.index);
 
         let found = 0;
         let tally = 0;

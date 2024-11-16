@@ -88,22 +88,19 @@ export function kanbanReducer(state: KanbanData, action: KanbanActions): KanbanD
   if (action.type === "move-over-task") {
     const cloned = structuredClone(buckets);
 
-    // delete from prev
     const origin = findTaskFromBucket(cloned, action.task_id);
-    if (origin == undefined) {
+    // ambil index targetnya emang perlu sebelum hapus
+    const target = findTaskFromBucket(cloned, action.over_task_id);
+
+    // delete from prev
+    if (origin == undefined || target == undefined) {
       return state;
     }
     const task = origin.bucket.tasks[origin.index];
     origin.bucket.tasks = origin.bucket.tasks.filter((x) => x.id !== action.task_id);
 
-    // insert to new at idx
-    const target = findTaskFromBucket(cloned, action.over_task_id);
-    if (target == undefined) {
-      return state;
-    }
-    target.bucket.tasks = target.bucket.tasks.flatMap((x, i) =>
-      i !== target.index ? [x] : action.below ? [x, task] : [task, x],
-    );
+    // insert at index
+    target.bucket.tasks.splice(target.index, 0, task);
 
     return {
       draggedTask: {
