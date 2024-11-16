@@ -15,9 +15,9 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Alert, Box, BoxProps, Button, Skeleton, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Stack, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams } from "wouter";
 import {
   useFormattedTasks,
@@ -29,93 +29,118 @@ import AddBucket from "./AddBucket.tsx";
 import AddTaskDialog from "./AddTaskDialog.tsx";
 import EditBucketDialog from "./EditBucketDialog.tsx";
 import Task from "./TaskCard.tsx";
+import {
+  KanbanContext,
+  findTaskFromBucket,
+  useKanbanContext,
+  useKanbanReducer,
+} from "./context.tsx";
 
-function extractID(str: string): number | undefined {
-  const id = str.split("-")[1];
-  return id != undefined ? Number(id) : undefined;
-}
+function DraggableTask(props: { task_id: number; project_id: number }) {
+  const { project_id, task_id } = props;
+  const [kanbanState] = useKanbanContext();
+  const { buckets, draggedTask } = kanbanState;
+  const { bucket, index } = findTaskFromBucket(buckets, task_id)!;
+  const me = bucket.tasks[index];
 
-function DraggableTask(props: { id: string; project_id: number; isDragged?: boolean }) {
-  const { project_id, id, isDragged } = props;
   const {
     attributes,
     listeners,
-    setActivatorNodeRef: activatorRef,
     setNodeRef: draggableRef,
+    setActivatorNodeRef: activatorRef,
     transform,
     transition,
   } = useSortable({
-    id,
+    id: me.unique_id,
   });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  let handleProps: object | undefined = undefined;
 
-  const task_id = extractID(id);
-  if (task_id == undefined) {
-    return <Skeleton />;
+  // dont pass listener if it doesn't need to listen.
+  // to avoid rerenders
+  // this is so cursed
+  if (draggedTask == undefined || draggedTask.task_id === task_id) {
+    handleProps = {
+      ...listeners,
+      ref: activatorRef,
+    };
   }
 
   return (
-    <Task
-      project_id={project_id}
-      task_id={task_id}
-      isDragged={isDragged}
-      handleProps={{
-        ref: activatorRef,
-        ...listeners,
+    <Box
+      ref={draggableRef}
+      {...attributes}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
       }}
-      fullProps={{
-        ref: draggableRef,
-        ...attributes,
-        style,
-      }}
-    />
+    >
+      <Task
+        project_id={project_id}
+        task_id={task_id}
+        isDragged={draggedTask?.task_id === task_id}
+        handleProps={handleProps}
+      />
+    </Box>
   );
 }
 
-function Column(props: { id: string; items: string[]; children: ReactNode } & BoxProps) {
-  const { id, items, children, ...rest } = props;
+function Bucket(props: { bucket_id: number; project_id: number }) {
+  const { bucket_id, project_id } = props;
+  const [kanbanState] = useKanbanContext();
+  const { buckets, draggedTask } = kanbanState;
+
+  const me = buckets.find((x) => x.id === bucket_id)!;
+
   const { setNodeRef: draggableRef } = useDroppable({
-    id,
+    id: me.unique_id,
   });
+
+  const items = me.tasks.map((x) => x.unique_id);
+
+  let dragState: "hover" | "active" | "rest" = "rest";
+  if (draggedTask !== undefined) {
+    if (draggedTask.task_bucket === bucket_id) {
+      dragState = "hover";
+    } else {
+      dragState = "active";
+    }
+  }
 
   return (
     <SortableContext items={items} strategy={verticalListSortingStrategy}>
-      <Box ref={draggableRef} {...rest}>
-        {children}
+      <Box
+        ref={draggableRef}
+        position={"relative"}
+        sx={{
+          height: 1,
+          transitionDuration: "250ms",
+          border: 3,
+          borderStyle: "dashed",
+          borderColor: (theme) =>
+            dragState === "hover"
+              ? theme.palette.success.main
+              : dragState === "active"
+              ? theme.palette.warning.light
+              : "transparent",
+        }}
+      >
+        <Stack spacing={5} height={1} width={300}>
+          {me.tasks.map((task) => (
+            <DraggableTask key={task.id} task_id={task.id} project_id={project_id}></DraggableTask>
+          ))}
+        </Stack>
       </Box>
     </SortableContext>
   );
 }
-
-type TempTasks = {
-  bucket: {
-    id: string;
-    name: string;
-  };
-  tasks:
-    | {
-        id: string;
-        name: string;
-        description: string | null;
-        end_at: Date | null;
-        start_at: Date | null;
-        users: {
-          user_id: number;
-        }[];
-      }[]
-    | undefined;
-}[];
 
 function Kanban(props: { project_id: number }) {
   const { project_id } = props;
   const { mutate: updateTask } = useTasksDetailPut({});
   const { data: tasksData, isFetching } = useFormattedTasks({ project_id });
 
-  const [tempTasksData, setTempTasksData] = useState<TempTasks>([]);
+  const [kanbanState, dispatch] = useKanbanReducer();
 
   const { mutate: resetBuckets } = useProjectBucketsReset({
     project_id,
@@ -136,44 +161,23 @@ function Kanban(props: { project_id: number }) {
 
     const reshaped = tasksData.map((x) => {
       return {
-        bucket: {
-          ...x.bucket,
-          id: `bucket-${x.bucket.id}`,
-        },
-        tasks: x.tasks?.map((x) => ({
-          ...x,
-          id: `task-${x.id}`,
-        })),
+        ...x.bucket,
+        unique_id: "bucket-" + x.bucket.id,
+        tasks:
+          x.tasks?.map((x) => ({
+            ...x,
+            unique_id: "task-" + x.id,
+          })) ?? [],
       };
     });
 
-    setTempTasksData(reshaped);
-  }, [tasksData, isFetching]);
-
-  const [activeDragID, setActiveDragID] = useState<string | null>();
-
-  function findLocation(cell_id: string) {
-    for (const [ctrIdx, container] of tempTasksData.entries()) {
-      if (container.bucket.id === cell_id) {
-        return { ctrIdx };
-      }
-      const cellIdx = container.tasks?.findIndex((x) => x.id === cell_id);
-      if (cellIdx == undefined || cellIdx === -1) {
-        continue;
-      }
-      return {
-        ctrIdx,
-        cellIdx,
-      };
-    }
-    return undefined;
-  }
-
-  const activeLoc = activeDragID ? findLocation(activeDragID) : undefined;
-  const activelyDragged =
-    activeLoc && tempTasksData && activeLoc.cellIdx != undefined
-      ? tempTasksData[activeLoc.ctrIdx].tasks?.[activeLoc.cellIdx]
-      : undefined;
+    dispatch({
+      type: "replace",
+      data: {
+        buckets: reshaped,
+      },
+    });
+  }, [tasksData, isFetching, dispatch]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -184,183 +188,153 @@ function Kanban(props: { project_id: number }) {
   );
 
   return (
-    <Stack minHeight={"inherit"}>
-      <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
-        Tugas
-      </Typography>
-      {tasksData.length === 0 ? (
-        <Alert
-          severity="info"
-          action={
-            <Button
-              size="small"
-              color="inherit"
-              sx={{
-                margin: "auto",
-              }}
-              onClick={() => {
-                resetBuckets();
-              }}
-            >
-              Pasang Template
-            </Button>
-          }
-        >
-          Proyek ini belum memiliki kategori tugas. Anda dapat menggunakan template default dengan
-          mengklik tombol di samping.
-        </Alert>
-      ) : null}
-      <DndContext
-        sensors={sensors}
-        onDragStart={(x) => setActiveDragID(x.active.id.toString())}
-        onDragEnd={({ active }) => {
-          setActiveDragID(null);
+    <KanbanContext.Provider value={[kanbanState, dispatch]}>
+      <Stack minHeight={"inherit"}>
+        <Typography variant="h4" fontWeight={"bold"} textAlign={"center"} marginBottom={2}>
+          Tugas
+        </Typography>
+        {tasksData.length === 0 ? (
+          <Alert
+            severity="info"
+            action={
+              <Button
+                size="small"
+                color="inherit"
+                sx={{
+                  margin: "auto",
+                }}
+                onClick={() => {
+                  resetBuckets();
+                }}
+              >
+                Pasang Template
+              </Button>
+            }
+          >
+            Proyek ini belum memiliki kategori tugas. Anda dapat menggunakan template default dengan
+            mengklik tombol di samping.
+          </Alert>
+        ) : null}
+        <DndContext
+          sensors={sensors}
+          onDragStart={({ active }) => {
+            if (typeof active.id == "number") {
+              return;
+            }
 
-          if (typeof active.id === "number") {
-            return;
-          }
+            const [activeType, _activeId] = active.id.split("-");
+            const activeId = Number(_activeId);
+            if (activeType !== "task" || Number.isNaN(activeId)) {
+              return;
+            }
 
-          const loc = findLocation(active.id);
-          if (loc?.cellIdx == undefined) {
-            return;
-          }
+            dispatch({
+              type: "lift",
+              task_id: activeId,
+            });
+          }}
+          onDragEnd={({ active }) => {
+            if (typeof active.id === "number") {
+              return;
+            }
 
-          const bucket = tempTasksData[loc.ctrIdx].bucket;
-          const tasks = tempTasksData[loc.ctrIdx].tasks;
-          const task = tasks?.[loc.cellIdx];
+            const [activeType, _activeId] = active.id.split("-");
+            const activeId = Number(_activeId);
+            if (activeType !== "task" || Number.isNaN(activeId)) {
+              return;
+            }
 
-          if (bucket == undefined || tasks == undefined || task == undefined) {
-            return;
-          }
+            const foundTask = findTaskFromBucket(kanbanState.buckets, activeId);
+            if (foundTask == undefined) {
+              return;
+            }
 
-          const bucket_id = extractID(bucket.id);
-          const task_id = extractID(task.id);
+            const nextTaskID: number | undefined = foundTask.bucket.tasks[foundTask.index + 1]?.id;
 
-          if (bucket_id == undefined || task_id == undefined) {
-            return;
-          }
-
-          const next_task = tasks[loc.cellIdx + 1];
-          let next_id: number | null = null;
-
-          if (next_task !== undefined) {
-            next_id = extractID(next_task.id) ?? null;
-          }
-
-          updateTask({
-            bucket_id,
-            task_id,
-            before_id: next_id,
-          });
-        }}
-        onDragCancel={() => setActiveDragID(null)}
-        onDragOver={({ over, active }) => {
-          // move between containers...
-          setTempTasksData((x) => {
+            updateTask({
+              bucket_id: foundTask.bucket.id,
+              task_id: activeId,
+              before_id: nextTaskID,
+            });
+          }}
+          onDragCancel={() => {
+            dispatch({
+              type: "unlift",
+            });
+          }}
+          onDragOver={({ over, active }) => {
             if (
               over == null ||
               typeof over.id === "number" ||
               typeof active.id === "number" ||
               over.id === active.id // kadang bisa collide sama diri sendiri
             ) {
-              return x;
+              return;
             }
-            const overLoc = findLocation(over.id);
-            const activeLoc = findLocation(active.id.toString());
+            const [activeType, _activeId] = active.id.split("-");
+            const [overType, _overId] = over.id.split("-");
+            const activeId = Number(_activeId);
+            const overId = Number(_overId);
 
-            if (overLoc == null || activeLoc == null || activeLoc.cellIdx == undefined) {
-              return x;
+            if (activeType !== "task" || Number.isNaN(activeId) || Number.isNaN(overId)) {
+              return;
             }
+            const isBelowOverItem =
+              active.rect.current.translated &&
+              active.rect.current.translated.top > over.rect.top + over.rect.height;
 
-            const cloned = structuredClone(x);
-            const overCtr = cloned[overLoc.ctrIdx];
-            const activeCtr = cloned[activeLoc.ctrIdx];
-            const activeCell = activeCtr.tasks?.[activeLoc.cellIdx];
-
-            if (activeCell == undefined) {
-              return x;
-            }
-
-            cloned[activeLoc.ctrIdx].tasks = activeCtr.tasks?.filter((x) => x.id !== active.id);
-
-            const cutIdx = overLoc.cellIdx;
-            if (cutIdx != undefined) {
-              // insert to array
-              cloned[overLoc.ctrIdx].tasks = [
-                ...(overCtr.tasks?.slice(0, cutIdx) ?? []),
-                activeCell,
-                ...(overCtr.tasks?.slice(cutIdx) ?? []),
-              ];
+            if (overType === "bucket") {
+              dispatch({
+                type: "move-over-container",
+                over_container_id: overId,
+                task_id: activeId,
+              });
             } else {
-              // append
-              cloned[overLoc.ctrIdx].tasks?.push(activeCell);
+              dispatch({
+                type: "move-over-task",
+                over_task_id: overId,
+                task_id: activeId,
+                below: !!isBelowOverItem,
+              });
             }
-
-            return cloned;
-          });
-        }}
-      >
-        <Stack direction={"row"} spacing={5} flexGrow={1} pb={8} overflow={"scroll"} pt={2}>
-          {tempTasksData.map(({ bucket, tasks }, i) => (
-            <Box key={bucket.id}>
-              <Stack spacing={1} width={"250px"} direction={"row"} alignItems={"center"}>
-                <Typography
-                  flexGrow={1}
-                  variant="h6"
-                  sx={{
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {bucket.name}
-                </Typography>
-                <EditBucketDialog bucket_id={extractID(bucket.id)!} />
-                <AddTaskDialog bucket_id={extractID(bucket.id)!} project_id={project_id} />
-              </Stack>
-              <Column
-                position={"relative"}
-                sx={{
-                  height: 1,
-                  transitionDuration: "250ms",
-                  border: 3,
-                  borderStyle: "dashed",
-                  borderColor: (theme) =>
-                    activeDragID
-                      ? activeLoc?.ctrIdx === i
-                        ? theme.palette.success.main
-                        : theme.palette.warning.light
-                      : "transparent",
-                }}
-                id={bucket.id}
-                items={tasks?.map((x) => x.id) ?? []}
-              >
-                <Stack spacing={5} height={1}>
-                  {tasks?.map((task) => (
-                    <DraggableTask
-                      key={task.id}
-                      id={task.id}
-                      project_id={project_id}
-                      isDragged={task.id === activeDragID}
-                    ></DraggableTask>
-                  ))}
+          }}
+        >
+          <Stack direction={"row"} spacing={5} flexGrow={1} pb={8} overflow={"scroll"} pt={2}>
+            {kanbanState.buckets.map((bucket) => (
+              <Box key={bucket.id}>
+                <Stack spacing={1} direction={"row"} alignItems={"center"}>
+                  <Typography
+                    flexGrow={1}
+                    variant="h6"
+                    sx={{
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {bucket.name}
+                  </Typography>
+                  <EditBucketDialog bucket_id={bucket.id} />
+                  <AddTaskDialog bucket_id={bucket.id} project_id={project_id} />
                 </Stack>
-              </Column>
+                <Bucket bucket_id={bucket.id} project_id={project_id} />
+              </Box>
+            ))}
+            <Box>
+              <DragOverlay>
+                {kanbanState.draggedTask != undefined ? (
+                  <Task project_id={project_id} task_id={kanbanState.draggedTask.task_id}></Task>
+                ) : null}
+              </DragOverlay>
             </Box>
-          ))}
-          <Box>
-            <DragOverlay>
-              {activelyDragged != undefined ? (
-                <Task project_id={project_id} task_id={extractID(activelyDragged.id)!}></Task>
-              ) : null}
-            </DragOverlay>
-          </Box>
-          <Box>
-            <AddBucket project_id={project_id} />
-          </Box>
-        </Stack>
-      </DndContext>
-    </Stack>
+            <Box>
+              <AddBucket project_id={project_id} />
+            </Box>
+          </Stack>
+        </DndContext>
+      </Stack>
+    </KanbanContext.Provider>
   );
 }
+
 function ProjectKanbanPage() {
   const { project_id: id } = useParams();
   const project_id = Number(id);

@@ -4,7 +4,6 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Paper,
   Skeleton,
   Stack,
   Typography,
@@ -42,14 +41,7 @@ function UserFriendList(props: { user_id: number }) {
               {friends
                 .filter((x) => x.status === "Accepted")
                 .map((x) => (
-                  <Paper
-                    key={x.user_id}
-                    sx={{
-                      p: 2,
-                    }}
-                  >
-                    <UserCard user_id={x.user_id} />
-                  </Paper>
+                  <UserCard key={x.user_id} user_id={x.user_id} />
                 ))}
             </Stack>
           ) : (
