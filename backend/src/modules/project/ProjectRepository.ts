@@ -142,7 +142,24 @@ export class ProjectRepository {
     }
 
     if (keyword != undefined) {
-      query = query.where("ms_projects.name", "ilike", `%${keyword}%`);
+      query = query.where((eb) =>
+        eb.or([
+          eb("ms_projects.name", "ilike", `%${keyword}%`),
+          eb(
+            "ms_projects.id",
+            "in",
+            eb
+              .selectFrom("ms_category_projects")
+              .innerJoin(
+                "categories_projects",
+                "ms_category_projects.id",
+                "categories_projects.category_id",
+              )
+              .select("categories_projects.project_id")
+              .where("ms_category_projects.name", "ilike", `%${keyword}%`),
+          ),
+        ]),
+      );
     }
 
     return query;
