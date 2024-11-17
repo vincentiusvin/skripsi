@@ -106,69 +106,37 @@ export function useChatroomsDetailDelete(opts: { chatroom_id: number; onSuccess?
   });
 }
 
-export function useUsersDetailChatroomsPost(opts: { user_id?: number; onSuccess?: () => void }) {
-  const { user_id, onSuccess } = opts;
+export function useChatroomsPost(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
   return useMutation({
-    mutationFn: new APIContext("UsersDetailChatroomsPost").bodyFetch(
-      `/api/users/${user_id}/chatrooms`,
-      {
-        method: "POST",
-      },
-    ),
+    mutationFn: new APIContext("ChatroomsPost").bodyFetch(`/api/chatrooms`, {
+      method: "POST",
+    }),
     onSuccess: onSuccess,
   });
 }
 
-export function useProjectsDetailChatroomsPost(opts: {
-  project_id: number;
-  onSuccess?: () => void;
-}) {
-  const { project_id, onSuccess } = opts;
-  return useMutation({
-    mutationFn: new APIContext("ProjectsDetailChatroomsPost").bodyFetch(
-      `/api/projects/${project_id}/chatrooms`,
-      {
-        method: "POST",
-      },
-    ),
-    onSuccess: onSuccess,
-  });
-}
-
-export function useUsersDetailChatroomsGet(opts: {
-  user_id: number | undefined;
+export function useChatroomsGet(opts: {
+  user_id?: number;
+  project_id?: number;
   keyword?: string;
   retry?: (failureCount: number, error: Error) => boolean;
 }) {
-  const { user_id, keyword, retry } = opts;
+  const { user_id, project_id, keyword, retry } = opts;
 
   const cleanedKeyword = handleOptionalStringCreation(keyword);
 
   return useQuery({
-    queryKey: chatKeys.list({ user_id, keyword: cleanedKeyword }),
+    queryKey: chatKeys.list({ user_id, keyword: cleanedKeyword, project_id }),
     queryFn: () =>
-      new APIContext("UsersDetailChatroomsGet").fetch(`/api/users/${user_id}/chatrooms`, {
+      new APIContext("ChatroomsGet").fetch(`/api/chatrooms`, {
         query: {
+          project_id: project_id?.toString(),
+          user_id: user_id?.toString(),
           keyword: cleanedKeyword,
         },
       }),
     retry: retry,
-  });
-}
-
-export function useProjectsDetailChatroomsGet(opts: { project_id: number; keyword?: string }) {
-  const { project_id, keyword } = opts;
-
-  const cleanedKeyword = handleOptionalStringCreation(keyword);
-
-  return useQuery({
-    queryKey: chatKeys.list({ project_id, keyword: cleanedKeyword }),
-    queryFn: () =>
-      new APIContext("ProjectsDetailChatroomsGet").fetch(`/api/projects/${project_id}/chatrooms`, {
-        query: {
-          keyword: cleanedKeyword,
-        },
-      }),
   });
 }
 
