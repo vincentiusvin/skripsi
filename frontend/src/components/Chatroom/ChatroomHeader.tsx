@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, MoreVert } from "@mui/icons-material";
-import { IconButton, Menu, Paper, Skeleton, Stack, Typography } from "@mui/material";
+import { IconButton, Paper, Popover, Skeleton, Stack, Typography } from "@mui/material";
 import { useState } from "react";
 import { useChatroomsDetailGet } from "../../queries/chat_hooks.ts";
 import { AddMembersDialog, ChangeNameDialog, DeleteRoom, LeaveRoom } from "./ChatroomMisc.tsx";
@@ -51,9 +51,13 @@ function ChatroomHeader(props: {
         >
           {room.chatroom_name}
         </Typography>
-        <Menu
+        <Popover
           open={menuAnchor != undefined}
           anchorEl={menuAnchor}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
           onClose={() => setMenuAnchor(undefined)}
         >
           {room.project_id == null ? <AddMembersDialog chatroom_id={chatroom_id} /> : null}
@@ -76,7 +80,7 @@ function ChatroomHeader(props: {
               }}
             />
           )}
-        </Menu>
+        </Popover>
         <IconButton variant="outlined" onClick={(e) => setMenuAnchor(e.currentTarget)}>
           <MoreVert />
         </IconButton>
