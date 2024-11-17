@@ -286,6 +286,11 @@ export class ChatService implements Transactable<ChatService> {
   }
 
   private async validateChatroomMember(user_id: number, sender_id: number) {
+    const our_data = await this.user_service.getUserDetail(sender_id);
+    if (our_data?.user_is_admin) {
+      return;
+    }
+
     const user_data = await this.user_service.getUserDetail(user_id);
     if (user_data == undefined) {
       throw new Error("Gagal menemukan pengguna tersebut!");
