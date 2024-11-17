@@ -61,7 +61,7 @@ function ProjectsActivityPage() {
   const project_id = Number(id);
 
   return (
-    <AuthorizeProjects allowedRoles={["Admin"]}>
+    <AuthorizeProjects allowedRoles={["Admin", "Dev"]}>
       <ProjectTimeline project_id={project_id} />
     </AuthorizeProjects>
   );
