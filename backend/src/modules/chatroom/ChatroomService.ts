@@ -101,8 +101,8 @@ export class ChatService implements Transactable<ChatService> {
     return is_admin;
   }
 
-  async getMessages(chatroom_id: number) {
-    return await this.repo.getMessages(chatroom_id);
+  async getMessages(opts: { chatroom_id: number; limit?: number; before_message_id?: number }) {
+    return await this.repo.getMessages(opts);
   }
 
   private async sendMessageNotification(message_id: number) {

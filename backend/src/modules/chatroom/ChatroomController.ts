@@ -339,11 +339,21 @@ export class ChatController extends Controller {
       Params: z.object({
         chatroom_id: zodStringReadableAsNumber("Nomor ruang chat tidak valid!"),
       }),
+      ReqQuery: z.object({
+        limit: zodStringReadableAsNumber("Limit tidak valid!").optional(),
+        before_message_id: zodStringReadableAsNumber("Angka pesan tidak valid!").optional(),
+      }),
       ResBody: MessageResponseSchema.array(),
     },
     handler: async (req, res) => {
       const { chatroom_id: chatroom_id_str } = req.params;
       const chatroom_id = Number(chatroom_id_str);
+
+      const { limit: limit_raw, before_message_id: before_message_id_raw } = req.query;
+      const limit = limit_raw != undefined ? Number(limit_raw) : undefined;
+      const before_message_id =
+        before_message_id_raw != undefined ? Number(before_message_id_raw) : undefined;
+
       const user_id = req.session.user_id!;
 
       const val = await this.chat_service.isAllowed(chatroom_id, user_id);
@@ -351,7 +361,7 @@ export class ChatController extends Controller {
         throw new AuthError("Anda tidak memiliki akses untuk membaca chat ini!");
       }
 
-      const result = await this.chat_service.getMessages(chatroom_id);
+      const result = await this.chat_service.getMessages({ chatroom_id, limit, before_message_id });
 
       res.status(200).json(result);
     },

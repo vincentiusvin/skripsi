@@ -106,7 +106,13 @@ describe("chatting api", () => {
     const send_req = await sendMessage(in_chat.id, { message: in_message }, cookie);
     expect(send_req.status).to.eq(201);
 
-    const read_req = await getChatroomMessages(caseData.chat.id, cookie);
+    const read_req = await getChatroomMessages(
+      {
+        chatroom_id: in_chat.id,
+      },
+      cookie,
+    );
+
     const result = await read_req.json();
     const sent_message = result.find((x) => x.message === in_message);
 
@@ -148,9 +154,15 @@ describe("chatting api", () => {
 
   it("should reject unauthorized viewers", async () => {
     const in_member = caseData.org_user;
+    const in_chat = caseData.chat;
 
     const cookie = await getLoginCookie(in_member.name, in_member.password);
-    const read_req = await getChatroomMessages(caseData.chat.id, cookie);
+    const read_req = await getChatroomMessages(
+      {
+        chatroom_id: in_chat.id,
+      },
+      cookie,
+    );
 
     expect(read_req.status).to.eq(401);
   });
@@ -178,6 +190,22 @@ describe("chatting api", () => {
         filename: x.filename,
       })),
     );
+  });
+
+  it("should be able to paginate messages", async () => {
+    const in_user = caseData.chat_user;
+    const in_chat = caseData.chat;
+
+    const cookie = await getLoginCookie(in_user.name, in_user.password);
+    const read_req = await getChatroomMessages(
+      {
+        chatroom_id: in_chat.id,
+        limit: 1,
+      },
+      cookie,
+    );
+    const result = await read_req.json();
+    console.log(result);
   });
 
   it("should allow users to attach files to sent messages", async () => {
@@ -304,12 +332,24 @@ function getChatroomDetail(chatroom_id: number, cookie: string) {
   });
 }
 
-function getChatroomMessages(chatroom_id: number, cookie: string) {
+function getChatroomMessages(
+  opts: {
+    chatroom_id: number;
+    limit?: number;
+    before_message_id?: number;
+  },
+  cookie: string,
+) {
+  const { chatroom_id, limit, before_message_id } = opts;
   return new APIContext("ChatroomsDetailMessagesGet").fetch(
     `/api/chatrooms/${chatroom_id}/messages`,
     {
       headers: {
         cookie: cookie,
+      },
+      query: {
+        before_message_id: before_message_id?.toString(),
+        limit: limit?.toString(),
       },
       credentials: "include",
       method: "get",

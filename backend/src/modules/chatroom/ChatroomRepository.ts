@@ -65,13 +65,22 @@ export class ChatRepository {
       .executeTakeFirst();
   }
 
-  async getMessages(chatroom_id: number) {
-    return await this.db
+  async getMessages(opts: { chatroom_id: number; limit?: number; before_message_id?: number }) {
+    const { chatroom_id, before_message_id, limit } = opts;
+    let query = this.db
       .selectFrom("ms_messages")
       .select(defaultMessageFields)
       .where("ms_messages.chatroom_id", "=", chatroom_id)
-      .orderBy("id asc")
-      .execute();
+      .orderBy("id desc");
+
+    if (before_message_id != undefined) {
+      query = query.where("ms_messages.id", "<", before_message_id);
+    }
+    if (limit != undefined) {
+      query = query.limit(limit);
+    }
+
+    return query.execute();
   }
 
   async addMessage(
