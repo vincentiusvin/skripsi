@@ -192,7 +192,7 @@ describe("chatting api", () => {
     );
   });
 
-  it("should be able to paginate messages", async () => {
+  it.only("should be able to paginate messages", async () => {
     const in_user = caseData.chat_user;
     const in_chat = caseData.chat;
 

@@ -37,12 +37,15 @@ function ChatroomSelection(props: {
   }
 
   let subheader: string | undefined;
-  if (messages != undefined && messages.length > 0) {
-    const last_msg = messages[messages.length - 1];
-    if (last_msg.message.length !== 0) {
-      subheader = last_msg.message;
-    } else {
-      subheader = "File";
+  if (messages != undefined) {
+    const page = messages.pages[0];
+    if (page != undefined) {
+      const last_msg = page[0];
+      if (last_msg.message.length !== 0) {
+        subheader = last_msg.message;
+      } else {
+        subheader = "File";
+      }
     }
   }
 

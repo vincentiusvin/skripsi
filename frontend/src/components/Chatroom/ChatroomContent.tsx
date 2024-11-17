@@ -21,7 +21,7 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { MessageData } from "../../../../backend/src/sockets";
 import { fileToBase64DataURL } from "../../helpers/file.ts";
 import {
@@ -444,17 +444,12 @@ function ChatroomTypingArea(props: { chatroom_id: number }) {
 
 export function ChatroomContent(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
-  const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
-
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (bottomRef.current !== null) {
-      bottomRef.current.scrollIntoView({
-        block: "end",
-      });
-    }
-  }, [messages?.length]);
+  const {
+    data: _messages,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useChatroomsDetailMessagesGet({ chatroom_id });
+  const messages = _messages?.pages.flatMap((x) => x).reverse();
 
   return (
     <Box
@@ -464,9 +459,25 @@ export function ChatroomContent(props: { chatroom_id: number }) {
         flexDirection: "column",
       }}
     >
-      <Stack mt={2} marginLeft={2} spacing={1} overflow={"auto"} flexGrow={1} flexBasis={0}>
-        {messages?.map((x, i) => (
-          <Box key={i} ref={i === messages.length - 1 ? bottomRef : null}>
+      <Stack
+        mt={2}
+        onScroll={(e) => {
+          const element = e.currentTarget;
+          if (element.scrollTop !== 0) {
+            return;
+          }
+          if (!isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+        marginLeft={2}
+        spacing={1}
+        overflow={"auto"}
+        flexGrow={1}
+        flexBasis={0}
+      >
+        {messages?.map((x) => (
+          <Box key={x.id}>
             <Message message={x} chatroom_id={chatroom_id} />
           </Box>
         ))}

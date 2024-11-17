@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { API } from "../../../backend/src/routes";
 import type { MessageData } from "../../../backend/src/sockets";
@@ -37,12 +37,32 @@ export function useChatroomsDetailGet(opts: {
   });
 }
 
+type ChatroomMessages = API["ChatroomsDetailMessagesGet"]["ResBody"];
+type ChatroomMessagesPages = {
+  pages: ChatroomMessages[];
+  pageParams: (undefined | string)[];
+};
+
 export function useChatroomsDetailMessagesGet(opts: { chatroom_id: number }) {
   const { chatroom_id } = opts;
-  return useQuery({
+  return useInfiniteQuery<ChatroomMessages>({
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => {
+      const last_message = lastPage[lastPage.length - 1]?.id;
+      return last_message.toString();
+    },
     queryKey: messageKeys.list(chatroom_id),
-    queryFn: () =>
-      new APIContext("ChatroomsDetailMessagesGet").fetch(`/api/chatrooms/${chatroom_id}/messages`),
+    queryFn: ({ pageParam }) => {
+      return new APIContext("ChatroomsDetailMessagesGet").fetch(
+        `/api/chatrooms/${chatroom_id}/messages`,
+        {
+          query: {
+            before_message_id: typeof pageParam === "string" ? pageParam : undefined,
+            limit: "10",
+          },
+        },
+      );
+    },
   });
 }
 
@@ -181,10 +201,14 @@ export function useChatSocket(opts: {
     });
 
     socket.on("msg", (chatroom_id: number, data: MessageData) => {
-      queryClient.setQueryData(
-        messageKeys.list(chatroom_id),
-        (old: API["ChatroomsDetailMessagesGet"]["ResBody"]) => (old ? [...old, data] : [data]),
-      );
+      queryClient.setQueryData(messageKeys.list(chatroom_id), (old: ChatroomMessagesPages) => {
+        const [firstPage, ...rest] = old.pages;
+        const firstPageReplacement = firstPage == undefined ? [data] : [data, ...firstPage];
+        return {
+          pages: [firstPageReplacement, ...rest],
+          pageParams: old.pageParams,
+        };
+      });
     });
 
     socket.on("msgUpd", (chatroom_id: number, data: MessageData) => {
