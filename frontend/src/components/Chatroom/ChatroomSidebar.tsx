@@ -52,7 +52,7 @@ function ChatroomSelection(props: {
   if (chatroom.project_id != null) {
     const img = avatarFallback({ label: chatroom.chatroom_name, seed: chatroom_id });
     avatar = <Avatar src={img} />;
-  } else if (members <= 1) {
+  } else if (members <= 2) {
     const user_to_show = users.filter((x) => x !== user_id)[0] ?? user_id;
     avatar = <UserAvatar user_id={user_to_show} />;
   } else {
