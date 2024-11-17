@@ -215,18 +215,22 @@ export function useChatSocket(opts: {
     });
 
     socket.on("msgUpd", (chatroom_id: number, data: MessageData) => {
-      queryClient.setQueryData(
-        messageKeys.list(chatroom_id),
-        (old: API["ChatroomsDetailMessagesGet"]["ResBody"]) => {
-          const cloned = structuredClone(old);
-          const found = cloned.find((x) => x.id === data.id);
-          if (!found) {
-            return old;
+      queryClient.setQueryData(messageKeys.list(chatroom_id), (old: ChatroomMessagesPages) => {
+        const cloned = structuredClone(old.pages);
+        for (const page of cloned) {
+          for (const msg of page) {
+            if (msg.id !== data.id) {
+              continue;
+            }
+            Object.assign(msg, data);
           }
-          Object.assign(found, data);
-          return cloned;
-        },
-      );
+        }
+
+        return {
+          pages: cloned,
+          pageParams: old.pageParams,
+        };
+      });
     });
 
     if (onDisconnect) {

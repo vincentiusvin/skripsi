@@ -36,10 +36,12 @@ function _ChatroomSelection(props: { chatroom_id: number; user_id: number }) {
     const page = messages.pages[0];
     if (page != undefined) {
       const last_msg = page[0];
-      if (last_msg.message.length !== 0) {
-        subheader = last_msg.message;
-      } else {
-        subheader = "File";
+      if (last_msg != undefined) {
+        if (last_msg.message.length !== 0) {
+          subheader = last_msg.message;
+        } else {
+          subheader = "File";
+        }
       }
     }
   }

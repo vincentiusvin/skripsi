@@ -21,7 +21,7 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MessageData } from "../../../../backend/src/sockets";
 import { fileToBase64DataURL } from "../../helpers/file.ts";
 import {
@@ -451,6 +451,25 @@ export function ChatroomContent(props: { chatroom_id: number }) {
   } = useChatroomsDetailMessagesGet({ chatroom_id });
   const messages = _messages?.pages.flatMap((x) => x).reverse();
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isAtEnd, setIsAtEnd] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    if (containerRef.current === null) {
+      return;
+    }
+
+    const element = containerRef.current;
+
+    if (isAtEnd || !isScrolled) {
+      element.scrollTo(0, element.scrollHeight);
+      if (isAtEnd !== true) {
+        setIsAtEnd(true);
+      }
+    }
+  }, [messages?.length, isScrolled, isAtEnd]);
+
   return (
     <Box
       sx={{
@@ -461,13 +480,20 @@ export function ChatroomContent(props: { chatroom_id: number }) {
     >
       <Stack
         mt={2}
+        ref={containerRef}
         onScroll={(e) => {
-          const element = e.currentTarget;
-          if (element.scrollTop !== 0) {
-            return;
+          if (!isScrolled) {
+            setIsScrolled(true);
           }
-          if (!isFetchingNextPage) {
+          const element = e.currentTarget;
+
+          const newIsAtEnd = element.scrollHeight - element.scrollTop === element.clientHeight;
+          const isAtTop = element.scrollTop === 0;
+          if (isAtTop && !isFetchingNextPage) {
             fetchNextPage();
+          }
+          if (newIsAtEnd !== isAtEnd) {
+            setIsAtEnd(newIsAtEnd);
           }
         }}
         marginLeft={2}
