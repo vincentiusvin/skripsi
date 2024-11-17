@@ -6,7 +6,7 @@ import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
 
-describe("chatting api", () => {
+describe.only("chatting api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
 
@@ -50,10 +50,21 @@ describe("chatting api", () => {
     const in_chatroom_name = "user's chatroom";
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const send_req = await addUserChatroom(in_user.id, in_chatroom_name, cookie);
+    const send_req = await addChatroom(
+      {
+        user_ids: [in_user.id],
+        chatroom_name: in_chatroom_name,
+      },
+      cookie,
+    );
     expect(send_req.status).to.eq(201);
 
-    const read_req = await getUserChatrooms(in_user.id, cookie);
+    const read_req = await getChatrooms(
+      {
+        user_id: in_user.id,
+      },
+      cookie,
+    );
     const result = await read_req.json();
     const found = result.find((x) => x.chatroom_name === in_chatroom_name);
     expect(found).to.not.eq(undefined);
@@ -65,10 +76,21 @@ describe("chatting api", () => {
     const in_chatroom_name = "project's chatroom";
 
     const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const send_req = await addProjectChatroom(in_project.id, in_chatroom_name, cookie);
+    const send_req = await addChatroom(
+      {
+        project_id: in_project.id,
+        chatroom_name: in_chatroom_name,
+      },
+      cookie,
+    );
     expect(send_req.status).eq(201);
 
-    const read_req = await getProjectChatroom(in_project.id, cookie);
+    const read_req = await getChatrooms(
+      {
+        project_id: in_project.id,
+      },
+      cookie,
+    );
     const result = await read_req.json();
     const found = result.find((x) => x.chatroom_name === in_chatroom_name);
     expect(found).to.not.eq(undefined);
@@ -239,55 +261,37 @@ describe("chatting api", () => {
 //   });
 // }
 
-function getUserChatrooms(user_id: number, cookie: string) {
-  return new APIContext("UsersDetailChatroomsGet").fetch(`/api/users/${user_id}/chatrooms`, {
-    headers: {
-      cookie: cookie,
-    },
-    credentials: "include",
-    method: "get",
-  });
-}
-
-function addUserChatroom(user_id: number, chatroom_name: string, cookie: string) {
-  return new APIContext("ProjectsDetailChatroomsPost").fetch(`/api/users/${user_id}/chatrooms`, {
+function addChatroom(
+  opts: {
+    project_id?: number;
+    user_ids?: number[];
+    chatroom_name: string;
+  },
+  cookie: string,
+) {
+  return new APIContext("ChatroomsPost").fetch(`/api/chatrooms`, {
     headers: {
       cookie: cookie,
     },
     credentials: "include",
     method: "post",
-    body: {
-      name: chatroom_name,
-    },
+    body: opts,
   });
 }
-function getProjectChatroom(project_id: number, cookie: string) {
-  return new APIContext("ProjectsDetailChatroomsGet").fetch(
-    `/api/projects/${project_id}/chatrooms`,
-    {
-      headers: {
-        cookie: cookie,
-      },
-      credentials: "include",
-      method: "get",
-    },
-  );
-}
 
-function addProjectChatroom(project_id: number, chatroom_name: string, cookie: string) {
-  return new APIContext("ProjectsDetailChatroomsPost").fetch(
-    `/api/projects/${project_id}/chatrooms`,
-    {
-      headers: {
-        cookie: cookie,
-      },
-      credentials: "include",
-      method: "post",
-      body: {
-        name: chatroom_name,
-      },
+function getChatrooms(opts: { project_id?: number; user_id?: number }, cookie: string) {
+  const { project_id, user_id } = opts;
+  return new APIContext("ChatroomsGet").fetch(`/api/chatrooms`, {
+    headers: {
+      cookie: cookie,
     },
-  );
+    query: {
+      project_id: project_id?.toString(),
+      user_id: user_id?.toString(),
+    },
+    credentials: "include",
+    method: "get",
+  });
 }
 
 function getChatroomDetail(chatroom_id: number, cookie: string) {

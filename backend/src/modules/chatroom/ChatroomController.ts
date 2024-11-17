@@ -85,10 +85,8 @@ export class ChatController extends Controller {
 
   init() {
     return {
-      ProjectsDetailChatroomsPost: this.ProjectsDetailChatroomsPost,
-      ProjectsDetailChatroomsGet: this.ProjectsDetailChatroomsGet,
-      UsersDetailChatroomsPost: this.UsersDetailChatroomsPost,
-      UsersDetailChatroomsGet: this.UsersDetailChatroomsGet,
+      ChatroomsGet: this.ChatroomsGet,
+      ChatroomsPost: this.ChatroomsPost,
       ChatroomsDetailGet: this.ChatroomsDetailGet,
       ChatroomsDetailPut: this.ChatroomsDetailPut,
       ChatroomsDetailDelete: this.ChatroomsDetailDelete,
@@ -112,34 +110,39 @@ export class ChatController extends Controller {
     filtered.forEach((x) => x.emit(event, ...args));
   }
 
-  ProjectsDetailChatroomsPost = new Route({
+  ChatroomsPost = new Route({
     method: "post",
-    path: "/api/projects/:project_id/chatrooms",
+    path: "/api/chatrooms",
     priors: [validateLogged],
     schema: {
       ReqBody: z.object({
-        name: z.string(defaultError("Nama ruang chat tidak valid!")).min(1),
-      }),
-      Params: z.object({
-        project_id: zodStringReadableAsNumber("Nomor proyek tidak valid!"),
+        chatroom_name: z.string(defaultError("Nama ruang chat tidak valid!")).min(1),
+        project_id: z.number(defaultError("Nomor proyek tidak valid!")).optional(),
+        user_ids: z.number(defaultError("Nomor pengguna tidak valid!")).array().optional(),
       }),
       ResBody: ChatroomResponseSchema,
     },
     handler: async (req, res) => {
-      const name = req.body.name;
-      const project_id = Number(req.params.project_id);
+      const { chatroom_name, project_id, user_ids } = req.body;
       const sender_id = Number(req.session.user_id);
 
-      const chatroom_id = await this.chat_service.addProjectChatroom(project_id, name, sender_id);
+      const chatroom_id = await this.chat_service.addChatroom(
+        {
+          chatroom_name,
+          project_id,
+          user_ids,
+        },
+        sender_id,
+      );
 
       if (!chatroom_id) {
         throw new Error("Chatroom gagal untuk dibuat!");
       }
 
-      const members = await this.chat_service.getAllowedListeners(chatroom_id.id);
+      const members = await this.chat_service.getAllowedListeners(chatroom_id);
       await this.broadcastEvent(members, "roomUpdate");
 
-      const chatroom_data = await this.chat_service.getChatroomByID(chatroom_id.id);
+      const chatroom_data = await this.chat_service.getChatroomByID(chatroom_id);
       if (!chatroom_data) {
         throw new Error("Chatroom gagal untuk dibuat!");
       }
@@ -147,79 +150,27 @@ export class ChatController extends Controller {
       res.status(201).json(chatroom_data);
     },
   });
-  ProjectsDetailChatroomsGet = new Route({
+
+  ChatroomsGet = new Route({
     method: "get",
-    path: "/api/projects/:project_id/chatrooms",
+    path: "/api/chatrooms",
+    priors: [validateLogged],
     schema: {
-      Params: z.object({
-        project_id: zodStringReadableAsNumber("Nomor proyek tidak valid!"),
-      }),
       ReqQuery: z.object({
+        project_id: zodStringReadableAsNumber("Nomor proyek tidak valid!").optional(),
+        user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!").optional(),
         keyword: z.string(defaultError("Nama ruang chat tidak valid!")).min(1).optional(),
       }),
       ResBody: ChatroomResponseSchema.array(),
     },
     handler: async (req, res) => {
-      const { project_id: project_id_raw } = req.params;
-      const project_id = Number(project_id_raw);
-      const { keyword } = req.query;
+      const { user_id: user_id_raw, project_id: project_id_raw, keyword } = req.query;
+      const user_id = user_id_raw !== undefined ? Number(user_id_raw) : undefined;
+      const project_id = project_id_raw !== undefined ? Number(project_id_raw) : undefined;
 
-      const result = await this.chat_service.getProjectChatrooms({
-        project_id,
-        keyword,
-      });
-      res.status(200).json(result);
-    },
-  });
-  UsersDetailChatroomsPost = new Route({
-    method: "post",
-    path: "/api/users/:user_id/chatrooms",
-    priors: [validateLogged],
-    schema: {
-      Params: z.object({
-        user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!"),
-      }),
-      ReqBody: z.object({
-        name: z.string(defaultError("Nama ruang chat tidak valid!")).min(1),
-      }),
-      ResBody: ChatroomResponseSchema,
-    },
-    handler: async (req, res) => {
-      const name = req.body.name;
-      const user_id_str = req.params.user_id;
-      const user_id = Number(user_id_str);
-      const sender_id = Number(req.session.user_id);
-
-      const chatroom_id = await this.chat_service.addUserChatroom(user_id, name, sender_id);
-
-      const members = await this.chat_service.getAllowedListeners(chatroom_id);
-      await this.broadcastEvent(members, "roomUpdate");
-
-      const result = await this.chat_service.getChatroomByID(chatroom_id);
-
-      res.status(201).json(result);
-    },
-  });
-  UsersDetailChatroomsGet = new Route({
-    method: "get",
-    path: "/api/users/:user_id/chatrooms",
-    priors: [validateLogged],
-    schema: {
-      Params: z.object({
-        user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!"),
-      }),
-      ReqQuery: z.object({
-        keyword: z.string(defaultError("Nama ruang chat tidak valid!")).min(1).optional(),
-      }),
-      ResBody: ChatroomResponseSchema.array(),
-    },
-    handler: async (req, res) => {
-      const { user_id: user_id_raw } = req.params;
-      const user_id = Number(user_id_raw);
-      const { keyword } = req.query;
-
-      const result = await this.chat_service.getUserChatrooms({
+      const result = await this.chat_service.getChatrooms({
         user_id,
+        project_id,
         keyword,
       });
       res.status(200).json(result);
