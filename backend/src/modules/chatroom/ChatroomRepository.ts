@@ -65,13 +65,22 @@ export class ChatRepository {
       .executeTakeFirst();
   }
 
-  async getMessages(chatroom_id: number) {
-    return await this.db
+  async getMessages(opts: { chatroom_id: number; limit?: number; before_message_id?: number }) {
+    const { chatroom_id, before_message_id, limit } = opts;
+    let query = this.db
       .selectFrom("ms_messages")
       .select(defaultMessageFields)
       .where("ms_messages.chatroom_id", "=", chatroom_id)
-      .orderBy("id asc")
-      .execute();
+      .orderBy("id desc");
+
+    if (before_message_id != undefined) {
+      query = query.where("ms_messages.id", "<", before_message_id);
+    }
+    if (limit != undefined) {
+      query = query.limit(limit);
+    }
+
+    return query.execute();
   }
 
   async addMessage(
@@ -246,11 +255,13 @@ export class ChatRepository {
     return await query.execute();
   }
 
-  async addUserChatroom(user_id: number, chatroom_name: string) {
+  async addChatroom(opts: { user_ids?: number[]; project_id?: number; chatroom_name: string }) {
+    const { project_id, user_ids, chatroom_name } = opts;
     const room_id = await this.db
       .insertInto("ms_chatrooms")
       .values({
         name: chatroom_name,
+        project_id,
       })
       .returning(["id"])
       .executeTakeFirst();
@@ -259,26 +270,19 @@ export class ChatRepository {
       throw new Error("Data not inserted!");
     }
 
-    await this.db
-      .insertInto("chatrooms_users")
-      .values({
-        chatroom_id: room_id.id,
-        user_id: user_id,
-      })
-      .execute();
+    if (user_ids !== undefined && user_ids.length > 0) {
+      await this.db
+        .insertInto("chatrooms_users")
+        .values(
+          user_ids.map((user_id) => ({
+            chatroom_id: room_id.id,
+            user_id: user_id,
+          })),
+        )
+        .execute();
+    }
 
     return room_id.id;
-  }
-
-  async addProjectChatroom(project_id: number, chatroom_name: string) {
-    return await this.db
-      .insertInto("ms_chatrooms")
-      .values({
-        name: chatroom_name,
-        project_id: project_id,
-      })
-      .returning("id")
-      .executeTakeFirst();
   }
 
   async updateChatroom(chatroom_id: number, opts: { name?: string; user_ids?: number[] }) {

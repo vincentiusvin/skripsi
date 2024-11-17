@@ -32,15 +32,14 @@ import {
   Theme,
   useMediaQuery,
 } from "@mui/material";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useOrgsGet } from "../../queries/org_hooks.ts";
-import { useProjectsGet } from "../../queries/project_hooks.ts";
+import { useOrgsDetailMembersGet, useOrgsGet } from "../../queries/org_hooks.ts";
+import { useProjectsDetailMembersGet, useProjectsGet } from "../../queries/project_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../queries/user_hooks.ts";
 import StyledLink from "../StyledLink.tsx";
 import {
-  NavigationData,
   NavigationRaw,
   navData2NavRaw,
   navRaw2NavData,
@@ -204,162 +203,15 @@ function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
   );
 }
 
-function SideNavDashboard() {
-  const [_navData] = useNavigation();
-  const { data: session } = useSessionGet();
-  const [location] = useLocation();
-  const navData: NavigationData = session?.logged
-    ? _navData
-    : { type: "browse", open: _navData.open };
-
-  let links: {
+function SideNavLinks(props: {
+  links: {
     link: string;
     name: string;
     avatar: ReactNode;
-  }[] = [];
-
-  if (!navData || navData.type === "browse") {
-    links = [
-      {
-        link: `/landing`,
-        name: `Beranda`,
-        avatar: <Home />,
-      },
-    ];
-
-    if (session?.logged) {
-      links.push({
-        link: `/`,
-        name: `Dashboard`,
-        avatar: <Dashboard />,
-      });
-    }
-
-    links.push(
-      {
-        link: `/orgs`,
-        name: `Cari Organisasi`,
-        avatar: <CorporateFare />,
-      },
-      {
-        link: `/projects`,
-        name: `Cari Proyek`,
-        avatar: <Work />,
-      },
-      {
-        link: `/users`,
-        name: `Cari Teman`,
-        avatar: <People />,
-      },
-    );
-
-    if (session?.logged) {
-      links.push(
-        {
-          link: `/chatrooms`,
-          name: `Pesan`,
-          avatar: <Message />,
-        },
-        {
-          link: `/reports`,
-          name: `Laporan`,
-          avatar: <Flag />,
-        },
-        {
-          link: `/settings`,
-          name: `Preferensi`,
-          avatar: <Settings />,
-        },
-      );
-    }
-  } else if (navData.type === "project") {
-    const project_id = navData.id;
-    links = [
-      {
-        link: `/projects/${project_id}`,
-        name: `Profil`,
-        avatar: <People />,
-      },
-      {
-        link: `/projects/${project_id}/activity`,
-        name: `Aktivitas`,
-        avatar: <Update />,
-      },
-      {
-        link: `/projects/${project_id}/chat`,
-        name: `Diskusi`,
-        avatar: <Chat />,
-      },
-      {
-        link: `/projects/${project_id}/people`,
-        name: `Anggota`,
-        avatar: <ManageAccounts />,
-      },
-      {
-        link: `/projects/${project_id}/tasks`,
-        name: `Tugas`,
-        avatar: <Work />,
-      },
-      {
-        link: `/projects/${project_id}/contributions`,
-        name: `Kontribusi`,
-        avatar: <EmojiEvents />,
-      },
-      {
-        link: `/projects/${project_id}/manage`,
-        name: `Atur Proyek`,
-        avatar: <Settings />,
-      },
-      {
-        link: `/projects/${project_id}/leave`,
-        name: `Keluar`,
-        avatar: <Logout />,
-      },
-    ];
-  } else if (navData.type === "orgs") {
-    const org_id = navData.id;
-    links = [
-      {
-        link: `/orgs/${org_id}`,
-        name: `Profil`,
-        avatar: <People />,
-      },
-      {
-        link: `/orgs/${org_id}/people`,
-        name: `Pengurus`,
-        avatar: <ManageAccounts />,
-      },
-      {
-        link: `/orgs/${org_id}/add-projects`,
-        name: `Buat Proyek Baru`,
-        avatar: <Work />,
-      },
-      {
-        link: `/orgs/${org_id}/manage`,
-        name: `Atur Organisasi`,
-        avatar: <Settings />,
-      },
-      {
-        link: `/orgs/${org_id}/leave`,
-        name: `Keluar`,
-        avatar: <Logout />,
-      },
-    ];
-  } else if (navData.type === "admin") {
-    links = [
-      {
-        link: `/admin/manage-reports`,
-        name: `Laporan`,
-        avatar: <Flag />,
-      },
-      {
-        link: `/admin/manage-accounts`,
-        name: `Atur Pengguna`,
-        avatar: <People />,
-      },
-    ];
-  }
-
+  }[];
+}) {
+  const { links } = props;
+  const [location] = useLocation();
   return (
     <List dense>
       {links.map((x) => (
@@ -374,6 +226,259 @@ function SideNavDashboard() {
       ))}
     </List>
   );
+}
+
+function SideNavBrowse() {
+  const { data: session } = useSessionGet();
+  const links: {
+    link: string;
+    name: string;
+    avatar: ReactNode;
+  }[] = [
+    {
+      link: `/landing`,
+      name: `Beranda`,
+      avatar: <Home />,
+    },
+  ];
+
+  if (session?.logged) {
+    links.push({
+      link: `/`,
+      name: `Dashboard`,
+      avatar: <Dashboard />,
+    });
+  }
+
+  links.push(
+    {
+      link: `/orgs`,
+      name: `Cari Organisasi`,
+      avatar: <CorporateFare />,
+    },
+    {
+      link: `/projects`,
+      name: `Cari Proyek`,
+      avatar: <Work />,
+    },
+    {
+      link: `/users`,
+      name: `Cari Teman`,
+      avatar: <People />,
+    },
+  );
+
+  if (session?.logged) {
+    links.push(
+      {
+        link: `/chatrooms`,
+        name: `Pesan`,
+        avatar: <Message />,
+      },
+      {
+        link: `/reports`,
+        name: `Laporan`,
+        avatar: <Flag />,
+      },
+      {
+        link: `/settings`,
+        name: `Preferensi`,
+        avatar: <Settings />,
+      },
+    );
+  }
+
+  return <SideNavLinks links={links} />;
+}
+
+function ResetSideNav() {
+  const [, setNav] = useNavigation();
+  useEffect(() => {
+    setNav((x) => ({
+      open: x.open,
+      type: "browse",
+    }));
+  }, [setNav]);
+
+  return <Skeleton />;
+}
+
+function SideNavProjects(props: { user_id: number; project_id: number }) {
+  const { project_id, user_id } = props;
+  const { data: role } = useProjectsDetailMembersGet({
+    project_id,
+    user_id,
+  });
+
+  if (role == undefined) {
+    return <Skeleton />;
+  }
+
+  if (role.role !== "Admin" && role.role !== "Dev") {
+    return <ResetSideNav />;
+  }
+
+  const links: {
+    link: string;
+    name: string;
+    avatar: ReactNode;
+  }[] = [
+    {
+      link: `/projects/${project_id}`,
+      name: `Profil`,
+      avatar: <People />,
+    },
+  ];
+
+  if (role.role === "Admin") {
+    links.push(
+      {
+        link: `/projects/${project_id}/people`,
+        name: `Anggota`,
+        avatar: <ManageAccounts />,
+      },
+      {
+        link: `/projects/${project_id}/manage`,
+        name: `Atur Proyek`,
+        avatar: <Settings />,
+      },
+    );
+  }
+
+  links.push(
+    {
+      link: `/projects/${project_id}/activity`,
+      name: `Aktivitas`,
+      avatar: <Update />,
+    },
+    {
+      link: `/projects/${project_id}/chat`,
+      name: `Diskusi`,
+      avatar: <Chat />,
+    },
+    {
+      link: `/projects/${project_id}/tasks`,
+      name: `Tugas`,
+      avatar: <Work />,
+    },
+    {
+      link: `/projects/${project_id}/contributions`,
+      name: `Kontribusi`,
+      avatar: <EmojiEvents />,
+    },
+    {
+      link: `/projects/${project_id}/leave`,
+      name: `Keluar`,
+      avatar: <Logout />,
+    },
+  );
+
+  return <SideNavLinks links={links} />;
+}
+
+function SideNavOrgs(props: { org_id: number; user_id: number }) {
+  const { org_id, user_id } = props;
+
+  const { data: role } = useOrgsDetailMembersGet({
+    org_id,
+    user_id,
+  });
+
+  if (role == undefined) {
+    return <Skeleton />;
+  }
+
+  if (role.role !== "Admin") {
+    return <ResetSideNav />;
+  }
+
+  const links: {
+    link: string;
+    name: string;
+    avatar: ReactNode;
+  }[] = [
+    {
+      link: `/orgs/${org_id}`,
+      name: `Profil`,
+      avatar: <People />,
+    },
+    {
+      link: `/orgs/${org_id}/people`,
+      name: `Pengurus`,
+      avatar: <ManageAccounts />,
+    },
+    {
+      link: `/orgs/${org_id}/add-projects`,
+      name: `Buat Proyek Baru`,
+      avatar: <Work />,
+    },
+    {
+      link: `/orgs/${org_id}/manage`,
+      name: `Atur Organisasi`,
+      avatar: <Settings />,
+    },
+    {
+      link: `/orgs/${org_id}/leave`,
+      name: `Keluar`,
+      avatar: <Logout />,
+    },
+  ];
+
+  return <SideNavLinks links={links} />;
+}
+
+function SideNavAdmin() {
+  const { data: session } = useSessionGet();
+
+  if (session == undefined) {
+    return <Skeleton />;
+  }
+
+  if (!session.logged || !session.is_admin) {
+    return <ResetSideNav />;
+  }
+
+  const links: {
+    link: string;
+    name: string;
+    avatar: ReactNode;
+  }[] = [
+    {
+      link: `/admin/manage-reports`,
+      name: `Laporan`,
+      avatar: <Flag />,
+    },
+    {
+      link: `/admin/manage-accounts`,
+      name: `Atur Pengguna`,
+      avatar: <People />,
+    },
+  ];
+
+  return <SideNavLinks links={links} />;
+}
+
+function SideNavDashboard() {
+  const [navData] = useNavigation();
+  const { data: session } = useSessionGet();
+
+  if (navData.type === "project" || navData.type === "orgs") {
+    if (session == undefined) {
+      return <Skeleton />;
+    }
+    if (!session.logged) {
+      return <ResetSideNav />;
+    }
+    if (navData.type === "project") {
+      return <SideNavProjects project_id={navData.id} user_id={session.user_id} />;
+    } else {
+      return <SideNavOrgs org_id={navData.id} user_id={session.user_id} />;
+    }
+  } else if (navData.type === "admin") {
+    return <SideNavAdmin />;
+  }
+
+  return <SideNavBrowse />;
 }
 
 function SideNav() {

@@ -254,7 +254,7 @@ function Kanban(props: { project_id: number }) {
             updateTask({
               bucket_id: foundTask.bucket.id,
               task_id: activeId,
-              before_id: nextTaskID,
+              before_id: nextTaskID ?? null,
             });
           }}
           onDragCancel={() => {

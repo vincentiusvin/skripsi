@@ -444,17 +444,31 @@ function ChatroomTypingArea(props: { chatroom_id: number }) {
 
 export function ChatroomContent(props: { chatroom_id: number }) {
   const { chatroom_id } = props;
-  const { data: messages } = useChatroomsDetailMessagesGet({ chatroom_id });
+  const {
+    data: _messages,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useChatroomsDetailMessagesGet({ chatroom_id });
+  const messages = _messages?.pages.flatMap((x) => x).reverse();
 
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isAtEnd, setIsAtEnd] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    if (bottomRef.current !== null) {
-      bottomRef.current.scrollIntoView({
-        block: "end",
-      });
+    if (containerRef.current === null) {
+      return;
     }
-  }, [messages?.length]);
+
+    const element = containerRef.current;
+
+    if (isAtEnd || !isScrolled) {
+      element.scrollTo(0, element.scrollHeight);
+      if (isAtEnd !== true) {
+        setIsAtEnd(true);
+      }
+    }
+  }, [messages?.length, isScrolled, isAtEnd]);
 
   return (
     <Box
@@ -464,9 +478,32 @@ export function ChatroomContent(props: { chatroom_id: number }) {
         flexDirection: "column",
       }}
     >
-      <Stack mt={2} marginLeft={2} spacing={1} overflow={"auto"} flexGrow={1} flexBasis={0}>
-        {messages?.map((x, i) => (
-          <Box key={i} ref={i === messages.length - 1 ? bottomRef : null}>
+      <Stack
+        mt={2}
+        ref={containerRef}
+        onScroll={(e) => {
+          if (!isScrolled) {
+            setIsScrolled(true);
+          }
+          const element = e.currentTarget;
+
+          const newIsAtEnd = element.scrollHeight - element.scrollTop === element.clientHeight;
+          const isAtTop = element.scrollTop === 0;
+          if (isAtTop && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+          if (newIsAtEnd !== isAtEnd) {
+            setIsAtEnd(newIsAtEnd);
+          }
+        }}
+        marginLeft={2}
+        spacing={1}
+        overflow={"auto"}
+        flexGrow={1}
+        flexBasis={0}
+      >
+        {messages?.map((x) => (
+          <Box key={x.id}>
             <Message message={x} chatroom_id={chatroom_id} />
           </Box>
         ))}

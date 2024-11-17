@@ -233,11 +233,15 @@ export async function baseCase(db: Kysely<DB>) {
 
   const message = await db
     .insertInto("ms_messages")
-    .values({
-      chatroom_id: chat.id,
-      message: "testing message",
-      user_id: user_ids[2].id,
-    })
+    .values(
+      Array(10)
+        .fill(undefined)
+        .map(() => ({
+          chatroom_id: chat.id,
+          message: "testing message",
+          user_id: user_ids[2].id,
+        })),
+    )
     .returning([
       "ms_messages.id",
       "ms_messages.message",

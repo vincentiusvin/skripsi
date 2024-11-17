@@ -12,19 +12,14 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import { Fragment, ReactNode } from "react";
+import { Fragment, ReactNode, memo } from "react";
 import avatarFallback from "../../helpers/avatar_fallback.tsx";
 import { useChatroomsDetailGet, useChatroomsDetailMessagesGet } from "../../queries/chat_hooks.ts";
 import UserAvatar from "../UserAvatar.tsx";
 import { AddRoomDialog } from "./ChatroomMisc.tsx";
 
-function ChatroomSelection(props: {
-  chatroom_id: number;
-  user_id: number;
-  selected?: boolean;
-  onClick?: () => void;
-}) {
-  const { chatroom_id, user_id, selected, onClick } = props;
+function _ChatroomSelection(props: { chatroom_id: number; user_id: number }) {
+  const { chatroom_id, user_id } = props;
   const { data: chatroom } = useChatroomsDetailGet({
     chatroom_id,
   });
@@ -37,12 +32,17 @@ function ChatroomSelection(props: {
   }
 
   let subheader: string | undefined;
-  if (messages != undefined && messages.length > 0) {
-    const last_msg = messages[messages.length - 1];
-    if (last_msg.message.length !== 0) {
-      subheader = last_msg.message;
-    } else {
-      subheader = "File";
+  if (messages != undefined) {
+    const page = messages.pages[0];
+    if (page != undefined) {
+      const last_msg = page[0];
+      if (last_msg != undefined) {
+        if (last_msg.message.length !== 0) {
+          subheader = last_msg.message;
+        } else {
+          subheader = "File";
+        }
+      }
     }
   }
 
@@ -52,43 +52,36 @@ function ChatroomSelection(props: {
   if (chatroom.project_id != null) {
     const img = avatarFallback({ label: chatroom.chatroom_name, seed: chatroom_id });
     avatar = <Avatar src={img} />;
-  } else if (members <= 1) {
+  } else if (members <= 2) {
     const user_to_show = users.filter((x) => x !== user_id)[0] ?? user_id;
     avatar = <UserAvatar user_id={user_to_show} />;
   } else {
-    const img = avatarFallback({ label: `${members}+`, seed: chatroom_id });
+    const img = avatarFallback({ label: `${members}`, seed: chatroom_id });
     avatar = <Avatar src={img} />;
   }
 
   return (
-    <ListItem disableGutters>
-      <ListItemButton
-        selected={selected}
-        onClick={() => {
-          if (onClick) {
-            onClick();
-          }
+    <>
+      <ListItemAvatar>{avatar}</ListItemAvatar>
+      <ListItemText
+        primary={chatroom.chatroom_name}
+        primaryTypographyProps={{
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
         }}
-      >
-        <ListItemAvatar>{avatar}</ListItemAvatar>
-        <ListItemText
-          primary={chatroom.chatroom_name}
-          primaryTypographyProps={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-          secondary={subheader}
-          secondaryTypographyProps={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        ></ListItemText>
-      </ListItemButton>
-    </ListItem>
+        secondary={subheader}
+        secondaryTypographyProps={{
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      ></ListItemText>
+    </>
   );
 }
+
+const ChatroomSelection = memo(_ChatroomSelection);
 
 function ChatroomSidebar(props: {
   allowed_rooms: number[];
@@ -133,14 +126,16 @@ function ChatroomSidebar(props: {
           return (
             <Fragment key={chatroom_id}>
               <Divider />
-              <ChatroomSelection
-                chatroom_id={chatroom_id}
-                user_id={user_id}
-                selected={chatroom_id === selectedRoom}
-                onClick={() => {
-                  onChange(chatroom_id);
-                }}
-              />
+              <ListItem disableGutters>
+                <ListItemButton
+                  selected={chatroom_id === selectedRoom}
+                  onClick={() => {
+                    onChange(chatroom_id);
+                  }}
+                >
+                  <ChatroomSelection chatroom_id={chatroom_id} user_id={user_id} />
+                </ListItemButton>
+              </ListItem>
             </Fragment>
           );
         })}

@@ -62,7 +62,21 @@ export class OrgRepository {
     }
 
     if (keyword != undefined && keyword.length !== 0) {
-      query = query.where("ms_orgs.name", "ilike", `%${keyword}%`);
+      query = query.where((eb) =>
+        eb.or([
+          eb("ms_orgs.name", "ilike", `%${keyword}%`),
+          eb("ms_orgs.address", "ilike", `%${keyword}%`),
+          eb(
+            "ms_orgs.id",
+            "in",
+            eb
+              .selectFrom("ms_category_orgs")
+              .innerJoin("categories_orgs", "ms_category_orgs.id", "categories_orgs.category_id")
+              .select("categories_orgs.org_id")
+              .where("ms_category_orgs.name", "ilike", `%${keyword}%`),
+          ),
+        ]),
+      );
     }
 
     return query;

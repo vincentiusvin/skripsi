@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useDebounce } from "use-debounce";
 import { Redirect } from "wouter";
 import Chatroom from "../components/Chatroom/Chatroom.tsx";
-import { useUsersDetailChatroomsGet } from "../queries/chat_hooks.ts";
+import { useChatroomsGet } from "../queries/chat_hooks.ts";
 import { useSessionGet } from "../queries/sesssion_hooks.ts";
 
 function ChatroomPageAuthorized(props: { user_id: number }) {
@@ -11,7 +11,7 @@ function ChatroomPageAuthorized(props: { user_id: number }) {
 
   const [keyword, setKeyword] = useState<string | undefined>(undefined);
   const [debouncedKeyword] = useDebounce(keyword, 300);
-  const { data: chatrooms } = useUsersDetailChatroomsGet({
+  const { data: chatrooms } = useChatroomsGet({
     user_id: user_id,
     keyword: debouncedKeyword,
   });

@@ -56,9 +56,9 @@ function ChatroomHeader(props: {
           anchorEl={menuAnchor}
           onClose={() => setMenuAnchor(undefined)}
         >
-          {room.project_id === undefined ? <AddMembersDialog chatroom_id={chatroom_id} /> : null}
+          {room.project_id == null ? <AddMembersDialog chatroom_id={chatroom_id} /> : null}
           <ChangeNameDialog chatroom_id={chatroom_id} />
-          {room.project_id !== undefined ? (
+          {room.project_id != null ? (
             <DeleteRoom
               chatroom_id={chatroom_id}
               onLeave={() => {
