@@ -15,7 +15,7 @@ function ProjectLabelDisplay(props: { project_id: number }) {
         Kategori
       </Typography>
       {project.project_categories.length !== 0 ? (
-        <Stack direction={"row"} spacing={2} flexWrap={"wrap"}>
+        <Stack direction={"row"} gap={2} flexWrap={"wrap"}>
           {project.project_categories.map((category, index) => (
             <Chip color="secondary" key={index} label={category.category_name} />
           ))}
