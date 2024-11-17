@@ -11,6 +11,7 @@ import UserFriendList from "./UserProfileFriend.tsx";
 import FriendShortcut from "./UserProfileManageFriend.tsx";
 import UserOrgsList from "./UserProfileOrgs.tsx";
 import UserProjectsList from "./UserProfileProjects.tsx";
+import UserProfileSendMessage from "./UserProfileSendMessage.tsx";
 
 function UserProfile(props: { viewed_id: number; our_id?: number }) {
   const { viewed_id, our_id } = props;
@@ -30,6 +31,8 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
   if (!userDetail) {
     return <Skeleton />;
   }
+
+  const isViewingSelf = our_id != undefined && our_id !== userDetail.user_id;
 
   const image =
     userDetail.user_image ??
@@ -90,7 +93,10 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
       >
         <Stack alignItems={"center"} spacing={2}>
           <Avatar src={image} sx={{ width: 256, height: 256 }}></Avatar>
-          {our_id != undefined ? (
+          {isViewingSelf ? (
+            <UserProfileSendMessage our_user_id={our_id} viewed_user_id={userDetail.user_id} />
+          ) : null}
+          {isViewingSelf ? (
             <FriendShortcut our_user_id={our_id} viewed_user_id={userDetail.user_id} />
           ) : null}
           <UserFriendList user_id={viewed_id} />

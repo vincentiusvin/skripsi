@@ -56,7 +56,7 @@ function ChatroomSelection(props: {
     const user_to_show = users.filter((x) => x !== user_id)[0] ?? user_id;
     avatar = <UserAvatar user_id={user_to_show} />;
   } else {
-    const img = avatarFallback({ label: `${members}+`, seed: chatroom_id });
+    const img = avatarFallback({ label: `${members}`, seed: chatroom_id });
     avatar = <Avatar src={img} />;
   }
 

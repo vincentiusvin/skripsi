@@ -106,7 +106,17 @@ export function useChatroomsDetailDelete(opts: { chatroom_id: number; onSuccess?
   });
 }
 
-export function useChatroomsPost(opts: { onSuccess?: () => void }) {
+export function useChatroomsPost(opts: {
+  onSuccess?: (data: {
+    chatroom_id: number;
+    project_id: number | null;
+    chatroom_name: string;
+    chatroom_created_at: Date;
+    chatroom_users: {
+      user_id: number;
+    }[];
+  }) => void;
+}) {
   const { onSuccess } = opts;
   return useMutation({
     mutationFn: new APIContext("ChatroomsPost").bodyFetch(`/api/chatrooms`, {
