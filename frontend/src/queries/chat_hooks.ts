@@ -48,8 +48,11 @@ export function useChatroomsDetailMessagesGet(opts: { chatroom_id: number }) {
   return useInfiniteQuery<ChatroomMessages>({
     initialPageParam: undefined,
     getNextPageParam: (lastPage) => {
-      const last_message = lastPage[lastPage.length - 1]?.id;
-      return last_message.toString();
+      const last_message = lastPage[lastPage.length - 1];
+      if (last_message == undefined) {
+        return undefined;
+      }
+      return last_message.id.toString();
     },
     queryKey: messageKeys.list(chatroom_id),
     queryFn: ({ pageParam }) => {
