@@ -192,22 +192,6 @@ describe("chatting api", () => {
     );
   });
 
-  it.only("should be able to paginate messages", async () => {
-    const in_user = caseData.chat_user;
-    const in_chat = caseData.chat;
-
-    const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const read_req = await getChatroomMessages(
-      {
-        chatroom_id: in_chat.id,
-        limit: 1,
-      },
-      cookie,
-    );
-    const result = await read_req.json();
-    console.log(result);
-  });
-
   it("should allow users to attach files to sent messages", async () => {
     const in_data = {
       files: [
