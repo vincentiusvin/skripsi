@@ -32,15 +32,14 @@ import {
   Theme,
   useMediaQuery,
 } from "@mui/material";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useOrgsGet } from "../../queries/org_hooks.ts";
+import { useOrgsDetailMembersGet, useOrgsGet } from "../../queries/org_hooks.ts";
 import { useProjectsDetailMembersGet, useProjectsGet } from "../../queries/project_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../queries/user_hooks.ts";
 import StyledLink from "../StyledLink.tsx";
 import {
-  NavigationData,
   NavigationRaw,
   navData2NavRaw,
   navRaw2NavData,
@@ -292,12 +291,32 @@ function SideNavBrowse() {
   return <SideNavLinks links={links} />;
 }
 
+function ResetSideNav() {
+  const [, setNav] = useNavigation();
+  useEffect(() => {
+    setNav((x) => ({
+      open: x.open,
+      type: "browse",
+    }));
+  }, [setNav]);
+
+  return <Skeleton />;
+}
+
 function SideNavProjects(props: { user_id: number; project_id: number }) {
   const { project_id, user_id } = props;
   const { data: role } = useProjectsDetailMembersGet({
     project_id,
     user_id,
   });
+
+  if (role == undefined) {
+    return <Skeleton />;
+  }
+
+  if (role.role !== "Admin" && role.role !== "Dev") {
+    return <ResetSideNav />;
+  }
 
   const links: {
     link: string;
@@ -311,7 +330,7 @@ function SideNavProjects(props: { user_id: number; project_id: number }) {
     },
   ];
 
-  if (role?.role === "Admin") {
+  if (role.role === "Admin") {
     links.push(
       {
         link: `/projects/${project_id}/people`,
@@ -326,41 +345,52 @@ function SideNavProjects(props: { user_id: number; project_id: number }) {
     );
   }
 
-  if (role?.role === "Dev" || role?.role === "Admin") {
-    links.push(
-      {
-        link: `/projects/${project_id}/activity`,
-        name: `Aktivitas`,
-        avatar: <Update />,
-      },
-      {
-        link: `/projects/${project_id}/chat`,
-        name: `Diskusi`,
-        avatar: <Chat />,
-      },
-      {
-        link: `/projects/${project_id}/tasks`,
-        name: `Tugas`,
-        avatar: <Work />,
-      },
-      {
-        link: `/projects/${project_id}/contributions`,
-        name: `Kontribusi`,
-        avatar: <EmojiEvents />,
-      },
-      {
-        link: `/projects/${project_id}/leave`,
-        name: `Keluar`,
-        avatar: <Logout />,
-      },
-    );
-  }
+  links.push(
+    {
+      link: `/projects/${project_id}/activity`,
+      name: `Aktivitas`,
+      avatar: <Update />,
+    },
+    {
+      link: `/projects/${project_id}/chat`,
+      name: `Diskusi`,
+      avatar: <Chat />,
+    },
+    {
+      link: `/projects/${project_id}/tasks`,
+      name: `Tugas`,
+      avatar: <Work />,
+    },
+    {
+      link: `/projects/${project_id}/contributions`,
+      name: `Kontribusi`,
+      avatar: <EmojiEvents />,
+    },
+    {
+      link: `/projects/${project_id}/leave`,
+      name: `Keluar`,
+      avatar: <Logout />,
+    },
+  );
 
   return <SideNavLinks links={links} />;
 }
 
-function SideNavOrgs(props: { org_id: number }) {
-  const { org_id } = props;
+function SideNavOrgs(props: { org_id: number; user_id: number }) {
+  const { org_id, user_id } = props;
+
+  const { data: role } = useOrgsDetailMembersGet({
+    org_id,
+    user_id,
+  });
+
+  if (role == undefined) {
+    return <Skeleton />;
+  }
+
+  if (role.role !== "Admin") {
+    return <ResetSideNav />;
+  }
 
   const links: {
     link: string;
@@ -398,6 +428,16 @@ function SideNavOrgs(props: { org_id: number }) {
 }
 
 function SideNavAdmin() {
+  const { data: session } = useSessionGet();
+
+  if (session == undefined) {
+    return <Skeleton />;
+  }
+
+  if (!session.logged || !session.is_admin) {
+    return <ResetSideNav />;
+  }
+
   const links: {
     link: string;
     name: string;
@@ -419,27 +459,26 @@ function SideNavAdmin() {
 }
 
 function SideNavDashboard() {
-  const [_navData] = useNavigation();
+  const [navData] = useNavigation();
   const { data: session } = useSessionGet();
-  const navData: NavigationData = session?.logged
-    ? _navData
-    : { type: "browse", open: _navData.open };
 
-  if (session == undefined) {
-    return <Skeleton />;
-  }
-
-  if (!navData || navData.type === "browse" || !session.logged) {
-    return <SideNavBrowse />;
-  } else if (navData.type === "project") {
-    const project_id = navData.id;
-    return <SideNavProjects project_id={project_id} user_id={session.user_id} />;
-  } else if (navData.type === "orgs") {
-    const org_id = navData.id;
-    return <SideNavOrgs org_id={org_id} />;
+  if (navData.type === "project" || navData.type === "orgs") {
+    if (session == undefined) {
+      return <Skeleton />;
+    }
+    if (!session.logged) {
+      return <ResetSideNav />;
+    }
+    if (navData.type === "project") {
+      return <SideNavProjects project_id={navData.id} user_id={session.user_id} />;
+    } else {
+      return <SideNavOrgs org_id={navData.id} user_id={session.user_id} />;
+    }
   } else if (navData.type === "admin") {
     return <SideNavAdmin />;
   }
+
+  return <SideNavBrowse />;
 }
 
 function SideNav() {
