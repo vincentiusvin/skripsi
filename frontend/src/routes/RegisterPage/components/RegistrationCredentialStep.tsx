@@ -34,12 +34,20 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
   const { data: valid, isLoading } = useUserValidation(debouncedData);
 
   const isValidated =
-    reg.password !== "" &&
+    valid != undefined &&
     !isLoading &&
     isEqual(debouncedData, {
       email: reg.email,
       name: reg.username,
-    });
+    }) &&
+    reg.email !== "" &&
+    reg.username !== "";
+
+  const isAllowed =
+    isValidated &&
+    valid.email === undefined &&
+    valid.name === undefined &&
+    reg.password !== undefined;
 
   return (
     <Stack spacing={4}>
@@ -92,7 +100,7 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
         variant="contained"
         size="large"
         fullWidth
-        disabled={!isValidated}
+        disabled={!isAllowed}
         onClick={() => {
           continueRegis();
         }}

@@ -45,7 +45,7 @@ import UserReportAddPage from "./routes/Reports/UserReportAddPage.tsx";
 import UserReportDetailPage from "./routes/Reports/UserReportDetailPage.tsx";
 import UserReportEditPage from "./routes/Reports/UserReportEditPage.tsx";
 import UserReportPage from "./routes/Reports/UserReportPage.tsx";
-import ResetPasswordPage from "./routes/ResetPasswordPage.tsx";
+import ResetPasswordPage from "./routes/ResetPasswordPage/ResetPasswordPage.tsx";
 import SettingsPage from "./routes/SettingsPage.tsx";
 import FindUsersPage from "./routes/User/FindUsersPage.tsx";
 import UserAccountPageEdit from "./routes/User/UserEditPage/UserEditPage.tsx";
