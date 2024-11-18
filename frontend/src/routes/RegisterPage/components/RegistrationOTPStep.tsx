@@ -1,46 +1,8 @@
 import { Box, Button, OutlinedInput, Skeleton, Stack, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { OTPInput, REGEXP_ONLY_DIGITS } from "input-otp";
-import { padStart } from "lodash";
-import { enqueueSnackbar } from "notistack";
-import { useEffect, useState } from "react";
-import { useOTPToken, useOTPVerify, useOTPsResend } from "../../../queries/user_hooks.ts";
+import { useOTPToken } from "../../../queries/user_hooks.ts";
 import { useRegistrationContext } from "./context.tsx";
-
-function Timer(props: { until: dayjs.Dayjs; frozen_at?: dayjs.Dayjs }) {
-  const { until, frozen_at } = props;
-
-  const [now, setNow] = useState(frozen_at ?? dayjs());
-  const diff = until.diff(now, "seconds");
-
-  const minutes = Math.floor(diff / 60);
-  const seconds = diff - minutes * 60;
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      if (frozen_at == undefined) {
-        setNow(dayjs());
-      }
-    });
-
-    return () => {
-      clearInterval(id);
-    };
-  }, [frozen_at]);
-
-  const fmtMins = padStart(minutes.toString(), 2, "0");
-  const fmtSecs = padStart(seconds.toString(), 2, "0");
-
-  if (diff <= 0) {
-    return <Typography color="error">SELESAI</Typography>;
-  }
-
-  return (
-    <Typography fontWeight={"bold"} color={frozen_at != undefined ? "success" : undefined}>
-      {fmtMins}:{fmtSecs}
-    </Typography>
-  );
-}
 
 function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
   const { back, cont } = props;
@@ -52,48 +14,6 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
     email: reg.email,
     type: "Register",
   });
-
-  const { mutate: resend } = useOTPsResend({
-    onSuccess: () => {
-      enqueueSnackbar({
-        variant: "success",
-        message: "Berhasil mengirimkan ulang email!",
-      });
-    },
-  });
-
-  const { mutate: _verify } = useOTPVerify({
-    onSuccess: () => {
-      enqueueSnackbar({
-        variant: "success",
-        message: "Verifikasi berhasil!",
-      });
-      setReg((x) => ({
-        ...x,
-        registration_token: otpToken!.token,
-        otp_at: dayjs(),
-      }));
-    },
-  });
-
-  function verify() {
-    if (otp == undefined) {
-      return enqueueSnackbar({
-        variant: "error",
-        message: "Anda perlu mengisi kode OTP!",
-      });
-    }
-    if (otpToken == undefined) {
-      return enqueueSnackbar({
-        variant: "error",
-        message: "Mohon tunggu, kode OTP anda sedang dikirim...",
-      });
-    }
-    _verify({
-      otp: otp,
-      token: otpToken.token,
-    });
-  }
 
   if (otpToken == undefined) {
     return <Skeleton />;

@@ -86,9 +86,10 @@ export function useOTPsResend(opts: { onSuccess?: () => void; token: string }) {
   const { onSuccess, token } = opts;
 
   return useMutation({
-    mutationFn: new APIContext("OTPDetailMail").bodyFetch(`/api/otps/${token}/email`, {
-      method: "post",
-    }),
+    mutationFn: () =>
+      new APIContext("OTPDetailMail").fetch(`/api/otps/${token}/email`, {
+        method: "post",
+      }),
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();

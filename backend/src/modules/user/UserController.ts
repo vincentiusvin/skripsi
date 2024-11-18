@@ -73,6 +73,7 @@ const OTPCreationSchema = z.object({
 });
 
 const OTPResponseSchema = z.object({
+  token: z.string(),
   email: z.string(),
   type: z.enum(otp_types),
   created_at: z.date(),
