@@ -155,6 +155,12 @@ export class UserService {
       throw new ClientError("OTP sudah diisi!");
     }
 
+    const otp_expired = dayjs(otp.created_at).add(15, "minute");
+    const now = dayjs();
+    if (now.isAfter(otp_expired)) {
+      throw new ClientError("OTP sudah kedaluwarsa. Silahkan buat ulang kode OTP!");
+    }
+
     const message = otp.type === "Register" ? "registrasi" : "perubahan password";
 
     await this.email_service.send_email({

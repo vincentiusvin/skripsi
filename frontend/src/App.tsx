@@ -45,6 +45,7 @@ import UserReportAddPage from "./routes/Reports/UserReportAddPage.tsx";
 import UserReportDetailPage from "./routes/Reports/UserReportDetailPage.tsx";
 import UserReportEditPage from "./routes/Reports/UserReportEditPage.tsx";
 import UserReportPage from "./routes/Reports/UserReportPage.tsx";
+import ResetPasswordPage from "./routes/ResetPasswordPage.tsx";
 import SettingsPage from "./routes/SettingsPage.tsx";
 import FindUsersPage from "./routes/User/FindUsersPage.tsx";
 import UserAccountPageEdit from "./routes/User/UserEditPage/UserEditPage.tsx";
@@ -104,6 +105,7 @@ function App() {
                   <Route path={"/"} component={DashboardPage} />
                   <Route path={"/landing"} component={LandingPage} />
                   <Route path={"/login"} component={LoginPage} />
+                  <Route path={"/reset-password"} component={ResetPasswordPage} />
                   <Route path={"/register"} component={RegisterPage} />
                   <Route path={"/orgs"} component={OrgsListPage} />
                   <Route path={"/orgs/add"} component={OrgsAddPage} />
