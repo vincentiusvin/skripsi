@@ -62,13 +62,14 @@ export class UserRepository {
       .executeTakeFirst();
   }
 
-  async addOTP(obj: { email: string; otp: string }) {
-    const { email, otp } = obj;
+  async addOTP(obj: { email: string; otp: string; type: "Register" | "Password" }) {
+    const { type, email, otp } = obj;
     return await this.db
       .insertInto("ms_otps")
       .values({
         email,
         otp,
+        type,
       })
       .returning(["token", "created_at"])
       .executeTakeFirst();

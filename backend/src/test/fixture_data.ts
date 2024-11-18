@@ -458,6 +458,7 @@ export async function baseCase(db: Kysely<DB>) {
       email: "email-otp1@example.com",
       otp: "123456",
       verified: true,
+      type: "Register",
     })
     .returning(["token", "email", "otp", "verified"])
     .executeTakeFirstOrThrow();
@@ -467,6 +468,7 @@ export async function baseCase(db: Kysely<DB>) {
     .values({
       email: "email-otp2@example.com",
       otp: "89765",
+      type: "Register",
     })
     .returning(["token", "email", "otp", "verified"])
     .executeTakeFirstOrThrow();

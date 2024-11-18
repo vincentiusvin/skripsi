@@ -141,6 +141,7 @@ export interface MsOtps {
   email: string;
   otp: string;
   token: Generated<string>;
+  type: string;
   used: Generated<boolean>;
   verified: Generated<boolean>;
 }

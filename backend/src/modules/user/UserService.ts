@@ -145,7 +145,7 @@ export class UserService {
     });
   }
 
-  async addOTP(obj: { email: string }) {
+  async addRegistrationOTP(obj: { email: string }) {
     const { email } = obj;
     const result = await this.transaction_manager.transaction(this as UserService, async (serv) => {
       const same_email = await serv.findUserByEmail(email);
@@ -153,12 +153,36 @@ export class UserService {
         throw new ClientError("Sudah ada pengguna dengan email yang sama!");
       }
       return await serv.user_repo.addOTP({
+        type: "Register",
         email,
         otp: randomInt(100000, 1000000).toString(),
       });
     });
     if (result == undefined) {
-      throw new Error("Gagal membuat OTP email!");
+      throw new Error("Gagal membuat OTP registrasi!");
+    }
+
+    this.sendOTPMail(result.token);
+
+    return result;
+  }
+
+  async addPasswordOTP(obj: { email: string }) {
+    const { email } = obj;
+    const result = await this.transaction_manager.transaction(this as UserService, async (serv) => {
+      const same_email = await serv.findUserByEmail(email);
+      if (same_email == undefined) {
+        throw new ClientError("Tidak menemukan pengguna dengan email tersebut!");
+      }
+      return await serv.user_repo.addOTP({
+        type: "Password",
+        email,
+        otp: randomInt(100000, 1000000).toString(),
+      });
+    });
+
+    if (result == undefined) {
+      throw new Error("Gagal membuat OTP password!");
     }
 
     this.sendOTPMail(result.token);

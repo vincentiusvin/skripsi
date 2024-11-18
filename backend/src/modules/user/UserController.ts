@@ -113,7 +113,7 @@ export class UserController extends Controller {
     handler: async (req, res) => {
       const { user_email } = req.body;
 
-      const result = await this.user_service.addOTP({ email: user_email });
+      const result = await this.user_service.addRegistrationOTP({ email: user_email });
 
       res.status(201).json(result);
     },
