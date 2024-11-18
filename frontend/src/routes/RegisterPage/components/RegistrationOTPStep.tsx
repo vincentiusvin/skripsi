@@ -50,6 +50,7 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
 
   const { data: otpToken } = useOTPToken({
     email: reg.email,
+    type: "Register",
   });
 
   const { mutate: resend } = useOTPsResend({

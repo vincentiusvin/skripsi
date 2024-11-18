@@ -34,15 +34,16 @@ export function useUsersPost(opts?: { onSuccess?: () => void }) {
   });
 }
 
-export function useOTPToken(opts: { email: string }) {
-  const { email } = opts;
+export function useOTPToken(opts: { email: string; type: "Register" | "Password" }) {
+  const { email, type } = opts;
 
   return useQuery({
-    queryKey: ["registration", email],
+    queryKey: ["registration", opts],
     queryFn: () =>
       new APIContext("OTPsPost").fetch("/api/otps", {
         method: "POST",
         body: {
+          type,
           user_email: email,
         },
       }),
