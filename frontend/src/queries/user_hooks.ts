@@ -40,22 +40,22 @@ export function useOTPToken(opts: { email: string; type: "Register" | "Password"
   return useQuery({
     queryKey: ["registration", opts],
     queryFn: () =>
-      new APIContext("OTPsPost").fetch("/api/otps", {
+      new APIContext("OTPPost").fetch("/api/otps", {
         method: "POST",
         body: {
           type,
-          user_email: email,
+          email: email,
         },
       }),
     staleTime: 60 * 60 * 1000,
   });
 }
 
-export function useOTPVerify(opts: { onSuccess?: () => void }) {
-  const { onSuccess } = opts;
+export function useOTPVerify(opts: { onSuccess?: () => void; token: string }) {
+  const { token, onSuccess } = opts;
 
   return useMutation({
-    mutationFn: new APIContext("OTPsPut").bodyFetch("/api/otps", {
+    mutationFn: new APIContext("OTPDetailPut").bodyFetch(`/api/otps/${token}`, {
       method: "PUT",
     }),
     onSuccess: () => {
@@ -82,11 +82,11 @@ export function useUserValidation(opts: { email?: string; name?: string }) {
   });
 }
 
-export function useOTPsResend(opts: { onSuccess?: () => void }) {
-  const { onSuccess } = opts;
+export function useOTPsResend(opts: { onSuccess?: () => void; token: string }) {
+  const { onSuccess, token } = opts;
 
   return useMutation({
-    mutationFn: new APIContext("OTPsMail").bodyFetch("/api/otps-mail", {
+    mutationFn: new APIContext("OTPDetailMail").bodyFetch(`/api/otps/${token}/email`, {
       method: "post",
     }),
     onSuccess: () => {
