@@ -1,12 +1,12 @@
-import { Box, Button, OutlinedInput, Skeleton, Stack, Typography } from "@mui/material";
+import { Box, Button, OutlinedInput, Stack, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { OTPInput, REGEXP_ONLY_DIGITS } from "input-otp";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { useOTPToken, useOTPVerify, useOTPsResend } from "../queries/user_hooks.ts";
+import { useOTPVerify, useOTPsResend } from "../queries/user_hooks.ts";
 import Timer from "./Timer.tsx";
 
-function OTPObtained(props: {
+function OTP(props: {
   otp: {
     type: "Register" | "Password";
     created_at: Date;
@@ -73,7 +73,7 @@ function OTPObtained(props: {
       <Box textAlign={"center"}>
         <OTPInput
           autoFocus
-          value={otpCode ?? ""}
+          value={otp.verified_at != null ? "******" : otpCode ?? ""}
           disabled={otp.verified_at != null}
           maxLength={6}
           onChange={(e) => {
@@ -131,20 +131,6 @@ function OTPObtained(props: {
       </Stack>
     </Stack>
   );
-}
-
-function OTP(props: { email: string; type: "Register" | "Password" }) {
-  const { email, type } = props;
-
-  const { data: otp } = useOTPToken({
-    email,
-    type,
-  });
-
-  if (otp == undefined) {
-    return <Skeleton />;
-  }
-  return <OTPObtained otp={otp} />;
 }
 
 export default OTP;

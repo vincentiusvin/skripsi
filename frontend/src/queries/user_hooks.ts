@@ -11,6 +11,7 @@ const userKeys = {
   details: () => [...userKeys.all(), "detail"] as const,
   detail: (user_id: number) => [...userKeys.details(), user_id] as const,
   preferences: (user_id: number) => [...userKeys.detail(user_id), "prefs"] as const,
+  otp: (opts: { email: string; type: "Register" | "Password" }) => ["otp", opts],
 };
 
 export function useUsersPost(opts?: { onSuccess?: () => void }) {
@@ -38,7 +39,7 @@ export function useOTPToken(opts: { email: string; type: "Register" | "Password"
   const { email, type } = opts;
 
   return useQuery({
-    queryKey: ["registration", opts],
+    queryKey: userKeys.otp(opts),
     queryFn: () =>
       new APIContext("OTPPost").fetch("/api/otps", {
         method: "POST",
@@ -58,10 +59,17 @@ export function useOTPVerify(opts: { onSuccess?: () => void; token: string }) {
     mutationFn: new APIContext("OTPDetailPut").bodyFetch(`/api/otps/${token}`, {
       method: "PUT",
     }),
-    onSuccess: () => {
+    onSuccess: (x) => {
       if (onSuccess) {
         onSuccess();
       }
+      queryClient.setQueryData(
+        userKeys.otp({
+          email: x.email,
+          type: x.type,
+        }),
+        x,
+      );
     },
   });
 }

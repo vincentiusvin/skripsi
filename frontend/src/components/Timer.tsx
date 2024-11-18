@@ -28,7 +28,7 @@ function Timer(props: { until: dayjs.Dayjs; frozen_at?: dayjs.Dayjs }) {
   const fmtSecs = padStart(seconds.toString(), 2, "0");
 
   if (diff <= 0) {
-    return <Typography color="error">SELESAI</Typography>;
+    return <Typography color="error">WAKTU HABIS</Typography>;
   }
 
   return (

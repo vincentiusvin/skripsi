@@ -1,14 +1,11 @@
-import { Box, Button, OutlinedInput, Skeleton, Stack, Typography } from "@mui/material";
-import dayjs from "dayjs";
-import { OTPInput, REGEXP_ONLY_DIGITS } from "input-otp";
+import { Box, Button, Skeleton, Stack } from "@mui/material";
+import OTP from "../../../components/OTP.tsx";
 import { useOTPToken } from "../../../queries/user_hooks.ts";
 import { useRegistrationContext } from "./context.tsx";
 
 function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
   const { back, cont } = props;
   const [reg, setReg] = useRegistrationContext();
-
-  const otp = reg.otp;
 
   const { data: otpToken } = useOTPToken({
     email: reg.email,
@@ -19,84 +16,18 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
     return <Skeleton />;
   }
 
-  const expired_at = dayjs(otpToken.created_at).add(15, "minute");
-
   return (
-    <Stack spacing={4}>
-      <Typography variant="h5" fontWeight={"bold"} textAlign={"center"}>
-        Kode OTP
-      </Typography>
-      <Box textAlign={"center"}>
-        <Typography>
-          Kami telah mengirim kode OTP ke alamat email anda di <b>{reg.email}</b>.
-        </Typography>
-        <Typography>Silahkan masukkan kode tersebut ke sini:</Typography>
-      </Box>
-      <Box textAlign={"center"}>
-        <OTPInput
-          autoFocus
-          value={otp ?? ""}
-          disabled={reg.registration_token !== ""}
-          maxLength={6}
-          onChange={(e) => {
-            setReg((x) => ({
-              ...x,
-              otp: e,
-            }));
-          }}
-          inputMode="numeric"
-          pattern={REGEXP_ONLY_DIGITS}
-          onComplete={verify}
-          render={({ slots }) => (
-            <Stack direction="row" gap={1} justifyContent={"center"} flexWrap={"wrap"}>
-              {slots.map((x, i) => (
-                <OutlinedInput
-                  sx={{
-                    width: 36,
-                  }}
-                  slotProps={{
-                    input: {
-                      sx: {
-                        textAlign: "center",
-                        paddingX: 0,
-                        margin: 0,
-                      },
-                    },
-                  }}
-                  size="small"
-                  className={x.isActive ? "Mui-focused" : undefined}
-                  value={x.char ?? ""}
-                  key={i}
-                ></OutlinedInput>
-              ))}
-            </Stack>
-          )}
-        />
-        <Box mt={1}>
-          Valid selama: <Timer frozen_at={reg.otp_at} until={expired_at} />
-        </Box>
-      </Box>
-      <Stack
-        direction="row"
-        gap={1}
-        flexWrap={"wrap"}
-        alignItems={"center"}
-        justifyContent={"center"}
-      >
-        <Typography variant="body2">Tidak menerima email tersebut?</Typography>
-        <Button
-          onClick={() => {
-            resend({
-              token: otpToken.token,
-            });
-          }}
-          size="small"
-          disabled={reg.registration_token !== ""}
-        >
-          Kirim Ulang
-        </Button>
-      </Stack>
-      <Stack direction="row" spacing={2}>
+    <Box>
+      <OTP
+        otp={otpToken}
+        onVerified={() => {
+          setReg((x) => ({
+            ...x,
+            registration_token: otpToken.token,
+          }));
+        }}
+      />
+      <Stack direction="row" spacing={2} mt={4}>
         <Button fullWidth onClick={() => back()} variant="outlined">
           Mundur
         </Button>
@@ -109,7 +40,7 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
           Lanjut
         </Button>
       </Stack>
-    </Stack>
+    </Box>
   );
 }
 export default RegistrationOTPStep;

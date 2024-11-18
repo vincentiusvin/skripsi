@@ -26,8 +26,6 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
       setReg((x) => ({
         ...x,
         registration_token: "",
-        otp_at: undefined,
-        otp: undefined,
       }));
     }
     cont();
