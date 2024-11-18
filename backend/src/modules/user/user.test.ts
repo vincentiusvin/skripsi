@@ -222,7 +222,7 @@ describe("user service", () => {
   it("should be able to insert new otp", async () => {
     const in_email = "otp-test-insert@example.com";
 
-    await service.addRegistrationOTP({ email: in_email });
+    await service.addOTP({ email: in_email, type: "Register" });
     await sleep(20);
 
     const found_otp = mocked_email.mails.find((x) => {

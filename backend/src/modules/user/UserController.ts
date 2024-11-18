@@ -6,6 +6,7 @@ import {
   zodPagination,
   zodStringReadableAsNumber,
 } from "../../helpers/validators.js";
+import { otp_types } from "./UserMisc.js";
 import { UserService } from "./UserService.js";
 
 const UserResponseSchema = z.object({
@@ -67,6 +68,7 @@ const UserCreationSchema = z.object({
 
 const OTPCreationSchema = z.object({
   user_email: z.string(defaultError("Email tidak valid!")).min(1).email(),
+  type: z.enum(otp_types, defaultError("Tipe OTP tidak valid!")),
 });
 
 // Tidak restful demi security
@@ -111,9 +113,9 @@ export class UserController extends Controller {
       }),
     },
     handler: async (req, res) => {
-      const { user_email } = req.body;
+      const { user_email, type } = req.body;
 
-      const result = await this.user_service.addRegistrationOTP({ email: user_email });
+      const result = await this.user_service.addOTP({ email: user_email, type });
 
       res.status(201).json(result);
     },

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { EmailService, IEmailService } from "../email/EmailService.js";
+import { OTPTypes } from "./UserMisc.js";
 import { UserRepository } from "./UserRepository.js";
 
 export function envUserServiceFactory(transaction_manager: TransactionManager) {
@@ -145,51 +146,6 @@ export class UserService {
     });
   }
 
-  async addRegistrationOTP(obj: { email: string }) {
-    const { email } = obj;
-    const result = await this.transaction_manager.transaction(this as UserService, async (serv) => {
-      const same_email = await serv.findUserByEmail(email);
-      if (same_email != undefined) {
-        throw new ClientError("Sudah ada pengguna dengan email yang sama!");
-      }
-      return await serv.user_repo.addOTP({
-        type: "Register",
-        email,
-        otp: randomInt(100000, 1000000).toString(),
-      });
-    });
-    if (result == undefined) {
-      throw new Error("Gagal membuat OTP registrasi!");
-    }
-
-    this.sendOTPMail(result.token);
-
-    return result;
-  }
-
-  async addPasswordOTP(obj: { email: string }) {
-    const { email } = obj;
-    const result = await this.transaction_manager.transaction(this as UserService, async (serv) => {
-      const same_email = await serv.findUserByEmail(email);
-      if (same_email == undefined) {
-        throw new ClientError("Tidak menemukan pengguna dengan email tersebut!");
-      }
-      return await serv.user_repo.addOTP({
-        type: "Password",
-        email,
-        otp: randomInt(100000, 1000000).toString(),
-      });
-    });
-
-    if (result == undefined) {
-      throw new Error("Gagal membuat OTP password!");
-    }
-
-    this.sendOTPMail(result.token);
-
-    return result;
-  }
-
   async sendOTPMail(token: string) {
     const otp = await this.user_repo.getOTP(token);
     if (!otp) {
@@ -199,12 +155,14 @@ export class UserService {
       throw new ClientError("OTP sudah diisi!");
     }
 
+    const message = otp.type === "Register" ? "registrasi" : "perubahan password";
+
     await this.email_service.send_email({
       sender: "noreply",
       target: otp.email,
       subject: "OTP Registrasi Dev4You",
-      html_content: `Berikut adalah kode OTP untuk proses registrasi anda:<br/><b>${otp.otp}</b><br/><br/>`,
-      text_content: `Berikut adalah kode OTP untuk proses registrasi anda: ${otp.otp}`,
+      html_content: `Berikut adalah kode OTP untuk proses ${message} anda:<br/><b>${otp.otp}</b><br/><br/>`,
+      text_content: `Berikut adalah kode OTP untuk proses ${message} anda: ${otp.otp}`,
     });
   }
 
@@ -239,7 +197,7 @@ export class UserService {
 
   private async useRegistrationToken(token: string, user_email: string) {
     const otp = await this.user_repo.getOTP(token);
-    if (!otp || user_email !== otp.email) {
+    if (!otp || user_email !== otp.email || otp.type !== "Register") {
       // Antara token ngasal atau nembak token. Token harusnya dimanage full sama react jadi ga bakal terjadi.
       throw new ClientError(
         "Kami mendeteksi lalu lintas yang tidak lazim pada komputer anda. Silahkan ulangi proses registrasi.",
@@ -263,6 +221,88 @@ export class UserService {
     }
 
     return true;
+  }
+
+  private async useResetPasswordToken(token: string, user_email: string) {
+    const otp = await this.user_repo.getOTP(token);
+    if (!otp || user_email !== otp.email || otp.type !== "Password") {
+      // Antara token ngasal atau nembak token. Token harusnya dimanage full sama react jadi ga bakal terjadi.
+      throw new ClientError(
+        "Kami mendeteksi lalu lintas yang tidak lazim pada komputer anda. Silahkan ulangi proses perubahan password.",
+      );
+    }
+
+    if (!otp.verified) {
+      throw new ClientError("Anda belum memasukkan kode OTP!");
+    }
+
+    if (otp.used) {
+      throw new ClientError("Token reset password anda sudah digunakan!");
+    }
+
+    const token_expired = dayjs(otp.created_at).add(1, "day");
+    const now = dayjs();
+    if (now.isAfter(token_expired)) {
+      throw new ClientError(
+        "Verifikasi OTP yang anda lakukan sudah kedaluwarsa! Silahkan ulangi proses ganti password.",
+      );
+    }
+
+    return true;
+  }
+
+  async addOTP(obj: { email: string; type: OTPTypes }) {
+    const { type, ...rest } = obj;
+    if (type === "Register") {
+      return await this.addRegistrationOTP(rest);
+    } else {
+      return await this.addPasswordOTP(rest);
+    }
+  }
+
+  private async addRegistrationOTP(obj: { email: string }) {
+    const { email } = obj;
+    const result = await this.transaction_manager.transaction(this as UserService, async (serv) => {
+      const same_email = await serv.findUserByEmail(email);
+      if (same_email != undefined) {
+        throw new ClientError("Sudah ada pengguna dengan email yang sama!");
+      }
+      return await serv.user_repo.addOTP({
+        type: "Register",
+        email,
+        otp: randomInt(100000, 1000000).toString(),
+      });
+    });
+    if (result == undefined) {
+      throw new Error("Gagal membuat OTP registrasi!");
+    }
+
+    this.sendOTPMail(result.token);
+
+    return result;
+  }
+
+  private async addPasswordOTP(obj: { email: string }) {
+    const { email } = obj;
+    const result = await this.transaction_manager.transaction(this as UserService, async (serv) => {
+      const same_email = await serv.findUserByEmail(email);
+      if (same_email == undefined) {
+        throw new ClientError("Tidak menemukan pengguna dengan email tersebut!");
+      }
+      return await serv.user_repo.addOTP({
+        type: "Password",
+        email,
+        otp: randomInt(100000, 1000000).toString(),
+      });
+    });
+
+    if (result == undefined) {
+      throw new Error("Gagal membuat OTP password!");
+    }
+
+    this.sendOTPMail(result.token);
+
+    return result;
   }
 
   async getUserDetail(user_id: number) {

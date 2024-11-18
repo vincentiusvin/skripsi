@@ -2,6 +2,7 @@ import { ExpressionBuilder, Kysely, SelectQueryBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
 import { paginateQuery } from "../../helpers/pagination.js";
+import { OTPTypes, parseOTPTypes } from "./UserMisc.js";
 
 const defaultUserFields = (eb: ExpressionBuilder<DB, "ms_users">) =>
   [
@@ -38,6 +39,7 @@ const defaultOTPFields = [
   "ms_otps.used",
   "ms_otps.created_at",
   "ms_otps.verified",
+  "ms_otps.type",
 ] as const;
 
 export class UserRepository {
@@ -55,14 +57,25 @@ export class UserRepository {
   }
 
   async getOTP(token: string) {
-    return await this.db
+    const result = await this.db
       .selectFrom("ms_otps")
       .select(defaultOTPFields)
       .where("ms_otps.token", "=", token)
       .executeTakeFirst();
+
+    if (result == undefined) {
+      return undefined;
+    }
+
+    const { type, ...rest } = result;
+
+    return {
+      ...rest,
+      type: parseOTPTypes(type),
+    };
   }
 
-  async addOTP(obj: { email: string; otp: string; type: "Register" | "Password" }) {
+  async addOTP(obj: { email: string; otp: string; type: OTPTypes }) {
     const { type, email, otp } = obj;
     return await this.db
       .insertInto("ms_otps")
