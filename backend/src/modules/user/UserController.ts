@@ -49,6 +49,7 @@ const UserUpdateSchema = z.object({
   user_email: z.string(defaultError("Email tidak valid!")).min(1).email().optional(),
   user_website: z.string(defaultError("Website tidak valid!")).min(1).url().nullable().optional(),
   user_socials: z.string(defaultError("Media sosial tidak valid!")).min(1).url().array().optional(),
+  token: z.string(defaultError("Token reset password tidak valid!")).uuid().min(1).optional(),
 });
 
 const UserCreationSchema = z.object({
@@ -252,11 +253,11 @@ export class UserController extends Controller {
       ResBody: UserResponseSchema,
     },
     handler: async (req, res) => {
-      const obj = req.body;
+      const { token, ...obj } = req.body;
       const user_id = Number(req.params.id);
-      const sender_id = Number(req.session.user_id);
+      const sender_id = req.session.user_id != undefined ? Number(req.session.user_id) : undefined;
 
-      await this.user_service.updateAccountDetail(user_id, obj, sender_id);
+      await this.user_service.updateAccountDetail(user_id, obj, sender_id, token);
       const updated = await this.user_service.getUserDetail(user_id);
       res.status(200).json(updated);
     },

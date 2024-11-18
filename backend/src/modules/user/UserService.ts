@@ -352,10 +352,22 @@ export class UserService {
       user_location?: string | null;
       user_workplace?: string | null;
     },
-    sender_id: number,
+    sender_id?: number,
+    token?: string,
   ) {
     return await this.transaction_manager.transaction(this as UserService, async (serv) => {
-      const isAllowed = await serv.isAllowedToModify(user_id, sender_id);
+      const user = await serv.getUserDetail(user_id);
+      if (user == undefined) {
+        throw new NotFoundError("Gagal menemukan pengguna tersebut!");
+      }
+
+      let isAllowed = false;
+      if (sender_id != undefined) {
+        isAllowed = await serv.isAllowedToModify(user_id, sender_id);
+      } else if (token != undefined) {
+        isAllowed = await serv.useResetPasswordToken(token, user.user_email);
+      }
+
       if (!isAllowed) {
         throw new AuthError("Anda tidak memiliki akses untuk mengubah profil ini!");
       }

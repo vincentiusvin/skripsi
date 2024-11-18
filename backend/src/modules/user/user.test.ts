@@ -86,6 +86,7 @@ describe("users api", () => {
   const update_cases = [
     {
       key: "plain_user",
+      token_key: undefined,
       name: "should be able to update user info",
       obj: {
         user_name: "testing_name",
@@ -103,6 +104,16 @@ describe("users api", () => {
     },
     {
       key: "plain_user",
+      token_key: "password_otp",
+      name: "should be able to update user info when not logged in using token",
+      obj: {
+        user_password: "testing_password",
+      },
+      ok: true,
+    },
+    {
+      key: "plain_user",
+      token_key: undefined,
       name: "should not be able to duplicate links",
       obj: {
         user_socials: [
@@ -114,6 +125,7 @@ describe("users api", () => {
     },
     {
       key: "plain_user",
+      token_key: undefined,
       name: "should not be able to insert non links to socials",
       obj: {
         user_socials: ["ini bukan link"] as string[],
@@ -122,6 +134,7 @@ describe("users api", () => {
     },
     {
       key: "plain_user",
+      token_key: undefined,
       name: "should not be able to insert non links to website",
       obj: {
         user_website: "www.example.com",
@@ -130,12 +143,22 @@ describe("users api", () => {
     },
   ] as const;
 
-  for (const { key, name, obj, ok } of update_cases) {
+  for (const { key, name, obj, ok, token_key } of update_cases) {
     it(name, async () => {
       const in_user = caseData[key];
       const in_obj: Parameters<typeof putUser>[1] = obj;
-      const cookie = await getLoginCookie(in_user.name, in_user.password);
-      const update_req = await putUser(in_user.id, in_obj, cookie);
+
+      const credentials: {
+        cookie?: string;
+        token?: string;
+      } = {};
+      if (token_key === undefined) {
+        credentials.cookie = await getLoginCookie(in_user.name, in_user.password);
+      } else {
+        credentials.token = caseData[token_key].token;
+      }
+
+      const update_req = await putUser(in_user.id, in_obj, credentials.cookie, credentials.token);
 
       const read_req = await getUserDetail(in_user.id);
       const result = await read_req.json();
@@ -143,9 +166,10 @@ describe("users api", () => {
       const expected_obj = {
         ...in_obj,
         user_password: undefined,
-        user_socials: in_obj.user_socials?.map((x) => ({
-          social: x,
-        })),
+        user_socials:
+          in_obj.user_socials?.map((x) => ({
+            social: x,
+          })) ?? [],
       };
       delete expected_obj.user_password;
 
@@ -273,14 +297,14 @@ function putUser(
     user_location?: string;
     user_workplace?: string;
   },
-  cookie: string,
+  cookie?: string,
+  token?: string,
 ) {
+  const headers = cookie != undefined ? { cookie } : undefined;
   return new APIContext("UsersDetailPut").fetch(`/api/users/${user_id}`, {
     method: "PUT",
-    body: body,
-    headers: {
-      cookie: cookie,
-    },
+    body: { ...body, token },
+    headers,
   });
 }
 
