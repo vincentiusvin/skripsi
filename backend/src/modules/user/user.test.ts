@@ -11,7 +11,7 @@ import { clearDB } from "../../test/setup-test.js";
 import { MockedEmailService } from "../email/MockedEmailService.js";
 import { UserService, userServiceFactory } from "./UserService.js";
 
-describe("users api", () => {
+describe.only("users api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
 
@@ -204,10 +204,12 @@ describe("users api", () => {
   it("should be able to verify otp", async () => {
     const in_otp = caseData.unverified_otp;
 
-    const send_req = await verifyOTP({
-      token: in_otp.token,
-      otp: in_otp.otp,
-    });
+    const send_req = await verifyOTP(
+      {
+        otp: in_otp.otp,
+      },
+      in_otp.token,
+    );
     await send_req.json();
 
     expect(send_req.status).to.eq(200);
@@ -314,8 +316,8 @@ function getUserDetail(user_id: number) {
   });
 }
 
-function verifyOTP(body: { token: string; otp: string }) {
-  return new APIContext("OTPsPut").fetch("/api/otps", {
+function verifyOTP(body: { otp: string }, token: string) {
+  return new APIContext("OTPDetailPut").fetch(`/api/otps/${token}`, {
     method: "PUT",
     body,
   });

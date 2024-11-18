@@ -36,9 +36,9 @@ const defaultOTPFields = [
   "ms_otps.token",
   "ms_otps.email",
   "ms_otps.otp",
-  "ms_otps.used",
+  "ms_otps.used_at",
   "ms_otps.created_at",
-  "ms_otps.verified",
+  "ms_otps.verified_at",
   "ms_otps.type",
 ] as const;
 
@@ -84,23 +84,23 @@ export class UserRepository {
         otp,
         type,
       })
-      .returning(["token", "created_at"])
+      .returning(["token"])
       .executeTakeFirst();
   }
 
   async updateOTP(
     token: string,
     obj: {
-      verified?: boolean;
-      used?: boolean;
+      verified_at?: Date;
+      used_at?: Date;
     },
   ) {
-    const { used, verified } = obj;
+    const { used_at, verified_at } = obj;
     return await this.db
       .updateTable("ms_otps")
       .set({
-        verified,
-        used,
+        verified_at,
+        used_at,
       })
       .where("token", "=", token)
       .execute();

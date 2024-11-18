@@ -68,19 +68,26 @@ const UserCreationSchema = z.object({
 });
 
 const OTPCreationSchema = z.object({
-  user_email: z.string(defaultError("Email tidak valid!")).min(1).email(),
+  email: z.string(defaultError("Email tidak valid!")).min(1).email(),
   type: z.enum(otp_types, defaultError("Tipe OTP tidak valid!")),
+});
+
+const OTPResponseSchema = z.object({
+  email: z.string(),
+  type: z.enum(otp_types),
+  created_at: z.date(),
+  used_at: z.date().nullable(),
+  verified_at: z.date().nullable(),
+});
+
+const OTPParamsSchema = z.object({
+  token: z.string(defaultError("Token tidak valid!")).uuid().min(1),
 });
 
 // Tidak restful demi security
 // Token optimalnya masuk path di url
 const OTPUpdateSchema = z.object({
-  token: z.string(defaultError("Token tidak valid!")).uuid().min(1),
   otp: z.string(defaultError("Kode OTP tidak valid!")).min(1),
-});
-
-const OTPResendSchema = z.object({
-  token: z.string(defaultError("Token tidak valid!")).uuid().min(1),
 });
 
 export class UserController extends Controller {
@@ -96,59 +103,74 @@ export class UserController extends Controller {
       UsersGet: this.UsersGet,
       UsersDetailGet: this.UsersDetailGet,
       UsersDetailPut: this.UsersDetailPut,
-      OTPsPost: this.OTPsPost,
-      OTPsMail: this.OTPsMail,
-      OTPsPut: this.OTPsPut,
+      OTPPost: this.OTPPost,
+      // mikir dulu mau atau nggak
+      // OTPDetailGet: this.OTPDetailGet,
+      OTPDetailMail: this.OTPDetailMail,
+      OTPDetailPut: this.OTPDetailPut,
       UsersValidate: this.UsersValidate,
     };
   }
 
-  OTPsPost = new Route({
+  OTPPost = new Route({
     method: "post",
     path: "/api/otps",
     schema: {
       ReqBody: OTPCreationSchema.strict(),
-      ResBody: z.object({
-        token: z.string(),
-        created_at: z.date(),
-      }),
+      ResBody: OTPResponseSchema,
     },
     handler: async (req, res) => {
-      const { user_email, type } = req.body;
+      const { email, type } = req.body;
 
-      const result = await this.user_service.addOTP({ email: user_email, type });
+      const token = await this.user_service.addOTP({ email, type });
 
+      const result = await this.user_service.getOTP(token.token);
       res.status(201).json(result);
     },
   });
 
-  OTPsPut = new Route({
-    method: "put",
-    path: "/api/otps",
+  OTPDetailGet = new Route({
+    method: "get",
+    path: "/api/otps/:token",
     schema: {
-      ReqBody: OTPUpdateSchema.strict(),
-      ResBody: z.object({
-        msg: z.string(),
-      }),
+      Params: OTPParamsSchema,
+      ResBody: OTPResponseSchema,
     },
     handler: async (req, res) => {
-      const { otp, token } = req.body;
-      await this.user_service.verifyOTP(token, otp);
-      res.status(200).json({ msg: "Berhasil memverifikasi email!" });
+      const { token } = req.params;
+      const result = await this.user_service.getOTP(token);
+      res.status(200).json(result);
     },
   });
 
-  OTPsMail = new Route({
-    method: "post",
-    path: "/api/otps-mail",
+  OTPDetailPut = new Route({
+    method: "put",
+    path: "/api/otps/:token",
     schema: {
-      ReqBody: OTPResendSchema.strict(),
+      Params: OTPParamsSchema,
+      ReqBody: OTPUpdateSchema.strict(),
+      ResBody: OTPResponseSchema,
+    },
+    handler: async (req, res) => {
+      const { otp } = req.body;
+      const { token } = req.params;
+      await this.user_service.verifyOTP(token, otp);
+      const result = await this.user_service.getOTP(token);
+      res.status(200).json(result);
+    },
+  });
+
+  OTPDetailMail = new Route({
+    method: "post",
+    path: "/api/otps/:token/email",
+    schema: {
+      Params: OTPParamsSchema,
       ResBody: z.object({
         msg: z.string(),
       }),
     },
     handler: async (req, res) => {
-      const { token } = req.body;
+      const { token } = req.params;
       await this.user_service.sendOTPMail(token);
       res.status(200).json({ msg: "Berhasil mengirimkan email konfirmasi!" });
     },

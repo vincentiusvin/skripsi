@@ -142,8 +142,8 @@ export interface MsOtps {
   otp: string;
   token: Generated<string>;
   type: string;
-  used: Generated<boolean>;
-  verified: Generated<boolean>;
+  used_at: Timestamp | null;
+  verified_at: Timestamp | null;
 }
 
 export interface MsPreferences {

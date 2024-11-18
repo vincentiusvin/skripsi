@@ -457,10 +457,10 @@ export async function baseCase(db: Kysely<DB>) {
     .values({
       email: "email-otp1@example.com",
       otp: "123456",
-      verified: true,
+      verified_at: new Date(),
       type: "Register",
     })
-    .returning(["token", "email", "otp", "verified"])
+    .returning(["token", "email", "otp", "verified_at"])
     .executeTakeFirstOrThrow();
 
   const password_otp = await db
@@ -468,10 +468,10 @@ export async function baseCase(db: Kysely<DB>) {
     .values({
       email: plain_user.email,
       otp: "123456",
-      verified: true,
+      verified_at: new Date(),
       type: "Password",
     })
-    .returning(["token", "email", "otp", "verified"])
+    .returning(["token", "email", "otp", "verified_at"])
     .executeTakeFirstOrThrow();
 
   const unverified_otp = await db
@@ -481,7 +481,7 @@ export async function baseCase(db: Kysely<DB>) {
       otp: "89765",
       type: "Register",
     })
-    .returning(["token", "email", "otp", "verified"])
+    .returning(["token", "email", "otp", "verified_at"])
     .executeTakeFirstOrThrow();
 
   return {

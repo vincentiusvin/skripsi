@@ -151,7 +151,7 @@ export class UserService {
     if (!otp) {
       throw new NotFoundError("Token tersebut invalid!");
     }
-    if (otp.verified) {
+    if (otp.verified_at != null) {
       throw new ClientError("OTP sudah diisi!");
     }
 
@@ -166,6 +166,24 @@ export class UserService {
     });
   }
 
+  async getOTP(token: string) {
+    const result = await this.user_repo.getOTP(token);
+
+    if (result == undefined) {
+      throw new ClientError("Token tersebut tidak valid!");
+    }
+    const { token: res_token, verified_at, used_at, type, email, created_at } = result;
+
+    return {
+      email,
+      token: res_token,
+      created_at,
+      type,
+      verified_at,
+      used_at,
+    };
+  }
+
   async verifyOTP(token: string, otp: string) {
     return await this.transaction_manager.transaction(this as UserService, async (serv) => {
       const otp_data = await serv.user_repo.getOTP(token);
@@ -175,7 +193,7 @@ export class UserService {
         );
       }
 
-      if (otp_data.verified) {
+      if (otp_data.verified_at != null) {
         throw new ClientError("Anda sudah memverifikasi alamat email tersebut!");
       }
 
@@ -190,7 +208,7 @@ export class UserService {
       }
 
       await serv.user_repo.updateOTP(token, {
-        verified: true,
+        verified_at: now.toDate(),
       });
     });
   }
@@ -204,11 +222,11 @@ export class UserService {
       );
     }
 
-    if (!otp.verified) {
+    if (otp.verified_at == null) {
       throw new ClientError("Anda belum memverifikasi alamat email anda!");
     }
 
-    if (otp.used) {
+    if (otp.used_at != null) {
       throw new ClientError("Akun tersebut sudah terdaftar!");
     }
 
@@ -219,6 +237,10 @@ export class UserService {
         "Verifikasi email yang anda lakukan sudah kedaluwarsa! Silahkan ulangi proses registrasi.",
       );
     }
+
+    await this.user_repo.updateOTP(token, {
+      used_at: now.toDate(),
+    });
 
     return true;
   }
@@ -232,11 +254,11 @@ export class UserService {
       );
     }
 
-    if (!otp.verified) {
+    if (otp.verified_at == null) {
       throw new ClientError("Anda belum memasukkan kode OTP!");
     }
 
-    if (otp.used) {
+    if (otp.used_at != null) {
       throw new ClientError("Token reset password anda sudah digunakan!");
     }
 
@@ -247,6 +269,10 @@ export class UserService {
         "Verifikasi OTP yang anda lakukan sudah kedaluwarsa! Silahkan ulangi proses ganti password.",
       );
     }
+
+    await this.user_repo.updateOTP(token, {
+      used_at: now.toDate(),
+    });
 
     return true;
   }
