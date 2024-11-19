@@ -1,7 +1,22 @@
-import { Box, Button, Skeleton, Stack, TextField } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  Skeleton,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import OTP from "../../components/OTP.tsx";
-import { useOTPToken, useUserValidation } from "../../queries/user_hooks.ts";
+import {
+  useOTPToken,
+  useUserValidation,
+  useUsersDetailUpdatePassword,
+} from "../../queries/user_hooks.ts";
 
 function OTPStep(props: { email: string; next: (token: string) => void }) {
   const { email, next } = props;
@@ -27,6 +42,95 @@ function OTPStep(props: { email: string; next: (token: string) => void }) {
         Lanjut
       </Button>
     </Box>
+  );
+}
+
+function ResetPasswordStep(props: { token: string; email: string }) {
+  const { token, email } = props;
+  const [userPassword, setUserPassword] = useState<string>("");
+  const [userConfirmPassword, setUserConfirmPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const { mutate: editUser } = useUsersDetailUpdatePassword({
+    user_id: 1,
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Password baru berhasil disimpan!</Typography>,
+        autoHideDuration: 5000,
+        variant: "success",
+      });
+    },
+  });
+
+  function updatePassword() {
+    if (userPassword !== userConfirmPassword) {
+      enqueueSnackbar({
+        message: <Typography>Password anda tidak sesuai!</Typography>,
+        autoHideDuration: 5000,
+        variant: "error",
+      });
+      return;
+    }
+
+    editUser({
+      user_password: userPassword,
+      token,
+    });
+  }
+
+  return (
+    <Stack spacing={2}>
+      <TextField
+        type={showPassword ? "text" : "password"}
+        value={userPassword ?? ""}
+        onChange={(e) => setUserPassword(e.target.value)}
+        variant="standard"
+        label="Password"
+        fullWidth
+        required
+        slotProps={{
+          input: {
+            endAdornment: (
+              <InputAdornment position="start">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={() => setShowPassword((show) => !show)}
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
+      <TextField
+        required
+        label="Ketik Ulang Password"
+        fullWidth
+        value={userConfirmPassword ?? ""}
+        onChange={(e) => setUserConfirmPassword(e.target.value)}
+        type={showConfirmPassword ? "text" : "password"}
+        variant="standard"
+        slotProps={{
+          input: {
+            endAdornment: (
+              <InputAdornment position="start">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={() => setShowConfirmPassword((show) => !show)}
+                >
+                  {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
+      <Button variant="contained" onClick={updatePassword}>
+        Simpan
+      </Button>
+    </Stack>
   );
 }
 
