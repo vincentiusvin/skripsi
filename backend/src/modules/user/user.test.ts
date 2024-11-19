@@ -11,7 +11,7 @@ import { clearDB } from "../../test/setup-test.js";
 import { MockedEmailService } from "../email/MockedEmailService.js";
 import { UserService, userServiceFactory } from "./UserService.js";
 
-describe.only("users api", () => {
+describe("users api", () => {
   let app: Application;
   let caseData: Awaited<ReturnType<typeof baseCase>>;
 
