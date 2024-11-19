@@ -11,8 +11,10 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
+import { Redirect } from "wouter";
 import OTP from "../../components/OTP.tsx";
 import {
+  useOTPDetailUserGet,
   useOTPToken,
   useUserValidation,
   useUsersDetailUpdatePassword,
@@ -45,15 +47,32 @@ function OTPStep(props: { email: string; next: (token: string) => void }) {
   );
 }
 
-function ResetPasswordStep(props: { token: string; email: string }) {
-  const { token, email } = props;
+function ResetPasswordStepGetUser(props: { token: string }) {
+  const { token } = props;
+  const { data: user } = useOTPDetailUserGet({
+    token,
+  });
+
+  if (user == undefined) {
+    return <Skeleton />;
+  }
+
+  if (user.user_id == undefined) {
+    return <Redirect to={"/"} />;
+  }
+
+  return <ResetPasswordStep token={token} user_id={user.user_id} />;
+}
+
+function ResetPasswordStep(props: { token: string; user_id: number }) {
+  const { token, user_id } = props;
   const [userPassword, setUserPassword] = useState<string>("");
   const [userConfirmPassword, setUserConfirmPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { mutate: editUser } = useUsersDetailUpdatePassword({
-    user_id: 1,
+    user_id,
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Password baru berhasil disimpan!</Typography>,
@@ -173,7 +192,7 @@ function EnterEmailStep(props: { next: (email: string) => void }) {
 function ResetPassword() {
   const [step, setStep] = useState(0);
   const [email, setEmail] = useState("");
-  const [, setToken] = useState("");
+  const [token, setToken] = useState("");
 
   return (
     <Stack spacing={2}>
@@ -184,7 +203,7 @@ function ResetPassword() {
             setStep(1);
           }}
         />
-      ) : (
+      ) : step === 1 ? (
         <OTPStep
           email={email}
           next={(t) => {
@@ -192,7 +211,9 @@ function ResetPassword() {
             setStep(2);
           }}
         />
-      )}
+      ) : step === 2 ? (
+        <ResetPasswordStepGetUser token={token} />
+      ) : undefined}
     </Stack>
   );
 }

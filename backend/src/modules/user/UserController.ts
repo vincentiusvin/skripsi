@@ -117,6 +117,7 @@ export class UserController extends Controller {
       OTPPost: this.OTPPost,
       // mikir dulu mau atau nggak
       // OTPDetailGet: this.OTPDetailGet,
+      OTPDetailGetUser: this.OTPDetailGetUser,
       OTPDetailMail: this.OTPDetailMail,
       OTPDetailPut: this.OTPDetailPut,
       UsersValidate: this.UsersValidate,
@@ -151,6 +152,22 @@ export class UserController extends Controller {
       const { token } = req.params;
       const result = await this.user_service.getOTP(token);
       res.status(200).json(result);
+    },
+  });
+
+  OTPDetailGetUser = new Route({
+    method: "get",
+    path: "/api/otps/:token/user",
+    schema: {
+      Params: OTPParamsSchema,
+      ResBody: z.object({
+        user_id: z.number().optional(),
+      }),
+    },
+    handler: async (req, res) => {
+      const { token } = req.params;
+      const result = await this.user_service.findUserByOTP(token);
+      res.status(200).json({ user_id: result?.user_id });
     },
   });
 

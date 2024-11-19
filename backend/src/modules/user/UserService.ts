@@ -68,6 +68,24 @@ export class UserService {
     return await this.user_repo.findUserByName(name);
   }
 
+  async findUserByOTP(token: string) {
+    const result = await this.user_repo.getOTP(token);
+
+    if (result == undefined) {
+      throw new NotFoundError("Token tersebut tidak valid!");
+    }
+
+    if (result.verified_at == null) {
+      throw new ClientError(
+        "Anda harus memverifikasi email anda sebelum anda dapat membaca informasi ini!",
+      );
+    }
+
+    const { email } = result;
+    const user = await this.findUserByEmail(email);
+    return user;
+  }
+
   async validateUser(obj: { user_name?: string; user_email?: string }, existing: boolean) {
     const { user_name, user_email } = obj;
 
@@ -184,7 +202,7 @@ export class UserService {
     const result = await this.user_repo.getOTP(token);
 
     if (result == undefined) {
-      throw new ClientError("Token tersebut tidak valid!");
+      throw new NotFoundError("Token tersebut tidak valid!");
     }
     const { token: res_token, verified_at, used_at, type, email, created_at } = result;
 
