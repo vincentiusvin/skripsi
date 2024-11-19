@@ -1,4 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { isEqual } from "lodash";
+import { useDebounce } from "use-debounce";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 import { sessionKeys } from "./sesssion_hooks.ts";
@@ -74,20 +76,42 @@ export function useOTPVerify(opts: { onSuccess?: () => void; token: string }) {
   });
 }
 
-export function useUserValidation(opts: { email?: string; name?: string }) {
-  const { email, name } = opts;
+export function useUserValidation(opts: { email?: string; name?: string; existing?: boolean }) {
+  const { email, name, existing } = opts;
 
-  return useQuery({
-    queryKey: ["validation", { email, name }],
+  const inputData = {
+    email,
+    name,
+  };
+
+  const [debouncedData] = useDebounce(inputData, 300);
+
+  const isUpdated = isEqual(debouncedData, inputData);
+
+  const query = useQuery({
+    queryKey: ["validation", debouncedData],
     queryFn: () =>
       new APIContext("UsersValidate").fetch("/api/users-validation", {
         method: "get",
         query: {
-          email,
-          name,
+          email: debouncedData.email,
+          name: debouncedData.name,
+          existing: existing === true ? "true" : undefined,
         },
       }),
   });
+  const { data: validationData } = query;
+
+  const isValid =
+    isUpdated &&
+    validationData != undefined &&
+    validationData.email == undefined &&
+    validationData.name == undefined;
+
+  return {
+    isValid,
+    data: validationData,
+  };
 }
 
 export function useOTPsResend(opts: { onSuccess?: () => void; token: string }) {

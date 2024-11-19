@@ -1,9 +1,6 @@
 import { Button, Stack, TextField, Typography } from "@mui/material";
-import { isEqual } from "lodash";
 import { useState } from "react";
-import { useDebounce } from "use-debounce";
 import StyledLink from "../../../components/StyledLink.tsx";
-import { handleOptionalStringCreation } from "../../../helpers/misc.ts";
 import { useUserValidation } from "../../../queries/user_hooks.ts";
 import { useRegistrationContext } from "./context.tsx";
 
@@ -12,14 +9,6 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
   const { cont } = props;
 
   const [prevEmail] = useState(reg.email);
-
-  const [debouncedData] = useDebounce(
-    {
-      email: handleOptionalStringCreation(reg.email),
-      name: handleOptionalStringCreation(reg.username),
-    },
-    300,
-  );
 
   function continueRegis() {
     if (prevEmail !== reg.email) {
@@ -31,23 +20,12 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
     cont();
   }
 
-  const { data: valid, isLoading } = useUserValidation(debouncedData);
+  const { isValid, data: valid } = useUserValidation({
+    email: reg.email ?? "",
+    name: reg.username ?? "",
+  });
 
-  const isValidated =
-    valid != undefined &&
-    !isLoading &&
-    isEqual(debouncedData, {
-      email: reg.email,
-      name: reg.username,
-    }) &&
-    reg.email !== "" &&
-    reg.username !== "";
-
-  const isAllowed =
-    isValidated &&
-    valid.email === undefined &&
-    valid.name === undefined &&
-    reg.password !== undefined;
+  const isAllowed = isValid && reg.password !== undefined;
 
   return (
     <Stack spacing={4}>
@@ -55,15 +33,15 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
         Daftar
       </Typography>
       <TextField
-        value={reg.email}
+        value={reg.email ?? ""}
         onChange={(e) => {
           setReg((x) => ({
             ...x,
             email: e.target.value,
           }));
         }}
-        error={valid?.email != undefined}
-        helperText={valid?.email}
+        error={reg.email !== undefined && valid?.email != undefined}
+        helperText={reg.email !== undefined ? valid?.email : undefined}
         required
         label="Email"
         fullWidth
@@ -71,8 +49,8 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
       <TextField
         required
         fullWidth
-        error={valid?.name != undefined}
-        helperText={valid?.name}
+        error={reg.username !== undefined && valid?.name != undefined}
+        helperText={reg.username !== undefined ? valid?.name : undefined}
         value={reg.username}
         onChange={(e) =>
           setReg((x) => ({
@@ -86,7 +64,7 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
         required
         fullWidth
         type="password"
-        value={reg.password}
+        value={reg.password ?? ""}
         onChange={(e) =>
           setReg((x) => ({
             ...x,

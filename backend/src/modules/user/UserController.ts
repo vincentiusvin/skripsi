@@ -223,12 +223,16 @@ export class UserController extends Controller {
       ReqQuery: z.object({
         name: z.string().optional(),
         email: z.string().optional(),
+        existing: z.literal("true").optional(),
       }),
     },
     handler: async (req, res) => {
-      const { name, email } = req.query;
+      const { name, email, existing } = req.query;
 
-      const result = await this.user_service.validateUser({ user_name: name, user_email: email });
+      const result = await this.user_service.validateUser(
+        { user_name: name, user_email: email },
+        existing === "true",
+      );
 
       res.status(200).json(result);
     },

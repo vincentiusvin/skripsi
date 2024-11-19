@@ -8,7 +8,7 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
   const [reg, setReg] = useRegistrationContext();
 
   const { data: otpToken } = useOTPToken({
-    email: reg.email,
+    email: reg.email ?? "",
     type: "Register",
   });
 
@@ -32,7 +32,7 @@ function RegistrationOTPStep(props: { cont: () => void; back: () => void }) {
           Mundur
         </Button>
         <Button
-          disabled={reg.registration_token.length === 0}
+          disabled={reg.registration_token == undefined}
           fullWidth
           onClick={() => cont()}
           variant="contained"

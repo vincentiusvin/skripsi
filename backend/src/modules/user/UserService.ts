@@ -68,7 +68,7 @@ export class UserService {
     return await this.user_repo.findUserByName(name);
   }
 
-  async validateUser(obj: { user_name?: string; user_email?: string }) {
+  async validateUser(obj: { user_name?: string; user_email?: string }, existing: boolean) {
     const { user_name, user_email } = obj;
 
     const retval: {
@@ -76,24 +76,32 @@ export class UserService {
       email?: string;
     } = {};
 
-    if (user_name) {
+    if (user_name != undefined) {
       const name_valid = z.string().min(1).safeParse(user_name);
 
       if (!name_valid.success) {
         retval.name = "Nama tersebut invalid!";
       } else {
         const same_name = await this.findUserByName(user_name);
-        retval.name = same_name ? "Nama tersebut sudah dipakai pengguna lain!" : undefined;
+        if (existing && !same_name) {
+          retval.name = "Nama tersebut tidak ditemukan!";
+        } else if (!existing && same_name) {
+          retval.name = "Nama tersebut sudah dipakai pengguna lain!";
+        }
       }
     }
-    if (user_email) {
+    if (user_email != undefined) {
       const email_valid = z.string().email().min(1).safeParse(user_email);
 
       if (!email_valid.success) {
         retval.email = "Alamat email tersebut invalid!";
       } else {
         const same_email = await this.findUserByEmail(user_email);
-        retval.email = same_email ? "Email tersebut sudah dipakai pengguna lain!" : undefined;
+        if (existing && !same_email) {
+          retval.email = "Email tersebut tidak ditemukan!";
+        } else if (!existing && same_email) {
+          retval.email = "Email tersebut sudah dipakai pengguna lain!";
+        }
       }
     }
 

@@ -33,32 +33,33 @@ function OTPStep(props: { email: string; next: (token: string) => void }) {
 
 function EnterEmailStep(props: { next: (email: string) => void }) {
   const { next } = props;
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState<string | undefined>();
 
   const [debouncedEmail] = useDebounce(email, 300);
 
-  const { data: valid, isLoading } = useUserValidation({
-    email: debouncedEmail,
+  const { isValid, data: valid } = useUserValidation({
+    email: debouncedEmail ?? "",
+    existing: true,
   });
-
-  const isValidated = valid != undefined && !isLoading && debouncedEmail === email && email !== "";
-  const isAllowed = isValidated && valid.email === undefined;
 
   return (
     <Stack spacing={2}>
       <TextField
         label="Email"
-        value={email}
+        value={email ?? ""}
         onChange={(e) => {
           setEmail(e.target.value);
         }}
-        error={valid?.email != undefined}
-        helperText={valid?.email}
+        error={email !== undefined && valid?.email != undefined}
+        helperText={email !== undefined ? valid?.email : undefined}
       />
       <Button
         variant="contained"
-        disabled={!isAllowed}
+        disabled={!isValid}
         onClick={() => {
+          if (email == undefined) {
+            return;
+          }
           next(email);
         }}
       >
