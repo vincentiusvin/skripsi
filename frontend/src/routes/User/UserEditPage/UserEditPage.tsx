@@ -55,7 +55,6 @@ function UserEdit(props: { user_id: number }) {
 
     editUser({
       user_name: userUpdate.user_name,
-      user_email: userUpdate.user_email,
       user_education_level: handleOptionalStringUpdate(userUpdate.user_education_level),
       user_school: handleOptionalStringUpdate(userUpdate.user_school),
       user_website: websiteCleaned,

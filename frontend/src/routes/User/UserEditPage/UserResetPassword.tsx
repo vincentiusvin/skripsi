@@ -12,17 +12,17 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { useUsersDetailUpdate } from "../../../queries/user_hooks.ts";
+import { useUsersDetailUpdatePassword } from "../../../queries/user_hooks.ts";
 
 function UserResetPassword(props: { user_id: number }) {
   const { user_id } = props;
-  const [userPassword, setUserPassword] = useState<string | undefined>(undefined);
-  const [userConfirmPassword, setUserConfirmPassword] = useState<string | undefined>(undefined);
+  const [userPassword, setUserPassword] = useState<string>("");
+  const [userConfirmPassword, setUserConfirmPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { mutate: editUser } = useUsersDetailUpdate({
+  const { mutate: editUser } = useUsersDetailUpdatePassword({
     user_id,
     onSuccess: () => {
       enqueueSnackbar({
@@ -50,8 +50,8 @@ function UserResetPassword(props: { user_id: number }) {
   }
 
   function reset() {
-    setUserConfirmPassword(undefined);
-    setUserPassword(undefined);
+    setUserPassword("");
+    setUserConfirmPassword("");
     setShowPassword(false);
     setShowConfirmPassword(false);
     setDialogOpen(false);
