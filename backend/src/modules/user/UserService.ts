@@ -81,6 +81,10 @@ export class UserService {
       );
     }
 
+    if (result.used_at != null) {
+      throw new ClientError("Anda hanya dapat membaca informasi ini sebelum kode OTP digunakan!");
+    }
+
     const { email } = result;
     const user = await this.findUserByEmail(email);
     return user;

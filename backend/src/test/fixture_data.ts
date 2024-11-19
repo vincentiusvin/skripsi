@@ -463,6 +463,18 @@ export async function baseCase(db: Kysely<DB>) {
     .returning(["token", "email", "otp", "verified_at"])
     .executeTakeFirstOrThrow();
 
+  const used_otp = await db
+    .insertInto("ms_otps")
+    .values({
+      email: "email-otp2@example.com",
+      otp: "123456",
+      verified_at: new Date(),
+      type: "Register",
+      used_at: new Date(),
+    })
+    .returning(["token", "email", "otp", "verified_at"])
+    .executeTakeFirstOrThrow();
+
   const password_otp = await db
     .insertInto("ms_otps")
     .values({
@@ -488,6 +500,7 @@ export async function baseCase(db: Kysely<DB>) {
     verified_otp,
     unverified_otp,
     password_otp,
+    used_otp,
     project_chat,
     org,
     preferences,

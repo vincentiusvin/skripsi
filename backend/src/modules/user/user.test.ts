@@ -279,6 +279,39 @@ describe.only("users api", () => {
       }
     });
   }
+
+  const otp_query_case = [
+    {
+      name: "should be able to query user by email if otp is verified",
+      key: "verified_otp",
+      ok: true,
+    },
+    {
+      name: "shouldn't be able to query user by email if otp is unverified",
+      key: "unverified_otp",
+      ok: false,
+    },
+    {
+      name: "shouldn't be able to query user by email if otp is used",
+      key: "used_otp",
+      ok: false,
+    },
+  ] as const;
+
+  for (const { ok, name, key } of otp_query_case) {
+    it(name, async () => {
+      const in_otp = caseData[key];
+
+      const otp_req = await getOTPUser(in_otp.token);
+      await otp_req.json();
+
+      if (ok == true) {
+        expect(otp_req.status).to.eq(200);
+      } else {
+        expect(otp_req.status).to.be.oneOf([400, 401]);
+      }
+    });
+  }
 });
 
 describe("user service", () => {
@@ -424,6 +457,12 @@ function putUserEmail(
 
 function getUserDetail(user_id: number) {
   return new APIContext("UsersDetailGet").fetch(`/api/users/${user_id}`, {
+    method: "GET",
+  });
+}
+
+function getOTPUser(token: string) {
+  return new APIContext("OTPDetailGetUser").fetch(`/api/otps/${token}/user`, {
     method: "GET",
   });
 }
