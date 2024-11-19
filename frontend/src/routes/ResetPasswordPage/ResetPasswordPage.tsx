@@ -4,6 +4,7 @@ import {
   Button,
   IconButton,
   InputAdornment,
+  Paper,
   Skeleton,
   Stack,
   TextField,
@@ -34,7 +35,7 @@ function OTPStep(props: { email: string; next: (token: string) => void }) {
   }
 
   return (
-    <Stack maxWidth={450} margin="auto" spacing={2} paddingTop={8}>
+    <Stack maxWidth={500} margin="auto" spacing={2} padding={4} marginTop={4} component={Paper}>
       <OTP otp={otpToken} />
       <Stack direction="row" gap={2}>
         <StyledLink to={"/login"} flexGrow={1}>
@@ -112,7 +113,15 @@ function ResetPasswordStep(props: { token: string; user_id: number }) {
   }
 
   return (
-    <Stack maxWidth={450} margin="auto" spacing={2} paddingTop={8}>
+    <Stack
+      maxWidth={450}
+      margin="auto"
+      spacing={2}
+      marginTop={8}
+      paddingX={{ md: 8, xs: 2 }}
+      paddingY={4}
+      component={Paper}
+    >
       <Typography variant="h5" fontWeight={"bold"} textAlign={"center"} pb={2}>
         Masukkan Password Baru
       </Typography>
@@ -162,9 +171,23 @@ function ResetPasswordStep(props: { token: string; user_id: number }) {
           },
         }}
       />
-      <Button variant="contained" fullWidth onClick={updatePassword}>
-        Simpan
-      </Button>
+
+      <Stack direction="row" gap={2}>
+        <StyledLink to={"/login"} flexGrow={1}>
+          <Button color="error" variant="outlined" fullWidth>
+            Batalkan
+          </Button>
+        </StyledLink>
+        <Button
+          sx={{
+            flexGrow: 1,
+          }}
+          variant="contained"
+          onClick={updatePassword}
+        >
+          Simpan
+        </Button>
+      </Stack>
     </Stack>
   );
 }
@@ -179,7 +202,15 @@ function EnterEmailStep(props: { next: (email: string) => void }) {
   });
 
   return (
-    <Stack spacing={2} maxWidth={350} margin="auto" paddingTop={8}>
+    <Stack
+      spacing={2}
+      maxWidth={450}
+      margin="auto"
+      marginTop={8}
+      paddingX={{ md: 8, xs: 2 }}
+      paddingY={4}
+      component={Paper}
+    >
       <Typography variant="h5" fontWeight={"bold"} textAlign={"center"} pb={2}>
         Email
       </Typography>
