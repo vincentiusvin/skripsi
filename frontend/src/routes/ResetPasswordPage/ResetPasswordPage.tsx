@@ -13,6 +13,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { Redirect, useLocation } from "wouter";
 import OTP from "../../components/OTP.tsx";
+import StyledLink from "../../components/StyledLink.tsx";
 import {
   useOTPDetailUserGet,
   useOTPToken,
@@ -33,19 +34,28 @@ function OTPStep(props: { email: string; next: (token: string) => void }) {
   }
 
   return (
-    <Box>
+    <Stack maxWidth={450} margin="auto" spacing={2} paddingTop={8}>
       <OTP otp={otpToken} />
-      <Button
-        variant="contained"
-        fullWidth
-        onClick={() => {
-          next(otpToken.token);
-        }}
-        disabled={otpToken.verified_at == null}
-      >
-        Lanjut
-      </Button>
-    </Box>
+      <Stack direction="row" gap={2}>
+        <StyledLink to={"/login"} flexGrow={1}>
+          <Button color="error" variant="outlined" fullWidth>
+            Batalkan
+          </Button>
+        </StyledLink>
+        <Button
+          sx={{
+            flexGrow: 1,
+          }}
+          variant="contained"
+          onClick={() => {
+            next(otpToken.token);
+          }}
+          disabled={otpToken.verified_at == null}
+        >
+          Lanjut
+        </Button>
+      </Stack>
+    </Stack>
   );
 }
 
@@ -102,7 +112,10 @@ function ResetPasswordStep(props: { token: string; user_id: number }) {
   }
 
   return (
-    <Stack spacing={2}>
+    <Stack maxWidth={450} margin="auto" spacing={2} paddingTop={8}>
+      <Typography variant="h5" fontWeight={"bold"} textAlign={"center"} pb={2}>
+        Masukkan Password Baru
+      </Typography>
       <TextField
         type={showPassword ? "text" : "password"}
         value={userPassword ?? ""}
@@ -166,7 +179,11 @@ function EnterEmailStep(props: { next: (email: string) => void }) {
   });
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={2} maxWidth={350} margin="auto" paddingTop={8}>
+      <Typography variant="h5" fontWeight={"bold"} textAlign={"center"} pb={2}>
+        Email
+      </Typography>
+      <Typography>Silahkan masukkan alamat email anda di bawah:</Typography>
       <TextField
         label="Email"
         value={email ?? ""}
@@ -176,19 +193,28 @@ function EnterEmailStep(props: { next: (email: string) => void }) {
         error={email !== undefined && !isValid}
         helperText={email !== undefined ? valid?.email : undefined}
       />
-      <Button
-        variant="contained"
-        fullWidth
-        disabled={!isValid}
-        onClick={() => {
-          if (email == undefined) {
-            return;
-          }
-          next(email);
-        }}
-      >
-        Lanjut
-      </Button>
+      <Stack direction="row" gap={2}>
+        <StyledLink to={"/login"} flexGrow={1}>
+          <Button color="error" variant="outlined" fullWidth>
+            Batalkan
+          </Button>
+        </StyledLink>
+        <Button
+          sx={{
+            flexGrow: 1,
+          }}
+          variant="contained"
+          disabled={!isValid}
+          onClick={() => {
+            if (email == undefined) {
+              return;
+            }
+            next(email);
+          }}
+        >
+          Lanjut
+        </Button>
+      </Stack>
     </Stack>
   );
 }
@@ -200,24 +226,36 @@ function ResetPassword() {
 
   return (
     <Stack spacing={2}>
-      {step === 0 ? (
-        <EnterEmailStep
-          next={(e) => {
-            setEmail(e);
-            setStep(1);
-          }}
-        />
-      ) : step === 1 ? (
-        <OTPStep
-          email={email}
-          next={(t) => {
-            setToken(t);
-            setStep(2);
-          }}
-        />
-      ) : step === 2 ? (
-        <ResetPasswordStepGetUser token={token} />
-      ) : undefined}
+      <Typography
+        variant="h4"
+        fontWeight={"bold"}
+        align="center"
+        sx={{
+          wordBreak: "break-word",
+        }}
+      >
+        Ubah Password
+      </Typography>
+      <Box>
+        {step === 0 ? (
+          <EnterEmailStep
+            next={(e) => {
+              setEmail(e);
+              setStep(1);
+            }}
+          />
+        ) : step === 1 ? (
+          <OTPStep
+            email={email}
+            next={(t) => {
+              setToken(t);
+              setStep(2);
+            }}
+          />
+        ) : step === 2 ? (
+          <ResetPasswordStepGetUser token={token} />
+        ) : undefined}
+      </Box>
     </Stack>
   );
 }
