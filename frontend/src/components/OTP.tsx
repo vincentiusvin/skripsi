@@ -35,7 +35,7 @@ function OTP(props: {
     onSuccess: () => {
       enqueueSnackbar({
         variant: "success",
-        message: "Verifikasi berhasil!",
+        message: <Typography>Verifikasi berhasil!</Typography>,
       });
       if (onVerified) {
         onVerified();

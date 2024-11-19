@@ -167,6 +167,21 @@ export function useUsersDetailUpdatePassword(opts: { user_id: number; onSuccess?
   });
 }
 
+export function useUsersDetailUpdateEmail(opts: { user_id: number; onSuccess?: () => void }) {
+  const { user_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: new APIContext("UsersDetailPutEmail").bodyFetch(`/api/users/${user_id}/email`, {
+      method: "PUT",
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.all() });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
 export function useUsersDetailPreferencesPut(opts: { user_id: number; onSuccess?: () => void }) {
   const { user_id, onSuccess } = opts;
   return useMutation({
