@@ -40,7 +40,7 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
             email: e.target.value,
           }));
         }}
-        error={reg.email !== undefined && valid?.email != undefined}
+        error={reg.email !== undefined && !isValid}
         helperText={reg.email !== undefined ? valid?.email : undefined}
         required
         label="Email"
@@ -49,9 +49,9 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
       <TextField
         required
         fullWidth
-        error={reg.username !== undefined && valid?.name != undefined}
+        error={reg.username !== undefined && !isValid}
         helperText={reg.username !== undefined ? valid?.name : undefined}
-        value={reg.username}
+        value={reg.username ?? ""}
         onChange={(e) =>
           setReg((x) => ({
             ...x,

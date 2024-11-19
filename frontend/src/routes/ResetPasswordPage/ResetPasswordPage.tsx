@@ -1,6 +1,5 @@
 import { Box, Button, Skeleton, Stack, TextField } from "@mui/material";
 import { useState } from "react";
-import { useDebounce } from "use-debounce";
 import OTP from "../../components/OTP.tsx";
 import { useOTPToken, useUserValidation } from "../../queries/user_hooks.ts";
 
@@ -35,10 +34,8 @@ function EnterEmailStep(props: { next: (email: string) => void }) {
   const { next } = props;
   const [email, setEmail] = useState<string | undefined>();
 
-  const [debouncedEmail] = useDebounce(email, 300);
-
   const { isValid, data: valid } = useUserValidation({
-    email: debouncedEmail ?? "",
+    email: email ?? "",
     existing: true,
   });
 
@@ -50,7 +47,7 @@ function EnterEmailStep(props: { next: (email: string) => void }) {
         onChange={(e) => {
           setEmail(e.target.value);
         }}
-        error={email !== undefined && valid?.email != undefined}
+        error={email !== undefined && !isValid}
         helperText={email !== undefined ? valid?.email : undefined}
       />
       <Button

@@ -15,6 +15,7 @@ import { useState } from "react";
 import OTP from "../../../components/OTP.tsx";
 import {
   useOTPToken,
+  useUserValidation,
   useUsersDetailGet,
   useUsersDetailUpdateEmail,
 } from "../../../queries/user_hooks.ts";
@@ -81,18 +82,12 @@ function EmailStep(props: { user_id: number; next: (email: string) => void }) {
   });
   const [email, setEmail] = useState<string | undefined>();
 
+  const { isValid, data: valid } = useUserValidation({
+    email: email ?? "",
+  });
+
   if (data == undefined) {
     return <Skeleton />;
-  }
-
-  let isErrored = false;
-  let errorText: string | undefined = undefined;
-  if (email == undefined) {
-    isErrored = true;
-    errorText = "Email baru belum dimasukkan!";
-  } else if (email === data.user_email) {
-    isErrored = true;
-    errorText = "Email baru sama dengan email lama!";
   }
 
   return (
@@ -104,19 +99,15 @@ function EmailStep(props: { user_id: number; next: (email: string) => void }) {
         label="Email"
         fullWidth
         required
-        error={isErrored}
-        helperText={errorText}
+        error={email !== undefined && !isValid}
+        helperText={email !== undefined ? valid?.email : undefined}
       />
       <Button
         variant="contained"
-        disabled={isErrored}
+        disabled={!isValid}
         onClick={() => {
-          if (email == undefined || isErrored) {
-            return enqueueSnackbar({
-              message: <Typography>{errorText}</Typography>,
-              autoHideDuration: 5000,
-              variant: "error",
-            });
+          if (email == undefined) {
+            return;
           }
           next(email);
         }}
