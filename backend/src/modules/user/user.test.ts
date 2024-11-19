@@ -343,19 +343,66 @@ describe("user service", () => {
     expect(found_otp).to.not.eq(undefined);
   });
 
-  it("should be able to insert new otp", async () => {
-    const in_email = "otp-test-insert@example.com";
+  const insert_otp_cases = [
+    {
+      type: "Register",
+      user_key: undefined,
+      name: "should be able to insert registration otp",
+      ok: true,
+    },
+    {
+      type: "Password",
+      user_key: "plain_user",
+      name: "should be able to insert registration otp",
+      ok: true,
+    },
+    {
+      type: "Register",
+      user_key: "plain_user",
+      name: "shouldn't be able to insert registration otp for used email",
+      ok: false,
+    },
+    {
+      type: "Password",
+      user_key: undefined,
+      name: "shouldn't be able to insert password otp for unregistered email",
+      ok: false,
+    },
+  ] as const;
 
-    await service.addOTP({ email: in_email, type: "Register" });
-    await sleep(20);
+  for (const { ok, type, name, user_key } of insert_otp_cases) {
+    it(name, async () => {
+      const in_email =
+        user_key !== undefined ? caseData[user_key].email : "otp-test-insert@example.com";
 
-    const found_otp = mocked_email.mails.find((x) => {
-      const right_email = x.target === in_email;
-      const has_code = /[0-9]{6}/.test(x.text_content);
-      return has_code && right_email;
+      let isThrown = false;
+      let token: string | undefined = undefined;
+      try {
+        const ret = await service.addOTP({ email: in_email, type });
+        token = ret.token;
+      } catch (e) {
+        isThrown = true;
+      }
+
+      await sleep(20);
+
+      if (ok) {
+        const found_mail = mocked_email.mails.find((x) => {
+          const right_email = x.target === in_email;
+          const has_code = /[0-9]{6}/.test(x.text_content);
+          return has_code && right_email;
+        });
+        const otp = await service.getOTP(token!);
+
+        expect(token).to.not.eq(undefined);
+        expect(otp.email).to.eq(in_email);
+        expect(otp.type).to.eq(type);
+        expect(found_mail).to.not.eq(undefined);
+      } else {
+        expect(isThrown).to.eq(true);
+      }
     });
-    expect(found_otp).to.not.eq(undefined);
-  });
+  }
 
   it("shouldn't be able to resend email on verified otp", async () => {
     const in_otp = caseData.verified_otp;
