@@ -15,6 +15,7 @@ import { useState } from "react";
 import { Redirect, useLocation } from "wouter";
 import OTP from "../../components/OTP.tsx";
 import StyledLink from "../../components/StyledLink.tsx";
+import UserLabel from "../../components/UserLabel.tsx";
 import {
   useOTPDetailUserGet,
   useOTPToken,
@@ -113,80 +114,94 @@ function ResetPasswordStep(props: { token: string; user_id: number }) {
   }
 
   return (
-    <Stack
-      maxWidth={450}
-      margin="auto"
-      spacing={2}
-      marginTop={8}
-      paddingX={{ md: 8, xs: 2 }}
-      paddingY={4}
-      component={Paper}
-    >
-      <Typography variant="h5" fontWeight={"bold"} textAlign={"center"} pb={2}>
-        Masukkan Password Baru
-      </Typography>
-      <TextField
-        type={showPassword ? "text" : "password"}
-        value={userPassword ?? ""}
-        onChange={(e) => setUserPassword(e.target.value)}
-        variant="standard"
-        label="Password"
-        fullWidth
-        required
-        slotProps={{
-          input: {
-            endAdornment: (
-              <InputAdornment position="start">
-                <IconButton
-                  aria-label="toggle password visibility"
-                  onClick={() => setShowPassword((show) => !show)}
-                >
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
+    <Stack maxWidth={450} margin="auto" marginTop={4} spacing={4}>
+      <Paper
+        sx={{
+          paddingY: 2,
+          paddingX: { sm: 8, xs: 2 },
         }}
-      />
-      <TextField
-        required
-        label="Ketik Ulang Password"
-        fullWidth
-        value={userConfirmPassword ?? ""}
-        onChange={(e) => setUserConfirmPassword(e.target.value)}
-        type={showConfirmPassword ? "text" : "password"}
-        variant="standard"
-        slotProps={{
-          input: {
-            endAdornment: (
-              <InputAdornment position="start">
-                <IconButton
-                  aria-label="toggle password visibility"
-                  onClick={() => setShowConfirmPassword((show) => !show)}
-                >
-                  {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
-        }}
-      />
-
-      <Stack direction="row" gap={2}>
-        <StyledLink to={"/login"} flexGrow={1}>
-          <Button color="error" variant="outlined" fullWidth>
-            Batalkan
-          </Button>
-        </StyledLink>
-        <Button
+      >
+        <Typography variant="h6" fontWeight={"bold"} textAlign={"center"} pb={2}>
+          Akun Anda
+        </Typography>
+        <Paper
           sx={{
-            flexGrow: 1,
+            paddingY: 2,
+            paddingX: 4,
           }}
-          variant="contained"
-          onClick={updatePassword}
         >
-          Simpan
-        </Button>
+          <StyledLink to={`/users/${user_id}`}>
+            <UserLabel user_id={user_id} />
+          </StyledLink>
+        </Paper>
+      </Paper>
+      <Stack spacing={2} component={Paper} paddingX={{ md: 8, xs: 2 }} paddingY={4}>
+        <Typography variant="h6" fontWeight={"bold"} textAlign={"center"} pb={2}>
+          Masukkan Password Baru
+        </Typography>
+        <TextField
+          type={showPassword ? "text" : "password"}
+          value={userPassword ?? ""}
+          onChange={(e) => setUserPassword(e.target.value)}
+          variant="standard"
+          label="Password"
+          fullWidth
+          required
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="start">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => setShowPassword((show) => !show)}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+        <TextField
+          required
+          label="Ketik Ulang Password"
+          fullWidth
+          value={userConfirmPassword ?? ""}
+          onChange={(e) => setUserConfirmPassword(e.target.value)}
+          type={showConfirmPassword ? "text" : "password"}
+          variant="standard"
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="start">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => setShowConfirmPassword((show) => !show)}
+                  >
+                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+
+        <Stack direction="row" gap={2}>
+          <StyledLink to={"/login"} flexGrow={1}>
+            <Button color="error" variant="outlined" fullWidth>
+              Batalkan
+            </Button>
+          </StyledLink>
+          <Button
+            sx={{
+              flexGrow: 1,
+            }}
+            variant="contained"
+            onClick={updatePassword}
+          >
+            Simpan
+          </Button>
+        </Stack>
       </Stack>
     </Stack>
   );
@@ -211,7 +226,7 @@ function EnterEmailStep(props: { next: (email: string) => void }) {
       paddingY={4}
       component={Paper}
     >
-      <Typography variant="h5" fontWeight={"bold"} textAlign={"center"} pb={2}>
+      <Typography variant="h6" fontWeight={"bold"} textAlign={"center"} pb={2}>
         Email
       </Typography>
       <Typography>Silahkan masukkan alamat email anda di bawah:</Typography>
