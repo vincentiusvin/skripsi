@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Redirect } from "wouter";
+import { Redirect, useLocation } from "wouter";
 import OTP from "../../components/OTP.tsx";
 import {
   useOTPDetailUserGet,
@@ -36,6 +36,8 @@ function OTPStep(props: { email: string; next: (token: string) => void }) {
     <Box>
       <OTP otp={otpToken} />
       <Button
+        variant="contained"
+        fullWidth
         onClick={() => {
           next(otpToken.token);
         }}
@@ -70,6 +72,7 @@ function ResetPasswordStep(props: { token: string; user_id: number }) {
   const [userConfirmPassword, setUserConfirmPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [, setLocation] = useLocation();
 
   const { mutate: editUser } = useUsersDetailUpdatePassword({
     user_id,
@@ -79,6 +82,7 @@ function ResetPasswordStep(props: { token: string; user_id: number }) {
         autoHideDuration: 5000,
         variant: "success",
       });
+      setLocation("/login");
     },
   });
 
@@ -89,7 +93,6 @@ function ResetPasswordStep(props: { token: string; user_id: number }) {
         autoHideDuration: 5000,
         variant: "error",
       });
-      return;
     }
 
     editUser({
@@ -146,7 +149,7 @@ function ResetPasswordStep(props: { token: string; user_id: number }) {
           },
         }}
       />
-      <Button variant="contained" onClick={updatePassword}>
+      <Button variant="contained" fullWidth onClick={updatePassword}>
         Simpan
       </Button>
     </Stack>
@@ -175,6 +178,7 @@ function EnterEmailStep(props: { next: (email: string) => void }) {
       />
       <Button
         variant="contained"
+        fullWidth
         disabled={!isValid}
         onClick={() => {
           if (email == undefined) {
