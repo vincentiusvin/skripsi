@@ -142,13 +142,11 @@ describe.only("users api", () => {
 
       const expected_obj = {
         ...in_obj,
-        user_password: undefined,
         user_socials:
           in_obj.user_socials?.map((x) => ({
             social: x,
           })) ?? [],
       };
-      delete expected_obj.user_password;
 
       if (ok) {
         expect(update_req.status).eq(200);
@@ -233,6 +231,54 @@ describe.only("users api", () => {
 
     expect(send_req.status).to.eq(200);
   });
+
+  const update_email_cases = [
+    {
+      name: "should be able to update email using token",
+      key: "plain_user",
+      otp_key: "verified_otp",
+      ok: true,
+    },
+    {
+      name: "shouldn't be able to update email using other token",
+      key: "plain_user",
+      otp_key: "unverified_otp",
+      ok: false,
+    },
+  ] as const;
+
+  for (const { name, key, otp_key, ok } of update_email_cases) {
+    it(name, async () => {
+      const in_user = caseData[key];
+      const in_otp = caseData[otp_key];
+
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+
+      const update_req = await putUserEmail(
+        in_user.id,
+        {
+          user_email: in_otp.email,
+          token: in_otp.token,
+        },
+        cookie,
+      );
+
+      const read_req = await getUserDetail(in_user.id);
+      const result = await read_req.json();
+
+      const expected_obj = {
+        user_email: in_otp.email,
+      };
+
+      if (ok) {
+        expect(update_req.status).eq(200);
+        expect(result).to.deep.include(expected_obj);
+      } else {
+        expect(update_req.status).to.not.eq(200);
+        expect(result).to.not.deep.include(expected_obj);
+      }
+    });
+  }
 });
 
 describe("user service", () => {
@@ -356,6 +402,23 @@ function putUserPassword(
     method: "PUT",
     body: bodyWithToken,
     headers,
+  });
+}
+
+function putUserEmail(
+  user_id: number,
+  body: {
+    user_email: string;
+    token: string;
+  },
+  cookie: string,
+) {
+  return new APIContext("UsersDetailPutEmail").fetch(`/api/users/${user_id}/email`, {
+    method: "PUT",
+    body,
+    headers: {
+      cookie,
+    },
   });
 }
 
