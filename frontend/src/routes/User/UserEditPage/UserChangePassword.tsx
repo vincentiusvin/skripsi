@@ -14,7 +14,7 @@ import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useUsersDetailUpdatePassword } from "../../../queries/user_hooks.ts";
 
-function UserResetPassword(props: { user_id: number }) {
+function UserChangePassword(props: { user_id: number }) {
   const { user_id } = props;
   const [userPassword, setUserPassword] = useState<string>("");
   const [userConfirmPassword, setUserConfirmPassword] = useState<string>("");
@@ -127,4 +127,4 @@ function UserResetPassword(props: { user_id: number }) {
     </>
   );
 }
-export default UserResetPassword;
+export default UserChangePassword;

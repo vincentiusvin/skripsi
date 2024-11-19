@@ -1,6 +1,6 @@
 import { Skeleton, Stack, TextField } from "@mui/material";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
-import UserResetPassword from "./UserResetPassword.tsx";
+import UserChangePassword from "./UserChangePassword.tsx";
 import { useUserEditContext } from "./context.tsx";
 
 function UserEditBiodata(props: { user_id: number }) {
@@ -102,7 +102,7 @@ function UserEditBiodata(props: { user_id: number }) {
         }
         value={userEdit.user_website ?? data.user_website ?? ""}
       />
-      <UserResetPassword user_id={user_id} />
+      <UserChangePassword user_id={user_id} />
     </Stack>
   );
 }
