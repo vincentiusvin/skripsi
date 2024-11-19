@@ -89,8 +89,6 @@ describe("users api", () => {
       name: "should be able to update user info",
       obj: {
         user_name: "testing_name",
-        user_password: "testing_password",
-        user_email: "testing-actual-test@example.com",
         user_about_me: "saya suka makan ayam",
         user_education_level: "S1",
         user_school: "NUBIS University",
@@ -134,7 +132,9 @@ describe("users api", () => {
     it(name, async () => {
       const in_user = caseData[key];
       const in_obj: Parameters<typeof putUser>[1] = obj;
+
       const cookie = await getLoginCookie(in_user.name, in_user.password);
+
       const update_req = await putUser(in_user.id, in_obj, cookie);
 
       const read_req = await getUserDetail(in_user.id);
@@ -142,12 +142,11 @@ describe("users api", () => {
 
       const expected_obj = {
         ...in_obj,
-        user_password: undefined,
-        user_socials: in_obj.user_socials?.map((x) => ({
-          social: x,
-        })),
+        user_socials:
+          in_obj.user_socials?.map((x) => ({
+            social: x,
+          })) ?? [],
       };
-      delete expected_obj.user_password;
 
       if (ok) {
         expect(update_req.status).eq(200);
@@ -158,36 +157,161 @@ describe("users api", () => {
     });
   }
 
-  it("should be able to update user password", async () => {
-    const in_user = caseData.plain_user;
-    const in_pass = "new pass from update";
+  const reset_password_cases = [
+    {
+      key: "plain_user",
+      name: "should be able to update user password while logged in",
+      password: "new pass from update",
+      ok: true,
+      credentials: { type: "cookie" },
+    },
+    {
+      key: "plain_user",
+      name: "should be able to update user password using token",
+      password: "new pass from update",
+      ok: true,
+      credentials: { type: "token", key: "password_otp" },
+    },
+    {
+      key: "plain_user",
+      name: "shouldn't be able to update user password with unrelated token",
+      password: "new pass from update",
+      ok: false,
+      credentials: { type: "token", key: "verified_otp" },
+    },
+  ] as const;
 
-    const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const update_req = await putUser(
-      in_user.id,
-      {
-        user_password: in_pass,
-      },
-      cookie,
-    );
+  for (const { key, name, password, ok, credentials } of reset_password_cases) {
+    it(name, async () => {
+      const in_user = caseData[key];
+      const in_pass = password;
+      let in_creds: { cookie: string } | { token: string };
 
-    const success_login = await getLoginCookie(in_user.name, in_pass);
+      if (credentials.type === "token") {
+        in_creds = {
+          token: caseData[credentials.key].token,
+        };
+      } else if (credentials.type === "cookie") {
+        const cookie = await getLoginCookie(in_user.name, in_user.password);
+        in_creds = { cookie };
+      } else {
+        throw new Error("Invalid test case data! Please provide a credential");
+      }
 
-    expect(update_req.status).eq(200);
-    expect(success_login).to.not.eq("");
-  });
+      const update_req = await putUserPassword(
+        in_user.id,
+        {
+          user_password: in_pass,
+        },
+        in_creds,
+      );
+
+      const success_login = await getLoginCookie(in_user.name, in_pass);
+
+      if (ok) {
+        expect(update_req.status).eq(200);
+        expect(success_login).to.not.eq("");
+      } else {
+        expect(update_req.status).not.eq(200);
+        expect(success_login).to.eq("");
+      }
+    });
+  }
 
   it("should be able to verify otp", async () => {
     const in_otp = caseData.unverified_otp;
 
-    const send_req = await verifyOTP({
-      token: in_otp.token,
-      otp: in_otp.otp,
-    });
+    const send_req = await verifyOTP(
+      {
+        otp: in_otp.otp,
+      },
+      in_otp.token,
+    );
     await send_req.json();
 
     expect(send_req.status).to.eq(200);
   });
+
+  const update_email_cases = [
+    {
+      name: "should be able to update email using token",
+      key: "plain_user",
+      otp_key: "verified_otp",
+      ok: true,
+    },
+    {
+      name: "shouldn't be able to update email using other token",
+      key: "plain_user",
+      otp_key: "unverified_otp",
+      ok: false,
+    },
+  ] as const;
+
+  for (const { name, key, otp_key, ok } of update_email_cases) {
+    it(name, async () => {
+      const in_user = caseData[key];
+      const in_otp = caseData[otp_key];
+
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+
+      const update_req = await putUserEmail(
+        in_user.id,
+        {
+          user_email: in_otp.email,
+          token: in_otp.token,
+        },
+        cookie,
+      );
+
+      const read_req = await getUserDetail(in_user.id);
+      const result = await read_req.json();
+
+      const expected_obj = {
+        user_email: in_otp.email,
+      };
+
+      if (ok) {
+        expect(update_req.status).eq(200);
+        expect(result).to.deep.include(expected_obj);
+      } else {
+        expect(update_req.status).to.not.eq(200);
+        expect(result).to.not.deep.include(expected_obj);
+      }
+    });
+  }
+
+  const otp_query_case = [
+    {
+      name: "should be able to query user by email if otp is verified",
+      key: "verified_otp",
+      ok: true,
+    },
+    {
+      name: "shouldn't be able to query user by email if otp is unverified",
+      key: "unverified_otp",
+      ok: false,
+    },
+    {
+      name: "shouldn't be able to query user by email if otp is used",
+      key: "used_otp",
+      ok: false,
+    },
+  ] as const;
+
+  for (const { ok, name, key } of otp_query_case) {
+    it(name, async () => {
+      const in_otp = caseData[key];
+
+      const otp_req = await getOTPUser(in_otp.token);
+      await otp_req.json();
+
+      if (ok == true) {
+        expect(otp_req.status).to.eq(200);
+      } else {
+        expect(otp_req.status).to.be.oneOf([400, 401]);
+      }
+    });
+  }
 });
 
 describe("user service", () => {
@@ -219,19 +343,66 @@ describe("user service", () => {
     expect(found_otp).to.not.eq(undefined);
   });
 
-  it("should be able to insert new otp", async () => {
-    const in_email = "otp-test-insert@example.com";
+  const insert_otp_cases = [
+    {
+      type: "Register",
+      user_key: undefined,
+      name: "should be able to insert registration otp",
+      ok: true,
+    },
+    {
+      type: "Password",
+      user_key: "plain_user",
+      name: "should be able to insert registration otp",
+      ok: true,
+    },
+    {
+      type: "Register",
+      user_key: "plain_user",
+      name: "shouldn't be able to insert registration otp for used email",
+      ok: false,
+    },
+    {
+      type: "Password",
+      user_key: undefined,
+      name: "shouldn't be able to insert password otp for unregistered email",
+      ok: false,
+    },
+  ] as const;
 
-    await service.addOTP({ email: in_email });
-    await sleep(20);
+  for (const { ok, type, name, user_key } of insert_otp_cases) {
+    it(name, async () => {
+      const in_email =
+        user_key !== undefined ? caseData[user_key].email : "otp-test-insert@example.com";
 
-    const found_otp = mocked_email.mails.find((x) => {
-      const right_email = x.target === in_email;
-      const has_code = /[0-9]{6}/.test(x.text_content);
-      return has_code && right_email;
+      let isThrown = false;
+      let token: string | undefined = undefined;
+      try {
+        const ret = await service.addOTP({ email: in_email, type });
+        token = ret.token;
+      } catch (e) {
+        isThrown = true;
+      }
+
+      await sleep(20);
+
+      if (ok) {
+        const found_mail = mocked_email.mails.find((x) => {
+          const right_email = x.target === in_email;
+          const has_code = /[0-9]{6}/.test(x.text_content);
+          return has_code && right_email;
+        });
+        const otp = await service.getOTP(token!);
+
+        expect(token).to.not.eq(undefined);
+        expect(otp.email).to.eq(in_email);
+        expect(otp.type).to.eq(type);
+        expect(found_mail).to.not.eq(undefined);
+      } else {
+        expect(isThrown).to.eq(true);
+      }
     });
-    expect(found_otp).to.not.eq(undefined);
-  });
+  }
 
   it("shouldn't be able to resend email on verified otp", async () => {
     const in_otp = caseData.verified_otp;
@@ -262,8 +433,6 @@ function putUser(
   user_id: number,
   body: {
     user_name?: string;
-    user_password?: string;
-    user_email?: string;
     user_education_level?: string;
     user_school?: string;
     user_about_me?: string;
@@ -277,9 +446,58 @@ function putUser(
 ) {
   return new APIContext("UsersDetailPut").fetch(`/api/users/${user_id}`, {
     method: "PUT",
-    body: body,
+    body,
     headers: {
-      cookie: cookie,
+      cookie,
+    },
+  });
+}
+
+function putUserPassword(
+  user_id: number,
+  body: {
+    user_password: string;
+  },
+  creds:
+    | {
+        cookie: string;
+      }
+    | {
+        token: string;
+      },
+) {
+  let headers: { cookie: string } | undefined = undefined;
+  const bodyWithToken: {
+    user_password: string;
+    token?: string;
+  } = body;
+
+  if ("cookie" in creds) {
+    headers = { cookie: creds.cookie };
+  } else if ("token" in creds) {
+    bodyWithToken.token = creds.token;
+  }
+
+  return new APIContext("UsersDetailPutPassword").fetch(`/api/users/${user_id}/password`, {
+    method: "PUT",
+    body: bodyWithToken,
+    headers,
+  });
+}
+
+function putUserEmail(
+  user_id: number,
+  body: {
+    user_email: string;
+    token: string;
+  },
+  cookie: string,
+) {
+  return new APIContext("UsersDetailPutEmail").fetch(`/api/users/${user_id}/email`, {
+    method: "PUT",
+    body,
+    headers: {
+      cookie,
     },
   });
 }
@@ -290,8 +508,14 @@ function getUserDetail(user_id: number) {
   });
 }
 
-function verifyOTP(body: { token: string; otp: string }) {
-  return new APIContext("OTPsPut").fetch("/api/otps", {
+function getOTPUser(token: string) {
+  return new APIContext("OTPDetailGetUser").fetch(`/api/otps/${token}/user`, {
+    method: "GET",
+  });
+}
+
+function verifyOTP(body: { otp: string }, token: string) {
+  return new APIContext("OTPDetailPut").fetch(`/api/otps/${token}`, {
     method: "PUT",
     body,
   });

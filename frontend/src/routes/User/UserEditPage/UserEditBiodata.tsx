@@ -1,6 +1,7 @@
-import { Skeleton, Stack, TextField } from "@mui/material";
+import { InputAdornment, Skeleton, Stack, TextField } from "@mui/material";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
-import UserResetPassword from "./UserResetPassword.tsx";
+import UserChangeEmail from "./UserChangeEmail.tsx";
+import UserChangePassword from "./UserChangePassword.tsx";
 import { useUserEditContext } from "./context.tsx";
 
 function UserEditBiodata(props: { user_id: number }) {
@@ -29,19 +30,31 @@ function UserEditBiodata(props: { user_id: number }) {
         }
         fullWidth
       />
-      <TextField
-        required
-        label="Email"
-        variant="standard"
-        fullWidth
-        onChange={(e) =>
-          setUserEdit((x) => ({
-            ...x,
-            user_email: e.target.value,
-          }))
-        }
-        value={userEdit.user_email ?? data.user_email}
-      />
+      <Stack direction="row">
+        <TextField
+          required
+          label="Email"
+          variant="standard"
+          disabled
+          fullWidth
+          onChange={(e) =>
+            setUserEdit((x) => ({
+              ...x,
+              user_email: e.target.value,
+            }))
+          }
+          value={userEdit.user_email ?? data.user_email}
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="start">
+                  <UserChangeEmail user_id={user_id} />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+      </Stack>
       <TextField
         label="Lokasi"
         fullWidth
@@ -102,7 +115,7 @@ function UserEditBiodata(props: { user_id: number }) {
         }
         value={userEdit.user_website ?? data.user_website ?? ""}
       />
-      <UserResetPassword user_id={user_id} />
+      <UserChangePassword user_id={user_id} />
     </Stack>
   );
 }

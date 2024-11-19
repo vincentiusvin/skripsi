@@ -6,7 +6,7 @@ import { NavigationContext, NavigationData } from "./NavigationContext.ts";
 import SideNav from "./SideNav.tsx";
 import TopNav from "./TopNav.tsx";
 
-const suppress = ["/landing", "/login", "/register"];
+const suppress = ["/landing", "/login", "/register", "/reset-password"];
 
 // Matiin navbar untuk halaman2 diatas.
 // Terus restore state terakhir setelah leave halaman tersebut.

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { TransactionManager } from "../../helpers/transaction/transaction.js";
 import { EmailService, IEmailService } from "../email/EmailService.js";
+import { OTPTypes } from "./UserMisc.js";
 import { UserRepository } from "./UserRepository.js";
 
 export function envUserServiceFactory(transaction_manager: TransactionManager) {
@@ -67,7 +68,29 @@ export class UserService {
     return await this.user_repo.findUserByName(name);
   }
 
-  async validateUser(obj: { user_name?: string; user_email?: string }) {
+  async findUserByOTP(token: string) {
+    const result = await this.user_repo.getOTP(token);
+
+    if (result == undefined) {
+      throw new NotFoundError("Token tersebut tidak valid!");
+    }
+
+    if (result.verified_at == null) {
+      throw new ClientError(
+        "Anda harus memverifikasi email anda sebelum anda dapat membaca informasi ini!",
+      );
+    }
+
+    if (result.used_at != null) {
+      throw new ClientError("Anda hanya dapat membaca informasi ini sebelum kode OTP digunakan!");
+    }
+
+    const { email } = result;
+    const user = await this.findUserByEmail(email);
+    return user;
+  }
+
+  async validateUser(obj: { user_name?: string; user_email?: string }, existing: boolean) {
     const { user_name, user_email } = obj;
 
     const retval: {
@@ -75,24 +98,32 @@ export class UserService {
       email?: string;
     } = {};
 
-    if (user_name) {
+    if (user_name != undefined) {
       const name_valid = z.string().min(1).safeParse(user_name);
 
       if (!name_valid.success) {
         retval.name = "Nama tersebut invalid!";
       } else {
         const same_name = await this.findUserByName(user_name);
-        retval.name = same_name ? "Nama tersebut sudah dipakai pengguna lain!" : undefined;
+        if (existing && !same_name) {
+          retval.name = "Nama tersebut tidak ditemukan!";
+        } else if (!existing && same_name) {
+          retval.name = "Nama tersebut sudah dipakai pengguna lain!";
+        }
       }
     }
-    if (user_email) {
+    if (user_email != undefined) {
       const email_valid = z.string().email().min(1).safeParse(user_email);
 
       if (!email_valid.success) {
         retval.email = "Alamat email tersebut invalid!";
       } else {
         const same_email = await this.findUserByEmail(user_email);
-        retval.email = same_email ? "Email tersebut sudah dipakai pengguna lain!" : undefined;
+        if (existing && !same_email) {
+          retval.email = "Email tersebut tidak ditemukan!";
+        } else if (!existing && same_email) {
+          retval.email = "Email tersebut sudah dipakai pengguna lain!";
+        }
       }
     }
 
@@ -145,43 +176,48 @@ export class UserService {
     });
   }
 
-  async addOTP(obj: { email: string }) {
-    const { email } = obj;
-    const result = await this.transaction_manager.transaction(this as UserService, async (serv) => {
-      const same_email = await serv.findUserByEmail(email);
-      if (same_email != undefined) {
-        throw new ClientError("Sudah ada pengguna dengan email yang sama!");
-      }
-      return await serv.user_repo.addOTP({
-        email,
-        otp: randomInt(100000, 1000000).toString(),
-      });
-    });
-    if (result == undefined) {
-      throw new Error("Gagal membuat OTP email!");
-    }
-
-    this.sendOTPMail(result.token);
-
-    return result;
-  }
-
   async sendOTPMail(token: string) {
     const otp = await this.user_repo.getOTP(token);
     if (!otp) {
       throw new NotFoundError("Token tersebut invalid!");
     }
-    if (otp.verified) {
+    if (otp.verified_at != null) {
       throw new ClientError("OTP sudah diisi!");
     }
+
+    const otp_expired = dayjs(otp.created_at).add(15, "minute");
+    const now = dayjs();
+    if (now.isAfter(otp_expired)) {
+      throw new ClientError("OTP sudah kedaluwarsa. Silahkan buat ulang kode OTP!");
+    }
+
+    const message = otp.type === "Register" ? "registrasi" : "perubahan password";
 
     await this.email_service.send_email({
       sender: "noreply",
       target: otp.email,
       subject: "OTP Registrasi Dev4You",
-      html_content: `Berikut adalah kode OTP untuk proses registrasi anda:<br/><b>${otp.otp}</b><br/><br/>`,
-      text_content: `Berikut adalah kode OTP untuk proses registrasi anda: ${otp.otp}`,
+      html_content: `Berikut adalah kode OTP untuk proses ${message} anda:<br/><b>${otp.otp}</b><br/><br/>`,
+      text_content: `Berikut adalah kode OTP untuk proses ${message} anda: ${otp.otp}`,
     });
+  }
+
+  async getOTP(token: string) {
+    const result = await this.user_repo.getOTP(token);
+
+    if (result == undefined) {
+      throw new NotFoundError("Token tersebut tidak valid!");
+    }
+    const { token: res_token, verified_at, used_at, type, email, created_at } = result;
+
+    return {
+      email,
+      token: res_token,
+      created_at,
+      type,
+      verified_at,
+      used_at,
+    };
   }
 
   async verifyOTP(token: string, otp: string) {
@@ -193,7 +229,7 @@ export class UserService {
         );
       }
 
-      if (otp_data.verified) {
+      if (otp_data.verified_at != null) {
         throw new ClientError("Anda sudah memverifikasi alamat email tersebut!");
       }
 
@@ -208,25 +244,25 @@ export class UserService {
       }
 
       await serv.user_repo.updateOTP(token, {
-        verified: true,
+        verified_at: now.toDate(),
       });
     });
   }
 
   private async useRegistrationToken(token: string, user_email: string) {
     const otp = await this.user_repo.getOTP(token);
-    if (!otp || user_email !== otp.email) {
+    if (!otp || user_email !== otp.email || otp.type !== "Register") {
       // Antara token ngasal atau nembak token. Token harusnya dimanage full sama react jadi ga bakal terjadi.
       throw new ClientError(
         "Kami mendeteksi lalu lintas yang tidak lazim pada komputer anda. Silahkan ulangi proses registrasi.",
       );
     }
 
-    if (!otp.verified) {
+    if (otp.verified_at == null) {
       throw new ClientError("Anda belum memverifikasi alamat email anda!");
     }
 
-    if (otp.used) {
+    if (otp.used_at != null) {
       throw new ClientError("Akun tersebut sudah terdaftar!");
     }
 
@@ -238,7 +274,97 @@ export class UserService {
       );
     }
 
+    await this.user_repo.updateOTP(token, {
+      used_at: now.toDate(),
+    });
+
     return true;
+  }
+
+  private async useResetPasswordToken(token: string, user_email: string) {
+    const otp = await this.user_repo.getOTP(token);
+    if (!otp || user_email !== otp.email || otp.type !== "Password") {
+      // Antara token ngasal atau nembak token. Token harusnya dimanage full sama react jadi ga bakal terjadi.
+      throw new ClientError(
+        "Kami mendeteksi lalu lintas yang tidak lazim pada komputer anda. Silahkan ulangi proses perubahan password.",
+      );
+    }
+
+    if (otp.verified_at == null) {
+      throw new ClientError("Anda belum memasukkan kode OTP!");
+    }
+
+    if (otp.used_at != null) {
+      throw new ClientError("Token reset password anda sudah digunakan!");
+    }
+
+    const token_expired = dayjs(otp.created_at).add(1, "day");
+    const now = dayjs();
+    if (now.isAfter(token_expired)) {
+      throw new ClientError(
+        "Verifikasi OTP yang anda lakukan sudah kedaluwarsa! Silahkan ulangi proses ganti password.",
+      );
+    }
+
+    await this.user_repo.updateOTP(token, {
+      used_at: now.toDate(),
+    });
+
+    return true;
+  }
+
+  async addOTP(obj: { email: string; type: OTPTypes }) {
+    const { type, ...rest } = obj;
+    if (type === "Register") {
+      return await this.addRegistrationOTP(rest);
+    } else {
+      return await this.addPasswordOTP(rest);
+    }
+  }
+
+  private async addRegistrationOTP(obj: { email: string }) {
+    const { email } = obj;
+    const result = await this.transaction_manager.transaction(this as UserService, async (serv) => {
+      const same_email = await serv.findUserByEmail(email);
+      if (same_email != undefined) {
+        throw new ClientError("Sudah ada pengguna dengan email yang sama!");
+      }
+      return await serv.user_repo.addOTP({
+        type: "Register",
+        email,
+        otp: randomInt(100000, 1000000).toString(),
+      });
+    });
+    if (result == undefined) {
+      throw new Error("Gagal membuat OTP registrasi!");
+    }
+
+    this.sendOTPMail(result.token);
+
+    return result;
+  }
+
+  private async addPasswordOTP(obj: { email: string }) {
+    const { email } = obj;
+    const result = await this.transaction_manager.transaction(this as UserService, async (serv) => {
+      const same_email = await serv.findUserByEmail(email);
+      if (same_email == undefined) {
+        throw new ClientError("Tidak menemukan pengguna dengan email tersebut!");
+      }
+      return await serv.user_repo.addOTP({
+        type: "Password",
+        email,
+        otp: randomInt(100000, 1000000).toString(),
+      });
+    });
+
+    if (result == undefined) {
+      throw new Error("Gagal membuat OTP password!");
+    }
+
+    this.sendOTPMail(result.token);
+
+    return result;
   }
 
   async getUserDetail(user_id: number) {
@@ -273,33 +399,56 @@ export class UserService {
     return await this.isAdminUser(sender_id);
   }
 
-  async updateAccountDetail(
+  async updatePassword(
     user_id: number,
-    obj: {
-      user_name?: string;
-      user_email?: string;
-      user_education_level?: string | null;
-      user_school?: string | null;
-      user_about_me?: string | null;
-      user_image?: string | null;
-      user_password?: string | null;
-      user_website?: string | null;
-      user_socials?: string[];
-      user_location?: string | null;
-      user_workplace?: string | null;
-    },
-    sender_id: number,
+    user_password: string,
+    credentials:
+      | {
+          sender_id: number;
+        }
+      | {
+          token: string;
+        },
   ) {
     return await this.transaction_manager.transaction(this as UserService, async (serv) => {
-      const isAllowed = await serv.isAllowedToModify(user_id, sender_id);
+      const user = await serv.getUserDetail(user_id);
+      if (user == undefined) {
+        throw new NotFoundError("Gagal menemukan pengguna tersebut!");
+      }
+
+      let isAllowed = false;
+      if ("sender_id" in credentials) {
+        isAllowed = await serv.isAllowedToModify(user_id, credentials.sender_id);
+      } else if ("token" in credentials) {
+        isAllowed = await serv.useResetPasswordToken(credentials.token, user.user_email);
+      }
+
       if (!isAllowed) {
         throw new AuthError("Anda tidak memiliki akses untuk mengubah profil ini!");
       }
 
-      const { user_name, user_password, user_email, user_socials, ...rest } = obj;
-      let hashed_password: string | undefined = undefined;
-      if (user_password != undefined) {
-        hashed_password = hashSync(user_password, 10);
+      const hashed_password = hashSync(user_password, 10);
+      return await serv.user_repo.updateAccountDetails(user_id, {
+        hashed_password: hashed_password,
+      });
+    });
+  }
+
+  async updateAccountEmail(
+    user_id: number,
+    obj: {
+      user_email: string;
+      token: string;
+    },
+    sender_id: number,
+  ) {
+    const { user_email, token } = obj;
+
+    return await this.transaction_manager.transaction(this as UserService, async (serv) => {
+      const isAllowed = await serv.isAllowedToModify(user_id, sender_id);
+
+      if (!isAllowed) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengubah profil ini!");
       }
 
       if (user_email != undefined) {
@@ -308,6 +457,43 @@ export class UserService {
           throw new ClientError("Sudah ada pengguna dengan email yang sama !");
         }
       }
+
+      await serv.useRegistrationToken(token, user_email);
+
+      return await serv.user_repo.updateAccountDetails(user_id, {
+        user_email,
+      });
+    });
+  }
+
+  async updateAccountDetail(
+    user_id: number,
+    obj: {
+      user_name?: string;
+      user_education_level?: string | null;
+      user_school?: string | null;
+      user_about_me?: string | null;
+      user_image?: string | null;
+      user_website?: string | null;
+      user_socials?: string[];
+      user_location?: string | null;
+      user_workplace?: string | null;
+    },
+    sender_id: number,
+  ) {
+    return await this.transaction_manager.transaction(this as UserService, async (serv) => {
+      const user = await serv.getUserDetail(user_id);
+      if (user == undefined) {
+        throw new NotFoundError("Gagal menemukan pengguna tersebut!");
+      }
+
+      const isAllowed = await serv.isAllowedToModify(user_id, sender_id);
+
+      if (!isAllowed) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengubah profil ini!");
+      }
+
+      const { user_name, user_socials, ...rest } = obj;
 
       if (user_name != undefined) {
         const same_name = await serv.user_repo.findUserByName(user_name);
@@ -324,10 +510,8 @@ export class UserService {
 
       return await serv.user_repo.updateAccountDetails(user_id, {
         ...rest,
-        user_email,
         user_name,
         user_socials,
-        hashed_password: hashed_password,
       });
     });
   }

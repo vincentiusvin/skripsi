@@ -98,7 +98,9 @@ function Login() {
                     <Button>Daftar</Button>
                   </StyledLink>
                 </Stack>
-                <Button>Lupa Password</Button>
+                <StyledLink to={"/reset-password"}>
+                  <Button>Lupa Password</Button>
+                </StyledLink>
               </Stack>
             </Stack>
           </Paper>

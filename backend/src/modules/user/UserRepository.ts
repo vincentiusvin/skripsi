@@ -2,6 +2,7 @@ import { ExpressionBuilder, Kysely, SelectQueryBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
 import { paginateQuery } from "../../helpers/pagination.js";
+import { OTPTypes, parseOTPTypes } from "./UserMisc.js";
 
 const defaultUserFields = (eb: ExpressionBuilder<DB, "ms_users">) =>
   [
@@ -35,9 +36,10 @@ const defaultOTPFields = [
   "ms_otps.token",
   "ms_otps.email",
   "ms_otps.otp",
-  "ms_otps.used",
+  "ms_otps.used_at",
   "ms_otps.created_at",
-  "ms_otps.verified",
+  "ms_otps.verified_at",
+  "ms_otps.type",
 ] as const;
 
 export class UserRepository {
@@ -55,38 +57,50 @@ export class UserRepository {
   }
 
   async getOTP(token: string) {
-    return await this.db
+    const result = await this.db
       .selectFrom("ms_otps")
       .select(defaultOTPFields)
       .where("ms_otps.token", "=", token)
       .executeTakeFirst();
+
+    if (result == undefined) {
+      return undefined;
+    }
+
+    const { type, ...rest } = result;
+
+    return {
+      ...rest,
+      type: parseOTPTypes(type),
+    };
   }
 
-  async addOTP(obj: { email: string; otp: string }) {
-    const { email, otp } = obj;
+  async addOTP(obj: { email: string; otp: string; type: OTPTypes }) {
+    const { type, email, otp } = obj;
     return await this.db
       .insertInto("ms_otps")
       .values({
         email,
         otp,
+        type,
       })
-      .returning(["token", "created_at"])
+      .returning(["token"])
       .executeTakeFirst();
   }
 
   async updateOTP(
     token: string,
     obj: {
-      verified?: boolean;
-      used?: boolean;
+      verified_at?: Date;
+      used_at?: Date;
     },
   ) {
-    const { used, verified } = obj;
+    const { used_at, verified_at } = obj;
     return await this.db
       .updateTable("ms_otps")
       .set({
-        verified,
-        used,
+        verified_at,
+        used_at,
       })
       .where("token", "=", token)
       .execute();

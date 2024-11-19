@@ -7,7 +7,7 @@ import { useRegistrationContext } from "./context.tsx";
 function RegistrationSocialStep(props: { cont: () => void; back: () => void }) {
   const { back, cont } = props;
   const [reg, setRegistration] = useRegistrationContext();
-  const [socials, { removeAt, push, updateAt }] = useList<string>(reg.social_medias);
+  const [socials, { removeAt, push, updateAt }] = useList<string>(reg.social_medias ?? []);
 
   function updateReg() {
     setRegistration((x) => ({

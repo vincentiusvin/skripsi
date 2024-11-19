@@ -22,15 +22,16 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
     },
   });
 
-  const links = reg.social_medias
-    .filter((x) => x.length !== 0)
-    .map((x) => {
-      try {
-        return parseURL(x).href;
-      } catch (e) {
-        return x;
-      }
-    });
+  const links =
+    reg.social_medias
+      ?.filter((x) => x.length !== 0)
+      .map((x) => {
+        try {
+          return parseURL(x).href;
+        } catch (e) {
+          return x;
+        }
+      }) ?? [];
 
   let websiteCleaned: string | undefined = reg.website;
   if (reg.website != undefined) {
@@ -43,16 +44,16 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
 
   function register() {
     postUsers({
-      user_name: reg.username,
-      user_password: reg.password,
-      user_email: reg.email,
+      user_name: reg.username ?? "",
+      user_password: reg.password ?? "",
+      user_email: reg.email ?? "",
       user_education_level: handleOptionalStringCreation(reg.education),
       user_school: handleOptionalStringCreation(reg.school),
       user_website: handleOptionalStringCreation(websiteCleaned),
       user_location: handleOptionalStringCreation(reg.location),
       user_workplace: handleOptionalStringCreation(reg.workplace),
       user_socials: links,
-      registration_token: reg.registration_token,
+      registration_token: reg.registration_token ?? "",
     });
   }
 
@@ -97,15 +98,16 @@ function RegistrationConfirmStep(props: { back: () => void; cont: () => void }) 
     },
   ];
 
-  const link_data = links.map((x) => {
-    const type = linkParser(x);
-    return {
-      label: type !== "Other" ? type : "Link",
-      icon: LinkIcons[type],
-      value: x,
-      link: x,
-    };
-  });
+  const link_data =
+    links.map((x) => {
+      const type = linkParser(x);
+      return {
+        label: type !== "Other" ? type : "Link",
+        icon: LinkIcons[type],
+        value: x,
+        link: x,
+      };
+    }) ?? [];
 
   return (
     <Grid container rowSpacing={4} columnSpacing={2}>
