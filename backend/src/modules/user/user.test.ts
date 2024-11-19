@@ -86,12 +86,9 @@ describe.only("users api", () => {
   const update_cases = [
     {
       key: "plain_user",
-      token_key: undefined,
       name: "should be able to update user info",
       obj: {
         user_name: "testing_name",
-        user_password: "testing_password",
-        user_email: "testing-actual-test@example.com",
         user_about_me: "saya suka makan ayam",
         user_education_level: "S1",
         user_school: "NUBIS University",
@@ -104,16 +101,6 @@ describe.only("users api", () => {
     },
     {
       key: "plain_user",
-      token_key: "password_otp",
-      name: "should be able to update user info when not logged in using token",
-      obj: {
-        user_password: "testing_password",
-      },
-      ok: true,
-    },
-    {
-      key: "plain_user",
-      token_key: undefined,
       name: "should not be able to duplicate links",
       obj: {
         user_socials: [
@@ -125,7 +112,6 @@ describe.only("users api", () => {
     },
     {
       key: "plain_user",
-      token_key: undefined,
       name: "should not be able to insert non links to socials",
       obj: {
         user_socials: ["ini bukan link"] as string[],
@@ -134,7 +120,6 @@ describe.only("users api", () => {
     },
     {
       key: "plain_user",
-      token_key: undefined,
       name: "should not be able to insert non links to website",
       obj: {
         user_website: "www.example.com",
@@ -143,22 +128,14 @@ describe.only("users api", () => {
     },
   ] as const;
 
-  for (const { key, name, obj, ok, token_key } of update_cases) {
+  for (const { key, name, obj, ok } of update_cases) {
     it(name, async () => {
       const in_user = caseData[key];
       const in_obj: Parameters<typeof putUser>[1] = obj;
 
-      const credentials: {
-        cookie?: string;
-        token?: string;
-      } = {};
-      if (token_key === undefined) {
-        credentials.cookie = await getLoginCookie(in_user.name, in_user.password);
-      } else {
-        credentials.token = caseData[token_key].token;
-      }
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
 
-      const update_req = await putUser(in_user.id, in_obj, credentials.cookie, credentials.token);
+      const update_req = await putUser(in_user.id, in_obj, cookie);
 
       const read_req = await getUserDetail(in_user.id);
       const result = await read_req.json();
@@ -182,24 +159,66 @@ describe.only("users api", () => {
     });
   }
 
-  it("should be able to update user password", async () => {
-    const in_user = caseData.plain_user;
-    const in_pass = "new pass from update";
+  const reset_password_cases = [
+    {
+      key: "plain_user",
+      name: "should be able to update user password while logged in",
+      password: "new pass from update",
+      ok: true,
+      credentials: { type: "cookie" },
+    },
+    {
+      key: "plain_user",
+      name: "should be able to update user password using token",
+      password: "new pass from update",
+      ok: true,
+      credentials: { type: "token", key: "password_otp" },
+    },
+    {
+      key: "plain_user",
+      name: "shouldn't be able to update user password with unrelated token",
+      password: "new pass from update",
+      ok: false,
+      credentials: { type: "token", key: "verified_otp" },
+    },
+  ] as const;
 
-    const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const update_req = await putUser(
-      in_user.id,
-      {
-        user_password: in_pass,
-      },
-      cookie,
-    );
+  for (const { key, name, password, ok, credentials } of reset_password_cases) {
+    it(name, async () => {
+      const in_user = caseData[key];
+      const in_pass = password;
+      let in_creds: { cookie: string } | { token: string };
 
-    const success_login = await getLoginCookie(in_user.name, in_pass);
+      if (credentials.type === "token") {
+        in_creds = {
+          token: caseData[credentials.key].token,
+        };
+      } else if (credentials.type === "cookie") {
+        const cookie = await getLoginCookie(in_user.name, in_user.password);
+        in_creds = { cookie };
+      } else {
+        throw new Error("Invalid test case data! Please provide a credential");
+      }
 
-    expect(update_req.status).eq(200);
-    expect(success_login).to.not.eq("");
-  });
+      const update_req = await putUserPassword(
+        in_user.id,
+        {
+          user_password: in_pass,
+        },
+        in_creds,
+      );
+
+      const success_login = await getLoginCookie(in_user.name, in_pass);
+
+      if (ok) {
+        expect(update_req.status).eq(200);
+        expect(success_login).to.not.eq("");
+      } else {
+        expect(update_req.status).not.eq(200);
+        expect(success_login).to.eq("");
+      }
+    });
+  }
 
   it("should be able to verify otp", async () => {
     const in_otp = caseData.unverified_otp;
@@ -288,8 +307,6 @@ function putUser(
   user_id: number,
   body: {
     user_name?: string;
-    user_password?: string;
-    user_email?: string;
     user_education_level?: string;
     user_school?: string;
     user_about_me?: string;
@@ -299,13 +316,45 @@ function putUser(
     user_location?: string;
     user_workplace?: string;
   },
-  cookie?: string,
-  token?: string,
+  cookie: string,
 ) {
-  const headers = cookie != undefined ? { cookie } : undefined;
   return new APIContext("UsersDetailPut").fetch(`/api/users/${user_id}`, {
     method: "PUT",
-    body: { ...body, token },
+    body,
+    headers: {
+      cookie,
+    },
+  });
+}
+
+function putUserPassword(
+  user_id: number,
+  body: {
+    user_password: string;
+  },
+  creds:
+    | {
+        cookie: string;
+      }
+    | {
+        token: string;
+      },
+) {
+  let headers: { cookie: string } | undefined = undefined;
+  const bodyWithToken: {
+    user_password: string;
+    token?: string;
+  } = body;
+
+  if ("cookie" in creds) {
+    headers = { cookie: creds.cookie };
+  } else if ("token" in creds) {
+    bodyWithToken.token = creds.token;
+  }
+
+  return new APIContext("UsersDetailPutPassword").fetch(`/api/users/${user_id}/password`, {
+    method: "PUT",
+    body: bodyWithToken,
     headers,
   });
 }

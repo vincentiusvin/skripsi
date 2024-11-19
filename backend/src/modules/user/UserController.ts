@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
+import { AuthError } from "../../helpers/error.js";
 import {
   defaultError,
   zodPagination,
@@ -31,7 +32,6 @@ const UserResponseSchema = z.object({
 
 const UserUpdateSchema = z.object({
   user_name: z.string(defaultError("Nama pengguna tidak valid!")).min(1).optional(),
-  user_password: z.string(defaultError("Password tidak valid!")).min(1).optional(),
   user_education_level: z
     .string(defaultError("Jenjang pendidikan tidak valid!"))
     .min(1)
@@ -46,10 +46,18 @@ const UserUpdateSchema = z.object({
   user_workplace: z.string(defaultError("Tempat kerja tidak valid!")).min(1).nullable().optional(),
   user_location: z.string(defaultError("Lokasi tidak valid!")).min(1).nullable().optional(),
   user_image: z.string(defaultError("Gambar tidak valid!")).min(1).nullable().optional(),
-  user_email: z.string(defaultError("Email tidak valid!")).min(1).email().optional(),
   user_website: z.string(defaultError("Website tidak valid!")).min(1).url().nullable().optional(),
   user_socials: z.string(defaultError("Media sosial tidak valid!")).min(1).url().array().optional(),
+});
+
+const UserUpdatePasswordSchema = z.object({
+  user_password: z.string(defaultError("Password tidak valid!")).min(1),
   token: z.string(defaultError("Token reset password tidak valid!")).uuid().min(1).optional(),
+});
+
+const UserUpdateEmailSchema = z.object({
+  user_email: z.string(defaultError("Email tidak valid!")).min(1).email(),
+  token: z.string(defaultError("Token registrasi tidak valid!")).uuid(),
 });
 
 const UserCreationSchema = z.object({
@@ -103,6 +111,8 @@ export class UserController extends Controller {
       UsersPost: this.UsersPost,
       UsersGet: this.UsersGet,
       UsersDetailGet: this.UsersDetailGet,
+      UsersDetailPutEmail: this.UsersDetailPutEmail,
+      UsersDetailPutPassword: this.UsersDetailPutPassword,
       UsersDetailPut: this.UsersDetailPut,
       OTPPost: this.OTPPost,
       // mikir dulu mau atau nggak
@@ -276,11 +286,76 @@ export class UserController extends Controller {
       ResBody: UserResponseSchema,
     },
     handler: async (req, res) => {
-      const { token, ...obj } = req.body;
+      const obj = req.body;
       const user_id = Number(req.params.id);
-      const sender_id = req.session.user_id != undefined ? Number(req.session.user_id) : undefined;
+      const sender_id = Number(req.session.user_id);
 
-      await this.user_service.updateAccountDetail(user_id, obj, sender_id, token);
+      await this.user_service.updateAccountDetail(user_id, obj, sender_id);
+      const updated = await this.user_service.getUserDetail(user_id);
+      res.status(200).json(updated);
+    },
+  });
+
+  UsersDetailPutPassword = new Route({
+    method: "put",
+    path: "/api/users/:id/password",
+    schema: {
+      Params: z.object({
+        id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
+      }),
+      ReqBody: UserUpdatePasswordSchema,
+      ResBody: UserResponseSchema,
+    },
+    handler: async (req, res) => {
+      const { user_password, token } = req.body;
+      const user_id = Number(req.params.id);
+      const sender_id = req.session.user_id !== undefined ? Number(req.session.user_id) : undefined;
+
+      let credentials:
+        | {
+            sender_id: number;
+          }
+        | {
+            token: string;
+          }
+        | undefined;
+
+      if (token != undefined) {
+        credentials = {
+          token,
+        };
+      } else if (sender_id != undefined) {
+        credentials = {
+          sender_id,
+        };
+      }
+
+      if (credentials == undefined) {
+        throw new AuthError("Anda perlu login atau memasukkan token untuk mengubah password!");
+      }
+
+      await this.user_service.updatePassword(user_id, user_password, credentials);
+      const updated = await this.user_service.getUserDetail(user_id);
+      res.status(200).json(updated);
+    },
+  });
+
+  UsersDetailPutEmail = new Route({
+    method: "put",
+    path: "/api/users/:id/email",
+    schema: {
+      Params: z.object({
+        id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
+      }),
+      ReqBody: UserUpdateEmailSchema,
+      ResBody: UserResponseSchema,
+    },
+    handler: async (req, res) => {
+      const obj = req.body;
+      const user_id = Number(req.params.id);
+      const sender_id = Number(req.session.user_id);
+
+      await this.user_service.updateAccountEmail(user_id, obj, sender_id);
       const updated = await this.user_service.getUserDetail(user_id);
       res.status(200).json(updated);
     },

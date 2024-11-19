@@ -369,23 +369,16 @@ export class UserService {
     return await this.isAdminUser(sender_id);
   }
 
-  async updateAccountDetail(
+  async updatePassword(
     user_id: number,
-    obj: {
-      user_name?: string;
-      user_email?: string;
-      user_education_level?: string | null;
-      user_school?: string | null;
-      user_about_me?: string | null;
-      user_image?: string | null;
-      user_password?: string | null;
-      user_website?: string | null;
-      user_socials?: string[];
-      user_location?: string | null;
-      user_workplace?: string | null;
-    },
-    sender_id?: number,
-    token?: string,
+    user_password: string,
+    credentials:
+      | {
+          sender_id: number;
+        }
+      | {
+          token: string;
+        },
   ) {
     return await this.transaction_manager.transaction(this as UserService, async (serv) => {
       const user = await serv.getUserDetail(user_id);
@@ -394,20 +387,38 @@ export class UserService {
       }
 
       let isAllowed = false;
-      if (sender_id != undefined) {
-        isAllowed = await serv.isAllowedToModify(user_id, sender_id);
-      } else if (token != undefined) {
-        isAllowed = await serv.useResetPasswordToken(token, user.user_email);
+      if ("sender_id" in credentials) {
+        isAllowed = await serv.isAllowedToModify(user_id, credentials.sender_id);
+      } else if ("token" in credentials) {
+        isAllowed = await serv.useResetPasswordToken(credentials.token, user.user_email);
       }
 
       if (!isAllowed) {
         throw new AuthError("Anda tidak memiliki akses untuk mengubah profil ini!");
       }
 
-      const { user_name, user_password, user_email, user_socials, ...rest } = obj;
-      let hashed_password: string | undefined = undefined;
-      if (user_password != undefined) {
-        hashed_password = hashSync(user_password, 10);
+      const hashed_password = hashSync(user_password, 10);
+      return await serv.user_repo.updateAccountDetails(user_id, {
+        hashed_password: hashed_password,
+      });
+    });
+  }
+
+  async updateAccountEmail(
+    user_id: number,
+    obj: {
+      user_email: string;
+      token: string;
+    },
+    sender_id: number,
+  ) {
+    const { user_email, token } = obj;
+
+    return await this.transaction_manager.transaction(this as UserService, async (serv) => {
+      const isAllowed = await serv.isAllowedToModify(user_id, sender_id);
+
+      if (!isAllowed) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengubah profil ini!");
       }
 
       if (user_email != undefined) {
@@ -416,6 +427,43 @@ export class UserService {
           throw new ClientError("Sudah ada pengguna dengan email yang sama !");
         }
       }
+
+      await serv.useRegistrationToken(token, user_email);
+
+      return await serv.user_repo.updateAccountDetails(user_id, {
+        user_email,
+      });
+    });
+  }
+
+  async updateAccountDetail(
+    user_id: number,
+    obj: {
+      user_name?: string;
+      user_education_level?: string | null;
+      user_school?: string | null;
+      user_about_me?: string | null;
+      user_image?: string | null;
+      user_website?: string | null;
+      user_socials?: string[];
+      user_location?: string | null;
+      user_workplace?: string | null;
+    },
+    sender_id: number,
+  ) {
+    return await this.transaction_manager.transaction(this as UserService, async (serv) => {
+      const user = await serv.getUserDetail(user_id);
+      if (user == undefined) {
+        throw new NotFoundError("Gagal menemukan pengguna tersebut!");
+      }
+
+      const isAllowed = await serv.isAllowedToModify(user_id, sender_id);
+
+      if (!isAllowed) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengubah profil ini!");
+      }
+
+      const { user_name, user_socials, ...rest } = obj;
 
       if (user_name != undefined) {
         const same_name = await serv.user_repo.findUserByName(user_name);
@@ -432,10 +480,8 @@ export class UserService {
 
       return await serv.user_repo.updateAccountDetails(user_id, {
         ...rest,
-        user_email,
         user_name,
         user_socials,
-        hashed_password: hashed_password,
       });
     });
   }
