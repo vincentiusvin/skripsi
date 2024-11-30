@@ -10,6 +10,7 @@ import AuthorizeProjects from "../Projects/components/AuthorizeProjects.tsx";
 
 function ProjectsContribution(props: { project_id: number }) {
   const { project_id } = props;
+
   const { data: contributions_raw } = useContributionsGet({
     project_id,
   });
