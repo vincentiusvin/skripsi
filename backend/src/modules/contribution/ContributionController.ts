@@ -65,23 +65,27 @@ export class ContributionController extends Controller {
         status: z.enum(contribution_status, defaultError("Status tidak valid!")).optional(),
         ...zodPagination(),
       }),
-      ResBody: ContributionResponseSchema.array(),
+      ResBody: z.object({
+        result: ContributionResponseSchema.array(),
+        total: z.number(),
+      }),
     },
     handler: async (req, res) => {
       const { page, limit, status, user_id, project_id } = req.query;
       const sender_id = Number(req.session.user_id);
 
-      const result = await this.cont_service.getContributions(
-        {
-          status: status,
-          user_id: user_id != undefined ? Number(user_id) : undefined,
-          project_id: project_id != undefined ? Number(project_id) : undefined,
-          page: page != undefined ? Number(page) : undefined,
-          limit: limit != undefined ? Number(limit) : undefined,
-        },
-        sender_id,
-      );
-      res.status(200).json(result);
+      const params = {
+        status: status,
+        user_id: user_id != undefined ? Number(user_id) : undefined,
+        project_id: project_id != undefined ? Number(project_id) : undefined,
+        page: page != undefined ? Number(page) : undefined,
+        limit: limit != undefined ? Number(limit) : undefined,
+      };
+
+      const result = await this.cont_service.getContributions(params, sender_id);
+      const count = await this.cont_service.countContributions(params);
+
+      res.status(200).json({ result, total: Number(count.count) });
     },
   });
   ContributionsDetailGet = new Route({

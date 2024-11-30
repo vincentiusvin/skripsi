@@ -1,38 +1,41 @@
 import { Skeleton, Stack, Typography } from "@mui/material";
-import Grid from "@mui/material/Grid2";
 import { useParams } from "wouter";
 import ContribList from "../../../components/Cards/ContribList.tsx";
+import QueryPagination from "../../../components/QueryPagination.tsx";
+import useQueryPagination from "../../../components/QueryPagination/hook.ts";
 import { useContributionsGet } from "../../../queries/contribution_hooks.ts";
 import AuthorizeUser from "../AuthorizeUser.tsx";
 
 function UserContributions(props: { user_id: number }) {
   const { user_id } = props;
-  const { data } = useContributionsGet({
-    user_id,
-    limit: 10,
-    page: 1,
-  });
 
-  if (data == undefined) {
+  const [page] = useQueryPagination();
+  const limit = 10;
+
+  const { data: contribs_raw } = useContributionsGet({
+    user_id,
+    limit,
+    page,
+  });
+  const contribs = contribs_raw?.result;
+
+  if (contribs == undefined) {
     return <Skeleton />;
   }
 
+  if (contribs.length === 0) {
+    return (
+      <Typography textAlign={"center"}>Pengguna ini belum memiliki laporan kontribusi.</Typography>
+    );
+  }
+
   return (
-    <Grid container spacing={2} mt={2}>
-      {data.length !== 0 ? (
-        <Stack spacing={2}>
-          {data.map((x) => (
-            <ContribList contribution_id={x.id} key={x.id} />
-          ))}
-        </Stack>
-      ) : (
-        <Grid size={12}>
-          <Typography textAlign={"center"}>
-            Pengguna ini belum memiliki laporan kontribusi.
-          </Typography>
-        </Grid>
-      )}
-    </Grid>
+    <Stack spacing={2}>
+      {contribs.map((x) => (
+        <ContribList contribution_id={x.id} key={x.id} />
+      ))}
+      <QueryPagination limit={limit} total={100} />
+    </Stack>
   );
 }
 

@@ -1,4 +1,4 @@
-import { ExpressionBuilder, Kysely } from "kysely";
+import { ExpressionBuilder, Kysely, SelectQueryBuilder } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types";
 import { paginateQuery } from "../../helpers/pagination.js";
@@ -30,18 +30,16 @@ export class ContributionRepository {
     this.db = db;
   }
 
-  async getContributions(opts: {
-    status?: ContributionStatus;
-    page?: number;
-    limit?: number;
-    user_id?: number;
-    project_id?: number;
-  }) {
-    const { user_id, project_id, status, limit, page } = opts;
-    let query = this.db
-      .selectFrom("ms_contributions")
-      .select(defaultContributionFields)
-      .orderBy("created_at desc");
+  private applyFilterToQuery<O>(
+    query: SelectQueryBuilder<DB, "ms_contributions", O>,
+    filter: {
+      status?: ContributionStatus;
+      user_id?: number;
+      project_id?: number;
+      keyword?: string;
+    },
+  ) {
+    const { user_id, keyword, project_id, status } = filter;
 
     if (user_id != undefined) {
       query = query.where((eb) =>
@@ -64,6 +62,28 @@ export class ContributionRepository {
       query = query.where("ms_contributions.status", "=", status);
     }
 
+    if (keyword != undefined) {
+      query = query.where("ms_contributions.name", "ilike", keyword);
+    }
+
+    return query;
+  }
+
+  async getContributions(opts: {
+    status?: ContributionStatus;
+    page?: number;
+    limit?: number;
+    user_id?: number;
+    project_id?: number;
+  }) {
+    const { limit, page, ...filters } = opts;
+    let query = this.db
+      .selectFrom("ms_contributions")
+      .select(defaultContributionFields)
+      .orderBy("created_at desc");
+
+    this.applyFilterToQuery(query, filters);
+
     query = paginateQuery(query, {
       page,
       limit,
@@ -77,6 +97,16 @@ export class ContributionRepository {
         status: parseContribStatus(x.status),
       };
     });
+  }
+
+  async countContributions(opts: {
+    status?: ContributionStatus;
+    user_id?: number;
+    project_id?: number;
+  }) {
+    let query = this.db.selectFrom("ms_contributions").select((eb) => eb.fn.countAll().as("count"));
+    query = this.applyFilterToQuery(query, opts);
+    return await query.executeTakeFirstOrThrow();
   }
 
   async getContributionsDetail(contribution_id: number) {

@@ -74,12 +74,22 @@ export class ContributionService implements Transactable<ContributionService> {
     });
   }
 
+  async countContributions(params: {
+    status?: ContributionStatus;
+    user_id?: number;
+    keyword?: string;
+    project_id?: number;
+  }) {
+    return await this.cont_repo.countContributions(params);
+  }
+
   async getContributions(
     params: {
       status?: ContributionStatus;
       page?: number;
       limit?: number;
       user_id?: number;
+      keyword?: string;
       project_id?: number;
     },
     sender_id: number,

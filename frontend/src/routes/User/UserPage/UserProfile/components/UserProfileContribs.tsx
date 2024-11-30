@@ -8,6 +8,8 @@ function UserProfileContribs(props: { user_id: number }) {
   const { data: contribs } = useContributionsGet({
     user_id,
     status: "Approved",
+    limit: 1,
+    page: 1,
   });
 
   if (!contribs) {
@@ -17,7 +19,7 @@ function UserProfileContribs(props: { user_id: number }) {
   return (
     <StyledLink to={`/users/${user_id}/contributions`}>
       <Button variant="outlined" startIcon={<Favorite />}>
-        {contribs.length} kontribusi
+        {contribs.total} kontribusi
       </Button>
     </StyledLink>
   );

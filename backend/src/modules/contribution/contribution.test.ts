@@ -24,7 +24,7 @@ describe("contribution api", () => {
 
     const cookie = await getLoginCookie(in_from.name, in_from.password);
     const read_req = await getContributions({}, cookie);
-    const result = await read_req.json();
+    const { result } = await read_req.json();
 
     expect(read_req.status).eq(200);
     const found = result.find((x) => x.id === expected_contribution.id);
