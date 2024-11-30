@@ -12,18 +12,17 @@ function UserContributions(props: { user_id: number }) {
   const [page] = useQueryPagination();
   const limit = 10;
 
-  const { data: contribs_raw } = useContributionsGet({
+  const { data: contribs } = useContributionsGet({
     user_id,
     limit,
     page,
   });
-  const contribs = contribs_raw?.result;
 
   if (contribs == undefined) {
     return <Skeleton />;
   }
 
-  if (contribs.length === 0) {
+  if (contribs.total === 0) {
     return (
       <Typography textAlign={"center"}>Pengguna ini belum memiliki laporan kontribusi.</Typography>
     );
@@ -31,10 +30,10 @@ function UserContributions(props: { user_id: number }) {
 
   return (
     <Stack spacing={2}>
-      {contribs.map((x) => (
+      {contribs.result.map((x) => (
         <ContribList contribution_id={x.id} key={x.id} />
       ))}
-      <QueryPagination limit={limit} total={100} />
+      <QueryPagination limit={limit} total={contribs?.total} />
     </Stack>
   );
 }

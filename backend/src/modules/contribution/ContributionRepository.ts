@@ -80,9 +80,9 @@ export class ContributionRepository {
     let query = this.db
       .selectFrom("ms_contributions")
       .select(defaultContributionFields)
-      .orderBy("created_at desc");
+      .orderBy("id desc");
 
-    this.applyFilterToQuery(query, filters);
+    query = this.applyFilterToQuery(query, filters);
 
     query = paginateQuery(query, {
       page,
