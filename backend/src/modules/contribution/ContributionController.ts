@@ -72,7 +72,7 @@ export class ContributionController extends Controller {
     },
     handler: async (req, res) => {
       const { page, limit, status, user_id, project_id } = req.query;
-      const sender_id = Number(req.session.user_id);
+      const sender_id = req.session.user_id !== undefined ? Number(req.session.user_id) : undefined;
 
       const params = {
         status: status,
@@ -83,7 +83,7 @@ export class ContributionController extends Controller {
       };
 
       const result = await this.cont_service.getContributions(params, sender_id);
-      const count = await this.cont_service.countContributions(params);
+      const count = await this.cont_service.countContributions(params, sender_id);
 
       res.status(200).json({ result, total: Number(count.count) });
     },
