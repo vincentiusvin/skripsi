@@ -1,5 +1,6 @@
 import { Favorite } from "@mui/icons-material";
 import { Button, Skeleton } from "@mui/material";
+import StyledLink from "../../../../../components/StyledLink.tsx";
 import { useContributionsGet } from "../../../../../queries/contribution_hooks.ts";
 
 function UserProfileContribs(props: { user_id: number }) {
@@ -14,9 +15,11 @@ function UserProfileContribs(props: { user_id: number }) {
   }
 
   return (
-    <Button variant="outlined" startIcon={<Favorite />}>
-      {contribs.length} kontribusi
-    </Button>
+    <StyledLink to={`/users/${user_id}/contributions`}>
+      <Button variant="outlined" startIcon={<Favorite />}>
+        {contribs.length} kontribusi
+      </Button>
+    </StyledLink>
   );
 }
 
