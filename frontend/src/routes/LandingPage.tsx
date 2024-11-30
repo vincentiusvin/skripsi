@@ -49,11 +49,12 @@ const landingData = [
 ];
 
 function NewestContributions() {
-  const { data: contribs } = useContributionsGet({
+  const { data: contribs_raw } = useContributionsGet({
     page: 1,
     status: "Approved",
     limit: 8,
   });
+  const contribs = contribs_raw?.result;
 
   if (contribs == undefined) {
     return (

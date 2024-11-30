@@ -176,6 +176,7 @@ export class OrgController extends Controller {
   });
 
   OrgsUpdate = new Route({
+    priors: [validateLogged],
     schema: {
       ReqBody: OrgUpdateSchema,
       ResBody: OrgResponseSchema,
@@ -228,6 +229,7 @@ export class OrgController extends Controller {
   });
   OrgsDetailMembersDetailPut = new Route({
     method: "put",
+    priors: [validateLogged],
     path: "/api/orgs/:org_id/users/:user_id",
     schema: {
       ResBody: z.object({
@@ -253,6 +255,7 @@ export class OrgController extends Controller {
   });
   OrgsDetailMembersDetailDelete = new Route({
     method: "delete",
+    priors: [validateLogged],
     path: "/api/orgs/:org_id/users/:user_id",
     schema: {
       Params: OrgMemberParamSchema,

@@ -17,14 +17,14 @@ import { useLocation, useParams } from "wouter";
 import RichEditor from "../../components/RichEditor.tsx";
 import { handleOptionalStringCreation } from "../../helpers/misc.ts";
 import { useProjectsCategoriesGet, useProjectsPost } from "../../queries/project_hooks";
+import AuthorizeOrgs from "../Orgs/components/AuthorizeOrgs.tsx";
 
-function ProjectsAddPage() {
+function ProjectsAdd(props: { org_id: number }) {
+  const { org_id } = props;
   const [projectName, setProjectName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
   const [projectContent, setProjectContent] = useState<undefined | string>();
   const [projectCategory, setProjectCategory] = useState<number[]>([]);
-  const { org_id: org_id_raw } = useParams();
-  const org_id = Number(org_id_raw);
 
   const [, setLocation] = useLocation();
 
@@ -103,6 +103,16 @@ function ProjectsAddPage() {
         </Button>
       </Grid>
     </Grid>
+  );
+}
+
+function ProjectsAddPage() {
+  const { org_id: org_id_raw } = useParams();
+  const org_id = Number(org_id_raw);
+  return (
+    <AuthorizeOrgs allowedRoles={["Admin"]}>
+      <ProjectsAdd org_id={org_id} />
+    </AuthorizeOrgs>
   );
 }
 

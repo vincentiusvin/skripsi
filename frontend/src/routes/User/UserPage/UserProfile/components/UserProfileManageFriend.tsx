@@ -5,7 +5,7 @@ import {
   useFriendsDelete,
   useFriendsDetailGet,
   useFriendsPut,
-} from "../../../../queries/friend_hooks.ts";
+} from "../../../../../queries/friend_hooks.ts";
 
 function FriendShortcut(props: { viewed_user_id: number; our_user_id: number }) {
   const { viewed_user_id, our_user_id } = props;

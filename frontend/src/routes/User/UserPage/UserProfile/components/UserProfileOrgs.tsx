@@ -9,9 +9,9 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import OrgCard from "../../../../components/Cards/OrgCard.tsx";
-import StyledLink from "../../../../components/StyledLink.tsx";
-import { useOrgsGet } from "../../../../queries/org_hooks.ts";
+import OrgCard from "../../../../../components/Cards/OrgCard.tsx";
+import StyledLink from "../../../../../components/StyledLink.tsx";
+import { useOrgsGet } from "../../../../../queries/org_hooks.ts";
 
 function UserOrgsList(props: { user_id: number }) {
   const { user_id } = props;

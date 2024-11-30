@@ -7,6 +7,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  Skeleton,
   Stack,
   TextField,
   Typography,
@@ -14,14 +15,14 @@ import {
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { Redirect, useLocation } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
 import RichEditor from "../../components/RichEditor.tsx";
-import { APIError } from "../../helpers/fetch";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { useOrgsCategoriesGet, useOrgsPost } from "../../queries/org_hooks";
+import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 
-function OrgsAddPage() {
+function OrgsAdd() {
   const [orgName, setOrgName] = useState("");
   const [orgDesc, setOrgDesc] = useState("");
   const [orgAddress, setOrgAddress] = useState("");
@@ -53,16 +54,7 @@ function OrgsAddPage() {
     });
   }
 
-  // Fetch categories from the backend API
-  const { data: categories } = useOrgsCategoriesGet({
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status === 401) || failureCount > 3) {
-        setLocation("/");
-        return false;
-      }
-      return true;
-    },
-  });
+  const { data: categories } = useOrgsCategoriesGet({});
 
   return (
     <Grid container spacing={2}>
@@ -176,6 +168,17 @@ function OrgsAddPage() {
       </Grid>
     </Grid>
   );
+}
+
+function OrgsAddPage() {
+  const { data: session } = useSessionGet();
+  if (session == undefined) {
+    return <Skeleton />;
+  }
+  if (!session.logged) {
+    return <Redirect to={"/orgs"} />;
+  }
+  return <OrgsAdd />;
 }
 
 export default OrgsAddPage;

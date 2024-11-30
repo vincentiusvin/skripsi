@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { AuthError } from "../../helpers/error.js";
+import { validateLogged } from "../../helpers/validate.js";
 import {
   defaultError,
   zodPagination,
@@ -299,6 +300,7 @@ export class UserController extends Controller {
   UsersDetailPut = new Route({
     method: "put",
     path: "/api/users/:id",
+    priors: [validateLogged],
     schema: {
       Params: z.object({
         id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
@@ -364,6 +366,7 @@ export class UserController extends Controller {
   UsersDetailPutEmail = new Route({
     method: "put",
     path: "/api/users/:id/email",
+    priors: [validateLogged],
     schema: {
       Params: z.object({
         id: zodStringReadableAsNumber("ID pengguna tidak valid!"),

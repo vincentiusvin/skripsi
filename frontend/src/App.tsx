@@ -49,7 +49,7 @@ import ResetPasswordPage from "./routes/ResetPasswordPage/ResetPasswordPage.tsx"
 import SettingsPage from "./routes/SettingsPage.tsx";
 import FindUsersPage from "./routes/User/FindUsersPage.tsx";
 import UserAccountPageEdit from "./routes/User/UserEditPage/UserEditPage.tsx";
-import UserAccountPage from "./routes/User/UserPage/UserPage.tsx";
+import UserRouterPage from "./routes/User/UserPage/UserRouterPage.tsx";
 import ChatroomPage from "./routes/UserChatroomPage.tsx";
 import { darkTheme, lightTheme } from "./theme.ts";
 
@@ -150,8 +150,8 @@ function App() {
                     component={ContributionEditPage}
                   />
                   <Route path={"/users"} component={FindUsersPage} />
-                  <Route path={"/users/:id"} component={UserAccountPage} />
                   <Route path={"/users/:id/edit"} component={UserAccountPageEdit} />
+                  <Route path={"/users/:id/*?"} component={UserRouterPage} />
                   <Route path={"/admin/manage-reports"} component={HandleReportsPage} />
                   <Route path={"/admin/manage-accounts"} component={ManageAccountsPage} />
                   <Route path={"/settings"} component={SettingsPage} />

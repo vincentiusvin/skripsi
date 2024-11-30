@@ -1,44 +1,35 @@
 import { Email, Language, Place, School, Work } from "@mui/icons-material";
 import { Avatar, Paper, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { useLocation } from "wouter";
+import { useParams } from "wouter";
 import StringLabel from "../../../../components/StringLabel.tsx";
 import avatarFallback from "../../../../helpers/avatar_fallback.tsx";
-import { APIError } from "../../../../helpers/fetch.ts";
 import { LinkIcons, linkParser } from "../../../../helpers/linker.tsx";
+import { useSessionGet } from "../../../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../../../queries/user_hooks.ts";
-import UserFriendList from "./UserProfileFriend.tsx";
-import FriendShortcut from "./UserProfileManageFriend.tsx";
-import UserOrgsList from "./UserProfileOrgs.tsx";
-import UserProjectsList from "./UserProfileProjects.tsx";
-import UserProfileSendMessage from "./UserProfileSendMessage.tsx";
+import AuthorizeUser from "../../AuthorizeUser.tsx";
+import UserProfileContribs from "./components/UserProfileContribs.tsx";
+import UserFriendList from "./components/UserProfileFriend.tsx";
+import FriendShortcut from "./components/UserProfileManageFriend.tsx";
+import UserOrgsList from "./components/UserProfileOrgs.tsx";
+import UserProjectsList from "./components/UserProfileProjects.tsx";
+import UserProfileSendMessage from "./components/UserProfileSendMessage.tsx";
 
 function UserProfile(props: { viewed_id: number; our_id?: number }) {
   const { viewed_id, our_id } = props;
-
-  const [, setLocation] = useLocation();
-  const { data: userDetail } = useUsersDetailGet({
+  const { data: user } = useUsersDetailGet({
     user_id: viewed_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status == 404) || failureCount > 3) {
-        setLocation("/");
-        return false;
-      }
-      return true;
-    },
   });
 
-  if (!userDetail) {
+  if (!user) {
     return <Skeleton />;
   }
 
-  const isViewingSelf = our_id != undefined && our_id !== userDetail.user_id;
+  const isViewingSelf = our_id != undefined && our_id !== user.user_id;
 
-  const image =
-    userDetail.user_image ??
-    avatarFallback({ label: userDetail.user_name, seed: userDetail.user_id });
+  const image = user.user_image ?? avatarFallback({ label: user.user_name, seed: user.user_id });
 
-  const socials_with_icon = userDetail.user_socials.map(({ social }) => {
+  const socials_with_icon = user.user_socials.map(({ social }) => {
     const type = linkParser(social);
     return {
       label: type !== "Other" ? type : "Link",
@@ -50,36 +41,36 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
 
   const basic_data = [
     {
-      link: `mailto:${userDetail.user_email}`,
+      link: `mailto:${user.user_email}`,
       icon: <Email />,
       label: "Email",
-      value: userDetail.user_email,
+      value: user.user_email,
     },
     {
       icon: <Place />,
       label: "Lokasi",
-      value: userDetail.user_location ?? undefined,
+      value: user.user_location ?? undefined,
     },
     {
       icon: <Work />,
       label: "Tempat Kerja",
-      value: userDetail.user_workplace ?? undefined,
+      value: user.user_workplace ?? undefined,
     },
     {
       icon: <School />,
       label: "Tingkat Pendidkan",
-      value: userDetail.user_education_level ?? undefined,
+      value: user.user_education_level ?? undefined,
     },
     {
       icon: <School />,
       label: "Sekolah/Universitas",
-      value: userDetail.user_school ?? undefined,
+      value: user.user_school ?? undefined,
     },
     {
       icon: <Language />,
       label: "Website",
-      link: userDetail.user_website ?? undefined,
-      value: userDetail.user_website ?? undefined,
+      link: user.user_website ?? undefined,
+      value: user.user_website ?? undefined,
     },
   ];
 
@@ -94,11 +85,12 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
         <Stack alignItems={"center"} spacing={2}>
           <Avatar src={image} sx={{ width: 256, height: 256 }}></Avatar>
           {isViewingSelf ? (
-            <UserProfileSendMessage our_user_id={our_id} viewed_user_id={userDetail.user_id} />
+            <UserProfileSendMessage our_user_id={our_id} viewed_user_id={user.user_id} />
           ) : null}
           {isViewingSelf ? (
-            <FriendShortcut our_user_id={our_id} viewed_user_id={userDetail.user_id} />
+            <FriendShortcut our_user_id={our_id} viewed_user_id={user.user_id} />
           ) : null}
+          <UserProfileContribs user_id={viewed_id} />
           <UserFriendList user_id={viewed_id} />
           <UserProjectsList user_id={viewed_id} />
           <UserOrgsList user_id={viewed_id} />
@@ -118,7 +110,7 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
             }}
           >
             <Typography variant="h4" fontWeight={"bold"}>
-              {userDetail.user_name}
+              {user.user_name}
             </Typography>
             <Grid container spacing={2} mt={2}>
               <Grid size={{ xs: 12, md: 6 }}>
@@ -169,7 +161,7 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
                 whiteSpace: "pre-wrap",
               }}
             >
-              {userDetail.user_about_me ? userDetail.user_about_me : "Belum ada informasi"}
+              {user.user_about_me ? user.user_about_me : "Belum ada informasi"}
             </Typography>
           </Paper>
         </Stack>
@@ -178,4 +170,16 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
   );
 }
 
-export default UserProfile;
+function UserProfilePage() {
+  const { id } = useParams();
+  const user_id = Number(id);
+  const { data: session } = useSessionGet();
+
+  return (
+    <AuthorizeUser>
+      <UserProfile viewed_id={user_id} our_id={session?.logged ? session.user_id : undefined} />
+    </AuthorizeUser>
+  );
+}
+
+export default UserProfilePage;

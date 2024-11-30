@@ -41,10 +41,10 @@ export function useContributionsDetailGet(opts: {
   const { contribution_id, retry } = opts;
 
   return useQuery({
-    queryKey: contributionKeys.detail(contribution_id), // Cache key based on contribution ID
+    queryKey: contributionKeys.detail(contribution_id),
     queryFn: () =>
-      new APIContext("ContributionsDetailGet").fetch(`/api/contributions/${contribution_id}`), // Fetch contribution detail by ID
-    retry, // Retry logic
+      new APIContext("ContributionsDetailGet").fetch(`/api/contributions/${contribution_id}`),
+    retry,
   });
 }
 

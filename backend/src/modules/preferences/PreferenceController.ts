@@ -22,6 +22,7 @@ export class PreferenceController extends Controller {
   PreferencesPut = new Route({
     method: "put",
     path: "/api/users/:user_id/preferences",
+    priors: [validateLogged],
     schema: {
       ReqBody: z.object({
         project_invite: z.enum(["on", "off"]).optional(),
@@ -49,7 +50,6 @@ export class PreferenceController extends Controller {
         friend_notif: z.enum(["off", "on", "email"]),
       }),
     },
-    priors: [validateLogged],
     handler: async (req, res) => {
       const {
         contrib_notif,
@@ -85,6 +85,7 @@ export class PreferenceController extends Controller {
   PreferencesGet = new Route({
     method: "get",
     path: "/api/users/:user_id/preferences",
+    priors: [validateLogged],
     schema: {
       Params: z.object({
         user_id: zodStringReadableAsNumber("ID pengguna tidak valid!"),
@@ -101,7 +102,6 @@ export class PreferenceController extends Controller {
         friend_notif: z.enum(["off", "on", "email"]),
       }),
     },
-    priors: [validateLogged],
     handler: async (req, res) => {
       const { user_id: user_id_raw } = req.params;
       const user_id = Number(user_id_raw);

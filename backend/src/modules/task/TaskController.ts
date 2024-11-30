@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
+import { validateLogged } from "../../helpers/validate.js";
 import {
   defaultError,
   zodStringReadableAsDateTime,
@@ -89,6 +90,7 @@ export class TaskController extends Controller {
     },
   });
   TasksDetailDelete = new Route({
+    priors: [validateLogged],
     method: "delete",
     path: "/api/tasks/:task_id",
     schema: {
@@ -112,6 +114,7 @@ export class TaskController extends Controller {
   TasksDetailPut = new Route({
     method: "put",
     path: "/api/tasks/:task_id",
+    priors: [validateLogged],
     schema: {
       Params: z.object({
         task_id: zodStringReadableAsNumber("ID tugas tidak valid!"),
@@ -177,6 +180,7 @@ export class TaskController extends Controller {
   BucketsDetailPut = new Route({
     path: "/api/buckets/:bucket_id",
     method: "put",
+    priors: [validateLogged],
     schema: {
       ResBody: z.object({
         name: z.string(),
@@ -219,6 +223,7 @@ export class TaskController extends Controller {
   BucketsDetailDelete = new Route({
     path: "/api/buckets/:bucket_id",
     method: "delete",
+    priors: [validateLogged],
     schema: {
       ResBody: z.object({
         msg: z.string(),
@@ -239,6 +244,7 @@ export class TaskController extends Controller {
   TasksPost = new Route({
     method: "post",
     path: "/api/tasks",
+    priors: [validateLogged],
     schema: {
       ReqBody: TaskCreationSchema,
       ResBody: TaskResponseSchema,
@@ -316,6 +322,7 @@ export class TaskController extends Controller {
   BucketsPost = new Route({
     method: "post",
     path: "/api/buckets",
+    priors: [validateLogged],
     schema: {
       ReqBody: z.object({
         name: z.string({ message: "Nama invalid!" }).min(1, "Nama tidak boleh kosong!"),
@@ -341,6 +348,7 @@ export class TaskController extends Controller {
   ProjectsDetailBucketsReset = new Route({
     method: "put",
     path: "/api/projects/:project_id/buckets",
+    priors: [validateLogged],
     schema: {
       Params: z.object({
         project_id: zodStringReadableAsNumber("ID projek tidak valid!"),

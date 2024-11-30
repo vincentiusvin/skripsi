@@ -369,6 +369,7 @@ export class ChatController extends Controller {
   FileDetailGet = new Route({
     method: "get",
     path: "/api/files/:file_id",
+    priors: [validateLogged],
     schema: {
       ResBody: z.undefined(),
       Params: z.object({

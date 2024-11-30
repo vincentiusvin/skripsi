@@ -43,7 +43,7 @@ export class OrgRepository {
     this.db = db;
   }
 
-  applyFilterToQuery<O>(
+  private applyFilterToQuery<O>(
     query: SelectQueryBuilder<DB, "ms_orgs", O>,
     filter?: { keyword?: string; user_id?: number },
   ) {

@@ -9,8 +9,8 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import UserCard from "../../../../components/Cards/UserCard.tsx";
-import { useFriendsGet } from "../../../../queries/friend_hooks.ts";
+import UserCard from "../../../../../components/Cards/UserCard.tsx";
+import { useFriendsGet } from "../../../../../queries/friend_hooks.ts";
 
 function UserFriendList(props: { user_id: number }) {
   const { user_id } = props;

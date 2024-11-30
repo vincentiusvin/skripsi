@@ -16,6 +16,7 @@ import { Redirect, useLocation } from "wouter";
 import OTP from "../../components/OTP.tsx";
 import StyledLink from "../../components/StyledLink.tsx";
 import UserLabel from "../../components/UserLabel.tsx";
+import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 import {
   useOTPDetailUserGet,
   useOTPToken,
@@ -307,6 +308,13 @@ function ResetPassword() {
 }
 
 function ResetPasswordPage() {
+  const { data: session } = useSessionGet();
+  if (session == undefined) {
+    return <Skeleton />;
+  }
+  if (session.logged) {
+    return <Redirect to={"/"} />;
+  }
   return <ResetPassword />;
 }
 

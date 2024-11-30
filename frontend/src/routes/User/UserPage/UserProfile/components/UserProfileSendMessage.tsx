@@ -2,7 +2,7 @@ import { Send } from "@mui/icons-material";
 import { Button, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useLocation } from "wouter";
-import { useChatroomsPost } from "../../../../queries/chat_hooks.ts";
+import { useChatroomsPost } from "../../../../../queries/chat_hooks.ts";
 
 function UserProfileSendMessage(props: { viewed_user_id: number; our_user_id: number }) {
   const { viewed_user_id, our_user_id } = props;
