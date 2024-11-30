@@ -32,29 +32,40 @@ function useLocationAwareNav() {
   useEffect(() => {
     if (projectMatch) {
       const project_id = Number(projectParams.project_id);
-      setNav((x) => ({
-        type: "project",
-        id: project_id,
-        open: x.open,
-      }));
-    } else if (orgMatch) {
+      if (!Number.isNaN(project_id)) {
+        setNav((x) => ({
+          type: "project",
+          id: project_id,
+          open: x.open,
+        }));
+        return;
+      }
+    }
+
+    if (orgMatch) {
       const org_id = Number(orgParams.org_id);
-      setNav((x) => ({
-        type: "orgs",
-        id: org_id,
-        open: x.open,
-      }));
-    } else if (adminMatch) {
+      if (!Number.isNaN(org_id)) {
+        setNav((x) => ({
+          type: "orgs",
+          id: org_id,
+          open: x.open,
+        }));
+        return;
+      }
+    }
+
+    if (adminMatch) {
       setNav((x) => ({
         type: "admin",
         open: x.open,
       }));
-    } else {
-      setNav((x) => ({
-        type: "browse",
-        open: x.open,
-      }));
+      return;
     }
+
+    setNav((x) => ({
+      type: "browse",
+      open: x.open,
+    }));
   }, [orgMatch, orgParams?.org_id, projectMatch, projectParams?.project_id, adminMatch]);
 
   useEffect(() => {
