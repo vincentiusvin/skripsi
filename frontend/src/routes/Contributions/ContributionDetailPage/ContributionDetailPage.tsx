@@ -8,6 +8,7 @@ import StyledLink from "../../../components/StyledLink.tsx";
 import UserLabel from "../../../components/UserLabel.tsx";
 import { useContributionsDetailGet } from "../../../queries/contribution_hooks.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
+import AuthorizeContribution from "../AuthorizeContribution.tsx";
 import ContributionInvolved from "./ContributionInvolved.tsx";
 
 function ContributionDetail(props: { contribution_id: number }) {
@@ -94,7 +95,11 @@ function ContributionDetailPage() {
   const { contribution_id: id } = useParams();
   const contribution_id = Number(id);
 
-  return <ContributionDetail contribution_id={contribution_id} />;
+  return (
+    <AuthorizeContribution>
+      <ContributionDetail contribution_id={contribution_id} />
+    </AuthorizeContribution>
+  );
 }
 
 export default ContributionDetailPage;
