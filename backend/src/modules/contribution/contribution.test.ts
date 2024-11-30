@@ -62,14 +62,14 @@ describe("contribution api", () => {
         ok: true,
       },
       {
-        title: "shouldn't be able to get all contributions in project as regular dev",
+        title: "should be able to get all contributions in project as a peer dev",
         user_key: "dev_user",
         params: (context: typeof caseData) => {
           return {
             project_id: context.project.id,
           };
         },
-        ok: false,
+        ok: true,
       },
       {
         title: "shouldn't be able to get all contributions",
@@ -111,6 +111,12 @@ describe("contribution api", () => {
         contrib: "user_contribution",
         ok: true,
         msg: "should be able to get pending contribution as project admin",
+      },
+      {
+        user: "dev_user",
+        contrib: "user_contribution",
+        ok: true,
+        msg: "should be able to get pending contribution as project dev",
       },
       {
         user: "plain_user",

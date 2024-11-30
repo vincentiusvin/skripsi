@@ -313,7 +313,7 @@ export class ContributionService implements Transactable<ContributionService> {
     }
 
     if (sender_id == undefined) {
-      return;
+      return false;
     }
 
     if (sender_id == user_id) {
@@ -322,7 +322,7 @@ export class ContributionService implements Transactable<ContributionService> {
 
     if (project_id != undefined) {
       const role = await this.project_service.getMemberRole(project_id, sender_id);
-      if (role === "Admin") {
+      if (role === "Admin" || role === "Dev") {
         return true;
       }
     }
