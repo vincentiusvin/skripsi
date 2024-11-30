@@ -1,30 +1,21 @@
 import { Edit } from "@mui/icons-material";
 import { Button, Skeleton, Tab, Tabs } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { useLocation, useParams } from "wouter";
+import { useParams } from "wouter";
 import StyledLink from "../../../components/StyledLink.tsx";
-import { APIError } from "../../../helpers/fetch.ts";
 import { useStateSearch } from "../../../helpers/search.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
-import UserContributions from "./UserContributions.tsx";
-import UserFriends from "./UserFriends.tsx";
-import UserProfile from "./UserProfile/UserProfile.tsx";
+import UserContributionsPage from "./UserContributionsPage.tsx";
+import UserFriendsPage from "./UserFriendsPage.tsx";
+import UserProfilePage from "./UserProfile/UserProfilePage.tsx";
 
 function UserAccountPage() {
   const { id } = useParams();
-  const [, setLocation] = useLocation();
   const viewed_id = Number(id);
 
   const { data: userDetail } = useUsersDetailGet({
     user_id: viewed_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status == 404) || failureCount > 3) {
-        setLocation("/");
-        return false;
-      }
-      return true;
-    },
   });
 
   const { data: userLog } = useSessionGet();
@@ -85,11 +76,9 @@ function UserAccountPage() {
         )}
       </Grid>
       <Grid size={12}>
-        {activeTab == "acc" ? (
-          <UserProfile viewed_id={viewed_id} our_id={isLogged ? userLog.user_id : undefined} />
-        ) : null}
-        {activeTab === "conn" && isViewingSelf ? <UserFriends user_id={viewed_id} /> : null}
-        {activeTab === "contrib" ? <UserContributions user_id={viewed_id} /> : null}
+        {activeTab == "acc" ? <UserProfilePage /> : null}
+        {activeTab === "conn" && isViewingSelf ? <UserFriendsPage /> : null}
+        {activeTab === "contrib" ? <UserContributionsPage /> : null}
       </Grid>
     </Grid>
   );

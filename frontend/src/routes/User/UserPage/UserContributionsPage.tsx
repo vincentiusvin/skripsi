@@ -1,7 +1,9 @@
 import { Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import { useParams } from "wouter";
 import ContribList from "../../../components/Cards/ContribList.tsx";
-import { useContributionsGet } from "../../../queries/contribution_hooks";
+import { useContributionsGet } from "../../../queries/contribution_hooks.ts";
+import AuthorizeUser from "../AuthorizeUser.tsx";
 
 function UserContributions(props: { user_id: number }) {
   const { user_id } = props;
@@ -34,4 +36,15 @@ function UserContributions(props: { user_id: number }) {
   );
 }
 
-export default UserContributions;
+function UserContributionsPage() {
+  const { id } = useParams();
+  const user_id = Number(id);
+
+  return (
+    <AuthorizeUser>
+      <UserContributions user_id={user_id} />
+    </AuthorizeUser>
+  );
+}
+
+export default UserContributionsPage;
