@@ -1,10 +1,10 @@
 import { Edit } from "@mui/icons-material";
 import { Button, Skeleton, Tab, Tabs } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import StyledLink from "../../../components/StyledLink.tsx";
 import { APIError } from "../../../helpers/fetch.ts";
+import { useStateSearch } from "../../../helpers/search.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import { useUsersDetailGet } from "../../../queries/user_hooks.ts";
 import UserContributions from "./UserContributions.tsx";
@@ -31,7 +31,8 @@ function UserAccountPage() {
   const isLogged = userDetail && userLog && userLog.logged;
   const isViewingSelf = isLogged && userLog.user_id === userDetail.user_id;
 
-  const [activeTab, setActiveTab] = useState<"acc" | "conn" | "contrib">("acc");
+  const [_activeTab, setActiveTab] = useStateSearch("tab");
+  const activeTab = _activeTab ?? "acc";
 
   if (!userDetail) {
     return <Skeleton />;
@@ -84,7 +85,7 @@ function UserAccountPage() {
         )}
       </Grid>
       <Grid size={12}>
-        {activeTab === "acc" ? (
+        {activeTab == "acc" ? (
           <UserProfile viewed_id={viewed_id} our_id={isLogged ? userLog.user_id : undefined} />
         ) : null}
         {activeTab === "conn" && isViewingSelf ? <UserFriends user_id={viewed_id} /> : null}

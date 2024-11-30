@@ -7,11 +7,12 @@ import avatarFallback from "../../../../helpers/avatar_fallback.tsx";
 import { APIError } from "../../../../helpers/fetch.ts";
 import { LinkIcons, linkParser } from "../../../../helpers/linker.tsx";
 import { useUsersDetailGet } from "../../../../queries/user_hooks.ts";
-import UserFriendList from "./UserProfileFriend.tsx";
-import FriendShortcut from "./UserProfileManageFriend.tsx";
-import UserOrgsList from "./UserProfileOrgs.tsx";
-import UserProjectsList from "./UserProfileProjects.tsx";
-import UserProfileSendMessage from "./UserProfileSendMessage.tsx";
+import UserProfileContribs from "./components/UserProfileContribs.tsx";
+import UserFriendList from "./components/UserProfileFriend.tsx";
+import FriendShortcut from "./components/UserProfileManageFriend.tsx";
+import UserOrgsList from "./components/UserProfileOrgs.tsx";
+import UserProjectsList from "./components/UserProfileProjects.tsx";
+import UserProfileSendMessage from "./components/UserProfileSendMessage.tsx";
 
 function UserProfile(props: { viewed_id: number; our_id?: number }) {
   const { viewed_id, our_id } = props;
@@ -99,6 +100,7 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
           {isViewingSelf ? (
             <FriendShortcut our_user_id={our_id} viewed_user_id={userDetail.user_id} />
           ) : null}
+          <UserProfileContribs user_id={viewed_id} />
           <UserFriendList user_id={viewed_id} />
           <UserProjectsList user_id={viewed_id} />
           <UserOrgsList user_id={viewed_id} />
