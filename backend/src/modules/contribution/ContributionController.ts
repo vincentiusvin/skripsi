@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller";
+import { validateLogged } from "../../helpers/validate.js";
 import {
   defaultError,
   zodPagination,
@@ -103,6 +104,7 @@ export class ContributionController extends Controller {
   ContributionsPost = new Route({
     method: "post",
     path: "/api/contributions",
+    priors: [validateLogged],
     schema: {
       ResBody: ContributionResponseSchema,
       ReqBody: ContributionCreationSchema,
@@ -128,6 +130,7 @@ export class ContributionController extends Controller {
   ContributionsDetailPut = new Route({
     method: "put",
     path: "/api/contributions/:id",
+    priors: [validateLogged],
     schema: {
       ResBody: ContributionResponseSchema,
       Params: z.object({

@@ -1,4 +1,4 @@
-import type { Express, RequestHandler } from "express";
+import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
@@ -90,7 +90,7 @@ export class SuspensionController extends Controller {
       ResBody: SuspensionResponseSchema,
       ReqBody: SuspensionUpdateSchema,
     },
-    priors: [validateLogged as RequestHandler],
+    priors: [validateLogged],
     handler: async (req, res) => {
       const { reason, suspended_until, user_id } = req.body;
       const { suspension_id: suspension_id_raw } = req.params;
@@ -115,15 +115,6 @@ export class SuspensionController extends Controller {
     },
   });
   SuspensionsDetailDelete = new Route({
-    handler: async (req, res) => {
-      const sender_id = Number(req.session.user_id);
-      const { suspension_id: suspension_id_raw } = req.params;
-      const suspension_id = Number(suspension_id_raw);
-      await this.suspension_service.deleteSuspension(suspension_id, sender_id);
-      res.status(200).json({
-        msg: "Penangguhan berhasil dihapus!",
-      });
-    },
     method: "delete",
     path: "/api/suspensions/:suspension_id",
     schema: {
@@ -134,7 +125,16 @@ export class SuspensionController extends Controller {
         suspension_id: zodStringReadableAsNumber("ID penangguhan tidak valid!"),
       }),
     },
-    priors: [validateLogged as RequestHandler],
+    priors: [validateLogged],
+    handler: async (req, res) => {
+      const sender_id = Number(req.session.user_id);
+      const { suspension_id: suspension_id_raw } = req.params;
+      const suspension_id = Number(suspension_id_raw);
+      await this.suspension_service.deleteSuspension(suspension_id, sender_id);
+      res.status(200).json({
+        msg: "Penangguhan berhasil dihapus!",
+      });
+    },
   });
   SuspensionsDetailGet = new Route({
     method: "get",
@@ -145,7 +145,7 @@ export class SuspensionController extends Controller {
         suspension_id: zodStringReadableAsNumber("ID penangguhan tidak valid!"),
       }),
     },
-    priors: [validateLogged as RequestHandler],
+    priors: [validateLogged],
     handler: async (req, res) => {
       const sender_id = Number(req.session.user_id);
       const { suspension_id: suspension_id_raw } = req.params;
@@ -160,7 +160,7 @@ export class SuspensionController extends Controller {
   SuspensionsGet = new Route({
     method: "get",
     path: "/api/suspensions",
-    priors: [validateLogged as RequestHandler],
+    priors: [validateLogged],
     schema: {
       ResBody: SuspensionResponseSchema.array(),
       ReqQuery: z.object({

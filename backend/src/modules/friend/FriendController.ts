@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { AuthError } from "../../helpers/error.js";
+import { validateLogged } from "../../helpers/validate.js";
 import { defaultError, zodStringReadableAsNumber } from "../../helpers/validators.js";
 import { FriendService } from "./FriendService.js";
 
@@ -38,6 +39,7 @@ export class FriendController extends Controller {
   UsersDetailFriendsDetailPut = new Route({
     method: "put",
     path: "/api/users/:from_id/friends/:to_id",
+    priors: [validateLogged],
     schema: {
       Params: FriendParamsSchema,
       ReqBody: FriendUpdateSchema,
@@ -73,6 +75,7 @@ export class FriendController extends Controller {
   UsersDetailFriendsDetailDelete = new Route({
     method: "delete",
     path: "/api/users/:from_id/friends/:to_id",
+    priors: [validateLogged],
     schema: {
       Params: FriendParamsSchema,
       ResBody: z.object({
