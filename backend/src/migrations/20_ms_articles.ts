@@ -11,6 +11,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       build.references("ms_users.id").notNull().onDelete("cascade").onUpdate("cascade"),
     )
     .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
+    .addColumn("image", "text")
     .execute();
 }
 

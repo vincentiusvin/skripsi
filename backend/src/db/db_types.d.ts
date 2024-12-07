@@ -41,6 +41,7 @@ export interface MsArticles {
   created_at: Generated<Timestamp>;
   description: string;
   id: Generated<number>;
+  image: string | null;
   name: string;
   user_id: number;
 }
@@ -80,8 +81,8 @@ export interface MsChatrooms {
 export interface MsComments {
   article_id: number;
   comment: string;
-  comment_id: Generated<number>;
   created_at: Generated<Timestamp>;
+  id: Generated<number>;
   user_id: number;
 }
 

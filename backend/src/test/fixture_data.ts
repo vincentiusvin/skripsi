@@ -95,6 +95,16 @@ export async function baseCase(db: Kysely<DB>) {
         password: hashed,
         email: "emailchat@example.com",
       },
+      {
+        name: "article user",
+        password: hashed,
+        email: "articleuser@example.com",
+      },
+      {
+        name: "article liker",
+        password: hashed,
+        email: "articleliker@example.com",
+      },
     ])
     .returning(["id", "name", "email"])
     .execute();
@@ -121,6 +131,8 @@ export async function baseCase(db: Kysely<DB>) {
   const contrib_user = { ...user_ids[12], password: orig_password };
   const expired_banned_user = { ...user_ids[13], password: orig_password };
   const email_chat_user = { ...user_ids[14], password: orig_password };
+  const article_user = { ...user_ids[15], password: orig_password };
+  const article_liker = { ...user_ids[16], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -496,7 +508,30 @@ export async function baseCase(db: Kysely<DB>) {
     .returning(["token", "email", "otp", "verified_at"])
     .executeTakeFirstOrThrow();
 
+  const article = await db
+    .insertInto("ms_articles")
+    .values({
+      name: "Testing article",
+      description: "Very informative article",
+      content: "abcdefgh",
+      user_id: article_user.id,
+    })
+    .returning(["id", "name", "description", "content", "image"])
+    .executeTakeFirstOrThrow();
+
+  await db
+    .insertInto("ms_articles_likes")
+    .values({
+      user_id: article_liker.id,
+      article_id: article.id,
+    })
+    .returning(["article_id", "user_id"])
+    .execute();
+
   return {
+    article,
+    article_liker,
+    article_user,
     verified_otp,
     unverified_otp,
     password_otp,
