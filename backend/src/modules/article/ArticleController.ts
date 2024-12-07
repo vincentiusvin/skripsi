@@ -28,9 +28,9 @@ export class ArticleController extends Controller {
       ArticlesDetailCommentsGet: this.ArticlesDetailCommentsGet,
       ArticlesPost: this.ArticlesPost,
       ArticlesDetailPut: this.ArticlesDetailPut,
+      UpvoteDelete: this.UpvoteDelete,
       ArticlesDetailDelete: this.ArticlesDetailDelete,
       UpvoteAdd: this.UpvoteAdd,
-      UpvoteDelete: this.UpvoteDelete,
       ArticleGetLikesId: this.ArticleGetLikesId,
       ArticlesDetailCommentsPost: this.ArticlesDetailCommentsPost,
       ArticlePostLike: this.ArticlePostLike,
@@ -154,9 +154,6 @@ export class ArticleController extends Controller {
     method: "post",
     path: "/api/articles/addLikes",
     schema: {
-      // Params: z.object({
-      //   id: zodStringReadableAsNumber("ID artikel tidak boleh kosong!"),
-      // }),
       ReqBody: z.object({
         article_id: z.number().min(1, "article_id tidak valid"),
         user_id: z.number().min(1, "user_id invalid!"),
@@ -168,15 +165,8 @@ export class ArticleController extends Controller {
     },
     handler: async (req, res) => {
       const article_id = Number(req.body.article_id);
-
-      // Assume `req.user` contains the logged-in user's information (e.g., from middleware)
       const user_id = req.body.user_id;
-      // if (!user_id) {
-      //   res.status(401);
-      // }
 
-      // console.log(user_id);
-      // Add like through service
       const result = await this.article_service.addArticleLike(article_id, user_id);
       res.status(201).json(result);
     },
@@ -259,7 +249,7 @@ export class ArticleController extends Controller {
 
   ArticlesDetailPut = new Route({
     method: "put",
-    path: "/api/articles/:id",
+    path: "/api/articles/:article_id",
     schema: {
       Params: z.object({
         article_id: zodStringReadableAsNumber("ID Artikel tidak valid"),

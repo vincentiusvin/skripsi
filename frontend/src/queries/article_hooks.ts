@@ -8,6 +8,8 @@ const articleKeys = {
   list: (param: unknown) => [...articleKeys.lists(), param] as const,
   details: () => [...articleKeys.all(), "detail"] as const,
   detail: (article_id: number) => [...articleKeys.details(), article_id] as const,
+  comments: (article_id: number) => [...articleKeys.detail(article_id), "comment"] as const,
+  likes: () => [...articleKeys.all(), "like"] as const,
 };
 
 export function useArticlesGet(opts?: {
@@ -41,8 +43,8 @@ export function useArticlesDetailGet(opts: {
   }
 
   return useQuery({
-    queryKey: articleKeys.detail(article_id), // Cache key based on article ID
-    queryFn: () => new APIContext("ArticlesDetailGet").fetch(`/api/articles/${article_id}`), // Correct URL
+    queryKey: articleKeys.detail(article_id),
+    queryFn: () => new APIContext("ArticlesDetailGet").fetch(`/api/articles/${article_id}`),
     retry,
   });
 }
@@ -54,9 +56,9 @@ export function useArticlesGetLikesId(opts: {
   const { article_id, retry } = opts;
 
   return useQuery({
-    queryKey: articleKeys.detail(article_id), // Cache key based on contribution ID
-    queryFn: () => new APIContext("ArticleGetLikesId").fetch(`/api/articles/${article_id}/upvotes`), // Fetch contribution detail by ID
-    retry, // Retry logic
+    queryKey: articleKeys.detail(article_id),
+    queryFn: () => new APIContext("ArticleGetLikesId").fetch(`/api/articles/${article_id}/upvotes`),
+    retry,
   });
 }
 
@@ -67,10 +69,10 @@ export function useArticlesDetailCommentGet(opts: {
   const { article_id, retry } = opts;
 
   return useQuery({
-    queryKey: articleKeys.detail(article_id), // Cache key based on contribution ID
+    queryKey: articleKeys.comments(article_id),
     queryFn: () =>
-      new APIContext("ArticlesDetailCommentsGet").fetch(`/api/articles/${article_id}/comments`), // Fetch contribution detail by ID
-    retry, // Retry logic
+      new APIContext("ArticlesDetailCommentsGet").fetch(`/api/articles/${article_id}/comments`),
+    retry,
   });
 }
 export function useArticlesDetailCommentPost(opts: { article_id: number; onSuccess?: () => void }) {
@@ -83,7 +85,22 @@ export function useArticlesDetailCommentPost(opts: { article_id: number; onSucce
       },
     ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: articleKeys.detail(article_id) }); // Refetch comments
+      queryClient.invalidateQueries({ queryKey: articleKeys.detail(article_id) });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useArticlesDetailLikePost(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
+  return useMutation({
+    mutationFn: new APIContext("ArticlePostLike").bodyFetch("/api/articles/addLikes", {
+      method: "POST",
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: articleKeys.likes() });
       if (onSuccess) {
         onSuccess();
       }
@@ -105,29 +122,6 @@ export function useArticlesPost(opts: { onSuccess?: () => void }) {
     },
   });
 }
-
-// export function useArticleDetailCommentsPost(opts: { article_id: number; onSuccess?: () => void }) {
-//   const { article_id, onSuccess } = opts;
-
-//   return useMutation({
-//     // Define the mutation function
-//     mutationFn: new APIContext("ArticlesDetailCommentsPost").bodyFetch(
-//       `/api/articles/${article_id}/addComents`,
-//       {
-//         method: "POST",
-//         body: JSON.stringify(data),
-//       },
-//     ),
-//     // Handle the success case
-//     onSuccess: () => {
-//       // Invalidate the specific article's comments query to trigger a refetch
-//       queryClient.invalidateQueries({ queryKey: articleKeys.detail(article_id) });
-//       if (onSuccess) {
-//         onSuccess();
-//       }
-//     },
-//   });
-// }
 
 export function useArticlesDetailPut(opts: { article_id: number; onSuccess?: () => void }) {
   const { article_id, onSuccess } = opts;
@@ -166,7 +160,7 @@ export function useArticlesUpvoteAdd(opts: { onSuccess?: () => void }) {
       method: "POST",
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: articleKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: articleKeys.all() });
       if (onSuccess) {
         onSuccess();
       }
@@ -174,12 +168,8 @@ export function useArticlesUpvoteAdd(opts: { onSuccess?: () => void }) {
   });
 }
 
-export function useArticlesUpvoteDelete(opts: {
-  article_id: number;
-  user_id: number;
-  onSuccess?: () => void;
-}) {
-  const { onSuccess, article_id } = opts;
+export function useArticlesUpvoteDelete(opts: { onSuccess?: () => void }) {
+  const { onSuccess } = opts;
   return useMutation({
     mutationFn: () =>
       new APIContext("UpvoteDelete").fetch(`/api/articles/upvotes`, {

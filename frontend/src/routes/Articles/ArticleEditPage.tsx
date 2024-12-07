@@ -14,16 +14,9 @@ import { useSessionGet } from "../../queries/sesssion_hooks.ts";
 function ArticlesEdit(props: { article_id: number }) {
   const { article_id } = props;
 
-  // Session data
   const { data: session_data } = useSessionGet();
 
-  if (!session_data?.logged) {
-    // Handle unauthorized case (show snackbar or redirect)
-    enqueueSnackbar("You must be logged in to edit articles", { variant: "error" });
-    return;
-  }
 
-  // Article data
   const { data: article_data } = useArticlesDetailGet({
     article_id,
   });
@@ -38,7 +31,7 @@ function ArticlesEdit(props: { article_id: number }) {
     article_id,
     onSuccess: () => {
       enqueueSnackbar({
-        message: <Typography>Article successfully updated!</Typography>,
+        message: <Typography>Artikel Berhasil diUpdate!</Typography>,
         autoHideDuration: 5000,
         variant: "success",
       });
@@ -47,17 +40,9 @@ function ArticlesEdit(props: { article_id: number }) {
   });
 
   if (!article_data) {
-    return <Typography>Error: Article not found!</Typography>;
+    return <Typography>Artikel tidak ditemukan!</Typography>;
   }
 
-  // const handleSave = () => {
-  //   if (!articleName || !articleDescription || !articleContent) {
-  //     enqueueSnackbar({
-  //       message: "Please fill out all required fields.",
-  //       variant: "error",
-  //     });
-  //     return;
-  //   }
   function addArticle() {
     const user_id = session_data?.logged ? session_data.user_id : undefined;
     console.log("USER ID: ", user_id);
