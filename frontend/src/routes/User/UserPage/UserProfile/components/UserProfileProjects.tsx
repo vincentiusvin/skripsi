@@ -9,8 +9,8 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import ProjectCard from "../../../../components/Cards/ProjectCard.tsx";
-import { useProjectsGet } from "../../../../queries/project_hooks.ts";
+import ProjectCard from "../../../../../components/Cards/ProjectCard.tsx";
+import { useProjectsGet } from "../../../../../queries/project_hooks.ts";
 
 function UserProjectsList(props: { user_id: number }) {
   const { user_id } = props;

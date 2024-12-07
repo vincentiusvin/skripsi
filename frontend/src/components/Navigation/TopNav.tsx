@@ -1,5 +1,7 @@
 import { DarkMode, LightMode, Login, Logout, ViewSidebar } from "@mui/icons-material";
 import { AppBar, Box, Button, IconButton, Toolbar, Typography, alpha } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
+import { useLocation } from "wouter";
 import { useAppTheme } from "../../helpers/theme.ts";
 import { useSessionDelete, useSessionGet } from "../../queries/sesssion_hooks.ts";
 import NotificationDialog from "../Notification.tsx";
@@ -10,9 +12,18 @@ import { useNavigation } from "./NavigationContext.ts";
 
 function TopNav() {
   const { data } = useSessionGet();
-  const { mutate: logout } = useSessionDelete();
   const [theme, setTheme] = useAppTheme();
   const [, setNav] = useNavigation();
+  const [, setLoc] = useLocation();
+  const { mutate: logout } = useSessionDelete({
+    onSuccess: () => {
+      setLoc("/");
+      enqueueSnackbar({
+        message: <Typography>Berhasil keluar!</Typography>,
+        variant: "success",
+      });
+    },
+  });
 
   return (
     <AppBar
@@ -100,7 +111,7 @@ function TopNav() {
           </>
         ) : (
           <StyledLink to={"/login"}>
-            <Button variant="outlined" startIcon={<Login />} onClick={() => logout()}>
+            <Button variant="outlined" startIcon={<Login />}>
               Log In
             </Button>
           </StyledLink>

@@ -220,21 +220,20 @@ export class ReportService implements Transactable<ReportService> {
     admin_id: number,
     filer_id: number,
   ) {
-    const chatroom_id = await this.chat_service.addUserChatroom(
-      admin_id,
-      `Diskusi Laporan - ${report_name}`,
-      admin_id,
-    );
-    await this.chat_service.updateChatroom(
-      chatroom_id,
+    const users = [...new Set([admin_id, filer_id])];
+
+    const chatroom_id = await this.chat_service.addChatroom(
       {
-        user_ids: admin_id !== filer_id ? [admin_id, filer_id] : [admin_id],
+        user_ids: users,
+        chatroom_name: `Diskusi Laporan - ${report_name}`,
       },
       admin_id,
     );
+
     await this.report_repo.updateReport(report_id, {
       chatroom_id,
     });
+
     await this.sendReportChatroomCreatedNotification(report_id);
   }
 }

@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller";
+import { validateLogged } from "../../helpers/validate.js";
 import {
   defaultError,
   zodPagination,
@@ -64,23 +65,27 @@ export class ContributionController extends Controller {
         status: z.enum(contribution_status, defaultError("Status tidak valid!")).optional(),
         ...zodPagination(),
       }),
-      ResBody: ContributionResponseSchema.array(),
+      ResBody: z.object({
+        result: ContributionResponseSchema.array(),
+        total: z.number(),
+      }),
     },
     handler: async (req, res) => {
       const { page, limit, status, user_id, project_id } = req.query;
-      const sender_id = Number(req.session.user_id);
+      const sender_id = req.session.user_id !== undefined ? Number(req.session.user_id) : undefined;
 
-      const result = await this.cont_service.getContributions(
-        {
-          status: status,
-          user_id: user_id != undefined ? Number(user_id) : undefined,
-          project_id: project_id != undefined ? Number(project_id) : undefined,
-          page: page != undefined ? Number(page) : undefined,
-          limit: limit != undefined ? Number(limit) : undefined,
-        },
-        sender_id,
-      );
-      res.status(200).json(result);
+      const params = {
+        status: status,
+        user_id: user_id != undefined ? Number(user_id) : undefined,
+        project_id: project_id != undefined ? Number(project_id) : undefined,
+        page: page != undefined ? Number(page) : undefined,
+        limit: limit != undefined ? Number(limit) : undefined,
+      };
+
+      const result = await this.cont_service.getContributions(params, sender_id);
+      const count = await this.cont_service.countContributions(params, sender_id);
+
+      res.status(200).json({ result, total: Number(count.count) });
     },
   });
   ContributionsDetailGet = new Route({
@@ -103,6 +108,7 @@ export class ContributionController extends Controller {
   ContributionsPost = new Route({
     method: "post",
     path: "/api/contributions",
+    priors: [validateLogged],
     schema: {
       ResBody: ContributionResponseSchema,
       ReqBody: ContributionCreationSchema,
@@ -128,6 +134,7 @@ export class ContributionController extends Controller {
   ContributionsDetailPut = new Route({
     method: "put",
     path: "/api/contributions/:id",
+    priors: [validateLogged],
     schema: {
       ResBody: ContributionResponseSchema,
       Params: z.object({

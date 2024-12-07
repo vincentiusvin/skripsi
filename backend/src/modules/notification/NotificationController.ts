@@ -1,5 +1,4 @@
 import type { Express } from "express";
-import { RequestHandler } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { validateLogged } from "../../helpers/validate.js";
@@ -36,7 +35,7 @@ export class NotificationController extends Controller {
   NotificationsGet = new Route({
     method: "get",
     path: "/api/notifications",
-    priors: [validateLogged as RequestHandler],
+    priors: [validateLogged],
     schema: {
       ReqQuery: z.object({
         user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!").optional(),

@@ -81,8 +81,8 @@ export interface MsChatrooms {
 export interface MsComments {
   article_id: number;
   comment: string;
-  comment_id: Generated<number>;
   created_at: Generated<Timestamp>;
+  id: Generated<number>;
   user_id: number;
 }
 
@@ -142,8 +142,9 @@ export interface MsOtps {
   email: string;
   otp: string;
   token: Generated<string>;
-  used: Generated<boolean>;
-  verified: Generated<boolean>;
+  type: string;
+  used_at: Timestamp | null;
+  verified_at: Timestamp | null;
 }
 
 export interface MsPreferences {

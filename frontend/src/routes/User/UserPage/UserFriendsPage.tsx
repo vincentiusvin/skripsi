@@ -1,6 +1,7 @@
 import { Button, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
+import { useParams } from "wouter";
 import UserCard from "../../../components/Cards/UserCard.tsx";
 import {
   useFriendsDelete,
@@ -8,6 +9,7 @@ import {
   useFriendsGet,
   useFriendsPut,
 } from "../../../queries/friend_hooks.ts";
+import AuthorizeUser from "../AuthorizeUser.tsx";
 
 function UserFriends(props: { user_id: number }) {
   const { user_id } = props;
@@ -158,4 +160,15 @@ function FriendManage(props: {
   );
 }
 
-export default UserFriends;
+function UserFriendsPage() {
+  const { id } = useParams();
+  const user_id = Number(id);
+
+  return (
+    <AuthorizeUser self={true}>
+      <UserFriends user_id={user_id} />
+    </AuthorizeUser>
+  );
+}
+
+export default UserFriendsPage;

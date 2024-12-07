@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
+import { validateLogged } from "../../helpers/validate.js";
 import {
   defaultError,
   zodPagination,
@@ -101,6 +102,7 @@ export class ReportController extends Controller {
   ReportsPost = new Route({
     method: "post",
     path: "/api/reports",
+    priors: [validateLogged],
     schema: {
       ResBody: ReportResponseSchema,
       ReqBody: ReportCreationSchema,
@@ -132,6 +134,7 @@ export class ReportController extends Controller {
       ResBody: ReportResponseSchema,
     },
     method: "put",
+    priors: [validateLogged],
     path: "/api/reports/:report_id",
     handler: async (req, res) => {
       const sender_id = Number(req.session.user_id!);

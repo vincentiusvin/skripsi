@@ -9,6 +9,7 @@ import {
   useContributionsDetailGet,
   useContributionsDetailPut,
 } from "../../queries/contribution_hooks.ts";
+import AuthorizeContribution from "./AuthorizeContribution.tsx";
 import ContributionSelectPeople from "./components/ContributionUserSelect.tsx";
 
 function ContributionEdit(props: { contribution_id: number }) {
@@ -103,7 +104,11 @@ function ContributionEdit(props: { contribution_id: number }) {
 function ContributionEditPage() {
   const { contribution_id: id } = useParams();
   const contribution_id = Number(id);
-  return <ContributionEdit contribution_id={contribution_id} />;
+  return (
+    <AuthorizeContribution>
+      <ContributionEdit contribution_id={contribution_id} />
+    </AuthorizeContribution>
+  );
 }
 
 export default ContributionEditPage;

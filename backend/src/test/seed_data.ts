@@ -161,13 +161,17 @@ async function addChatrooms(db: Kysely<DB>) {
         project_id: faker.helpers.maybe(() => faker.helpers.arrayElement(projects).id),
       })),
     )
-    .returning("id")
+    .returning(["id", "ms_chatrooms.project_id"])
     .execute();
 
   const chat_users = await db
     .insertInto("chatrooms_users")
     .values(
-      chat_ids.flatMap(({ id }) => {
+      chat_ids.flatMap(({ id, project_id }) => {
+        if (project_id != null) {
+          return [];
+        }
+
         const members = faker.helpers.arrayElements(
           users.map((x) => x.id),
           {

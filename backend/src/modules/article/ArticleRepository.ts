@@ -1,6 +1,23 @@
-import { Kysely, SelectQueryBuilder, sql } from "kysely";
+import { Kysely, SelectQueryBuilder } from "kysely";
 import { DB } from "../../db/db_types";
 import { paginateQuery } from "../../helpers/pagination";
+
+const defaultArticleFields = [
+  "ms_articles.id as id",
+  "ms_articles.name as name",
+  "ms_articles.description as description",
+  "ms_articles.user_id",
+  "ms_articles.image as image",
+  "ms_articles.content as content",
+] as const;
+
+const defaultCommentFields = [
+  "ms_comments.id",
+  "ms_comments.user_id",
+  "ms_comments.article_id",
+  "ms_comments.comment",
+  "ms_comments.created_at",
+] as const;
 
 export class ArticleRepository {
   private db: Kysely<DB>;
@@ -30,178 +47,66 @@ export class ArticleRepository {
 
   getArticles(filter?: { keyword?: string; page?: number; limit?: number }) {
     const { keyword, page, limit } = filter ?? {};
-    let res = this.db
-      .selectFrom("ms_articles")
-      .select([
-        "ms_articles.id as article_id",
-        "ms_articles.name as article_name",
-        "ms_articles.description as article_description",
-        "ms_articles.user_id",
-        "ms_articles.image as article_image",
-      ]);
-    res = this.applyFilterToQuery(res, { keyword });
+    let query = this.db.selectFrom("ms_articles").select(defaultArticleFields);
 
-    res = paginateQuery(res, {
+    query = this.applyFilterToQuery(query, { keyword });
+
+    query = paginateQuery(query, {
       page,
       limit,
     });
 
-    return res.execute();
+    return query.execute();
   }
 
   async getArticlesById(articles_id: number) {
     return await this.db
       .selectFrom("ms_articles")
-      .select([
-        "ms_articles.name as articles_name",
-        "ms_articles.content as articles_content",
-        "ms_articles.id as id",
-        "ms_articles.description as articles_description",
-        "ms_articles.user_id",
-        "ms_articles.image as articles_image",
-      ])
+      .select(defaultArticleFields)
       .where("ms_articles.id", "=", articles_id)
       .executeTakeFirst();
   }
 
-  async getArticlesComment(articles_id: number) {
-    return await this.db
-      .selectFrom("ms_comments")
-      .select(["ms_comments.comment", "ms_comments.user_id"])
-      .where("ms_comments.article_id", "=", articles_id)
-      .execute();
-  }
-
-  async getArticleLikesById(articles_id: number) {
-    return await this.db
-      .selectFrom("ms_articles_likes")
-      .select("ms_articles_likes.user_id as user_id")
-      .where("ms_articles_likes.article_id", "=", articles_id)
-      .execute();
-  }
-
-  async getArticleLikesCount(articles_id: number) {
-    return await this.db
-      .selectFrom("ms_articles_likes")
-      .select(sql`COUNT(*)`.as(`articles_count`))
-      .where("ms_articles_likes.article_id", "=", articles_id)
-      .executeTakeFirst();
-  }
-
-  async addArticleLike(obj: { article_id: number; user_id: number }) {
-    const { article_id, user_id } = obj;
-
-    // Check if the user already liked the article
-    const existingLike = await this.db
-      .selectFrom("ms_articles_likes")
-      .select("user_id")
-      .where("article_id", "=", article_id)
-      .where("user_id", "=", user_id)
-      .executeTakeFirst();
-
-    if (existingLike !== undefined) {
-      throw new Error("User has already liked this article");
-    }
-
-    // Insert the like into the database
-    const newLike = await this.db
-      .insertInto("ms_articles_likes")
-      .values({
-        article_id: article_id,
-        user_id: user_id,
-      })
-      .returning(["article_id", "user_id"])
-      .executeTakeFirst();
-
-    if (!newLike) {
-      throw new Error("Failed to like the article");
-    }
-
-    return newLike;
-  }
-
-  async addComment(obj: { article_id: number; user_id: number; comment: string }) {
-    const { article_id, user_id, comment } = obj;
-
-    const newComment = await this.db
-      .insertInto("ms_comments")
-      .values({
-        article_id: article_id, // Link to the article
-        user_id: user_id, // The user who posted the comment
-        comment: comment, // The comment content
-      })
-      .returning([
-        "ms_comments.comment_id",
-        "ms_comments.article_id",
-        "ms_comments.user_id",
-        "ms_comments.comment",
-      ])
-      .executeTakeFirst(); // Fetch the first (and only) inserted comment
-
-    if (!newComment) {
-      throw new Error("Data not inserted");
-    }
-
-    return newComment; // Return the inserted comment details
-  }
-
   async addArticle(obj: {
-    articles_name: string;
-    articles_description: string;
-    articles_content: string;
-    articles_user_id: number;
-    articles_image?: string | null;
+    name: string;
+    description: string;
+    content: string;
+    user_id: number;
+    image?: string | null;
   }) {
-    const {
-      articles_name,
-      articles_description,
-      articles_content,
-      articles_user_id,
-      articles_image,
-    } = obj;
     const article = await this.db
       .insertInto("ms_articles")
-      .values({
-        name: articles_name,
-        description: articles_description,
-        content: articles_content,
-        user_id: articles_user_id,
-        image: articles_image,
-      })
+      .values(obj)
       .returning(["ms_articles.id"])
       .executeTakeFirst();
+
     if (!article) {
       throw new Error("Data not inserted");
     }
+
     return article;
   }
 
   async updateArticle(
     article_id: number,
     obj: {
-      articles_name?: string;
-      articles_description?: string;
-      articles_content?: string;
-      articles_image?: string | null;
+      name?: string;
+      description?: string;
+      content?: string;
+      image?: string | null;
     },
   ) {
-    const { articles_name, articles_description, articles_content, articles_image } = obj;
-    if (
-      articles_name != undefined ||
-      articles_description != undefined ||
-      articles_content != undefined
-    ) {
-      await this.db
-        .updateTable("ms_articles")
-        .set({
-          name: articles_name,
-          description: articles_description,
-          content: articles_content,
-          image: articles_image,
-        })
-        .where("ms_articles.id", "=", article_id)
-        .executeTakeFirst();
+    const can_run_update = Object.values(obj).some((x) => x !== undefined);
+
+    if (!can_run_update) {
+      return;
     }
+
+    await this.db
+      .updateTable("ms_articles")
+      .set(obj)
+      .where("ms_articles.id", "=", article_id)
+      .executeTakeFirst();
   }
 
   async deleteArticle(article_id: number) {
@@ -211,30 +116,72 @@ export class ArticleRepository {
       .execute();
   }
 
-  async upvotesPost(obj: { article_id: number; user_id: number }) {
-    const { article_id, user_id } = obj;
-    let upvotes;
-    if (article_id != undefined || user_id != undefined) {
-      upvotes = await this.db
-        .insertInto("ms_articles_likes")
-        .values({
-          article_id: article_id,
-          user_id: user_id,
-        })
-        .returning(["ms_articles_likes.article_id", "ms_articles_likes.user_id"])
-        .execute();
-      if (!upvotes) {
-        throw new Error("upvote failed");
-      }
-    }
-    return upvotes;
+  async getArticleLikeStatus(article_id: number, user_id: number) {
+    return await this.db
+      .selectFrom("ms_articles_likes")
+      .select(["article_id", "user_id"])
+      .where("ms_articles_likes.article_id", "=", article_id)
+      .where("ms_articles_likes.user_id", "=", user_id)
+      .execute();
   }
 
-  async upvotesDelete(article_id: number, user_id: number) {
+  async getArticleLikeCount(articles_id: number) {
+    return await this.db
+      .selectFrom("ms_articles_likes")
+      .select((eb) => eb.fn.countAll().as("likes"))
+      .where("ms_articles_likes.article_id", "=", articles_id)
+      .executeTakeFirst();
+  }
+
+  async likeArticle(article_id: number, user_id: number) {
+    return await this.db
+      .insertInto("ms_articles_likes")
+      .values({
+        article_id,
+        user_id,
+      })
+      .execute();
+  }
+
+  async unlikeArticle(article_id: number, user_id: number) {
     return await this.db
       .deleteFrom("ms_articles_likes")
       .where("article_id", "=", article_id)
       .where("user_id", "=", user_id)
       .execute();
+  }
+
+  async getArticlesComment(articles_id: number) {
+    return await this.db
+      .selectFrom("ms_comments")
+      .select(defaultCommentFields)
+      .where("ms_comments.article_id", "=", articles_id)
+      .execute();
+  }
+
+  async getCommentByID(comment_id: number) {
+    return await this.db
+      .selectFrom("ms_comments")
+      .select(defaultCommentFields)
+      .where("ms_comments.id", "=", comment_id)
+      .executeTakeFirst();
+  }
+
+  async addComment(obj: { article_id: number; user_id: number; comment: string }) {
+    const { article_id, user_id, comment } = obj;
+
+    const res = await this.db
+      .insertInto("ms_comments")
+      .values({
+        article_id,
+        user_id,
+        comment,
+      })
+      .returning("id")
+      .executeTakeFirst();
+    if (res == undefined) {
+      throw new Error("Gagal memasukkan komentar!");
+    }
+    return res;
   }
 }

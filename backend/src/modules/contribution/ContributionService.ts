@@ -1,11 +1,11 @@
-import { AuthError, NotFoundError } from "../../helpers/error.js";
+import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
   envNotificationServiceFactory,
 } from "../notification/NotificationService.js";
-import { ProjectRoles } from "../project/ProjectMisc.js";
 import { ProjectService, projectServiceFactory } from "../project/ProjectService.js";
+import { UserService, envUserServiceFactory } from "../user/UserService.js";
 import { ContributionStatus } from "./ContributionMisc.js";
 import { Contribution, ContributionRepository } from "./ContributionRepository";
 
@@ -14,11 +14,13 @@ export function contributionServiceFactory(transaction_manager: TransactionManag
   const contribution_repo = new ContributionRepository(db);
   const project_service = projectServiceFactory(transaction_manager);
   const notification_service = envNotificationServiceFactory(transaction_manager);
+  const user_service = envUserServiceFactory(transaction_manager);
 
   const contribution_service = new ContributionService(
     contribution_repo,
     project_service,
     notification_service,
+    user_service,
     transaction_manager,
   );
   return contribution_service;
@@ -32,45 +34,42 @@ export function contributionServiceFactory(transaction_manager: TransactionManag
 export class ContributionService implements Transactable<ContributionService> {
   private cont_repo: ContributionRepository;
   private project_service: ProjectService;
+  private user_service: UserService;
   private notification_service: NotificationService;
   private transaction_manager: TransactionManager;
   constructor(
     cont_repo: ContributionRepository,
     project_service: ProjectService,
     notification_service: NotificationService,
+    user_service: UserService,
     transaction_manager: TransactionManager,
   ) {
     this.cont_repo = cont_repo;
     this.project_service = project_service;
     this.notification_service = notification_service;
+    this.user_service = user_service;
     this.transaction_manager = transaction_manager;
   }
   factory = contributionServiceFactory;
 
-  async isAllowedToView(contribution_id: number, sender_id: number) {
+  async countContributions(
+    params: {
+      status?: ContributionStatus;
+      user_id?: number;
+      keyword?: string;
+      project_id?: number;
+    },
+    sender_id?: number,
+  ) {
     return await this.transaction_manager.transaction(this as ContributionService, async (serv) => {
-      const contrib = await serv.cont_repo.getContributionsDetail(contribution_id);
-      if (!contrib) {
-        throw new NotFoundError("Gagal menemukan kontribusi!");
+      const allowed = await this.isAllowedToView(params, sender_id);
+      if (!allowed) {
+        throw new AuthError("Anda tidak memiliki akses untuk membaca kontribusi ini!");
       }
 
-      if (contrib.status === "Approved") {
-        return true;
-      }
+      const result = await serv.cont_repo.countContributions(params);
 
-      if (contrib.user_ids.map((x) => x.user_id).includes(sender_id)) {
-        return true;
-      }
-
-      const sender_project_role: ProjectRoles = !Number.isNaN(sender_id)
-        ? await serv.project_service.getMemberRole(contrib.project_id, sender_id)
-        : "Not Involved";
-
-      if (sender_project_role === "Admin") {
-        return true;
-      }
-
-      return false;
+      return result;
     });
   }
 
@@ -80,28 +79,44 @@ export class ContributionService implements Transactable<ContributionService> {
       page?: number;
       limit?: number;
       user_id?: number;
+      keyword?: string;
       project_id?: number;
     },
-    sender_id: number,
+    sender_id?: number,
   ) {
     return await this.transaction_manager.transaction(this as ContributionService, async (serv) => {
+      const allowed = await this.isAllowedToView(params, sender_id);
+      if (!allowed) {
+        throw new ClientError("Anda tidak memiliki akses untuk membaca kontribusi ini!");
+      }
+
       const result = await serv.cont_repo.getContributions(params);
 
-      const filter_result = await Promise.all(
-        result.map(async (contrib) => await serv.isAllowedToView(contrib.id, sender_id)),
-      );
-
-      return result.filter((_, i) => filter_result[i]);
+      return result;
     });
   }
 
   async getContributionDetail(contribution_id: number, sender_id: number) {
     return await this.transaction_manager.transaction(this as ContributionService, async (serv) => {
-      const allowed = await serv.isAllowedToView(contribution_id, sender_id);
+      const result = await serv.cont_repo.getContributionsDetail(contribution_id);
+      if (result == undefined) {
+        throw new NotFoundError("Gagal menemukan kontribusi tersebut!");
+      }
+
+      const allowed = await serv.isAllowedToView(
+        {
+          status: result.status,
+          project_id: result.project_id,
+          user_id: result.user_ids.find((x) => x.user_id === sender_id)?.user_id,
+        },
+        sender_id,
+      );
+
       if (!allowed) {
         throw new AuthError("Anda tidak memiliki akses untuk membaca kontribusi ini!");
       }
-      return serv.cont_repo.getContributionsDetail(contribution_id);
+
+      return result;
     });
   }
 
@@ -282,5 +297,41 @@ export class ContributionService implements Transactable<ContributionService> {
         });
       }),
     );
+  }
+
+  private async isAllowedToView(
+    params: {
+      status?: ContributionStatus;
+      user_id?: number;
+      project_id?: number;
+    },
+    sender_id?: number,
+  ) {
+    const { status, user_id, project_id } = params;
+    if (status === "Approved") {
+      return true;
+    }
+
+    if (sender_id == undefined) {
+      return false;
+    }
+
+    if (sender_id == user_id) {
+      return true;
+    }
+
+    if (project_id != undefined) {
+      const role = await this.project_service.getMemberRole(project_id, sender_id);
+      if (role === "Admin" || role === "Dev") {
+        return true;
+      }
+    }
+
+    const isAdmin = await this.user_service.isAdminUser(sender_id);
+    if (isAdmin) {
+      return true;
+    }
+
+    return false;
   }
 }

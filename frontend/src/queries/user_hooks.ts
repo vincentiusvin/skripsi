@@ -1,4 +1,6 @@
-  import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { isEqual } from "lodash";
+import { useDebounce } from "use-debounce";
 import { APIContext } from "../helpers/fetch";
 import { queryClient } from "../helpers/queryclient";
 import { sessionKeys } from "./sesssion_hooks.ts";
@@ -11,6 +13,8 @@ const userKeys = {
   details: () => [...userKeys.all(), "detail"] as const,
   detail: (user_id: number) => [...userKeys.details(), user_id] as const,
   preferences: (user_id: number) => [...userKeys.detail(user_id), "prefs"] as const,
+  otp: (opts: { email: string; type: "Register" | "Password" }) => ["otp", opts],
+  otp_user: (opts: { token: string }) => ["otp", opts, "user"],
 };
 
 export function useUsersPost(opts?: { onSuccess?: () => void }) {
@@ -34,60 +38,103 @@ export function useUsersPost(opts?: { onSuccess?: () => void }) {
   });
 }
 
-export function useOTPToken(opts: { email: string }) {
-  const { email } = opts;
+export function useOTPToken(opts: { email: string; type: "Register" | "Password" }) {
+  const { email, type } = opts;
 
   return useQuery({
-    queryKey: ["registration", email],
+    queryKey: userKeys.otp(opts),
     queryFn: () =>
-      new APIContext("OTPsPost").fetch("/api/otps", {
+      new APIContext("OTPPost").fetch("/api/otps", {
         method: "POST",
         body: {
-          user_email: email,
+          type,
+          email: email,
         },
       }),
     staleTime: 60 * 60 * 1000,
   });
 }
 
-export function useOTPVerify(opts: { onSuccess?: () => void }) {
-  const { onSuccess } = opts;
-
-  return useMutation({
-    mutationFn: new APIContext("OTPsPut").bodyFetch("/api/otps", {
-      method: "PUT",
-    }),
-    onSuccess: () => {
-      if (onSuccess) {
-        onSuccess();
-      }
-    },
-  });
-}
-
-export function useUserValidation(opts: { email?: string; name?: string }) {
-  const { email, name } = opts;
+export function useOTPDetailUserGet(opts: { token: string }) {
+  const { token } = opts;
 
   return useQuery({
-    queryKey: ["validation", { email, name }],
+    queryKey: userKeys.otp_user(opts),
     queryFn: () =>
-      new APIContext("UsersValidate").fetch("/api/users-validation", {
-        method: "get",
-        query: {
-          email,
-          name,
-        },
+      new APIContext("OTPDetailGetUser").fetch(`/api/otps/${token}/user`, {
+        method: "GET",
       }),
   });
 }
 
-export function useOTPsResend(opts: { onSuccess?: () => void }) {
-  const { onSuccess } = opts;
+export function useOTPVerify(opts: { onSuccess?: () => void; token: string }) {
+  const { token, onSuccess } = opts;
 
   return useMutation({
-    mutationFn: new APIContext("OTPsMail").bodyFetch("/api/otps-mail", {
-      method: "post",
+    mutationFn: new APIContext("OTPDetailPut").bodyFetch(`/api/otps/${token}`, {
+      method: "PUT",
     }),
+    onSuccess: (x) => {
+      if (onSuccess) {
+        onSuccess();
+      }
+      queryClient.setQueryData(
+        userKeys.otp({
+          email: x.email,
+          type: x.type,
+        }),
+        x,
+      );
+    },
+  });
+}
+
+export function useUserValidation(opts: { email?: string; name?: string; existing?: boolean }) {
+  const { email, name, existing } = opts;
+
+  const inputData = {
+    email,
+    name,
+  };
+
+  const [debouncedData] = useDebounce(inputData, 300);
+
+  const isUpdated = isEqual(debouncedData, inputData);
+
+  const query = useQuery({
+    queryKey: ["validation", debouncedData],
+    queryFn: () =>
+      new APIContext("UsersValidate").fetch("/api/users-validation", {
+        method: "get",
+        query: {
+          email: debouncedData.email,
+          name: debouncedData.name,
+          existing: existing === true ? "true" : undefined,
+        },
+      }),
+  });
+  const { data: validationData } = query;
+
+  const isValid =
+    isUpdated &&
+    validationData != undefined &&
+    validationData.email == undefined &&
+    validationData.name == undefined;
+
+  return {
+    isValid,
+    data: validationData,
+  };
+}
+
+export function useOTPsResend(opts: { onSuccess?: () => void; token: string }) {
+  const { onSuccess, token } = opts;
+
+  return useMutation({
+    mutationFn: () =>
+      new APIContext("OTPDetailMail").fetch(`/api/otps/${token}/email`, {
+        method: "post",
+      }),
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -128,6 +175,39 @@ export function useUsersDetailUpdate(opts: { user_id: number; onSuccess?: () => 
   const { user_id, onSuccess } = opts;
   return useMutation({
     mutationFn: new APIContext("UsersDetailPut").bodyFetch(`/api/users/${user_id}`, {
+      method: "PUT",
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.all() });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useUsersDetailUpdatePassword(opts: { user_id: number; onSuccess?: () => void }) {
+  const { user_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: new APIContext("UsersDetailPutPassword").bodyFetch(
+      `/api/users/${user_id}/password`,
+      {
+        method: "PUT",
+      },
+    ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.all() });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useUsersDetailUpdateEmail(opts: { user_id: number; onSuccess?: () => void }) {
+  const { user_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: new APIContext("UsersDetailPutEmail").bodyFetch(`/api/users/${user_id}/email`, {
       method: "PUT",
     }),
     onSuccess: () => {

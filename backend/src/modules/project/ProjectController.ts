@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { ZodType, z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
 import { NotFoundError } from "../../helpers/error.js";
+import { validateLogged } from "../../helpers/validate.js";
 import {
   defaultError,
   zodPagination,
@@ -74,6 +75,7 @@ export class ProjectController extends Controller {
   ProjectsPost = new Route({
     method: "post",
     path: "/api/projects",
+    priors: [validateLogged],
     schema: {
       ReqBody: ProjectCreationSchema,
       ResBody: ProjectResponseSchema,
@@ -176,6 +178,7 @@ export class ProjectController extends Controller {
   ProjectsDetailPut = new Route({
     method: "put",
     path: "/api/projects/:project_id",
+    priors: [validateLogged],
     schema: {
       Params: z.object({
         project_id: zodStringReadableAsNumber("ID projek tidak valid!"),
@@ -225,6 +228,7 @@ export class ProjectController extends Controller {
   ProjectsDetailMembersPut = new Route({
     method: "put",
     path: "/api/projects/:project_id/users/:user_id",
+    priors: [validateLogged],
     schema: {
       ReqBody: z.object({
         role: z
@@ -256,6 +260,7 @@ export class ProjectController extends Controller {
   ProjectsDetailMembersDelete = new Route({
     method: "delete",
     path: "/api/projects/:project_id/users/:user_id",
+    priors: [validateLogged],
     schema: {
       Params: z.object({
         project_id: zodStringReadableAsNumber("ID projek tidak valid!"),

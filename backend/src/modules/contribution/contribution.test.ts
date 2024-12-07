@@ -5,6 +5,7 @@ import { NotificationTester } from "../../test/NotificationTester.js";
 import { baseCase } from "../../test/fixture_data.js";
 import { APIContext, getLoginCookie } from "../../test/helpers.js";
 import { clearDB } from "../../test/setup-test.js";
+import { ContributionStatus } from "./ContributionMisc.js";
 
 describe("contribution api", () => {
   let app: Application;
@@ -18,224 +19,303 @@ describe("contribution api", () => {
     caseData = await baseCase(app.db);
   });
 
-  it("should be able to get all contributions", async () => {
-    const in_from = caseData.contrib_user;
-    const expected_contribution = caseData.user_contribution;
+  describe("get contribution collection", () => {
+    const contribution_get_cases = [
+      {
+        title: "should be able to get all accepted contributions",
+        user_key: "plain_user",
+        params: () => {
+          return {
+            status: "Approved",
+          };
+        },
+        ok: true,
+      },
+      {
+        title: "should be able to get all contributions made by self",
+        user_key: "contrib_user",
+        params: (context: typeof caseData) => {
+          return {
+            user_id: context.contrib_user.id,
+          };
+        },
+        ok: true,
+      },
+      {
+        title: "shouldn't be able to get all contributions made by other people",
+        user_key: "plain_user",
+        params: (context: typeof caseData) => {
+          return {
+            user_id: context.contrib_user.id,
+          };
+        },
+        ok: false,
+      },
+      {
+        title: "should be able to get all contributions in project as admin",
+        user_key: "project_admin_user",
+        params: (context: typeof caseData) => {
+          return {
+            project_id: context.project.id,
+          };
+        },
+        ok: true,
+      },
+      {
+        title: "should be able to get all contributions in project as a peer dev",
+        user_key: "dev_user",
+        params: (context: typeof caseData) => {
+          return {
+            project_id: context.project.id,
+          };
+        },
+        ok: true,
+      },
+      {
+        title: "shouldn't be able to get all contributions",
+        user_key: "plain_user",
+        params: () => {
+          return {};
+        },
+        ok: false,
+      },
+    ] as const;
 
-    const cookie = await getLoginCookie(in_from.name, in_from.password);
-    const read_req = await getContributions({}, cookie);
-    const result = await read_req.json();
+    for (const { title, user_key, ok, params } of contribution_get_cases) {
+      it(title, async () => {
+        const in_from = caseData[user_key];
 
-    expect(read_req.status).eq(200);
-    const found = result.find((x) => x.id === expected_contribution.id);
-    expect(found).to.not.eq(undefined);
-    expect(found).to.deep.include(expected_contribution);
+        const cookie = await getLoginCookie(in_from.name, in_from.password);
+        const read_req = await getContributions(params(caseData), cookie);
+        await read_req.json();
+
+        if (ok) {
+          expect(read_req.status).eq(200);
+        } else {
+          expect(read_req.status).oneOf([400, 401, 403]);
+        }
+      });
+    }
   });
 
-  for (const { msg, user, contrib, ok } of [
-    {
-      user: "contrib_user",
-      contrib: "user_contribution",
-      ok: true,
-      msg: "should be able to get pending contribution as author",
-    },
-    {
-      user: "project_admin_user",
-      contrib: "user_contribution",
-      ok: true,
-      msg: "should be able to get pending contribution as project admin",
-    },
-    {
-      user: "plain_user",
-      contrib: "user_contribution",
-      ok: false,
-      msg: "shouldn't be able to get pending contribution as other people",
-    },
-    {
-      user: "plain_user",
-      contrib: "accepted_contribution",
-      ok: true,
-      msg: "should be able to get accepted contribution as other people",
-    },
-  ] as const) {
-    it(msg, async () => {
-      const in_from = caseData[user];
-      const in_contrib = caseData[contrib];
+  describe("get contribution detail", () => {
+    const contribution_detail_cases = [
+      {
+        user: "contrib_user",
+        contrib: "user_contribution",
+        ok: true,
+        msg: "should be able to get pending contribution as author",
+      },
+      {
+        user: "project_admin_user",
+        contrib: "user_contribution",
+        ok: true,
+        msg: "should be able to get pending contribution as project admin",
+      },
+      {
+        user: "dev_user",
+        contrib: "user_contribution",
+        ok: true,
+        msg: "should be able to get pending contribution as project dev",
+      },
+      {
+        user: "plain_user",
+        contrib: "user_contribution",
+        ok: false,
+        msg: "shouldn't be able to get pending contribution as other people",
+      },
+      {
+        user: "plain_user",
+        contrib: "accepted_contribution",
+        ok: true,
+        msg: "should be able to get accepted contribution as other people",
+      },
+    ] as const;
 
-      const cookie = await getLoginCookie(in_from.name, in_from.password);
-      const read_req = await getContributionDetail({ contribution_id: in_contrib.id }, cookie);
-      const result = await read_req.json();
+    for (const { msg, user, contrib, ok } of contribution_detail_cases) {
+      it(msg, async () => {
+        const in_from = caseData[user];
+        const in_contrib = caseData[contrib];
 
-      if (ok) {
-        expect(read_req.status).eq(200);
-        expect(result).to.deep.include(in_contrib);
-      } else {
-        expect(read_req.status).oneOf([401]);
-      }
-    });
-  }
+        const cookie = await getLoginCookie(in_from.name, in_from.password);
+        const read_req = await getContributionDetail({ contribution_id: in_contrib.id }, cookie);
+        const result = await read_req.json();
 
-  const add_cases = [
-    {
-      sender_key: "dev_user",
-      user_ids: ["dev_user", "plain_user"],
-      msg: "should be able to add self contributions as a dev",
-      ok: true,
-    },
-    {
-      sender_key: "plain_user",
-      user_ids: ["dev_user", "plain_user"],
-      msg: "shouldn't be able to add contributions as a non member",
-      ok: false,
-    },
-    {
-      sender_key: "dev_user",
-      user_ids: ["project_admin_user"],
-      msg: "shouldn't be able to add contributions for other people as a dev",
-      ok: false,
-    },
-    {
-      sender_key: "project_admin_user",
-      user_ids: ["dev_user"],
-      msg: "should be able to add contributions for other people as an admin",
-      ok: true,
-    },
-    {
-      sender_key: "project_admin_user",
-      user_ids: ["plain_user"],
-      msg: "should be able to add contributions for people not involved in the project",
-      ok: true,
-    },
-  ] as const;
+        if (ok) {
+          expect(read_req.status).eq(200);
+          expect(result).to.deep.include(in_contrib);
+        } else {
+          expect(read_req.status).oneOf([401]);
+        }
+      });
+    }
+  });
 
-  for (const { msg, sender_key, user_ids, ok } of add_cases) {
-    it(msg, async () => {
-      const in_from = caseData[sender_key];
+  describe("add contribution", () => {
+    const add_cases = [
+      {
+        sender_key: "dev_user",
+        user_ids: ["dev_user", "plain_user"],
+        msg: "should be able to add self contributions as a dev",
+        ok: true,
+      },
+      {
+        sender_key: "plain_user",
+        user_ids: ["dev_user", "plain_user"],
+        msg: "shouldn't be able to add contributions as a non member",
+        ok: false,
+      },
+      {
+        sender_key: "dev_user",
+        user_ids: ["project_admin_user"],
+        msg: "shouldn't be able to add contributions for other people as a dev",
+        ok: false,
+      },
+      {
+        sender_key: "project_admin_user",
+        user_ids: ["dev_user"],
+        msg: "should be able to add contributions for other people as an admin",
+        ok: true,
+      },
+      {
+        sender_key: "project_admin_user",
+        user_ids: ["plain_user"],
+        msg: "should be able to add contributions for people not involved in the project",
+        ok: true,
+      },
+    ] as const;
+
+    for (const { msg, sender_key, user_ids, ok } of add_cases) {
+      it(msg, async () => {
+        const in_from = caseData[sender_key];
+        const in_proj = caseData.project;
+        const in_contrib = {
+          description: "Halo",
+          name: "Nama contrib",
+          project_id: in_proj.id,
+          user_ids: user_ids.map((x) => caseData[x].id),
+        };
+
+        const cookie = await getLoginCookie(in_from.name, in_from.password);
+        const read_req = await postContributions(in_contrib, cookie);
+        const result = await read_req.json();
+
+        if (ok) {
+          expect(read_req.status).eq(201);
+          const { user_ids: expected_users, ...expected_output } = in_contrib;
+          expect(result).to.deep.include({
+            ...expected_output,
+            user_ids: expected_users.map((x) => ({
+              user_id: x,
+            })),
+          });
+        } else {
+          expect(read_req.status).oneOf([401]);
+        }
+      });
+    }
+  });
+
+  describe("edit contribution", () => {
+    it("should be able to update contributions", async () => {
+      const in_from = caseData.contrib_user;
       const in_proj = caseData.project;
-      const in_contrib = {
+      const in_contrib = caseData.user_contribution;
+      const in_contrib_update = {
         description: "Halo",
         name: "Nama contrib",
         project_id: in_proj.id,
-        user_ids: user_ids.map((x) => caseData[x].id),
-      };
-
-      const cookie = await getLoginCookie(in_from.name, in_from.password);
-      const read_req = await postContributions(in_contrib, cookie);
-      const result = await read_req.json();
-
-      if (ok) {
-        expect(read_req.status).eq(201);
-        const { user_ids: expected_users, ...expected_output } = in_contrib;
-        expect(result).to.deep.include({
-          ...expected_output,
-          user_ids: expected_users.map((x) => ({
-            user_id: x,
-          })),
-        });
-      } else {
-        expect(read_req.status).oneOf([401]);
-      }
-    });
-  }
-
-  it("should be able to update contributions", async () => {
-    const in_from = caseData.contrib_user;
-    const in_proj = caseData.project;
-    const in_contrib = caseData.user_contribution;
-    const in_contrib_update = {
-      description: "Halo",
-      name: "Nama contrib",
-      project_id: in_proj.id,
-      user_ids: [in_from.id, caseData.plain_user.id],
-      status: "Pending" as const,
-    };
-
-    const cookie = await getLoginCookie(in_from.name, in_from.password);
-    const read_req = await putContributions(in_contrib.id, in_contrib_update, cookie);
-    const result = await read_req.json();
-
-    expect(read_req.status).eq(200);
-    const { user_ids: expected_users, ...expected_output } = in_contrib_update;
-    expect(result).to.deep.include({
-      ...expected_output,
-      user_ids: expected_users.map((x) => ({
-        user_id: x,
-      })),
-    });
-  });
-
-  const status_cases = [
-    {
-      sender_key: "contrib_user",
-      msg: "shouldn't be able to self approve contribution",
-      status: "Approved",
-      contribution_key: "user_contribution",
-      ok: false,
-    },
-    {
-      sender_key: "project_admin_user",
-      msg: "should be able to approve people's contribution as admin",
-      status: "Approved",
-      contribution_key: "user_contribution",
-      ok: true,
-    },
-    {
-      sender_key: "project_admin_user",
-      msg: "shouldn't be able to self approve contribution even as admin",
-      status: "Approved",
-      contribution_key: "admin_contribution",
-      ok: false,
-    },
-    {
-      sender_key: "contrib_user",
-      msg: "should be able to return contribution to pending if it's already accepted as author",
-      status: "Pending",
-      contribution_key: "accepted_contribution",
-      ok: true,
-    },
-    {
-      sender_key: "project_admin_user",
-      msg: "shouldn't be able to approve contribution that has been accepted as admin",
-      status: "Rejected",
-      contribution_key: "accepted_contribution",
-      ok: false,
-    },
-    {
-      sender_key: "contrib_user",
-      msg: "shouldn't be able to return contribution to pending if it's rejected",
-      status: "Pending",
-      contribution_key: "rejected_contribution",
-      ok: false,
-    },
-    {
-      sender_key: "project_admin_user",
-      msg: "shouldn't be able to return contribution to pending as a non-author",
-      status: "Pending",
-      contribution_key: "accepted_contribution",
-      ok: false,
-    },
-  ] as const;
-
-  for (const { msg, sender_key, ok, status, contribution_key } of status_cases) {
-    it(msg, async () => {
-      const in_from = caseData[sender_key];
-      const in_contrib = caseData[contribution_key];
-      const in_contrib_update = {
-        status,
+        user_ids: [in_from.id, caseData.plain_user.id],
+        status: "Pending" as const,
       };
 
       const cookie = await getLoginCookie(in_from.name, in_from.password);
       const read_req = await putContributions(in_contrib.id, in_contrib_update, cookie);
       const result = await read_req.json();
 
-      if (ok) {
-        expect(read_req.status).eq(200);
-        expect(result).to.deep.include(in_contrib_update);
-      } else {
-        expect(read_req.status).oneOf([401]);
-      }
+      expect(read_req.status).eq(200);
+      const { user_ids: expected_users, ...expected_output } = in_contrib_update;
+      expect(result).to.deep.include({
+        ...expected_output,
+        user_ids: expected_users.map((x) => ({
+          user_id: x,
+        })),
+      });
     });
-  }
+
+    const status_cases = [
+      {
+        sender_key: "contrib_user",
+        msg: "shouldn't be able to self approve contribution",
+        status: "Approved",
+        contribution_key: "user_contribution",
+        ok: false,
+      },
+      {
+        sender_key: "project_admin_user",
+        msg: "should be able to approve people's contribution as admin",
+        status: "Approved",
+        contribution_key: "user_contribution",
+        ok: true,
+      },
+      {
+        sender_key: "project_admin_user",
+        msg: "shouldn't be able to self approve contribution even as admin",
+        status: "Approved",
+        contribution_key: "admin_contribution",
+        ok: false,
+      },
+      {
+        sender_key: "contrib_user",
+        msg: "should be able to return contribution to pending if it's already accepted as author",
+        status: "Pending",
+        contribution_key: "accepted_contribution",
+        ok: true,
+      },
+      {
+        sender_key: "project_admin_user",
+        msg: "shouldn't be able to approve contribution that has been accepted as admin",
+        status: "Rejected",
+        contribution_key: "accepted_contribution",
+        ok: false,
+      },
+      {
+        sender_key: "contrib_user",
+        msg: "shouldn't be able to return contribution to pending if it's rejected",
+        status: "Pending",
+        contribution_key: "rejected_contribution",
+        ok: false,
+      },
+      {
+        sender_key: "project_admin_user",
+        msg: "shouldn't be able to return contribution to pending as a non-author",
+        status: "Pending",
+        contribution_key: "accepted_contribution",
+        ok: false,
+      },
+    ] as const;
+
+    for (const { msg, sender_key, ok, status, contribution_key } of status_cases) {
+      it(msg, async () => {
+        const in_from = caseData[sender_key];
+        const in_contrib = caseData[contribution_key];
+        const in_contrib_update = {
+          status,
+        };
+
+        const cookie = await getLoginCookie(in_from.name, in_from.password);
+        const read_req = await putContributions(in_contrib.id, in_contrib_update, cookie);
+        const result = await read_req.json();
+
+        if (ok) {
+          expect(read_req.status).eq(200);
+          expect(result).to.deep.include(in_contrib_update);
+        } else {
+          expect(read_req.status).oneOf([401]);
+        }
+      });
+    }
+  });
 
   describe("notifications", () => {
     it("should send notification on status update", async () => {
@@ -309,12 +389,19 @@ describe("contribution api", () => {
   });
 });
 
-function getContributions(params: { user_id?: number; project_id?: number }, cookie: string) {
+function getContributions(
+  params: { user_id?: number; project_id?: number; status?: ContributionStatus },
+  cookie: string,
+) {
   return new APIContext("ContributionsGet").fetch(`/api/contributions`, {
     headers: {
       cookie: cookie,
     },
-    query: { user_id: params.user_id?.toString(), project_id: params.project_id?.toString() },
+    query: {
+      user_id: params.user_id?.toString(),
+      project_id: params.project_id?.toString(),
+      status: params.status,
+    },
     credentials: "include",
     method: "get",
   });

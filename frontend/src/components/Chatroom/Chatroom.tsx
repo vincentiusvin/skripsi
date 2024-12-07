@@ -106,7 +106,7 @@ function Chatroom(props: {
                 }}
                 user_id={user_id}
               />
-              <ChatroomContent chatroom_id={selectedRoom} />
+              <ChatroomContent key={selectedRoom} chatroom_id={selectedRoom} />
             </Stack>
           )}
         </Grid>

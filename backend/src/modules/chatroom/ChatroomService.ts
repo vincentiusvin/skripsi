@@ -1,5 +1,6 @@
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
+import { FriendService, friendServiceFactory } from "../friend/FriendService.js";
 import {
   NotificationService,
   envNotificationServiceFactory,
@@ -16,12 +17,14 @@ export function chatServiceFactory(transaction_manager: TransactionManager) {
   const preference_service = preferenceServiceFactory(transaction_manager);
   const notification_service = envNotificationServiceFactory(transaction_manager);
   const project_service = projectServiceFactory(transaction_manager);
+  const friend_service = friendServiceFactory(transaction_manager);
   const chat_service = new ChatService(
     chat_repo,
     project_service,
     user_service,
     notification_service,
     preference_service,
+    friend_service,
     transaction_manager,
   );
   return chat_service;
@@ -35,7 +38,9 @@ export class ChatService implements Transactable<ChatService> {
   private user_service: UserService;
   private notification_service: NotificationService;
   private preference_service: PreferenceService;
+  private friend_service: FriendService;
   private transaction_manager: TransactionManager;
+
   factory = chatServiceFactory;
 
   constructor(
@@ -44,6 +49,7 @@ export class ChatService implements Transactable<ChatService> {
     user_service: UserService,
     notification_service: NotificationService,
     preference_service: PreferenceService,
+    friend_service: FriendService,
     transaction_manager: TransactionManager,
   ) {
     this.repo = repo;
@@ -51,7 +57,12 @@ export class ChatService implements Transactable<ChatService> {
     this.user_service = user_service;
     this.notification_service = notification_service;
     this.preference_service = preference_service;
+    this.friend_service = friend_service;
     this.transaction_manager = transaction_manager;
+  }
+
+  async getChatrooms(opts: { user_id?: number; project_id?: number; keyword?: string }) {
+    return await this.repo.getChatrooms(opts);
   }
 
   private async getMembers(chatroom_id: number) {
@@ -90,8 +101,8 @@ export class ChatService implements Transactable<ChatService> {
     return is_admin;
   }
 
-  async getMessages(chatroom_id: number) {
-    return await this.repo.getMessages(chatroom_id);
+  async getMessages(opts: { chatroom_id: number; limit?: number; before_message_id?: number }) {
+    return await this.repo.getMessages(opts);
   }
 
   private async sendMessageNotification(message_id: number) {
@@ -179,25 +190,6 @@ export class ChatService implements Transactable<ChatService> {
     return await this.repo.getChatroomByID(chatroom_id);
   }
 
-  async getProjectChatrooms(opts: { project_id: number; keyword?: string }) {
-    return await this.repo.getChatrooms(opts);
-  }
-
-  async addProjectChatroom(project_id: number, chatroom_name: string, sender_id: number) {
-    return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
-      const member_role = await serv.project_service.getMemberRole(project_id, sender_id);
-      if (member_role !== "Admin" && member_role !== "Dev") {
-        throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
-      }
-
-      return await serv.repo.addProjectChatroom(project_id, chatroom_name);
-    });
-  }
-
-  async getUserChatrooms(opts: { user_id: number; keyword?: string }) {
-    return await this.repo.getChatrooms(opts);
-  }
-
   async getFile(file_id: number, sender_id: number) {
     return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
       const chatroom_id = await serv.repo.findChatroomByFileID(file_id);
@@ -218,12 +210,14 @@ export class ChatService implements Transactable<ChatService> {
     });
   }
 
-  async addUserChatroom(user_id: number, chatroom_name: string, sender_id: number) {
-    if (sender_id != user_id) {
-      throw new AuthError("Anda tidak memiliki akses untuk menambahkan chatroom orang lain!");
-    }
-
-    return await this.repo.addUserChatroom(user_id, chatroom_name);
+  async deleteChatroom(chatroom_id: number, sender_id: number) {
+    return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
+      const val = await serv.isAllowed(chatroom_id, sender_id);
+      if (!val) {
+        throw new AuthError("Anda tidak memiliki akses untuk menghapus chat ini!");
+      }
+      await serv.repo.deleteChatroom(chatroom_id);
+    });
   }
 
   async updateChatroom(
@@ -235,14 +229,13 @@ export class ChatService implements Transactable<ChatService> {
       const { user_ids } = opts;
       const val = await serv.isAllowed(chatroom_id, sender_id);
       if (!val) {
-        throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
+        throw new AuthError("Anda tidak memiliki akses untuk mengubah chat ini!");
       }
 
       const chatroom = await serv.getChatroomByID(chatroom_id);
       if (chatroom == undefined) {
         throw new NotFoundError("Gagal menemukan ruangan tersebut!");
       }
-
       if (user_ids != undefined) {
         if (chatroom.project_id != undefined) {
           throw new ClientError(
@@ -255,16 +248,7 @@ export class ChatService implements Transactable<ChatService> {
           if (old_members.includes(user_id)) {
             continue;
           }
-          const pref = await serv.preference_service.getUserPreference(user_id);
-          if (pref.friend_invite === "off") {
-            const user_data = await serv.user_service.getUserDetail(user_id);
-            if (user_data == undefined) {
-              throw new Error("Gagal menemukan pengguna tersebut!");
-            }
-            throw new ClientError(
-              `Pengguna "${user_data.user_name}" tidak menerima pesan dari orang asing!`,
-            );
-          }
+          await this.validateChatroomMember(user_id, sender_id);
         }
       }
 
@@ -272,13 +256,56 @@ export class ChatService implements Transactable<ChatService> {
     });
   }
 
-  async deleteChatroom(chatroom_id: number, sender_id: number) {
+  async addChatroom(
+    opts: { project_id?: number; user_ids?: number[]; chatroom_name: string },
+    sender_id: number,
+  ) {
+    const { project_id, user_ids, chatroom_name } = opts;
     return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
-      const val = await serv.isAllowed(chatroom_id, sender_id);
-      if (!val) {
-        throw new AuthError("Anda tidak memiliki akses untuk mengirim ke chat ini!");
+      if (project_id != undefined && user_ids != undefined) {
+        throw new ClientError(
+          "Anda tidak dapat mengkonfigurasi anggota untuk ruang diskusi proyek!",
+        );
       }
-      await serv.repo.deleteChatroom(chatroom_id);
+
+      if (project_id !== undefined) {
+        const member_role = await serv.project_service.getMemberRole(project_id, sender_id);
+        if (member_role !== "Admin" && member_role !== "Dev") {
+          throw new AuthError("Anda tidak memiliki akses untuk mengubah proyek ini!");
+        }
+        return await serv.repo.addChatroom({ project_id, chatroom_name });
+      }
+
+      if (user_ids !== undefined) {
+        for (const user_id of user_ids) {
+          await this.validateChatroomMember(user_id, sender_id);
+        }
+        return await serv.repo.addChatroom({ chatroom_name, user_ids });
+      }
     });
+  }
+
+  private async validateChatroomMember(user_id: number, sender_id: number) {
+    const our_data = await this.user_service.getUserDetail(sender_id);
+    if (our_data?.user_is_admin) {
+      return;
+    }
+
+    const user_data = await this.user_service.getUserDetail(user_id);
+    if (user_data == undefined) {
+      throw new Error("Gagal menemukan pengguna tersebut!");
+    }
+
+    const pref = await this.preference_service.getUserPreference(user_id);
+    if (pref.friend_invite === "on") {
+      return;
+    }
+
+    const friend_status = await this.friend_service.getFriendStatus(sender_id, user_id);
+    if (friend_status !== "Accepted") {
+      throw new ClientError(
+        `Pengguna "${user_data.user_name}" tidak menerima pesan dari orang asing!`,
+      );
+    }
   }
 }

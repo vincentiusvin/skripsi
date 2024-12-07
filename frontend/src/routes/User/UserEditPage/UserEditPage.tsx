@@ -1,12 +1,12 @@
 import { Save } from "@mui/icons-material";
-import { Button, Paper, Skeleton, Typography } from "@mui/material";
+import { Button, Paper, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useLocation, useParams } from "wouter";
-import { APIError } from "../../../helpers/fetch.ts";
 import { parseURL } from "../../../helpers/linker.tsx";
 import { handleOptionalStringUpdate } from "../../../helpers/misc.ts";
-import { useUsersDetailGet, useUsersDetailUpdate } from "../../../queries/user_hooks.ts";
+import { useUsersDetailUpdate } from "../../../queries/user_hooks.ts";
+import AuthorizeUser from "../AuthorizeUser.tsx";
 import UserEditAboutMe from "./UserEditAboutMe.tsx";
 import UserEditBiodata from "./UserEditBiodata.tsx";
 import UserEditImage from "./UserEditImage.tsx";
@@ -55,7 +55,6 @@ function UserEdit(props: { user_id: number }) {
 
     editUser({
       user_name: userUpdate.user_name,
-      user_email: userUpdate.user_email,
       user_education_level: handleOptionalStringUpdate(userUpdate.user_education_level),
       user_school: handleOptionalStringUpdate(userUpdate.user_school),
       user_website: websiteCleaned,
@@ -136,26 +135,13 @@ function UserEdit(props: { user_id: number }) {
 
 function UserAccountPageEdit() {
   const { id } = useParams();
-  const [, setLocation] = useLocation();
-
   const user_id = Number(id);
 
-  const { data } = useUsersDetailGet({
-    user_id,
-    retry: (failureCount, error) => {
-      if ((error instanceof APIError && error.status == 404) || failureCount > 3) {
-        setLocation("/");
-        return false;
-      }
-      return true;
-    },
-  });
-
-  if (!data) {
-    return <Skeleton />;
-  }
-
-  return <UserEdit user_id={user_id} />;
+  return (
+    <AuthorizeUser self={true}>
+      <UserEdit user_id={user_id} />
+    </AuthorizeUser>
+  );
 }
 
 export default UserAccountPageEdit;

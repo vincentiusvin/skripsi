@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { API } from "../../../backend/src/routes";
 import type { MessageData } from "../../../backend/src/sockets";
@@ -37,12 +37,35 @@ export function useChatroomsDetailGet(opts: {
   });
 }
 
+type ChatroomMessages = API["ChatroomsDetailMessagesGet"]["ResBody"];
+type ChatroomMessagesPages = {
+  pages: ChatroomMessages[];
+  pageParams: (undefined | string)[];
+};
+
 export function useChatroomsDetailMessagesGet(opts: { chatroom_id: number }) {
   const { chatroom_id } = opts;
-  return useQuery({
+  return useInfiniteQuery<ChatroomMessages>({
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => {
+      const last_message = lastPage[lastPage.length - 1];
+      if (last_message == undefined) {
+        return undefined;
+      }
+      return last_message.id.toString();
+    },
     queryKey: messageKeys.list(chatroom_id),
-    queryFn: () =>
-      new APIContext("ChatroomsDetailMessagesGet").fetch(`/api/chatrooms/${chatroom_id}/messages`),
+    queryFn: ({ pageParam }) => {
+      return new APIContext("ChatroomsDetailMessagesGet").fetch(
+        `/api/chatrooms/${chatroom_id}/messages`,
+        {
+          query: {
+            before_message_id: typeof pageParam === "string" ? pageParam : undefined,
+            limit: "10",
+          },
+        },
+      );
+    },
   });
 }
 
@@ -106,69 +129,47 @@ export function useChatroomsDetailDelete(opts: { chatroom_id: number; onSuccess?
   });
 }
 
-export function useUsersDetailChatroomsPost(opts: { user_id?: number; onSuccess?: () => void }) {
-  const { user_id, onSuccess } = opts;
-  return useMutation({
-    mutationFn: new APIContext("UsersDetailChatroomsPost").bodyFetch(
-      `/api/users/${user_id}/chatrooms`,
-      {
-        method: "POST",
-      },
-    ),
-    onSuccess: onSuccess,
-  });
-}
-
-export function useProjectsDetailChatroomsPost(opts: {
-  project_id: number;
-  onSuccess?: () => void;
+export function useChatroomsPost(opts: {
+  onSuccess?: (data: {
+    chatroom_id: number;
+    project_id: number | null;
+    chatroom_name: string;
+    chatroom_created_at: Date;
+    chatroom_users: {
+      user_id: number;
+    }[];
+  }) => void;
 }) {
-  const { project_id, onSuccess } = opts;
+  const { onSuccess } = opts;
   return useMutation({
-    mutationFn: new APIContext("ProjectsDetailChatroomsPost").bodyFetch(
-      `/api/projects/${project_id}/chatrooms`,
-      {
-        method: "POST",
-      },
-    ),
+    mutationFn: new APIContext("ChatroomsPost").bodyFetch(`/api/chatrooms`, {
+      method: "POST",
+    }),
     onSuccess: onSuccess,
   });
 }
 
-export function useUsersDetailChatroomsGet(opts: {
-  user_id: number | undefined;
+export function useChatroomsGet(opts: {
+  user_id?: number;
+  project_id?: number;
   keyword?: string;
   retry?: (failureCount: number, error: Error) => boolean;
 }) {
-  const { user_id, keyword, retry } = opts;
+  const { user_id, project_id, keyword, retry } = opts;
 
   const cleanedKeyword = handleOptionalStringCreation(keyword);
 
   return useQuery({
-    queryKey: chatKeys.list({ user_id, keyword: cleanedKeyword }),
+    queryKey: chatKeys.list({ user_id, keyword: cleanedKeyword, project_id }),
     queryFn: () =>
-      new APIContext("UsersDetailChatroomsGet").fetch(`/api/users/${user_id}/chatrooms`, {
+      new APIContext("ChatroomsGet").fetch(`/api/chatrooms`, {
         query: {
+          project_id: project_id?.toString(),
+          user_id: user_id?.toString(),
           keyword: cleanedKeyword,
         },
       }),
     retry: retry,
-  });
-}
-
-export function useProjectsDetailChatroomsGet(opts: { project_id: number; keyword?: string }) {
-  const { project_id, keyword } = opts;
-
-  const cleanedKeyword = handleOptionalStringCreation(keyword);
-
-  return useQuery({
-    queryKey: chatKeys.list({ project_id, keyword: cleanedKeyword }),
-    queryFn: () =>
-      new APIContext("ProjectsDetailChatroomsGet").fetch(`/api/projects/${project_id}/chatrooms`, {
-        query: {
-          keyword: cleanedKeyword,
-        },
-      }),
   });
 }
 
@@ -203,25 +204,33 @@ export function useChatSocket(opts: {
     });
 
     socket.on("msg", (chatroom_id: number, data: MessageData) => {
-      queryClient.setQueryData(
-        messageKeys.list(chatroom_id),
-        (old: API["ChatroomsDetailMessagesGet"]["ResBody"]) => (old ? [...old, data] : [data]),
-      );
+      queryClient.setQueryData(messageKeys.list(chatroom_id), (old: ChatroomMessagesPages) => {
+        const [firstPage, ...rest] = old.pages;
+        const firstPageReplacement = firstPage == undefined ? [data] : [data, ...firstPage];
+        return {
+          pages: [firstPageReplacement, ...rest],
+          pageParams: old.pageParams,
+        };
+      });
     });
 
     socket.on("msgUpd", (chatroom_id: number, data: MessageData) => {
-      queryClient.setQueryData(
-        messageKeys.list(chatroom_id),
-        (old: API["ChatroomsDetailMessagesGet"]["ResBody"]) => {
-          const cloned = structuredClone(old);
-          const found = cloned.find((x) => x.id === data.id);
-          if (!found) {
-            return old;
+      queryClient.setQueryData(messageKeys.list(chatroom_id), (old: ChatroomMessagesPages) => {
+        const cloned = structuredClone(old.pages);
+        for (const page of cloned) {
+          for (const msg of page) {
+            if (msg.id !== data.id) {
+              continue;
+            }
+            Object.assign(msg, data);
           }
-          Object.assign(found, data);
-          return cloned;
-        },
-      );
+        }
+
+        return {
+          pages: cloned,
+          pageParams: old.pageParams,
+        };
+      });
     });
 
     if (onDisconnect) {

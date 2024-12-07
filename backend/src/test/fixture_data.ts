@@ -95,8 +95,18 @@ export async function baseCase(db: Kysely<DB>) {
         password: hashed,
         email: "emailchat@example.com",
       },
+      {
+        name: "article user",
+        password: hashed,
+        email: "articleuser@example.com",
+      },
+      {
+        name: "article liker",
+        password: hashed,
+        email: "articleliker@example.com",
+      },
     ])
-    .returning(["id", "name"])
+    .returning(["id", "name", "email"])
     .execute();
 
   const admin_user_query = await db
@@ -121,6 +131,8 @@ export async function baseCase(db: Kysely<DB>) {
   const contrib_user = { ...user_ids[12], password: orig_password };
   const expired_banned_user = { ...user_ids[13], password: orig_password };
   const email_chat_user = { ...user_ids[14], password: orig_password };
+  const article_user = { ...user_ids[15], password: orig_password };
+  const article_liker = { ...user_ids[16], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -233,11 +245,15 @@ export async function baseCase(db: Kysely<DB>) {
 
   const message = await db
     .insertInto("ms_messages")
-    .values({
-      chatroom_id: chat.id,
-      message: "testing message",
-      user_id: user_ids[2].id,
-    })
+    .values(
+      Array(10)
+        .fill(undefined)
+        .map(() => ({
+          chatroom_id: chat.id,
+          message: "testing message",
+          user_id: user_ids[2].id,
+        })),
+    )
     .returning([
       "ms_messages.id",
       "ms_messages.message",
@@ -453,9 +469,33 @@ export async function baseCase(db: Kysely<DB>) {
     .values({
       email: "email-otp1@example.com",
       otp: "123456",
-      verified: true,
+      verified_at: new Date(),
+      type: "Register",
     })
-    .returning(["token", "email", "otp", "verified"])
+    .returning(["token", "email", "otp", "verified_at"])
+    .executeTakeFirstOrThrow();
+
+  const used_otp = await db
+    .insertInto("ms_otps")
+    .values({
+      email: "email-otp2@example.com",
+      otp: "123456",
+      verified_at: new Date(),
+      type: "Register",
+      used_at: new Date(),
+    })
+    .returning(["token", "email", "otp", "verified_at"])
+    .executeTakeFirstOrThrow();
+
+  const password_otp = await db
+    .insertInto("ms_otps")
+    .values({
+      email: plain_user.email,
+      otp: "123456",
+      verified_at: new Date(),
+      type: "Password",
+    })
+    .returning(["token", "email", "otp", "verified_at"])
     .executeTakeFirstOrThrow();
 
   const unverified_otp = await db
@@ -463,13 +503,39 @@ export async function baseCase(db: Kysely<DB>) {
     .values({
       email: "email-otp2@example.com",
       otp: "89765",
+      type: "Register",
     })
-    .returning(["token", "email", "otp", "verified"])
+    .returning(["token", "email", "otp", "verified_at"])
     .executeTakeFirstOrThrow();
 
+  const article = await db
+    .insertInto("ms_articles")
+    .values({
+      name: "Testing article",
+      description: "Very informative article",
+      content: "abcdefgh",
+      user_id: article_user.id,
+    })
+    .returning(["id", "name", "description", "content", "image"])
+    .executeTakeFirstOrThrow();
+
+  await db
+    .insertInto("ms_articles_likes")
+    .values({
+      user_id: article_liker.id,
+      article_id: article.id,
+    })
+    .returning(["article_id", "user_id"])
+    .execute();
+
   return {
+    article,
+    article_liker,
+    article_user,
     verified_otp,
     unverified_otp,
+    password_otp,
+    used_otp,
     project_chat,
     org,
     preferences,
