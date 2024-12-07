@@ -63,7 +63,6 @@ function ArticlesListPage() {
                 height: "100%",
               }}
               variant="square"
-              // src={charityImg}
             ></Avatar>
           </Grid>
         </Grid>
@@ -98,13 +97,13 @@ function ArticlesListPage() {
       <Grid container spacing={2} mt={2}>
         {articles?.map((article) => (
           <Grid
-            key={article.article_id}
+            key={article.id}
             size={{
               xs: 12,
             }}
           >
-            <StyledLink to={`/articles/${article.article_id}`}>
-              <ArticleCard article_id={article.article_id} />
+            <StyledLink to={`/articles/${article.id}`}>
+              <ArticleCard article_id={article.id} />
             </StyledLink>
           </Grid>
         ))}

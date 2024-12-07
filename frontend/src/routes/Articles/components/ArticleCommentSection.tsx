@@ -3,8 +3,8 @@ import { useState } from "react";
 import RichEditor from "../../../components/RichEditor";
 import RichViewer from "../../../components/RichViewer";
 import {
-  useArticlesDetailCommentGet,
   useArticlesDetailCommentPost,
+  useArticlesDetailCommentsGet,
 } from "../../../queries/article_hooks";
 import { useSessionGet } from "../../../queries/sesssion_hooks";
 
@@ -13,7 +13,7 @@ function ArticleCommentSection({ article_id }: { article_id: number }) {
     data: comments,
     isLoading: isCommentsLoading,
     isError: isCommentsError,
-  } = useArticlesDetailCommentGet({
+  } = useArticlesDetailCommentsGet({
     article_id,
   });
 

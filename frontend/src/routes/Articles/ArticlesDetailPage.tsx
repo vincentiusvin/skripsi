@@ -16,7 +16,7 @@ import RichViewer from "../../components/RichViewer";
 import {
   useArticlesDetailDelete,
   useArticlesDetailGet,
-  useArticlesGetLikesId,
+  useArticlesLikesGet,
   useArticlesUpvoteAdd,
   useArticlesUpvoteDelete,
 } from "../../queries/article_hooks";
@@ -35,7 +35,7 @@ function ArticlesDetail(props: { article_id: number }) {
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
 
-  const { data: likesData } = useArticlesGetLikesId({ article_id });
+  const { data: likesData } = useArticlesLikesGet({ article_id });
 
   const upvoteAddMutation = useArticlesUpvoteAdd({
     onSuccess: () => {

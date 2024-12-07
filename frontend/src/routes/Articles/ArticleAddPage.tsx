@@ -1,5 +1,6 @@
 import { AddAPhoto, Save } from "@mui/icons-material";
-import { Avatar, Button, Grid, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Avatar, Button, Paper, Stack, TextField, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -7,21 +8,17 @@ import ImageDropzone from "../../components/Dropzone";
 import RichEditor from "../../components/RichEditor.tsx";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { useArticlesPost } from "../../queries/article_hooks";
-import { useSessionGet } from "../../queries/sesssion_hooks.ts";
+import AuthorizeUser from "../User/AuthorizeUser.tsx";
 
-function ArticleAddPage() {
+function ArticleAdd() {
   const [articleName, setArticleName] = useState("");
   const [articleDescription, setArticleDescription] = useState("");
   const [articleContent, setArticleContent] = useState("");
   const [articleImage, setArticleImage] = useState<string | undefined>();
-  // Replace with actual user ID from auth context
 
   const [, setLocation] = useLocation();
-  const { data: session } = useSessionGet();
 
-  const user_id: number | undefined = session?.logged ? session.user_id : undefined;
-
-  const { mutate: articlesPost } = useArticlesPost({
+  const { mutate: _addArticle } = useArticlesPost({
     onSuccess: () => {
       enqueueSnackbar({
         message: <Typography>Artikel berhasil ditambahkan!</Typography>,
@@ -33,33 +30,27 @@ function ArticleAddPage() {
   });
 
   function addArticle() {
-    if (!user_id) {
-      enqueueSnackbar({
-        message: <Typography>Anda harus login terlebih dahulu.</Typography>,
-        autoHideDuration: 5000,
-        variant: "error",
-      });
-      setLocation("/landing"); // Redirect to login page
-      return;
-    }
-
-    articlesPost({
-      articles_name: articleName,
-      articles_description: articleDescription,
-      articles_content: articleContent,
-      articles_user_id: user_id,
-      articles_image: articleImage,
+    _addArticle({
+      name: articleName,
+      description: articleDescription,
+      content: articleContent,
+      image: articleImage,
     });
   }
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12}>
+      <Grid size={{ xs: 12 }}>
         <Typography variant="h4" fontWeight="bold" align="center">
           Tambah Artikel
         </Typography>
       </Grid>
-      <Grid item xs={12} md={4}>
+      <Grid
+        size={{
+          xs: 12,
+          md: 4,
+        }}
+      >
         <Paper sx={{ minHeight: 300 }}>
           <ImageDropzone
             sx={{ cursor: "pointer" }}
@@ -86,7 +77,12 @@ function ArticleAddPage() {
           </ImageDropzone>
         </Paper>
       </Grid>
-      <Grid item xs={12} md={8}>
+      <Grid
+        size={{
+          xs: 12,
+          md: 4,
+        }}
+      >
         <Stack spacing={4}>
           <TextField
             fullWidth
@@ -102,19 +98,27 @@ function ArticleAddPage() {
           />
         </Stack>
       </Grid>
-      <Grid item xs={12}>
+      <Grid size={{ xs: 12 }}>
         <RichEditor
           label="Isi Artikel"
           defaultValue={articleContent}
           onBlur={(content) => setArticleContent(content)}
         />
       </Grid>
-      <Grid item xs={12}>
+      <Grid size={{ xs: 12 }}>
         <Button variant="contained" fullWidth endIcon={<Save />} onClick={() => addArticle()}>
           Simpan
         </Button>
       </Grid>
     </Grid>
+  );
+}
+
+function ArticleAddPage() {
+  return (
+    <AuthorizeUser>
+      <ArticleAdd />
+    </AuthorizeUser>
   );
 }
 
