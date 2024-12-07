@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Skeleton, Stack, Typography } from "@mui/material";
+import { Button, Divider, Paper, Skeleton, Stack, Typography } from "@mui/material";
 import { useState } from "react";
 import RichEditor from "../../../components/RichEditor";
 import RichViewer from "../../../components/RichViewer";
@@ -8,12 +8,9 @@ import {
 } from "../../../queries/article_hooks";
 import { useSessionGet } from "../../../queries/sesssion_hooks";
 
-function ArticleCommentSection({ article_id }: { article_id: number }) {
-  const {
-    data: comments,
-    isLoading: isCommentsLoading,
-    isError: isCommentsError,
-  } = useArticlesDetailCommentsGet({
+function ArticleCommentSection(props: { article_id: number }) {
+  const { article_id } = props;
+  const { data: comments } = useArticlesDetailCommentsGet({
     article_id,
   });
 
@@ -23,7 +20,7 @@ function ArticleCommentSection({ article_id }: { article_id: number }) {
   const [newComment, setNewComment] = useState("");
   const [isPosting, setIsPosting] = useState(false);
 
-  const postCommentMutation = useArticlesDetailCommentPost({
+  const { mutate: addComment } = useArticlesDetailCommentPost({
     article_id,
     onSuccess: () => {
       setNewComment("");
@@ -32,28 +29,14 @@ function ArticleCommentSection({ article_id }: { article_id: number }) {
   });
 
   const handlePostComment = () => {
-    if (!user_id) {
-      alert("You must log in before posting a comment.");
-      return;
-    }
-    if (newComment.trim() === "") {
-      alert("Comment cannot be empty.");
-      return;
-    }
-    setIsPosting(true);
-    postCommentMutation.mutate(
-      {
-        comment: newComment,
-        user_id,
-      },
-      {
-        onSuccess: () => {
-          setNewComment(""); // Reset the RichEditor value
-          setIsPosting(false);
-        },
-      },
-    );
+    addComment({
+      comment: newComment,
+    });
   };
+
+  if (comments == undefined) {
+    return <Skeleton />;
+  }
 
   return (
     <Stack spacing={2}>
@@ -61,48 +44,31 @@ function ArticleCommentSection({ article_id }: { article_id: number }) {
         Comments
       </Typography>
       <Divider />
-      {/* Comments List */}
-      <Box sx={{ maxHeight: "300px", overflowY: "auto", padding: 1 }}>
-        {isCommentsLoading ? (
-          <Skeleton />
-        ) : isCommentsError || !comments ? (
-          <Typography>Error loading comments.</Typography>
-        ) : comments.length ? (
-          comments.map((comment, index) => (
-            <Box
-              key={index}
-              sx={{
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                padding: "12px",
-                backgroundColor: "#f9f9f9",
-              }}
-            >
-              <Typography fontSize="0.9rem" color="text.secondary">
-                {`User ${comment.user_id}`}
-              </Typography>
-              <RichViewer>{comment.comment}</RichViewer>
-            </Box>
-          ))
-        ) : (
-          <Typography>No comments yet. Be the first to comment!</Typography>
-        )}
-      </Box>
+      <Stack sx={{ maxHeight: "300px", overflowY: "auto" }} spacing={2}>
+        {comments.map((comment, index) => (
+          <Paper
+            key={index}
+            sx={{
+              padding: 2,
+            }}
+          >
+            <Typography fontSize="0.9rem" color="text.secondary">
+              {`User ${comment.user_id}`}
+            </Typography>
+            <RichViewer>{comment.comment}</RichViewer>
+          </Paper>
+        ))}
+      </Stack>
       <Divider />
-      {/* Comment Form */}
       {user_id ? (
         <Stack spacing={2}>
-          <RichEditor
-            label={"Write Your Comment Here"}
-            defaultValue={newComment}
-            onBlur={(x) => setNewComment(x)}
-          ></RichEditor>
+          <RichEditor label={"Komentar"} onBlur={(x) => setNewComment(x)}></RichEditor>
           <Button variant="contained" onClick={handlePostComment} disabled={isPosting}>
-            {isPosting ? "Posting..." : "Post Comment"}
+            Tambah Komentar
           </Button>
         </Stack>
       ) : (
-        <Typography color="error">You need to log in to post a comment.</Typography>
+        <Typography color="error">Anda harus login untuk menambahkan komentar.</Typography>
       )}
     </Stack>
   );

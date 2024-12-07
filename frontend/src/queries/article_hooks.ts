@@ -133,7 +133,7 @@ export function useArticleLike(opts: {
           body: {
             like: true,
           },
-          method: "POST",
+          method: "PUT",
         },
       ),
     onSuccess: () => {
@@ -186,7 +186,7 @@ export function useArticlesDetailCommentPost(opts: { article_id: number; onSucce
   const { article_id, onSuccess } = opts;
   return useMutation({
     mutationFn: new APIContext("ArticlesDetailCommentsPost").bodyFetch(
-      `/api/articles/${article_id}`,
+      `/api/articles/${article_id}/comments`,
       {
         method: "POST",
       },
