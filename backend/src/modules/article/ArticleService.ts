@@ -15,8 +15,12 @@ export class ArticleService {
     this.article_repo = article_repo;
   }
 
-  getArticles() {
-    return this.article_repo.getArticles();
+  getArticles(filter?: { keyword?: string; page?: number; limit?: number }) {
+    return this.article_repo.getArticles(filter);
+  }
+
+  async countArticles(filter?: { keyword?: string }) {
+    return await this.article_repo.countArticles(filter);
   }
 
   getArticlesById(article_id: number) {
@@ -40,16 +44,39 @@ export class ArticleService {
     articles_description: string;
     articles_content: string;
     articles_user_id: number;
+    articles_image?: string;
   }) {
     return await this.article_repo.addArticle(obj);
+  }
+
+  async addComment(obj: { article_id: number; user_id: number; comment: string }) {
+    return await this.article_repo.addComment(obj);
+  }
+
+  async addArticleLike(article_id: number, user_id: number) {
+    if (!article_id || !user_id) {
+      throw new Error("Invalid article ID or user ID");
+    }
+    
+
+    // Check if the user already liked the article
+    const existingLike = await this.article_repo.getArticleLikesById(article_id);
+    // if (existingLike) {
+    //   throw new Error("User has already liked this article");
+    // }
+
+    // Add a new like
+    const newLike = await this.article_repo.addArticleLike({ article_id, user_id });
+    return newLike;
   }
 
   async updateArticle(
     article_id: number,
     obj: {
-      articles_name: string;
-      articles_description: string;
-      articles_content: string;
+      articles_name?: string;
+      articles_description?: string;
+      articles_content?: string;
+      articles_image?: string | null;
     },
     editor_user: number,
   ) {

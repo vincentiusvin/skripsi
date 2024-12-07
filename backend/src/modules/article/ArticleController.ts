@@ -1,8 +1,18 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller";
-import { zodStringReadableAsNumber } from "../../helpers/validators.js";
+import {
+  defaultError,
+  zodPagination,
+  zodStringReadableAsNumber,
+} from "../../helpers/validators.js";
 import { ArticleService } from "./ArticleService";
+
+declare module "express-session" {
+  interface SessionData {
+    user_id?: number;
+  }
+}
 
 export class ArticleController extends Controller {
   private article_service: ArticleService;
@@ -22,6 +32,8 @@ export class ArticleController extends Controller {
       UpvoteAdd: this.UpvoteAdd,
       UpvoteDelete: this.UpvoteDelete,
       ArticleGetLikesId: this.ArticleGetLikesId,
+      ArticlesDetailCommentsPost: this.ArticlesDetailCommentsPost,
+      ArticlePostLike: this.ArticlePostLike,
     };
   }
 
@@ -29,18 +41,34 @@ export class ArticleController extends Controller {
     method: "get",
     path: "/api/articles",
     schema: {
-      ResBody: z
-        .object({
-          article_id: z.number(),
-          user_id: z.number(),
-          article_name: z.string(),
-          article_description: z.string(),
-        })
-        .array(),
+      ReqQuery: z.object({
+        keyword: z.string(defaultError("Nama artikel tidak valid!")).min(1).optional(),
+        ...zodPagination(),
+      }),
+      ResBody: z.object({
+        result: z.array(
+          z.object({
+            article_id: z.number(),
+            user_id: z.number(),
+            article_name: z.string(),
+            article_description: z.string(),
+            article_image: z.string().nullable().optional(),
+          }),
+        ),
+        total: z.number(),
+      }),
     },
     handler: async (req, res) => {
-      const result = await this.article_service.getArticles();
-      res.status(200).json(result);
+      const { limit, page, keyword } = req.query;
+      const opts = {
+        keyword: keyword != undefined && keyword.length > 0 ? keyword : undefined,
+        limit: limit != undefined ? Number(limit) : undefined,
+        page: limit != undefined ? Number(page) : undefined,
+      };
+      const result = await this.article_service.getArticles(opts);
+      const count = await this.article_service.countArticles(opts);
+
+      res.status(200).json({ result, total: Number(count.count) });
     },
   });
 
@@ -57,6 +85,7 @@ export class ArticleController extends Controller {
         articles_content: z.string(),
         id: z.number(),
         articles_description: z.string(),
+        articles_image: z.string().nullable(),
       }),
     },
     handler: async (req, res) => {
@@ -121,6 +150,72 @@ export class ArticleController extends Controller {
     },
   });
 
+  ArticlePostLike = new Route({
+    method: "post",
+    path: "/api/articles/addLikes",
+    schema: {
+      // Params: z.object({
+      //   id: zodStringReadableAsNumber("ID artikel tidak boleh kosong!"),
+      // }),
+      ReqBody: z.object({
+        article_id: z.number().min(1, "article_id tidak valid"),
+        user_id: z.number().min(1, "user_id invalid!"),
+      }),
+      ResBody: z.object({
+        article_id: z.number(),
+        user_id: z.number(),
+      }),
+    },
+    handler: async (req, res) => {
+      const article_id = Number(req.body.article_id);
+
+      // Assume `req.user` contains the logged-in user's information (e.g., from middleware)
+      const user_id = req.body.user_id;
+      // if (!user_id) {
+      //   res.status(401);
+      // }
+
+      // console.log(user_id);
+      // Add like through service
+      const result = await this.article_service.addArticleLike(article_id, user_id);
+      res.status(201).json(result);
+    },
+  });
+
+  ArticlesDetailCommentsPost = new Route({
+    method: "post",
+    path: "/api/articles/:id/addComents",
+    schema: {
+      Params: z.object({
+        id: zodStringReadableAsNumber("ID artikel tidak boleh kosong!"),
+      }),
+      ReqBody: z.object({
+        comment: z.string().min(1, "Comment tidak boleh kosong!"),
+        user_id: z.number().min(1, "user_id invalid!"),
+      }),
+      ResBody: z.object({
+        comment_id: z.number(),
+        article_id: z.number(),
+        user_id: z.number(),
+        comment: z.string(),
+      }),
+    },
+    handler: async (req, res) => {
+      const article_id = Number(req.params.id); // Extract article ID from params
+      const { comment, user_id } = req.body; // Extract comment and user ID from body
+
+      // Call service to add the comment
+      const result = await this.article_service.addComment({
+        article_id,
+        user_id,
+        comment,
+      });
+
+      // Respond with the inserted comment
+      res.status(201).json(result);
+    },
+  });
+
   ArticlesPost = new Route({
     method: "post",
     path: "/api/articles",
@@ -130,6 +225,7 @@ export class ArticleController extends Controller {
         articles_description: z.string().min(1, "Deskripsi artikel tidak boleh kosong"),
         articles_content: z.string().min(1, "Content artikel tidak boleh kosong!"),
         articles_user_id: z.number().min(1, "user_id invalid!"),
+        articles_image: z.string().min(1).optional(),
       }),
       ResBody: z.object({
         user_id: z.number(),
@@ -137,15 +233,24 @@ export class ArticleController extends Controller {
         articles_content: z.string(),
         id: z.number(),
         articles_description: z.string(),
+        articles_image: z.string().nullable(),
       }),
     },
+    // priors: [validateLogged],
     handler: async (req, res) => {
-      const { articles_name, articles_description, articles_content, articles_user_id } = req.body;
+      const {
+        articles_name,
+        articles_description,
+        articles_content,
+        articles_user_id,
+        articles_image,
+      } = req.body;
       const result = await this.article_service.addArticle({
         articles_name,
         articles_description,
         articles_content,
         articles_user_id,
+        articles_image,
       });
       const resultFinal = await this.article_service.getArticlesById(result.id);
       res.status(201).json(resultFinal);
@@ -160,16 +265,22 @@ export class ArticleController extends Controller {
         article_id: zodStringReadableAsNumber("ID Artikel tidak valid"),
       }),
       ReqBody: z.object({
-        articles_name: z.string({ message: "Nama invalid" }).min(1, "Nama tidak boleh kosong!"),
+        articles_name: z
+          .string({ message: "Nama invalid" })
+          .min(1, "Nama tidak boleh kosong!")
+          .optional(),
         articles_description: z
           .string({ message: "deskripsi invalid!" })
-          .min(1, "Deskripsi tidak boleh kosong!"),
+          .min(1, "Deskripsi tidak boleh kosong!")
+          .optional(),
         articles_content: z
           .string({ message: "Konten invalid!" })
-          .min(1, "Konten tidak boleh kosong!"),
+          .min(1, "Konten tidak boleh kosong!")
+          .optional(),
         articles_user_id: z
           .number({ message: "user id invalid!" })
           .min(1, "user id tidak boleh kosong"),
+        articles_image: z.string({ message: "Gambar tidak valid!" }).nullable().optional(),
       }),
       ResBody: z.object({
         user_id: z.number(),
@@ -177,6 +288,7 @@ export class ArticleController extends Controller {
         articles_content: z.string(),
         id: z.number(),
         articles_description: z.string(),
+        articles_image: z.string().nullable(),
       }),
     },
     handler: async (req, res) => {
@@ -186,6 +298,7 @@ export class ArticleController extends Controller {
 
       await this.article_service.updateArticle(article_id, obj, editor_user);
       const result = await this.article_service.getArticlesById(article_id);
+
       res.status(200).json(result);
     },
   });

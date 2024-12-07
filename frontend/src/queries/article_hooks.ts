@@ -10,15 +10,21 @@ const articleKeys = {
   detail: (article_id: number) => [...articleKeys.details(), article_id] as const,
 };
 
-export function useArticlesGet(opts?: { user_id?: number }) {
-  const { user_id } = opts || {};
-
+export function useArticlesGet(opts?: {
+  limit?: number;
+  page?: number;
+  user_id?: number;
+  keyword?: string;
+}) {
+  const { keyword, limit, page } = opts ?? {};
   return useQuery({
     queryKey: articleKeys.list(opts),
     queryFn: () =>
       new APIContext("ArticlesGet").fetch("/api/articles", {
         query: {
-          ...(user_id && { user_id: user_id.toString() }),
+          keyword: keyword != undefined && keyword.length !== 0 ? keyword : undefined,
+          limit: limit != undefined && !Number.isNaN(limit) ? limit.toString() : undefined,
+          page: page != undefined && !Number.isNaN(page) ? page.toString() : undefined,
         },
       }),
   });
@@ -30,10 +36,14 @@ export function useArticlesDetailGet(opts: {
 }) {
   const { article_id, retry } = opts;
 
+  if (!article_id || isNaN(article_id)) {
+    throw new Error("Invalid article_id provided to useArticlesDetailGet.");
+  }
+
   return useQuery({
-    queryKey: articleKeys.detail(article_id), // Cache key based on contribution ID
-    queryFn: () => new APIContext("ArticlesDetailGet").fetch(`/api/articles/${article_id}`), // Fetch contribution detail by ID
-    retry, // Retry logic
+    queryKey: articleKeys.detail(article_id), // Cache key based on article ID
+    queryFn: () => new APIContext("ArticlesDetailGet").fetch(`/api/articles/${article_id}`), // Correct URL
+    retry,
   });
 }
 
@@ -63,10 +73,28 @@ export function useArticlesDetailCommentGet(opts: {
     retry, // Retry logic
   });
 }
+export function useArticlesDetailCommentPost(opts: { article_id: number; onSuccess?: () => void }) {
+  const { article_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: new APIContext("ArticlesDetailCommentsPost").bodyFetch(
+      `/api/articles/${article_id}/addComents`,
+      {
+        method: "POST",
+      },
+    ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: articleKeys.detail(article_id) }); // Refetch comments
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
 export function useArticlesPost(opts: { onSuccess?: () => void }) {
   const { onSuccess } = opts;
   return useMutation({
-    mutationFn: new APIContext("ArticlesPost").bodyFetch("/api/contributions", {
+    mutationFn: new APIContext("ArticlesPost").bodyFetch("/api/articles", {
       method: "POST",
     }),
     onSuccess: () => {
@@ -77,6 +105,29 @@ export function useArticlesPost(opts: { onSuccess?: () => void }) {
     },
   });
 }
+
+// export function useArticleDetailCommentsPost(opts: { article_id: number; onSuccess?: () => void }) {
+//   const { article_id, onSuccess } = opts;
+
+//   return useMutation({
+//     // Define the mutation function
+//     mutationFn: new APIContext("ArticlesDetailCommentsPost").bodyFetch(
+//       `/api/articles/${article_id}/addComents`,
+//       {
+//         method: "POST",
+//         body: JSON.stringify(data),
+//       },
+//     ),
+//     // Handle the success case
+//     onSuccess: () => {
+//       // Invalidate the specific article's comments query to trigger a refetch
+//       queryClient.invalidateQueries({ queryKey: articleKeys.detail(article_id) });
+//       if (onSuccess) {
+//         onSuccess();
+//       }
+//     },
+//   });
+// }
 
 export function useArticlesDetailPut(opts: { article_id: number; onSuccess?: () => void }) {
   const { article_id, onSuccess } = opts;
@@ -123,7 +174,11 @@ export function useArticlesUpvoteAdd(opts: { onSuccess?: () => void }) {
   });
 }
 
-export function useArticlesUpvoteDelete(opts: { article_id: number, user_id: number; onSuccess?: () => void }) {
+export function useArticlesUpvoteDelete(opts: {
+  article_id: number;
+  user_id: number;
+  onSuccess?: () => void;
+}) {
   const { onSuccess, article_id } = opts;
   return useMutation({
     mutationFn: () =>

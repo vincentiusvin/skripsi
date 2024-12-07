@@ -103,7 +103,7 @@ export class UserController extends Controller {
   OTPsPost = new Route({
     method: "post",
     path: "/api/otps",
-    schema: {
+    schema: { 
       ReqBody: OTPCreationSchema.strict(),
       ResBody: z.object({
         token: z.string(),

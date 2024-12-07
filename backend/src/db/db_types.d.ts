@@ -41,6 +41,7 @@ export interface MsArticles {
   created_at: Generated<Timestamp>;
   description: string;
   id: Generated<number>;
+  image: string | null;
   name: string;
   user_id: number;
 }

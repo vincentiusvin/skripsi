@@ -14,7 +14,10 @@ import { queryClient } from "./helpers/queryclient";
 import { ThemeContext } from "./helpers/theme.ts";
 import HandleReportsPage from "./routes/Admin/HandleReportsPage.tsx";
 import ManageAccountsPage from "./routes/Admin/ManageAccountsPage.tsx";
-import ArticlesHomePage from "./routes/Articles/ArticlesListPage.tsx";
+import ArticleAddPage from "./routes/Articles/ArticleAddPage.tsx";
+import ArticlesEditPage from "./routes/Articles/ArticleEditPage.tsx";
+import ArticlesDetailPage from "./routes/Articles/ArticlesDetailPage.tsx";
+import ArticlesListPage from "./routes/Articles/ArticlesListPage.tsx";
 import ChatroomForwarderPage from "./routes/ChatroomForwarder.tsx";
 import ContributionDetailPage from "./routes/Contributions/ContributionDetailPage/ContributionDetailPage.tsx";
 import ContributionEditPage from "./routes/Contributions/ContributionEditPage.tsx";
@@ -155,7 +158,10 @@ function App() {
                   <Route path={"/admin/manage-accounts"} component={ManageAccountsPage} />
                   <Route path={"/settings"} component={SettingsPage} />
                   <Route path={"/guides/:guide"} component={GuidePage} />
-                  <Route path={"/articles"} component={ArticlesHomePage} />
+                  <Route path={"/articles"} component={ArticlesListPage} />
+                  <Route path={"/articles/add"} component={ArticleAddPage} />
+                  <Route path={"/articles/:article_id"} component={ArticlesDetailPage} />
+                  <Route path={"/articles/:article_id/edit"} component={ArticlesEditPage} />
                 </Switch>
               </Navigation>
             </LocalizationProvider>
