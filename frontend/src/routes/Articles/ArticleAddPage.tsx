@@ -8,7 +8,6 @@ import ImageDropzone from "../../components/Dropzone";
 import RichEditor from "../../components/RichEditor.tsx";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { useArticlesPost } from "../../queries/article_hooks";
-import AuthorizeUser from "../User/AuthorizeUser.tsx";
 
 function ArticleAdd() {
   const [articleName, setArticleName] = useState("");
@@ -115,11 +114,7 @@ function ArticleAdd() {
 }
 
 function ArticleAddPage() {
-  return (
-    <AuthorizeUser>
-      <ArticleAdd />
-    </AuthorizeUser>
-  );
+  return <ArticleAdd />;
 }
 
 export default ArticleAddPage;

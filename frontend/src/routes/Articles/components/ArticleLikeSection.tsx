@@ -58,7 +58,7 @@ function ArticleLikeSection(props: { article_id: number }) {
       ) : (
         <ArticleLikeDecorative />
       )}
-      <Typography variant="body2">{likes.likes} Likes</Typography>
+      <Typography variant="body2">Disukai oleh {likes.likes} orang</Typography>
     </Box>
   );
 }

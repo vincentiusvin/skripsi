@@ -52,9 +52,7 @@ function ArticleCommentSection(props: { article_id: number }) {
               padding: 2,
             }}
           >
-            <Typography fontSize="0.9rem" color="text.secondary">
-              {`User ${comment.user_id}`}
-            </Typography>
+            <Typography color="text.secondary">{`User ${comment.user_id}`}</Typography>
             <RichViewer>{comment.comment}</RichViewer>
           </Paper>
         ))}
