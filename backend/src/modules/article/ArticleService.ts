@@ -1,45 +1,43 @@
-import { AuthError } from "../../helpers/error";
+import { AuthError, NotFoundError } from "../../helpers/error";
 import { TransactionManager } from "../../helpers/transaction/transaction.js";
+import { envUserServiceFactory, UserService } from "../user/UserService.js";
 import { ArticleRepository } from "./ArticleRepository";
 
 export function articleServiceFactory(transaction_manager: TransactionManager) {
   const db = transaction_manager.getDB();
   const article_repo = new ArticleRepository(db);
-  const article_service = new ArticleService(article_repo);
+  const user_service = envUserServiceFactory(transaction_manager);
+  const article_service = new ArticleService(article_repo, user_service);
   return article_service;
 }
 
 export class ArticleService {
   private article_repo: ArticleRepository;
-  constructor(article_repo: ArticleRepository) {
+  private user_service: UserService;
+
+  constructor(article_repo: ArticleRepository, user_service: UserService) {
     this.article_repo = article_repo;
+    this.user_service = user_service;
   }
 
-  getArticles() {
-    return this.article_repo.getArticles();
+  async getArticles(filter?: { keyword?: string; page?: number; limit?: number }) {
+    return await this.article_repo.getArticles(filter);
   }
 
-  getArticlesById(article_id: number) {
-    return this.article_repo.getArticlesById(article_id);
+  async countArticles(filter?: { keyword?: string }) {
+    return await this.article_repo.countArticles(filter);
   }
 
-  getArticlesComment(article_id: number) {
-    return this.article_repo.getArticlesComment(article_id);
-  }
-
-  getArticlesByLikes(article_id: number) {
-    return this.article_repo.getArticleLikesById(article_id);
-  }
-
-  getArticleCount(article_id: number) {
-    return this.article_repo.getArticleLikesCount(article_id);
+  async getArticlesById(article_id: number) {
+    return await this.article_repo.getArticlesById(article_id);
   }
 
   async addArticle(obj: {
-    articles_name: string;
-    articles_description: string;
-    articles_content: string;
-    articles_user_id: number;
+    name: string;
+    description: string;
+    content: string;
+    user_id: number;
+    image?: string;
   }) {
     return await this.article_repo.addArticle(obj);
   }
@@ -47,28 +45,77 @@ export class ArticleService {
   async updateArticle(
     article_id: number,
     obj: {
-      articles_name: string;
-      articles_description: string;
-      articles_content: string;
+      name?: string;
+      description?: string;
+      content?: string;
+      image?: string | null;
     },
-    editor_user: number,
+    sender_id: number,
   ) {
-    const editor_id = await this.getArticlesById(article_id);
-    if (editor_id?.user_id !== editor_user) {
+    const article = await this.getArticlesById(article_id);
+
+    if (article == undefined) {
+      throw new NotFoundError("Gagal menemukan artikel tersebut!");
+    }
+
+    const is_admin = await this.user_service.isAdminUser(sender_id);
+
+    if (article.user_id !== sender_id && !is_admin) {
       throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
     }
+
     return await this.article_repo.updateArticle(article_id, obj);
   }
 
-  async deleteArticle(article_id: number) {
+  async deleteArticle(article_id: number, sender_id: number) {
+    const article = await this.getArticlesById(article_id);
+    if (article == undefined) {
+      throw new NotFoundError("Gagal menemukan artikel tersebut!");
+    }
+
+    const is_admin = await this.user_service.isAdminUser(sender_id);
+
+    if (article.user_id !== sender_id && !is_admin) {
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+    }
+
     return await this.article_repo.deleteArticle(article_id);
   }
 
-  async upvotesPost(obj: { article_id: number; user_id: number }) {
-    return await this.article_repo.upvotesPost(obj);
+  async likeArticle(article_id: number, user_id: number, sender_id: number) {
+    if (sender_id !== user_id) {
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+    }
+    await this.article_repo.likeArticle(article_id, user_id);
   }
 
-  async upvotesDelete(article_id: number, user_id: number) {
-    return await this.article_repo.upvotesDelete(article_id, user_id);
+  async unlikeArticle(article_id: number, user_id: number, sender_id: number) {
+    if (sender_id !== user_id) {
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+    }
+    return await this.article_repo.unlikeArticle(article_id, user_id);
+  }
+
+  async getArticleLikeStatus(article_id: number, user_id: number) {
+    const result = await this.article_repo.getArticleLikeStatus(article_id, user_id);
+    return {
+      like: result.length != 0,
+    };
+  }
+
+  async getArticleLikeCount(article_id: number) {
+    return await this.article_repo.getArticleLikeCount(article_id);
+  }
+
+  async getArticlesComment(article_id: number) {
+    return await this.article_repo.getArticlesComment(article_id);
+  }
+
+  async getCommentByID(comment_id: number) {
+    return await this.article_repo.getCommentByID(comment_id);
+  }
+
+  async addComment(obj: { article_id: number; user_id: number; comment: string }) {
+    return await this.article_repo.addComment(obj);
   }
 }
