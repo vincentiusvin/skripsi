@@ -6,6 +6,5 @@
   "files.insertFinalNewline": true,
   "editor.codeActionsOnSave": {
     "source.organizeImports": "always"
-  },
-  "iis.configDir": ""
+  }
 }
