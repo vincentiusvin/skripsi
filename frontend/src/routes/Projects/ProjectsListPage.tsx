@@ -66,7 +66,7 @@ function ProjectListPage() {
           }}
         >
           <Tab label={"Semua Proyek"} value={"all"} />
-          <Tab label={"Proyek Saya"} value={"personal"} />
+          {session?.logged ? <Tab label={"Proyek Saya"} value={"personal"} /> : null}
         </Tabs>
       </Grid>
       <Grid

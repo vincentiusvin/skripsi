@@ -246,7 +246,7 @@ export function AddRoomDialog(props: { user_id: number; project_id?: number }) {
     _addRoom({
       chatroom_name: addRoomName,
       project_id,
-      user_ids: [user_id],
+      user_ids: project_id === undefined ? [user_id] : undefined,
     });
   }
 
