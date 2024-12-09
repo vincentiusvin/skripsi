@@ -41,7 +41,7 @@ function ArticleCommentSection(props: { article_id: number }) {
   return (
     <Stack spacing={2}>
       <Typography variant="h5" fontWeight="medium">
-        Comments
+        Tambahkan Komentar
       </Typography>
       <Divider />
       <Stack sx={{ maxHeight: "300px", overflowY: "auto" }} spacing={2}>

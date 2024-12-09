@@ -1,4 +1,5 @@
-import { Avatar, Box, Button, Divider, Skeleton, Stack, Typography } from "@mui/material";
+import { Box, Button, Divider, Skeleton, Stack, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { Redirect, useLocation, useParams } from "wouter";
 import RichViewer from "../../components/RichViewer";
@@ -7,7 +8,6 @@ import { useArticlesDetailDelete, useArticlesDetailGet } from "../../queries/art
 import { useSessionGet } from "../../queries/sesssion_hooks";
 import ArticleCommentSection from "./components/ArticleCommentSection";
 import ArticleLikeSection from "./components/ArticleLikeSection.tsx";
-
 function ArticlesDetail(props: { article_id: number }) {
   const { article_id } = props;
 
@@ -36,46 +36,52 @@ function ArticlesDetail(props: { article_id: number }) {
   }
 
   return (
-    <Stack spacing={3}>
-      <Typography variant="h3" fontWeight="bold" textAlign="center">
-        {article.name}
-      </Typography>
-      <Divider />
-      <ArticleLikeSection article_id={article_id} />
-      <Divider />
-      <Box sx={{ textAlign: "center" }}>
-        <Avatar
-          sx={{
-            height: 128,
-            width: 128,
-            margin: "auto",
-          }}
-          src={article.image ?? ""}
-          variant="rounded"
-        />
-      </Box>
-
-      <Box sx={{ padding: 2 }}>
-        <RichViewer>{article.content ?? ""}</RichViewer>
-      </Box>
-
-      {user_id === article.user_id && (
-        <Box sx={{ textAlign: "center", marginTop: 2 }}>
-          <StyledLink to={`/articles/${article_id}/edit`}>
-            <Button variant="contained" color="primary">
-              Edit Artikel
-            </Button>
-          </StyledLink>
-          <Button variant="contained" color="error" onClick={() => deleteArticle()}>
-            Hapus Artikel
-          </Button>
+    <Box sx={{ paddingX: 4, maxWidth: "800px", margin: "0 auto" }}>
+      <Stack spacing={3}>
+        <Typography variant="h4" fontWeight="bold" textAlign="center">
+          {article.name}
+        </Typography>
+        <Divider />
+        <ArticleLikeSection article_id={article_id} />
+        <Divider />
+        <Box sx={{ marginY: 3 }}>
+          <Box
+            component="img"
+            src={article.image ?? ""}
+            alt="Article Banner"
+            sx={{
+              width: "100%",
+              height: "auto",
+              maxHeight: "400px",
+              objectFit: "cover",
+              borderRadius: 2,
+            }}
+          />
         </Box>
-      )}
-
-      <Box sx={{ padding: 2, marginTop: 4 }}>
-        <ArticleCommentSection article_id={article_id} />
-      </Box>
-    </Stack>
+        <Box sx={{ paddingY: 2 }}>
+          <RichViewer>{article.content ?? ""}</RichViewer>
+        </Box>
+        {user_id === article.user_id && (
+          <Grid container spacing={2} justifyContent="center">
+            <Grid>
+              <StyledLink to={`/articles/${article_id}/edit`}>
+                <Button variant="contained" color="primary">
+                  Edit Artikel
+                </Button>
+              </StyledLink>
+            </Grid>
+            <Grid>
+              <Button variant="contained" color="error" onClick={() => deleteArticle()}>
+                Hapus Artikel
+              </Button>
+            </Grid>
+          </Grid>
+        )}
+        <Box sx={{ paddingY: 2, marginTop: 4 }}>
+          <ArticleCommentSection article_id={article_id} />
+        </Box>
+      </Stack>
+    </Box>
   );
 }
 
