@@ -212,16 +212,13 @@ export class ProjectRepository {
       .executeTakeFirst();
   }
 
-  async addProject(
-    obj: {
-      project_name: string;
-      org_id: number;
-      project_desc: string;
-      category_id?: number[];
-      project_content?: string;
-    },
-    sender_id: number,
-  ) {
+  async addProject(obj: {
+    project_name: string;
+    org_id: number;
+    project_desc: string;
+    category_id?: number[];
+    project_content?: string;
+  }) {
     const { project_name, org_id, project_desc, category_id, project_content } = obj;
 
     const prj = await this.db
@@ -235,17 +232,7 @@ export class ProjectRepository {
       .returning("id")
       .executeTakeFirst();
 
-    if (prj && prj.id !== undefined) {
-      const projectId = prj.id;
-      await this.db
-        .insertInto("projects_users")
-        .values({
-          project_id: projectId,
-          role: "Admin",
-          user_id: sender_id,
-        })
-        .execute();
-    } else {
+    if (prj == undefined) {
       throw new Error("Failed to insert project");
     }
 

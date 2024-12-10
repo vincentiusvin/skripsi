@@ -134,17 +134,14 @@ export class OrgRepository {
       .executeTakeFirst();
   }
 
-  async addOrg(
-    obj: {
-      org_name: string;
-      org_description: string;
-      org_address: string;
-      org_phone: string;
-      org_image?: string;
-      org_categories?: number[];
-    },
-    firstUser: number,
-  ) {
+  async addOrg(obj: {
+    org_name: string;
+    org_description: string;
+    org_address: string;
+    org_phone: string;
+    org_image?: string;
+    org_categories?: number[];
+  }) {
     const { org_name, org_address, org_description, org_phone, org_categories, org_image } = obj;
     const org = await this.db
       .insertInto("ms_orgs")
@@ -174,14 +171,6 @@ export class OrgRepository {
         .execute();
     }
 
-    await this.db
-      .insertInto("orgs_users")
-      .values({
-        user_id: firstUser,
-        org_id: org.id,
-        role: "Admin",
-      })
-      .execute();
     return org;
   }
 
