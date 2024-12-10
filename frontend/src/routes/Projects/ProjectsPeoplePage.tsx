@@ -70,7 +70,7 @@ function InviteMembersDialog(props: { project_id: number }) {
                   key={x.user_id}
                   putOption={{
                     role: "Invited",
-                    text: "Invite",
+                    text: "Undang",
                   }}
                 />
               ))
@@ -105,10 +105,10 @@ function ProjectPeople(props: { project_id: number }) {
     {
       members: pending_members,
       deleteOption: {
-        text: "Reject",
+        text: "Tolak",
       },
       putOption: {
-        text: "Approve",
+        text: "Terima",
         role: "Dev",
       },
       name: "Anggota Pending",
@@ -116,7 +116,7 @@ function ProjectPeople(props: { project_id: number }) {
     {
       members: active_members,
       deleteOption: {
-        text: "Remove",
+        text: "Hapus",
       },
       putOption: undefined,
       name: "Anggota Aktif",
@@ -124,7 +124,7 @@ function ProjectPeople(props: { project_id: number }) {
     {
       members: invited_members,
       deleteOption: {
-        text: "Cancel",
+        text: "Batal",
       },
       putOption: undefined,
       name: "Anggota Diundang",
