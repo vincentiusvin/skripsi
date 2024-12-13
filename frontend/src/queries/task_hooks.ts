@@ -144,6 +144,7 @@ export function useTasksDetailDelete(opts: { onSuccess?: () => void; task_id: nu
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all() });
+      queryClient.cancelQueries({ queryKey: taskKeys.detail(task_id) });
       if (onSuccess) {
         onSuccess();
       }
@@ -190,8 +191,8 @@ export function useBucketsDetailPut(opts: { bucket_id: number; onSuccess?: () =>
   });
 }
 
-export function useBucketsDetailDelete(opts: { bucket_id: number }) {
-  const { bucket_id } = opts;
+export function useBucketsDetailDelete(opts: { bucket_id: number; onSuccess?: () => void }) {
+  const { bucket_id, onSuccess } = opts;
   return useMutation({
     mutationFn: () =>
       new APIContext("BucketsDetailDelete").fetch(`/api/buckets/${bucket_id}`, {
@@ -199,6 +200,10 @@ export function useBucketsDetailDelete(opts: { bucket_id: number }) {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bucketKeys.all() });
+      queryClient.cancelQueries({ queryKey: bucketKeys.detail(bucket_id) });
+      if (onSuccess) {
+        onSuccess();
+      }
     },
   });
 }

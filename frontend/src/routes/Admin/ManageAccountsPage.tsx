@@ -62,7 +62,7 @@ function AddSuspension(props: { user_id: number; user_name: string }) {
     onSuccess: () => {
       enqueueSnackbar({
         variant: "success",
-        message: "Pengguna berhasil ditangguhkan!",
+        message: <Typography>Pengguna berhasil ditangguhkan!</Typography>,
       }),
         setOpen(false);
     },
@@ -183,6 +183,12 @@ function DeleteSuspension(props: { suspension_id: number }) {
   const { suspension_id } = props;
   const { mutate: deleteBan } = useSuspensionsDetailDelete({
     suspension_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        variant: "success",
+        message: <Typography>Penangguhan berhasil dihapus!</Typography>,
+      });
+    },
   });
   return (
     <IconButton variant="outlined" onClick={() => deleteBan()}>
