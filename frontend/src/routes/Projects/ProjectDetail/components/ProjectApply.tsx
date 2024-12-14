@@ -167,7 +167,7 @@ function ProjectApply(props: { project_id: number; user_id: number }) {
           disabled={nav.type === "project" && nav.id === project_id && nav.open}
           variant="contained"
         >
-          Buka di Dashboard
+          Buka di Sidebar
         </Button>
       </Stack>
     );
