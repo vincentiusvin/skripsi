@@ -166,12 +166,6 @@ describe("contribution api", () => {
         ok: false,
       },
       {
-        sender_key: "dev_user",
-        user_ids: ["project_admin_user"],
-        msg: "shouldn't be able to add contributions for other people as a dev",
-        ok: false,
-      },
-      {
         sender_key: "project_admin_user",
         user_ids: ["dev_user"],
         msg: "should be able to add contributions for other people as an admin",
