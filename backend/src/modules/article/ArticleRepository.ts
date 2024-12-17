@@ -3,20 +3,20 @@ import { DB } from "../../db/db_types";
 import { paginateQuery } from "../../helpers/pagination";
 
 const defaultArticleFields = [
-  "ms_articles.id as id",
-  "ms_articles.name as name",
-  "ms_articles.description as description",
-  "ms_articles.user_id",
-  "ms_articles.image as image",
-  "ms_articles.content as content",
+  "articles.id as id",
+  "articles.name as name",
+  "articles.description as description",
+  "articles.user_id",
+  "articles.image as image",
+  "articles.content as content",
 ] as const;
 
 const defaultCommentFields = [
-  "ms_comments.id",
-  "ms_comments.user_id",
-  "ms_comments.article_id",
-  "ms_comments.comment",
-  "ms_comments.created_at",
+  "comments.id",
+  "comments.user_id",
+  "comments.article_id",
+  "comments.comment",
+  "comments.created_at",
 ] as const;
 
 export class ArticleRepository {
@@ -26,13 +26,13 @@ export class ArticleRepository {
   }
 
   applyFilterToQuery<O>(
-    query: SelectQueryBuilder<DB, "ms_articles", O>,
+    query: SelectQueryBuilder<DB, "articles", O>,
     filter?: { keyword?: string; user_id?: number },
   ) {
     const { keyword } = filter || {};
 
     if (keyword != undefined && keyword.length !== 0) {
-      query = query.where("ms_articles.name", "ilike", `%${keyword}%`);
+      query = query.where("articles.name", "ilike", `%${keyword}%`);
     }
 
     return query;
@@ -40,14 +40,14 @@ export class ArticleRepository {
 
   async countArticles(filter?: { keyword?: string }) {
     const { keyword } = filter || {};
-    let query = this.db.selectFrom("ms_articles").select((eb) => eb.fn.countAll().as("count"));
+    let query = this.db.selectFrom("articles").select((eb) => eb.fn.countAll().as("count"));
     query = this.applyFilterToQuery(query, { keyword });
     return await query.executeTakeFirstOrThrow();
   }
 
   getArticles(filter?: { keyword?: string; page?: number; limit?: number }) {
     const { keyword, page, limit } = filter ?? {};
-    let query = this.db.selectFrom("ms_articles").select(defaultArticleFields);
+    let query = this.db.selectFrom("articles").select(defaultArticleFields);
 
     query = this.applyFilterToQuery(query, { keyword });
 
@@ -61,9 +61,9 @@ export class ArticleRepository {
 
   async getArticlesById(articles_id: number) {
     return await this.db
-      .selectFrom("ms_articles")
+      .selectFrom("articles")
       .select(defaultArticleFields)
-      .where("ms_articles.id", "=", articles_id)
+      .where("articles.id", "=", articles_id)
       .executeTakeFirst();
   }
 
@@ -75,9 +75,9 @@ export class ArticleRepository {
     image?: string | null;
   }) {
     const article = await this.db
-      .insertInto("ms_articles")
+      .insertInto("articles")
       .values(obj)
-      .returning(["ms_articles.id"])
+      .returning(["articles.id"])
       .executeTakeFirst();
 
     if (!article) {
@@ -103,39 +103,36 @@ export class ArticleRepository {
     }
 
     await this.db
-      .updateTable("ms_articles")
+      .updateTable("articles")
       .set(obj)
-      .where("ms_articles.id", "=", article_id)
+      .where("articles.id", "=", article_id)
       .executeTakeFirst();
   }
 
   async deleteArticle(article_id: number) {
-    return await this.db
-      .deleteFrom("ms_articles")
-      .where("ms_articles.id", "=", article_id)
-      .execute();
+    return await this.db.deleteFrom("articles").where("articles.id", "=", article_id).execute();
   }
 
   async getArticleLikeStatus(article_id: number, user_id: number) {
     return await this.db
-      .selectFrom("ms_articles_likes")
+      .selectFrom("articles_likes")
       .select(["article_id", "user_id"])
-      .where("ms_articles_likes.article_id", "=", article_id)
-      .where("ms_articles_likes.user_id", "=", user_id)
+      .where("articles_likes.article_id", "=", article_id)
+      .where("articles_likes.user_id", "=", user_id)
       .execute();
   }
 
   async getArticleLikeCount(articles_id: number) {
     return await this.db
-      .selectFrom("ms_articles_likes")
+      .selectFrom("articles_likes")
       .select((eb) => eb.fn.countAll().as("likes"))
-      .where("ms_articles_likes.article_id", "=", articles_id)
+      .where("articles_likes.article_id", "=", articles_id)
       .executeTakeFirst();
   }
 
   async likeArticle(article_id: number, user_id: number) {
     return await this.db
-      .insertInto("ms_articles_likes")
+      .insertInto("articles_likes")
       .values({
         article_id,
         user_id,
@@ -145,7 +142,7 @@ export class ArticleRepository {
 
   async unlikeArticle(article_id: number, user_id: number) {
     return await this.db
-      .deleteFrom("ms_articles_likes")
+      .deleteFrom("articles_likes")
       .where("article_id", "=", article_id)
       .where("user_id", "=", user_id)
       .execute();
@@ -153,17 +150,17 @@ export class ArticleRepository {
 
   async getArticlesComment(articles_id: number) {
     return await this.db
-      .selectFrom("ms_comments")
+      .selectFrom("comments")
       .select(defaultCommentFields)
-      .where("ms_comments.article_id", "=", articles_id)
+      .where("comments.article_id", "=", articles_id)
       .execute();
   }
 
   async getCommentByID(comment_id: number) {
     return await this.db
-      .selectFrom("ms_comments")
+      .selectFrom("comments")
       .select(defaultCommentFields)
-      .where("ms_comments.id", "=", comment_id)
+      .where("comments.id", "=", comment_id)
       .executeTakeFirst();
   }
 
@@ -171,7 +168,7 @@ export class ArticleRepository {
     const { article_id, user_id, comment } = obj;
 
     const res = await this.db
-      .insertInto("ms_comments")
+      .insertInto("comments")
       .values({
         article_id,
         user_id,

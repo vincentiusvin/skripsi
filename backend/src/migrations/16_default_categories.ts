@@ -3,7 +3,7 @@ import { DB } from "../db/db_types.js";
 
 export async function up(db: Kysely<DB>): Promise<void> {
   await db
-    .insertInto("ms_category_orgs")
+    .insertInto("category_orgs")
     .values([
       {
         name: "Pendidikan",
@@ -24,7 +24,7 @@ export async function up(db: Kysely<DB>): Promise<void> {
     .execute();
 
   await db
-    .insertInto("ms_category_projects")
+    .insertInto("category_projects")
     .values([
       {
         name: "Website",
@@ -41,8 +41,8 @@ export async function up(db: Kysely<DB>): Promise<void> {
 
 export async function down(db: Kysely<DB>): Promise<void> {
   await db
-    .deleteFrom("ms_category_orgs")
-    .where("ms_category_orgs.name", "in", [
+    .deleteFrom("category_orgs")
+    .where("category_orgs.name", "in", [
       "Pendidikan",
       "Lingkungan",
       "Kesehatan",
@@ -52,7 +52,7 @@ export async function down(db: Kysely<DB>): Promise<void> {
     .execute();
 
   await db
-    .deleteFrom("ms_category_projects")
-    .where("ms_category_projects.name", "in", ["Website", "Aplikasi Mobile", "Aplikasi Desktop"])
+    .deleteFrom("category_projects")
+    .where("category_projects.name", "in", ["Website", "Aplikasi Mobile", "Aplikasi Desktop"])
     .execute();
 }

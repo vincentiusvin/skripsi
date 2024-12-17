@@ -18,6 +18,22 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface Articles {
+  content: string;
+  created_at: Generated<Timestamp>;
+  description: string;
+  id: Generated<number>;
+  image: string | null;
+  name: string;
+  user_id: number;
+}
+
+export interface ArticlesLikes {
+  article_id: number;
+  created_at: Generated<Timestamp>;
+  user_id: number;
+}
+
 export interface CategoriesOrgs {
   category_id: number;
   created_at: Generated<Timestamp>;
@@ -30,55 +46,39 @@ export interface CategoriesProjects {
   project_id: number;
 }
 
-export interface ChatroomsUsers {
-  chatroom_id: number;
-  created_at: Generated<Timestamp>;
-  user_id: number;
-}
-
-export interface MsArticles {
-  content: string;
-  created_at: Generated<Timestamp>;
-  description: string;
-  id: Generated<number>;
-  image: string | null;
-  name: string;
-  user_id: number;
-}
-
-export interface MsArticlesLikes {
-  article_id: number;
-  created_at: Generated<Timestamp>;
-  user_id: number;
-}
-
-export interface MsCategoryOrgs {
+export interface CategoryOrgs {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
   name: string;
 }
 
-export interface MsCategoryProjects {
+export interface CategoryProjects {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
   name: string;
 }
 
-export interface MsChatroomFiles {
+export interface ChatroomFiles {
   content: Buffer;
   filename: string;
   id: Generated<number>;
   message_id: number;
 }
 
-export interface MsChatrooms {
+export interface Chatrooms {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
   name: string;
   project_id: number | null;
 }
 
-export interface MsComments {
+export interface ChatroomsUsers {
+  chatroom_id: number;
+  created_at: Generated<Timestamp>;
+  user_id: number;
+}
+
+export interface Comments {
   article_id: number;
   comment: string;
   created_at: Generated<Timestamp>;
@@ -86,7 +86,7 @@ export interface MsComments {
   user_id: number;
 }
 
-export interface MsContributions {
+export interface Contributions {
   created_at: Generated<Timestamp>;
   description: string;
   id: Generated<number>;
@@ -95,19 +95,19 @@ export interface MsContributions {
   status: string;
 }
 
-export interface MsContributionsUsers {
+export interface ContributionsUsers {
   contributions_id: number;
   user_id: number;
 }
 
-export interface MsFriends {
+export interface Friends {
   created_at: Generated<Timestamp>;
   from_user_id: number;
   status: string;
   to_user_id: number;
 }
 
-export interface MsMessages {
+export interface Messages {
   chatroom_id: number;
   created_at: Generated<Timestamp>;
   id: Generated<number>;
@@ -116,7 +116,15 @@ export interface MsMessages {
   user_id: number;
 }
 
-export interface MsNotifications {
+export interface NotificationEmails {
+  created_at: Generated<Timestamp>;
+  id: Generated<number>;
+  status: string;
+  type: string;
+  user_id: number;
+}
+
+export interface Notifications {
   created_at: Generated<Timestamp>;
   description: string;
   id: Generated<number>;
@@ -127,7 +135,7 @@ export interface MsNotifications {
   user_id: number;
 }
 
-export interface MsOrgs {
+export interface Orgs {
   address: string;
   created_at: Generated<Timestamp>;
   description: string;
@@ -137,7 +145,14 @@ export interface MsOrgs {
   phone: string;
 }
 
-export interface MsOtps {
+export interface OrgsUsers {
+  created_at: Generated<Timestamp>;
+  org_id: number;
+  role: string;
+  user_id: number;
+}
+
+export interface Otps {
   created_at: Generated<Timestamp>;
   email: string;
   otp: string;
@@ -147,19 +162,25 @@ export interface MsOtps {
   verified_at: Timestamp | null;
 }
 
-export interface MsPreferences {
+export interface Preferences {
   id: Generated<number>;
   name: string;
 }
 
-export interface MsProjectEvents {
+export interface PreferencesUsers {
+  preference_id: number;
+  user_id: number;
+  value: string;
+}
+
+export interface ProjectEvents {
   created_at: Generated<Timestamp>;
   event: string;
   id: Generated<number>;
   project_id: number;
 }
 
-export interface MsProjects {
+export interface Projects {
   archived: Generated<boolean>;
   content: string | null;
   created_at: Generated<Timestamp>;
@@ -169,7 +190,14 @@ export interface MsProjects {
   org_id: number;
 }
 
-export interface MsReports {
+export interface ProjectsUsers {
+  created_at: Generated<Timestamp>;
+  project_id: number;
+  role: string;
+  user_id: number;
+}
+
+export interface Reports {
   chatroom_id: number | null;
   created_at: Generated<Timestamp>;
   description: string;
@@ -181,7 +209,19 @@ export interface MsReports {
   title: string;
 }
 
-export interface MsSuspensions {
+export interface Session {
+  expire: Timestamp;
+  sess: Json;
+  sid: string;
+}
+
+export interface SocialsUsers {
+  created_at: Generated<Timestamp>;
+  social: string;
+  user_id: number;
+}
+
+export interface Suspensions {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
   reason: string;
@@ -189,14 +229,14 @@ export interface MsSuspensions {
   user_id: number;
 }
 
-export interface MsTaskBuckets {
+export interface TaskBuckets {
   created_at: Generated<Timestamp>;
   id: Generated<number>;
   name: string;
   project_id: number;
 }
 
-export interface MsTasks {
+export interface Tasks {
   bucket_id: number;
   created_at: Generated<Timestamp>;
   description: string | null;
@@ -207,7 +247,13 @@ export interface MsTasks {
   start_at: Timestamp | null;
 }
 
-export interface MsUsers {
+export interface TasksUsers {
+  created_at: Generated<Timestamp>;
+  task_id: number;
+  user_id: number;
+}
+
+export interface Users {
   about_me: string | null;
   created_at: Generated<Timestamp>;
   education_level: string | null;
@@ -223,83 +269,37 @@ export interface MsUsers {
   workplace: string | null;
 }
 
-export interface NotificationEmails {
-  created_at: Generated<Timestamp>;
-  id: Generated<number>;
-  status: string;
-  type: string;
-  user_id: number;
-}
-
-export interface OrgsUsers {
-  created_at: Generated<Timestamp>;
-  org_id: number;
-  role: string;
-  user_id: number;
-}
-
-export interface PreferencesUsers {
-  preference_id: number;
-  user_id: number;
-  value: string;
-}
-
-export interface ProjectsUsers {
-  created_at: Generated<Timestamp>;
-  project_id: number;
-  role: string;
-  user_id: number;
-}
-
-export interface Session {
-  expire: Timestamp;
-  sess: Json;
-  sid: string;
-}
-
-export interface SocialsUsers {
-  created_at: Generated<Timestamp>;
-  social: string;
-  user_id: number;
-}
-
-export interface TasksUsers {
-  created_at: Generated<Timestamp>;
-  task_id: number;
-  user_id: number;
-}
-
 export interface DB {
+  articles: Articles;
+  articles_likes: ArticlesLikes;
   categories_orgs: CategoriesOrgs;
   categories_projects: CategoriesProjects;
+  category_orgs: CategoryOrgs;
+  category_projects: CategoryProjects;
+  chatroom_files: ChatroomFiles;
+  chatrooms: Chatrooms;
   chatrooms_users: ChatroomsUsers;
-  ms_articles: MsArticles;
-  ms_articles_likes: MsArticlesLikes;
-  ms_category_orgs: MsCategoryOrgs;
-  ms_category_projects: MsCategoryProjects;
-  ms_chatroom_files: MsChatroomFiles;
-  ms_chatrooms: MsChatrooms;
-  ms_comments: MsComments;
-  ms_contributions: MsContributions;
-  ms_contributions_users: MsContributionsUsers;
-  ms_friends: MsFriends;
-  ms_messages: MsMessages;
-  ms_notifications: MsNotifications;
-  ms_orgs: MsOrgs;
-  ms_otps: MsOtps;
-  ms_preferences: MsPreferences;
-  ms_project_events: MsProjectEvents;
-  ms_projects: MsProjects;
-  ms_reports: MsReports;
-  ms_suspensions: MsSuspensions;
-  ms_task_buckets: MsTaskBuckets;
-  ms_tasks: MsTasks;
-  ms_users: MsUsers;
+  comments: Comments;
+  contributions: Contributions;
+  contributions_users: ContributionsUsers;
+  friends: Friends;
+  messages: Messages;
   notification_emails: NotificationEmails;
+  notifications: Notifications;
+  orgs: Orgs;
   orgs_users: OrgsUsers;
+  otps: Otps;
+  preferences: Preferences;
   preferences_users: PreferencesUsers;
+  project_events: ProjectEvents;
+  projects: Projects;
   projects_users: ProjectsUsers;
+  reports: Reports;
   session: Session;
   socials_users: SocialsUsers;
+  suspensions: Suspensions;
+  task_buckets: TaskBuckets;
+  tasks: Tasks;
   tasks_users: TasksUsers;
+  users: Users;
 }

@@ -15,7 +15,7 @@ export async function up(db: Kysely<DB>): Promise<void> {
   ];
 
   await db
-    .insertInto("ms_preferences")
+    .insertInto("preferences")
     .values(
       prefs.map((x) => ({
         name: x,
@@ -25,5 +25,5 @@ export async function up(db: Kysely<DB>): Promise<void> {
 }
 
 export async function down(db: Kysely<DB>): Promise<void> {
-  await db.deleteFrom("ms_preferences").execute();
+  await db.deleteFrom("preferences").execute();
 }

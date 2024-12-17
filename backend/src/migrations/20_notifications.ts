@@ -2,10 +2,10 @@ import { Kysely, sql } from "kysely";
 
 export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
-    .createTable("ms_notifications")
+    .createTable("notifications")
     .addColumn("id", "serial", (build) => build.primaryKey())
     .addColumn("user_id", "integer", (build) =>
-      build.references("ms_users.id").notNull().onDelete("cascade").onUpdate("cascade"),
+      build.references("users.id").notNull().onDelete("cascade").onUpdate("cascade"),
     )
     .addColumn("title", "text", (col) => col.notNull())
     .addColumn("description", "text", (col) => col.notNull())
@@ -17,5 +17,5 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
-  await db.schema.dropTable("ms_notifications").execute();
+  await db.schema.dropTable("notifications").execute();
 }

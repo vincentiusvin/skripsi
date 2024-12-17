@@ -4,42 +4,42 @@ import { DB } from "../../db/db_types.js";
 import { paginateQuery } from "../../helpers/pagination.js";
 import { OTPTypes, parseOTPTypes } from "./UserMisc.js";
 
-const defaultUserFields = (eb: ExpressionBuilder<DB, "ms_users">) =>
+const defaultUserFields = (eb: ExpressionBuilder<DB, "users">) =>
   [
-    "ms_users.id as user_id",
-    "ms_users.name as user_name",
-    "ms_users.email as user_email",
-    "ms_users.education_level as user_education_level",
-    "ms_users.school as user_school",
-    "ms_users.about_me as user_about_me",
-    "ms_users.image as user_image",
-    "ms_users.is_admin as user_is_admin",
-    "ms_users.created_at as user_created_at",
-    "ms_users.website as user_website",
-    "ms_users.location as user_location",
-    "ms_users.workplace as user_workplace",
+    "users.id as user_id",
+    "users.name as user_name",
+    "users.email as user_email",
+    "users.education_level as user_education_level",
+    "users.school as user_school",
+    "users.about_me as user_about_me",
+    "users.image as user_image",
+    "users.is_admin as user_is_admin",
+    "users.created_at as user_created_at",
+    "users.website as user_website",
+    "users.location as user_location",
+    "users.workplace as user_workplace",
     userWithSocials(eb).as("user_socials"),
   ] as const;
 
-const reducedFields = ["ms_users.id as user_id", "ms_users.name as user_name"] as const;
+const reducedFields = ["users.id as user_id", "users.name as user_name"] as const;
 
-function userWithSocials(eb: ExpressionBuilder<DB, "ms_users">) {
+function userWithSocials(eb: ExpressionBuilder<DB, "users">) {
   return jsonArrayFrom(
     eb
       .selectFrom("socials_users")
       .select(["socials_users.social"])
-      .whereRef("socials_users.user_id", "=", "ms_users.id"),
+      .whereRef("socials_users.user_id", "=", "users.id"),
   );
 }
 
 const defaultOTPFields = [
-  "ms_otps.token",
-  "ms_otps.email",
-  "ms_otps.otp",
-  "ms_otps.used_at",
-  "ms_otps.created_at",
-  "ms_otps.verified_at",
-  "ms_otps.type",
+  "otps.token",
+  "otps.email",
+  "otps.otp",
+  "otps.used_at",
+  "otps.created_at",
+  "otps.verified_at",
+  "otps.type",
 ] as const;
 
 export class UserRepository {
@@ -50,17 +50,17 @@ export class UserRepository {
 
   async findUserByName(user_name: string) {
     return await this.db
-      .selectFrom("ms_users")
+      .selectFrom("users")
       .select(reducedFields)
-      .where("ms_users.name", "=", user_name)
+      .where("users.name", "=", user_name)
       .executeTakeFirst();
   }
 
   async getOTP(token: string) {
     const result = await this.db
-      .selectFrom("ms_otps")
+      .selectFrom("otps")
       .select(defaultOTPFields)
-      .where("ms_otps.token", "=", token)
+      .where("otps.token", "=", token)
       .executeTakeFirst();
 
     if (result == undefined) {
@@ -78,7 +78,7 @@ export class UserRepository {
   async addOTP(obj: { email: string; otp: string; type: OTPTypes }) {
     const { type, email, otp } = obj;
     return await this.db
-      .insertInto("ms_otps")
+      .insertInto("otps")
       .values({
         email,
         otp,
@@ -97,7 +97,7 @@ export class UserRepository {
   ) {
     const { used_at, verified_at } = obj;
     return await this.db
-      .updateTable("ms_otps")
+      .updateTable("otps")
       .set({
         verified_at,
         used_at,
@@ -108,14 +108,14 @@ export class UserRepository {
 
   async findUserByEmail(email: string) {
     return await this.db
-      .selectFrom("ms_users")
+      .selectFrom("users")
       .select(defaultUserFields)
-      .where("ms_users.email", "=", email)
+      .where("users.email", "=", email)
       .executeTakeFirst();
   }
 
   applyFilterToQuery<O>(
-    query: SelectQueryBuilder<DB, "ms_users", O>,
+    query: SelectQueryBuilder<DB, "users", O>,
     filter?: { keyword?: string; is_admin?: boolean },
   ) {
     const { is_admin, keyword } = filter ?? {};
@@ -124,7 +124,7 @@ export class UserRepository {
     }
 
     if (keyword != undefined) {
-      query = query.where("ms_users.name", "ilike", `%${keyword}%`);
+      query = query.where("users.name", "ilike", `%${keyword}%`);
     }
 
     return query;
@@ -133,14 +133,14 @@ export class UserRepository {
   async countUsers(opts?: { is_admin?: boolean; keyword?: string }) {
     const { is_admin, keyword } = opts ?? {};
 
-    let query = this.db.selectFrom("ms_users").select((eb) => eb.fn.countAll().as("count"));
+    let query = this.db.selectFrom("users").select((eb) => eb.fn.countAll().as("count"));
     query = this.applyFilterToQuery(query, { is_admin, keyword });
     return await query.executeTakeFirstOrThrow();
   }
 
   async getUsers(opts?: { is_admin?: boolean; keyword?: string; limit?: number; page?: number }) {
     const { page, limit, is_admin, keyword } = opts ?? {};
-    let query = this.db.selectFrom("ms_users").select(defaultUserFields);
+    let query = this.db.selectFrom("users").select(defaultUserFields);
 
     query = this.applyFilterToQuery(query, { is_admin, keyword });
     query = paginateQuery(query, {
@@ -179,7 +179,7 @@ export class UserRepository {
     } = obj;
 
     const user_id = await this.db
-      .insertInto("ms_users")
+      .insertInto("users")
       .values({
         name: user_name,
         password: hashed_password,
@@ -192,7 +192,7 @@ export class UserRepository {
         location: user_location,
         workplace: user_workplace,
       })
-      .returning("ms_users.id")
+      .returning("users.id")
       .executeTakeFirst();
 
     if (user_id == undefined) {
@@ -215,17 +215,17 @@ export class UserRepository {
 
   async getLoginCredentials(user_name: string) {
     return await this.db
-      .selectFrom("ms_users")
+      .selectFrom("users")
       .select(["name", "password", "id"])
-      .where("ms_users.name", "=", user_name)
+      .where("users.name", "=", user_name)
       .executeTakeFirst();
   }
 
   async getUserDetail(id: number) {
     return await this.db
-      .selectFrom("ms_users")
+      .selectFrom("users")
       .select(defaultUserFields)
-      .where("ms_users.id", "=", id)
+      .where("users.id", "=", id)
       .executeTakeFirst();
   }
 
@@ -264,7 +264,7 @@ export class UserRepository {
       } = main_update;
 
       await this.db
-        .updateTable("ms_users")
+        .updateTable("users")
         .set({
           name: user_name,
           password: hashed_password,

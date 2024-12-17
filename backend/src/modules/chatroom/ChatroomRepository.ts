@@ -4,38 +4,38 @@ import { DB } from "../../db/db_types.js";
 import { ClientError } from "../../helpers/error.js";
 
 const defaultChatroomFields = [
-  "ms_chatrooms.id as chatroom_id",
-  "ms_chatrooms.name as chatroom_name",
-  "ms_chatrooms.project_id",
-  "ms_chatrooms.created_at as chatroom_created_at",
+  "chatrooms.id as chatroom_id",
+  "chatrooms.name as chatroom_name",
+  "chatrooms.project_id",
+  "chatrooms.created_at as chatroom_created_at",
 ] as const;
 
-const defaultMessageFields = (eb: ExpressionBuilder<DB, "ms_messages">) =>
+const defaultMessageFields = (eb: ExpressionBuilder<DB, "messages">) =>
   [
-    "ms_messages.id as id",
-    "ms_messages.message as message",
-    "ms_messages.created_at as created_at",
-    "ms_messages.user_id as user_id",
-    "ms_messages.is_edited as is_edited",
-    "ms_messages.chatroom_id as chatroom_id",
+    "messages.id as id",
+    "messages.message as message",
+    "messages.created_at as created_at",
+    "messages.user_id as user_id",
+    "messages.is_edited as is_edited",
+    "messages.chatroom_id as chatroom_id",
     messageWithAttachments(eb).as("files"),
   ] as const;
 
-function chatroomWithUsers(eb: ExpressionBuilder<DB, "ms_chatrooms">) {
+function chatroomWithUsers(eb: ExpressionBuilder<DB, "chatrooms">) {
   return jsonArrayFrom(
     eb
       .selectFrom("chatrooms_users")
       .select("chatrooms_users.user_id")
-      .whereRef("chatrooms_users.chatroom_id", "=", "ms_chatrooms.id"),
+      .whereRef("chatrooms_users.chatroom_id", "=", "chatrooms.id"),
   );
 }
 
-function messageWithAttachments(eb: ExpressionBuilder<DB, "ms_messages">) {
+function messageWithAttachments(eb: ExpressionBuilder<DB, "messages">) {
   return jsonArrayFrom(
     eb
-      .selectFrom("ms_chatroom_files as f")
+      .selectFrom("chatroom_files as f")
       .select(["f.id", "f.filename"])
-      .whereRef("f.message_id", "=", "ms_messages.id"),
+      .whereRef("f.message_id", "=", "messages.id"),
   );
 }
 
@@ -57,9 +57,9 @@ export class ChatRepository {
 
   async findChatroomByFileID(file_id: number) {
     return await this.db
-      .selectFrom("ms_chatroom_files as f")
-      .innerJoin("ms_messages as m", "m.id", "f.message_id")
-      .innerJoin("ms_chatrooms as c", "c.id", "m.chatroom_id")
+      .selectFrom("chatroom_files as f")
+      .innerJoin("messages as m", "m.id", "f.message_id")
+      .innerJoin("chatrooms as c", "c.id", "m.chatroom_id")
       .select("c.id")
       .where("f.id", "=", file_id)
       .executeTakeFirst();
@@ -68,13 +68,13 @@ export class ChatRepository {
   async getMessages(opts: { chatroom_id: number; limit?: number; before_message_id?: number }) {
     const { chatroom_id, before_message_id, limit } = opts;
     let query = this.db
-      .selectFrom("ms_messages")
+      .selectFrom("messages")
       .select(defaultMessageFields)
-      .where("ms_messages.chatroom_id", "=", chatroom_id)
+      .where("messages.chatroom_id", "=", chatroom_id)
       .orderBy("id desc");
 
     if (before_message_id != undefined) {
-      query = query.where("ms_messages.id", "<", before_message_id);
+      query = query.where("messages.id", "<", before_message_id);
     }
     if (limit != undefined) {
       query = query.limit(limit);
@@ -98,7 +98,7 @@ export class ChatRepository {
     const { message, files, sender_id, is_edited } = data;
 
     const res = await this.db
-      .insertInto("ms_messages")
+      .insertInto("messages")
       .values({
         chatroom_id: chatroom_id,
         message: message,
@@ -133,7 +133,7 @@ export class ChatRepository {
         throw new ClientError("Ditemukan file yang invalid!");
       }
 
-      await this.db.insertInto("ms_chatroom_files").values(files_cleaned).execute();
+      await this.db.insertInto("chatroom_files").values(files_cleaned).execute();
     }
 
     return res;
@@ -141,7 +141,7 @@ export class ChatRepository {
 
   async getFile(file_id: number) {
     return this.db
-      .selectFrom("ms_chatroom_files")
+      .selectFrom("chatroom_files")
       .select(["id", "filename", "content", "message_id"])
       .where("id", "=", file_id)
       .executeTakeFirst();
@@ -172,7 +172,7 @@ export class ChatRepository {
     }
 
     const res = await this.db
-      .updateTable("ms_messages")
+      .updateTable("messages")
       .set({
         chatroom_id: chatroom_id,
         message: message,
@@ -187,7 +187,7 @@ export class ChatRepository {
     }
 
     if (files != undefined && files.length) {
-      await this.db.deleteFrom("ms_chatroom_files").where("id", "=", message_id).execute();
+      await this.db.deleteFrom("chatroom_files").where("id", "=", message_id).execute();
 
       const files_cleaned = files.flatMap((x) => {
         const b64_data = x.content.split(",")[1];
@@ -209,7 +209,7 @@ export class ChatRepository {
         throw new ClientError("Ditemukan file yang invalid!");
       }
 
-      await this.db.insertInto("ms_chatroom_files").values(files_cleaned).execute();
+      await this.db.insertInto("chatroom_files").values(files_cleaned).execute();
     }
 
     return res;
@@ -217,7 +217,7 @@ export class ChatRepository {
 
   async getMessage(message_id: number) {
     return await this.db
-      .selectFrom("ms_messages")
+      .selectFrom("messages")
       .select(defaultMessageFields)
       .where("id", "=", message_id)
       .executeTakeFirst();
@@ -225,9 +225,9 @@ export class ChatRepository {
 
   async getChatroomByID(chatroom_id: number) {
     return await this.db
-      .selectFrom("ms_chatrooms")
+      .selectFrom("chatrooms")
       .select((eb) => [...defaultChatroomFields, chatroomWithUsers(eb).as("chatroom_users")])
-      .where("ms_chatrooms.id", "=", chatroom_id)
+      .where("chatrooms.id", "=", chatroom_id)
       .executeTakeFirst();
   }
 
@@ -235,7 +235,7 @@ export class ChatRepository {
     const { project_id, user_id, keyword } = opts;
 
     let query = this.db
-      .selectFrom("ms_chatrooms")
+      .selectFrom("chatrooms")
       .select((eb) => [...defaultChatroomFields, chatroomWithUsers(eb).as("chatroom_users")])
       .orderBy("chatroom_id", "desc");
 
@@ -243,13 +243,13 @@ export class ChatRepository {
       query = query.where("project_id", "=", project_id);
     }
     if (user_id != undefined) {
-      query = query.where("ms_chatrooms.id", "in", (eb) =>
+      query = query.where("chatrooms.id", "in", (eb) =>
         eb.selectFrom("chatrooms_users").select("chatroom_id").where("user_id", "=", user_id),
       );
     }
 
     if (keyword != undefined) {
-      query = query.where("ms_chatrooms.name", "ilike", `%${keyword}%`);
+      query = query.where("chatrooms.name", "ilike", `%${keyword}%`);
     }
 
     return await query.execute();
@@ -258,7 +258,7 @@ export class ChatRepository {
   async addChatroom(opts: { user_ids?: number[]; project_id?: number; chatroom_name: string }) {
     const { project_id, user_ids, chatroom_name } = opts;
     const room_id = await this.db
-      .insertInto("ms_chatrooms")
+      .insertInto("chatrooms")
       .values({
         name: chatroom_name,
         project_id,
@@ -289,7 +289,7 @@ export class ChatRepository {
     const { name, user_ids } = opts;
     if (name) {
       await this.db
-        .updateTable("ms_chatrooms")
+        .updateTable("chatrooms")
         .set("name", name)
         .where("id", "=", chatroom_id)
         .execute();
@@ -313,9 +313,6 @@ export class ChatRepository {
   }
 
   async deleteChatroom(chatroom_id: number) {
-    return await this.db
-      .deleteFrom("ms_chatrooms")
-      .where("ms_chatrooms.id", "=", chatroom_id)
-      .execute();
+    return await this.db.deleteFrom("chatrooms").where("chatrooms.id", "=", chatroom_id).execute();
   }
 }

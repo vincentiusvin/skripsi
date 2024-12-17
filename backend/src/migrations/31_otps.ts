@@ -2,7 +2,7 @@ import { Kysely, sql } from "kysely";
 
 export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
-    .createTable("ms_otps")
+    .createTable("otps")
     .addColumn("token", "uuid", (eb) => eb.primaryKey().defaultTo(sql`gen_random_uuid()`))
     .addColumn("email", "text", (eb) => eb.notNull())
     .addColumn("otp", "text", (eb) => eb.notNull())
@@ -14,5 +14,5 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
-  await db.schema.dropTable("ms_otps").execute();
+  await db.schema.dropTable("otps").execute();
 }

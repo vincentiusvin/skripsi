@@ -3,10 +3,10 @@ import { DB } from "../../db/db_types.js";
 import { transfromFriendData } from "./FriendMisc.js";
 
 const defaultFriendFields = [
-  "ms_friends.from_user_id",
-  "ms_friends.to_user_id",
-  "ms_friends.status",
-  "ms_friends.created_at",
+  "friends.from_user_id",
+  "friends.to_user_id",
+  "friends.status",
+  "friends.created_at",
 ] as const;
 
 export class FriendRepository {
@@ -17,13 +17,10 @@ export class FriendRepository {
 
   async getFriends(user_id: number) {
     const result = await this.db
-      .selectFrom("ms_friends")
+      .selectFrom("friends")
       .select(defaultFriendFields)
       .where((eb) =>
-        eb.or([
-          eb("ms_friends.from_user_id", "=", user_id),
-          eb("ms_friends.to_user_id", "=", user_id),
-        ]),
+        eb.or([eb("friends.from_user_id", "=", user_id), eb("friends.to_user_id", "=", user_id)]),
       )
       .execute();
 
@@ -32,17 +29,17 @@ export class FriendRepository {
 
   async getFriendData(from_user_id: number, to_user_id: number) {
     const result = await this.db
-      .selectFrom("ms_friends")
+      .selectFrom("friends")
       .select(defaultFriendFields)
       .where((eb) =>
         eb.or([
           eb.and([
-            eb("ms_friends.from_user_id", "=", from_user_id),
-            eb("ms_friends.to_user_id", "=", to_user_id),
+            eb("friends.from_user_id", "=", from_user_id),
+            eb("friends.to_user_id", "=", to_user_id),
           ]),
           eb.and([
-            eb("ms_friends.from_user_id", "=", to_user_id),
-            eb("ms_friends.to_user_id", "=", from_user_id),
+            eb("friends.from_user_id", "=", to_user_id),
+            eb("friends.to_user_id", "=", from_user_id),
           ]),
         ]),
       )
@@ -56,7 +53,7 @@ export class FriendRepository {
 
   addFriend(from_user_id: number, to_user_id: number, status: "Accepted" | "Pending") {
     return this.db
-      .insertInto("ms_friends")
+      .insertInto("friends")
       .values({
         from_user_id,
         to_user_id,
@@ -67,14 +64,14 @@ export class FriendRepository {
 
   updateFriend(from_user_id: number, to_user_id: number, status: "Accepted" | "Pending") {
     return this.db
-      .updateTable("ms_friends")
+      .updateTable("friends")
       .set({
         status,
       })
       .where((eb) =>
         eb.and([
-          eb("ms_friends.from_user_id", "=", from_user_id),
-          eb("ms_friends.to_user_id", "=", to_user_id),
+          eb("friends.from_user_id", "=", from_user_id),
+          eb("friends.to_user_id", "=", to_user_id),
         ]),
       )
       .execute();
@@ -82,17 +79,11 @@ export class FriendRepository {
 
   deleteFriend(user1: number, user2: number) {
     return this.db
-      .deleteFrom("ms_friends")
+      .deleteFrom("friends")
       .where((eb) =>
         eb.or([
-          eb.and([
-            eb("ms_friends.from_user_id", "=", user2),
-            eb("ms_friends.to_user_id", "=", user1),
-          ]),
-          eb.and([
-            eb("ms_friends.from_user_id", "=", user1),
-            eb("ms_friends.to_user_id", "=", user2),
-          ]),
+          eb.and([eb("friends.from_user_id", "=", user2), eb("friends.to_user_id", "=", user1)]),
+          eb.and([eb("friends.from_user_id", "=", user1), eb("friends.to_user_id", "=", user2)]),
         ]),
       )
       .execute();

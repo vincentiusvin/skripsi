@@ -5,7 +5,7 @@ import { DB } from "../db/db_types.js";
 
 export async function baseCase(db: Kysely<DB>) {
   const org = await db
-    .insertInto("ms_orgs")
+    .insertInto("orgs")
     .values({
       name: "testing org",
       address: "jakarta",
@@ -18,7 +18,7 @@ export async function baseCase(db: Kysely<DB>) {
   const orig_password = "halo";
   const hashed = hashSync(orig_password, 10);
   const user_ids = await db
-    .insertInto("ms_users")
+    .insertInto("users")
     .values([
       {
         name: "org user",
@@ -110,7 +110,7 @@ export async function baseCase(db: Kysely<DB>) {
     .execute();
 
   const admin_user_query = await db
-    .selectFrom("ms_users")
+    .selectFrom("users")
     .select(["id", "name"])
     .where("is_admin", "=", true)
     .executeTakeFirstOrThrow();
@@ -151,7 +151,7 @@ export async function baseCase(db: Kysely<DB>) {
     .execute();
 
   const projects = await db
-    .insertInto("ms_projects")
+    .insertInto("projects")
     .values([
       {
         description: "very awesome project",
@@ -187,7 +187,7 @@ export async function baseCase(db: Kysely<DB>) {
     .execute();
 
   const bucket = await db
-    .insertInto("ms_task_buckets")
+    .insertInto("task_buckets")
     .values([
       {
         name: "Todo",
@@ -198,11 +198,11 @@ export async function baseCase(db: Kysely<DB>) {
         project_id: project.id,
       },
     ])
-    .returning(["ms_task_buckets.id", "ms_task_buckets.name"])
+    .returning(["task_buckets.id", "task_buckets.name"])
     .execute();
 
   const task = await db
-    .insertInto("ms_tasks")
+    .insertInto("tasks")
     .values([
       {
         name: "Todo",
@@ -215,11 +215,11 @@ export async function baseCase(db: Kysely<DB>) {
         order: 2,
       },
     ])
-    .returning(["ms_tasks.id", "ms_tasks.name"])
+    .returning(["tasks.id", "tasks.name"])
     .execute();
 
   const chats = await db
-    .insertInto("ms_chatrooms")
+    .insertInto("chatrooms")
     .values([
       {
         name: "Chatroom Base Case",
@@ -229,7 +229,7 @@ export async function baseCase(db: Kysely<DB>) {
         project_id: project.id,
       },
     ])
-    .returning(["ms_chatrooms.id", "ms_chatrooms.name"])
+    .returning(["chatrooms.id", "chatrooms.name"])
     .execute();
 
   const chat = chats[0];
@@ -244,7 +244,7 @@ export async function baseCase(db: Kysely<DB>) {
     .execute();
 
   const message = await db
-    .insertInto("ms_messages")
+    .insertInto("messages")
     .values(
       Array(10)
         .fill(undefined)
@@ -254,16 +254,11 @@ export async function baseCase(db: Kysely<DB>) {
           user_id: user_ids[2].id,
         })),
     )
-    .returning([
-      "ms_messages.id",
-      "ms_messages.message",
-      "ms_messages.user_id",
-      "ms_messages.chatroom_id",
-    ])
+    .returning(["messages.id", "messages.message", "messages.user_id", "messages.chatroom_id"])
     .executeTakeFirstOrThrow();
 
   await db
-    .insertInto("ms_friends")
+    .insertInto("friends")
     .values([
       {
         from_user_id: friend_send_user.id,
@@ -279,7 +274,7 @@ export async function baseCase(db: Kysely<DB>) {
     .execute();
 
   const org_categories = await db
-    .insertInto("ms_category_orgs")
+    .insertInto("category_orgs")
     .values([
       {
         name: "Cat1",
@@ -292,7 +287,7 @@ export async function baseCase(db: Kysely<DB>) {
     .execute();
 
   const project_categories = await db
-    .insertInto("ms_category_projects")
+    .insertInto("category_projects")
     .values([
       {
         name: "Cat1",
@@ -336,13 +331,13 @@ export async function baseCase(db: Kysely<DB>) {
   ];
 
   const contrib_raw = await db
-    .insertInto("ms_contributions")
+    .insertInto("contributions")
     .values(_contributions.map((x) => ({ ...x, user_ids: undefined })))
     .returning(["id", "name", "description", "project_id", "status"])
     .execute();
 
   await db
-    .insertInto("ms_contributions_users")
+    .insertInto("contributions_users")
     .values(
       _contributions.flatMap((x, i) => {
         return x.user_ids.map((y) => ({
@@ -366,7 +361,7 @@ export async function baseCase(db: Kysely<DB>) {
   const rejected_contribution = contributions[3];
 
   const notifications = await db
-    .insertInto("ms_notifications")
+    .insertInto("notifications")
     .values([
       {
         title: "Testing",
@@ -385,7 +380,7 @@ export async function baseCase(db: Kysely<DB>) {
     .execute();
 
   const reports = await db
-    .insertInto("ms_reports")
+    .insertInto("reports")
     .values([
       {
         title: "Report Testing",
@@ -400,11 +395,11 @@ export async function baseCase(db: Kysely<DB>) {
         status: "Pending",
       },
     ])
-    .returning(["id", "ms_reports.status", "ms_reports.title", "ms_reports.description"])
+    .returning(["id", "reports.status", "reports.title", "reports.description"])
     .execute();
 
   const bans = await db
-    .insertInto("ms_suspensions")
+    .insertInto("suspensions")
     .values([
       {
         reason: "Kurang beruntung",
@@ -417,14 +412,14 @@ export async function baseCase(db: Kysely<DB>) {
         user_id: expired_banned_user.id,
       },
     ])
-    .returning(["id", "ms_suspensions.reason", "ms_suspensions.suspended_until"])
+    .returning(["id", "suspensions.reason", "suspensions.suspended_until"])
     .execute();
   const active_ban = bans[0];
   const expired_ban = bans[1];
 
   const pref_map = await db
-    .selectFrom("ms_preferences")
-    .select(["ms_preferences.id", "ms_preferences.name"])
+    .selectFrom("preferences")
+    .select(["preferences.id", "preferences.name"])
     .execute();
 
   await db
@@ -454,9 +449,9 @@ export async function baseCase(db: Kysely<DB>) {
     .execute();
 
   const preferences_tidy = await db
-    .selectFrom("ms_preferences")
-    .innerJoin("preferences_users", "preferences_users.preference_id", "ms_preferences.id")
-    .select(["ms_preferences.name", "preferences_users.value"])
+    .selectFrom("preferences")
+    .innerJoin("preferences_users", "preferences_users.preference_id", "preferences.id")
+    .select(["preferences.name", "preferences_users.value"])
     .where("user_id", "=", pref_user.id)
     .execute();
   const preferences: Record<string, string> = {};
@@ -465,7 +460,7 @@ export async function baseCase(db: Kysely<DB>) {
   });
 
   const verified_otp = await db
-    .insertInto("ms_otps")
+    .insertInto("otps")
     .values({
       email: "email-otp1@example.com",
       otp: "123456",
@@ -476,7 +471,7 @@ export async function baseCase(db: Kysely<DB>) {
     .executeTakeFirstOrThrow();
 
   const used_otp = await db
-    .insertInto("ms_otps")
+    .insertInto("otps")
     .values({
       email: "email-otp2@example.com",
       otp: "123456",
@@ -488,7 +483,7 @@ export async function baseCase(db: Kysely<DB>) {
     .executeTakeFirstOrThrow();
 
   const password_otp = await db
-    .insertInto("ms_otps")
+    .insertInto("otps")
     .values({
       email: plain_user.email,
       otp: "123456",
@@ -499,7 +494,7 @@ export async function baseCase(db: Kysely<DB>) {
     .executeTakeFirstOrThrow();
 
   const unverified_otp = await db
-    .insertInto("ms_otps")
+    .insertInto("otps")
     .values({
       email: "email-otp2@example.com",
       otp: "89765",
@@ -509,7 +504,7 @@ export async function baseCase(db: Kysely<DB>) {
     .executeTakeFirstOrThrow();
 
   const article = await db
-    .insertInto("ms_articles")
+    .insertInto("articles")
     .values({
       name: "Testing article",
       description: "Very informative article",
@@ -520,7 +515,7 @@ export async function baseCase(db: Kysely<DB>) {
     .executeTakeFirstOrThrow();
 
   await db
-    .insertInto("ms_articles_likes")
+    .insertInto("articles_likes")
     .values({
       user_id: article_liker.id,
       article_id: article.id,

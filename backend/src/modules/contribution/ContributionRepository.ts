@@ -4,19 +4,19 @@ import { DB } from "../../db/db_types";
 import { paginateQuery } from "../../helpers/pagination.js";
 import { ContributionStatus, parseContribStatus } from "./ContributionMisc.js";
 
-const defaultContributionFields = (eb: ExpressionBuilder<DB, "ms_contributions">) =>
+const defaultContributionFields = (eb: ExpressionBuilder<DB, "contributions">) =>
   [
-    "ms_contributions.name",
-    "ms_contributions.description",
-    "ms_contributions.status",
-    "ms_contributions.project_id",
-    "ms_contributions.id as id",
-    "ms_contributions.created_at as created_at",
+    "contributions.name",
+    "contributions.description",
+    "contributions.status",
+    "contributions.project_id",
+    "contributions.id as id",
+    "contributions.created_at as created_at",
     jsonArrayFrom(
       eb
-        .selectFrom("ms_contributions_users")
-        .select("ms_contributions_users.user_id")
-        .whereRef("ms_contributions_users.contributions_id", "=", "ms_contributions.id"),
+        .selectFrom("contributions_users")
+        .select("contributions_users.user_id")
+        .whereRef("contributions_users.contributions_id", "=", "contributions.id"),
     ).as("user_ids"),
   ] as const;
 
@@ -31,7 +31,7 @@ export class ContributionRepository {
   }
 
   private applyFilterToQuery<O>(
-    query: SelectQueryBuilder<DB, "ms_contributions", O>,
+    query: SelectQueryBuilder<DB, "contributions", O>,
     filter: {
       status?: ContributionStatus;
       user_id?: number;
@@ -44,26 +44,26 @@ export class ContributionRepository {
     if (user_id != undefined) {
       query = query.where((eb) =>
         eb(
-          "ms_contributions.id",
+          "contributions.id",
           "in",
           eb
-            .selectFrom("ms_contributions_users")
-            .select("ms_contributions_users.contributions_id")
-            .where("ms_contributions_users.user_id", "=", user_id),
+            .selectFrom("contributions_users")
+            .select("contributions_users.contributions_id")
+            .where("contributions_users.user_id", "=", user_id),
         ),
       );
     }
 
     if (project_id != undefined) {
-      query = query.where("ms_contributions.project_id", "=", project_id);
+      query = query.where("contributions.project_id", "=", project_id);
     }
 
     if (status != undefined) {
-      query = query.where("ms_contributions.status", "=", status);
+      query = query.where("contributions.status", "=", status);
     }
 
     if (keyword != undefined) {
-      query = query.where("ms_contributions.name", "ilike", keyword);
+      query = query.where("contributions.name", "ilike", keyword);
     }
 
     return query;
@@ -78,7 +78,7 @@ export class ContributionRepository {
   }) {
     const { limit, page, ...filters } = opts;
     let query = this.db
-      .selectFrom("ms_contributions")
+      .selectFrom("contributions")
       .select(defaultContributionFields)
       .orderBy("id desc");
 
@@ -104,16 +104,16 @@ export class ContributionRepository {
     user_id?: number;
     project_id?: number;
   }) {
-    let query = this.db.selectFrom("ms_contributions").select((eb) => eb.fn.countAll().as("count"));
+    let query = this.db.selectFrom("contributions").select((eb) => eb.fn.countAll().as("count"));
     query = this.applyFilterToQuery(query, opts);
     return await query.executeTakeFirstOrThrow();
   }
 
   async getContributionsDetail(contribution_id: number) {
     const result = await this.db
-      .selectFrom("ms_contributions")
+      .selectFrom("contributions")
       .select(defaultContributionFields)
-      .where("ms_contributions.id", "=", contribution_id)
+      .where("contributions.id", "=", contribution_id)
       .executeTakeFirst();
 
     if (result == undefined) {
@@ -137,14 +137,14 @@ export class ContributionRepository {
   ) {
     const { status, name, description, project_id } = obj;
     const cont = await this.db
-      .insertInto("ms_contributions")
+      .insertInto("contributions")
       .values({
         name: name,
         description: description,
         project_id: project_id,
         status: status,
       })
-      .returning(["ms_contributions.id"])
+      .returning(["contributions.id"])
       .executeTakeFirst();
 
     if (!cont) {
@@ -152,7 +152,7 @@ export class ContributionRepository {
     }
     for (const x of users) {
       await this.db
-        .insertInto("ms_contributions_users")
+        .insertInto("contributions_users")
         .values({
           user_id: x,
           contributions_id: cont.id,
@@ -174,7 +174,7 @@ export class ContributionRepository {
   ) {
     const { name, description, project_id, user_ids, status } = obj;
     const cont = await this.db
-      .updateTable("ms_contributions")
+      .updateTable("contributions")
       .set({
         name,
         description,
@@ -188,13 +188,10 @@ export class ContributionRepository {
       throw new Error("Data not updated!");
     }
     if (user_ids != undefined) {
-      await this.db
-        .deleteFrom("ms_contributions_users")
-        .where("contributions_id", "=", id)
-        .execute();
+      await this.db.deleteFrom("contributions_users").where("contributions_id", "=", id).execute();
       for (const x of user_ids) {
         await this.db
-          .insertInto("ms_contributions_users")
+          .insertInto("contributions_users")
           .values({
             user_id: x,
             contributions_id: id,

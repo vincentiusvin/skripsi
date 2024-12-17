@@ -4,7 +4,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable("socials_users")
     .addColumn("user_id", "integer", (build) =>
-      build.references("ms_users.id").notNull().onDelete("cascade").onUpdate("cascade"),
+      build.references("users.id").notNull().onDelete("cascade").onUpdate("cascade"),
     )
     .addColumn("social", "text", (eb) => eb.notNull())
     .addPrimaryKeyConstraint("socials_users_pk", ["social", "user_id"])

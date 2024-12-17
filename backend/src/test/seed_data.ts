@@ -15,7 +15,7 @@ function looper<T>(times: number, func: (i: number) => T) {
 async function addFriends(db: Kysely<DB>) {
   const friends_to_generate = 5000;
 
-  const users = await db.selectFrom("ms_users").select("id").execute();
+  const users = await db.selectFrom("users").select("id").execute();
 
   const pairings_raw = faker.helpers.uniqueArray(
     () =>
@@ -30,7 +30,7 @@ async function addFriends(db: Kysely<DB>) {
   const pairings = pairings_raw.map((x) => x.split("-").map((str) => Number(str)));
 
   await db
-    .insertInto("ms_friends")
+    .insertInto("friends")
     .values(
       pairings.map(([user1, user2]) => {
         const flip = faker.datatype.boolean();
@@ -47,12 +47,12 @@ async function addFriends(db: Kysely<DB>) {
 async function addTasks(db: Kysely<DB>) {
   const tasks_to_generate = 5000;
 
-  const projects = await db.selectFrom("ms_projects").select("id").execute();
-  const users = await db.selectFrom("ms_users").select("id").execute();
+  const projects = await db.selectFrom("projects").select("id").execute();
+  const users = await db.selectFrom("users").select("id").execute();
   const cats = ["Backlog", "Doing", "Done"];
 
   const buckets = await db
-    .insertInto("ms_task_buckets")
+    .insertInto("task_buckets")
     .values(
       projects.flatMap(({ id }) => {
         return cats.map((x) => ({
@@ -65,7 +65,7 @@ async function addTasks(db: Kysely<DB>) {
     .execute();
 
   const tasks = await db
-    .insertInto("ms_tasks")
+    .insertInto("tasks")
     .values(
       looper(tasks_to_generate, () => {
         return {
@@ -106,11 +106,11 @@ async function addTasks(db: Kysely<DB>) {
 
 async function addReports(db: Kysely<DB>) {
   const report_to_gen = 500;
-  const users = await db.selectFrom("ms_users").select("id").execute();
-  const rooms = await db.selectFrom("ms_chatrooms").select("id").execute();
+  const users = await db.selectFrom("users").select("id").execute();
+  const rooms = await db.selectFrom("chatrooms").select("id").execute();
 
   await db
-    .insertInto("ms_reports")
+    .insertInto("reports")
     .values(
       looper(report_to_gen, () => {
         return {
@@ -134,10 +134,10 @@ async function addReports(db: Kysely<DB>) {
 }
 
 async function addBans(db: Kysely<DB>) {
-  const users = await db.selectFrom("ms_users").select("id").execute();
+  const users = await db.selectFrom("users").select("id").execute();
   const bans_to_add = 250;
   await db
-    .insertInto("ms_suspensions")
+    .insertInto("suspensions")
     .values(
       looper(bans_to_add, () => ({
         reason: faker.lorem.sentence({ min: 1, max: 5 }),
@@ -150,18 +150,18 @@ async function addBans(db: Kysely<DB>) {
 
 async function addChatrooms(db: Kysely<DB>) {
   const chats_to_gen = 2000;
-  const users = await db.selectFrom("ms_users").select("id").execute();
-  const projects = await db.selectFrom("ms_projects").select("id").execute();
+  const users = await db.selectFrom("users").select("id").execute();
+  const projects = await db.selectFrom("projects").select("id").execute();
 
   const chat_ids = await db
-    .insertInto("ms_chatrooms")
+    .insertInto("chatrooms")
     .values(
       looper(chats_to_gen, () => ({
         name: faker.company.buzzPhrase(),
         project_id: faker.helpers.maybe(() => faker.helpers.arrayElement(projects).id),
       })),
     )
-    .returning(["id", "ms_chatrooms.project_id"])
+    .returning(["id", "chatrooms.project_id"])
     .execute();
 
   const chat_users = await db
@@ -193,7 +193,7 @@ async function addChatrooms(db: Kysely<DB>) {
 
   for (let i = 0; i < batches; i++) {
     const message_ids = await db
-      .insertInto("ms_messages")
+      .insertInto("messages")
       .values(
         looper(messages_to_gen / batches, () => {
           const picked = faker.helpers.arrayElement(chat_users);
@@ -209,11 +209,11 @@ async function addChatrooms(db: Kysely<DB>) {
           };
         }),
       )
-      .returning("ms_messages.id")
+      .returning("messages.id")
       .execute();
 
     await db
-      .insertInto("ms_chatroom_files")
+      .insertInto("chatroom_files")
       .values(
         message_ids.flatMap(({ id: message_id }) => {
           const has_file = faker.datatype.boolean(0.05);
@@ -244,11 +244,11 @@ async function addChatrooms(db: Kysely<DB>) {
 
 async function addContribs(db: Kysely<DB>) {
   const contribs_to_add = 2000;
-  const users = await db.selectFrom("ms_users").select("id").execute();
-  const projects = await db.selectFrom("ms_projects").select("id").execute();
+  const users = await db.selectFrom("users").select("id").execute();
+  const projects = await db.selectFrom("projects").select("id").execute();
 
   const contrib_id = await db
-    .insertInto("ms_contributions")
+    .insertInto("contributions")
     .values(
       looper(contribs_to_add, () => ({
         name: faker.hacker.adjective() + " " + faker.hacker.noun(),
@@ -261,7 +261,7 @@ async function addContribs(db: Kysely<DB>) {
     .execute();
 
   await db
-    .insertInto("ms_contributions_users")
+    .insertInto("contributions_users")
     .values(
       contrib_id.flatMap(({ id }) => {
         const members = faker.helpers.arrayElements(
@@ -284,12 +284,12 @@ async function addContribs(db: Kysely<DB>) {
 async function addProjects(db: Kysely<DB>) {
   const projects_to_gen = 300;
 
-  const users = await db.selectFrom("ms_users").select("id").execute();
-  const orgs = await db.selectFrom("ms_orgs").select("id").execute();
-  const cats = await db.selectFrom("ms_category_projects").select("id").execute();
+  const users = await db.selectFrom("users").select("id").execute();
+  const orgs = await db.selectFrom("orgs").select("id").execute();
+  const cats = await db.selectFrom("category_projects").select("id").execute();
 
   const project_ids = await db
-    .insertInto("ms_projects")
+    .insertInto("projects")
     .values(
       looper(projects_to_gen, () => ({
         description: faker.company.buzzPhrase(),
@@ -340,13 +340,13 @@ async function addProjects(db: Kysely<DB>) {
 async function addOrgs(db: Kysely<DB>) {
   const orgs_to_gen = 100;
 
-  const users = await db.selectFrom("ms_users").select("id").execute();
-  const cats = await db.selectFrom("ms_category_orgs").select("id").execute();
+  const users = await db.selectFrom("users").select("id").execute();
+  const cats = await db.selectFrom("category_orgs").select("id").execute();
 
   const names = faker.helpers.uniqueArray(faker.company.name, orgs_to_gen);
 
   const org_ids = await db
-    .insertInto("ms_orgs")
+    .insertInto("orgs")
     .values(
       looper(orgs_to_gen, (i) => ({
         address: faker.location.streetAddress(),
@@ -397,7 +397,7 @@ async function addUsers(db: Kysely<DB>) {
   const names = faker.helpers.uniqueArray(faker.internet.username, users_to_gen);
 
   await db
-    .insertInto("ms_users")
+    .insertInto("users")
     .values(
       looper(users_to_gen, (i) => ({
         email: faker.internet.email(),

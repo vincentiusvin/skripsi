@@ -38,8 +38,8 @@ export class PreferenceRepository {
   async getUserPreference(user_id: number): Promise<ReadablePreference> {
     const query_result = await this.db
       .selectFrom("preferences_users")
-      .innerJoin("ms_preferences", "ms_preferences.id", "preferences_users.preference_id")
-      .select(["preferences_users.value", "ms_preferences.name"])
+      .innerJoin("preferences", "preferences.id", "preferences_users.preference_id")
+      .select(["preferences_users.value", "preferences.name"])
       .where("user_id", "=", user_id)
       .execute();
 
@@ -58,9 +58,9 @@ export class PreferenceRepository {
 
     const modified_keys = Object.keys(res);
     const key_refs = await this.db
-      .selectFrom("ms_preferences")
+      .selectFrom("preferences")
       .select(["id", "name"])
-      .where("ms_preferences.name", "in", modified_keys)
+      .where("preferences.name", "in", modified_keys)
       .execute();
     const key_map: Record<string, number> = {};
     key_refs.forEach((x) => {

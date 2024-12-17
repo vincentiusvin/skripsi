@@ -9,12 +9,12 @@ export async function up(db: Kysely<DB>): Promise<void> {
   }
 
   await db.schema
-    .alterTable("ms_users")
+    .alterTable("users")
     .addColumn("is_admin", "boolean", (build) => build.notNull().defaultTo(false))
     .execute();
 
   await db
-    .insertInto("ms_users")
+    .insertInto("users")
     .values({
       name: "Admin",
       password: hashSync(admin_password, 10),
@@ -25,6 +25,6 @@ export async function up(db: Kysely<DB>): Promise<void> {
 }
 
 export async function down(db: Kysely<DB>): Promise<void> {
-  await db.deleteFrom("ms_users").where("is_admin", "=", true).execute();
-  await db.schema.alterTable("ms_users").dropColumn("is_admin").execute();
+  await db.deleteFrom("users").where("is_admin", "=", true).execute();
+  await db.schema.alterTable("users").dropColumn("is_admin").execute();
 }
