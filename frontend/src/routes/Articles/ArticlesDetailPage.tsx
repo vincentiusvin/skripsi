@@ -7,8 +7,10 @@ import StyledLink from "../../components/StyledLink.tsx";
 import UserLabel from "../../components/UserLabel.tsx";
 import { useArticlesDetailDelete, useArticlesDetailGet } from "../../queries/article_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks";
+import AuthorizeArticle from "./AuthorizeArticle.tsx";
 import ArticleCommentSection from "./components/ArticleCommentSection";
 import ArticleLikeSection from "./components/ArticleLikeSection.tsx";
+
 function ArticlesDetail(props: { article_id: number }) {
   const { article_id } = props;
 
@@ -17,7 +19,6 @@ function ArticlesDetail(props: { article_id: number }) {
   });
 
   const { data: session_data } = useSessionGet();
-  const user_id = session_data?.logged ? session_data.user_id : undefined;
 
   const { mutate: deleteArticle } = useArticlesDetailDelete({
     article_id,
@@ -34,6 +35,11 @@ function ArticlesDetail(props: { article_id: number }) {
 
   if (!article) {
     return <Skeleton />;
+  }
+
+  let authorized = false;
+  if (session_data?.logged) {
+    authorized = session_data.user_id === article.user_id || session_data.is_admin;
   }
 
   return (
@@ -56,7 +62,7 @@ function ArticlesDetail(props: { article_id: number }) {
           </Box>
           <ArticleLikeSection article_id={article_id} />
         </Stack>
-        {user_id === article.user_id && (
+        {authorized && (
           <Stack direction="row" gap={2}>
             <StyledLink to={`/articles/${article_id}/edit`}>
               <Button variant="contained" color="primary">
@@ -88,7 +94,11 @@ function ArticlesDetailPage() {
     return <Redirect to="/articles" />;
   }
 
-  return <ArticlesDetail article_id={article_id} />;
+  return (
+    <AuthorizeArticle>
+      <ArticlesDetail article_id={article_id} />
+    </AuthorizeArticle>
+  );
 }
 
 export default ArticlesDetailPage;

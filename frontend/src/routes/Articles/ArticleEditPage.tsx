@@ -3,12 +3,13 @@ import { Avatar, Button, Paper, Skeleton, Stack, TextField, Typography } from "@
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
-import { Redirect, useLocation, useParams } from "wouter";
+import { useLocation, useParams } from "wouter";
 import ImageDropzone from "../../components/Dropzone";
 import RichEditor from "../../components/RichEditor";
 import { fileToBase64DataURL } from "../../helpers/file";
 import { handleOptionalStringUpdate } from "../../helpers/misc.ts";
 import { useArticlesDetailGet, useArticlesDetailPut } from "../../queries/article_hooks";
+import AuthorizeArticle from "./AuthorizeArticle.tsx";
 
 function ArticlesEdit(props: { article_id: number }) {
   const { article_id } = props;
@@ -115,10 +116,11 @@ function ArticlesEdit(props: { article_id: number }) {
 function ArticlesEditPage() {
   const { article_id: id } = useParams();
   const article_id = Number(id);
-  if (Number.isNaN(article_id)) {
-    return <Redirect to="/articles" />;
-  }
-  return <ArticlesEdit article_id={article_id} />;
+  return (
+    <AuthorizeArticle isAuthor={true}>
+      <ArticlesEdit article_id={article_id} />
+    </AuthorizeArticle>
+  );
 }
 
 export default ArticlesEditPage;

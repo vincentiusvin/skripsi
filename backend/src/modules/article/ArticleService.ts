@@ -29,7 +29,11 @@ export class ArticleService {
   }
 
   async getArticlesById(article_id: number) {
-    return await this.article_repo.getArticlesById(article_id);
+    const res = await this.article_repo.getArticlesById(article_id);
+    if (res == undefined) {
+      throw new NotFoundError("Gagal menemukan artikel tersebut!");
+    }
+    return res;
   }
 
   async addArticle(obj: {
