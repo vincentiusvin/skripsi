@@ -41,7 +41,7 @@ function ArticleCommentSection(props: { article_id: number }) {
   return (
     <Stack spacing={2}>
       <Typography variant="h6" fontWeight="medium">
-        Komentar
+        Komentar{comments.length ? ` (${comments.length})` : ""}
       </Typography>
       <Divider />
       {user_id ? (
