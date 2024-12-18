@@ -184,16 +184,18 @@ export class ArticleRepository {
     return res;
   }
 
-  async updateComment(obj: { comment_id: number; comment: string }) {
+  async updateComment(obj: { comment_id: number; comment?: string }) {
     const { comment_id, comment } = obj;
 
-    await this.db
-      .updateTable("comments")
-      .set({
-        comment,
-      })
-      .where("comments.id", "=", comment_id)
-      .executeTakeFirst();
+    if (comment !== undefined) {
+      await this.db
+        .updateTable("comments")
+        .set({
+          comment,
+        })
+        .where("comments.id", "=", comment_id)
+        .executeTakeFirst();
+    }
   }
 
   async deleteComment(comment_id: number) {

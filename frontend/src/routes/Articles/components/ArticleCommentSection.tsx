@@ -1,13 +1,11 @@
-import { Button, Divider, Paper, Skeleton, Stack, TextField, Typography } from "@mui/material";
-import dayjs from "dayjs";
+import { Button, Divider, Skeleton, Stack, TextField, Typography } from "@mui/material";
 import { useState } from "react";
-import StyledLink from "../../../components/StyledLink.tsx";
-import UserLabel from "../../../components/UserLabel.tsx";
 import {
   useArticlesDetailCommentPost,
   useArticlesDetailCommentsGet,
 } from "../../../queries/article_hooks";
 import { useSessionGet } from "../../../queries/sesssion_hooks";
+import ArticleComment from "./ArticleComment.tsx";
 
 function ArticleCommentSection(props: { article_id: number }) {
   const { article_id } = props;
@@ -63,24 +61,8 @@ function ArticleCommentSection(props: { article_id: number }) {
         <Typography color="error">Anda harus login untuk menambahkan komentar.</Typography>
       )}
       <Stack sx={{ maxHeight: "300px", overflowY: "auto" }} spacing={2}>
-        {comments.map((comment, index) => (
-          <Paper
-            key={index}
-            sx={{
-              padding: 2,
-            }}
-          >
-            <Stack direction={"row"} gap={4} alignItems={"center"}>
-              <StyledLink to={`/users/${comment.user_id}`}>
-                <UserLabel user_id={comment.user_id} size="small"></UserLabel>
-              </StyledLink>
-              <Typography variant="caption" flexGrow={1} textAlign={"end"}>
-                {dayjs(comment.created_at).format("ddd, DD/MM/YY HH:mm")}
-              </Typography>
-            </Stack>
-            <br />
-            <Typography whiteSpace={"pre-wrap"}>{comment.comment}</Typography>
-          </Paper>
+        {comments.map((comment) => (
+          <ArticleComment {...comment} key={comment.id} />
         ))}
       </Stack>
     </Stack>

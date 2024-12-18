@@ -72,6 +72,10 @@ const ArticleCommentCreationSchema = z.object({
   comment: z.string(defaultError("Komentar tidak valid!")).min(1),
 });
 
+const ArticleCommentUpdateSchema = z.object({
+  comment: z.string(defaultError("Komentar tidak valid!")).min(1).optional(),
+});
+
 export class ArticleController extends Controller {
   private article_service: ArticleService;
   constructor(express_server: Express, article_service: ArticleService) {
@@ -340,7 +344,7 @@ export class ArticleController extends Controller {
     path: "/api/comments/:comment_id",
     schema: {
       Params: CommentParamSchema,
-      ReqBody: ArticleCommentCreationSchema,
+      ReqBody: ArticleCommentUpdateSchema,
       ResBody: ArticleCommentResponseSchema,
     },
     priors: [validateLogged],

@@ -199,3 +199,40 @@ export function useArticlesDetailCommentPost(opts: { article_id: number; onSucce
     },
   });
 }
+
+export function useArticlesDetailCommentDelete(opts: {
+  comment_id: number;
+  onSuccess?: () => void;
+}) {
+  const { comment_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: () =>
+      new APIContext("ArticlesDetailCommentsDelete").fetch(`/api/comments/${comment_id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: articleKeys.all() });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}
+
+export function useArticlesDetailCommentPut(opts: { comment_id: number; onSuccess?: () => void }) {
+  const { comment_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: new APIContext("ArticlesDetailCommentsPut").bodyFetch(
+      `/api/comments/${comment_id}`,
+      {
+        method: "PUT",
+      },
+    ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: articleKeys.all() });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+}

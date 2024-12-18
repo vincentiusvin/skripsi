@@ -134,7 +134,7 @@ export class ArticleService {
     await this.article_repo.deleteComment(comment_id);
   }
 
-  async updateComment(comment_id: number, obj: { comment: string }, sender_id: number) {
+  async updateComment(comment_id: number, obj: { comment?: string }, sender_id: number) {
     const comment = await this.article_repo.getCommentByID(comment_id);
     if (comment == undefined) {
       throw new NotFoundError("Gagal menemukan komentar!");
