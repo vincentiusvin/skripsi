@@ -4,14 +4,17 @@ import { DB } from "../../db/db_types.js";
 import { paginateQuery } from "../../helpers/pagination.js";
 import { ProjectRoles, parseRole } from "./ProjectMisc.js";
 
-const defaultProjectFields = [
-  "projects.id as project_id",
-  "projects.name as project_name",
-  "projects.org_id",
-  "projects.description as project_desc",
-  "projects.archived as project_archived",
-  "projects.content as project_content",
-] as const;
+const defaultProjectFields = (eb: ExpressionBuilder<DB, "projects">) =>
+  [
+    "projects.id as project_id",
+    "projects.name as project_name",
+    "projects.org_id",
+    "projects.description as project_desc",
+    "projects.archived as project_archived",
+    "projects.content as project_content",
+    projectWithMembers(eb).as("project_members"),
+    projectWithCategories(eb).as("project_categories"),
+  ] as const;
 
 const defaultProjectEventFields = ["id", "project_id", "event", "created_at"] as const;
 
@@ -176,11 +179,7 @@ export class ProjectRepository {
 
     let query = this.db
       .selectFrom("projects")
-      .select((eb) => [
-        ...defaultProjectFields,
-        projectWithMembers(eb).as("project_members"),
-        projectWithCategories(eb).as("project_categories"),
-      ])
+      .select(defaultProjectFields)
       .orderBy("created_at desc");
 
     query = this.applyFilterToQuery(query, filter);
@@ -196,11 +195,7 @@ export class ProjectRepository {
   async getProjectByID(project_id: number) {
     return await this.db
       .selectFrom("projects")
-      .select((eb) => [
-        ...defaultProjectFields,
-        projectWithMembers(eb).as("project_members"),
-        projectWithCategories(eb).as("project_categories"),
-      ])
+      .select(defaultProjectFields)
       .where("projects.id", "=", project_id)
       .executeTakeFirst();
   }

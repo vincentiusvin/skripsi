@@ -4,14 +4,17 @@ import { DB } from "../../db/db_types.js";
 import { paginateQuery } from "../../helpers/pagination.js";
 import { OrgRoles, parseRole } from "./OrgMisc.js";
 
-const defaultOrgFields = [
-  "orgs.id as org_id",
-  "orgs.name as org_name",
-  "orgs.description as org_description",
-  "orgs.address as org_address",
-  "orgs.phone as org_phone",
-  "orgs.image as org_image",
-] as const;
+const defaultOrgFields = (eb: ExpressionBuilder<DB, "orgs">) =>
+  [
+    "orgs.id as org_id",
+    "orgs.name as org_name",
+    "orgs.description as org_description",
+    "orgs.address as org_address",
+    "orgs.phone as org_phone",
+    "orgs.image as org_image",
+    orgWithCategories(eb).as("org_categories"),
+    orgWithUsers(eb).as("org_users"),
+  ] as const;
 
 function orgWithCategories(eb: ExpressionBuilder<DB, "orgs">) {
   return jsonArrayFrom(
@@ -92,13 +95,7 @@ export class OrgRepository {
   getOrgs(filter?: { keyword?: string; user_id?: number; page?: number; limit?: number }) {
     const { keyword, user_id, page, limit } = filter ?? {};
 
-    let query = this.db
-      .selectFrom("orgs")
-      .select((eb) => [
-        ...defaultOrgFields,
-        orgWithCategories(eb).as("org_categories"),
-        orgWithUsers(eb).as("org_users"),
-      ]);
+    let query = this.db.selectFrom("orgs").select(defaultOrgFields);
 
     query = this.applyFilterToQuery(query, { keyword, user_id });
 
@@ -113,11 +110,7 @@ export class OrgRepository {
   async getOrgsByID(id: number) {
     return await this.db
       .selectFrom("orgs")
-      .select((eb) => [
-        ...defaultOrgFields,
-        orgWithCategories(eb).as("org_categories"),
-        orgWithUsers(eb).as("org_users"),
-      ])
+      .select(defaultOrgFields)
       .where("orgs.id", "=", id)
       .executeTakeFirst();
   }
@@ -125,11 +118,7 @@ export class OrgRepository {
   async getOrgsByName(name: string) {
     return await this.db
       .selectFrom("orgs")
-      .select((eb) => [
-        ...defaultOrgFields,
-        orgWithCategories(eb).as("org_categories"),
-        orgWithUsers(eb).as("org_users"),
-      ])
+      .select(defaultOrgFields)
       .where("orgs.name", "=", name)
       .executeTakeFirst();
   }
