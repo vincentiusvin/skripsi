@@ -69,7 +69,7 @@ function ArticleComment(props: Comment) {
             <IconButton
               onClick={() => {
                 editComment({
-                  comment: newComment ?? "",
+                  comment: newComment,
                 });
               }}
             >
