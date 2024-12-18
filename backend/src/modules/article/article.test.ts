@@ -72,7 +72,7 @@ describe("articles api", () => {
       ok: true,
     },
     {
-      title: "should be able to update article as author",
+      title: "should be able to update article as admin",
       user_key: "admin_user",
       ok: true,
     },
@@ -217,6 +217,80 @@ describe("articles api", () => {
 
     expect(send_req.status).to.eq(200);
   });
+
+  const delete_cases_comments = [
+    {
+      title: "shouldn't be able to delete comments as other people",
+      user_key: "plain_user",
+      ok: false,
+    },
+    {
+      title: "should be able to delete comments as author",
+      user_key: "article_commenter",
+      ok: true,
+    },
+    {
+      title: "should be able to delete comments as admin",
+      user_key: "admin_user",
+      ok: true,
+    },
+  ] as const;
+
+  for (const { title, user_key, ok } of delete_cases_comments) {
+    it(title, async () => {
+      const in_user = caseData[user_key];
+      const in_article = caseData.article;
+
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const send_req = await deleteComment(in_article.id, cookie);
+      await send_req.json();
+
+      if (ok) {
+        expect(send_req.status).to.eq(200);
+      } else {
+        expect(send_req.status).to.not.eq(200);
+      }
+    });
+  }
+
+  const update_cases_comments = [
+    {
+      title: "shouldn't be able to update comments as other people",
+      user_key: "plain_user",
+      ok: false,
+    },
+    {
+      title: "should be able to update comments as author",
+      user_key: "article_commenter",
+      ok: true,
+    },
+    {
+      title: "should be able to update comments as admin",
+      user_key: "admin_user",
+      ok: true,
+    },
+  ] as const;
+
+  for (const { title, user_key, ok } of update_cases_comments) {
+    it(title, async () => {
+      const in_user = caseData[user_key];
+      const in_article = caseData.article;
+      const in_update = {
+        comment: "this is new data from comment update",
+      };
+
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const send_req = await updateComment(in_article.id, in_update, cookie);
+      const result = await send_req.json();
+
+      if (ok) {
+        expect(send_req.status).to.eq(200);
+        expect(result).to.containSubset(in_update);
+      } else {
+        expect(send_req.status).to.not.eq(200);
+      }
+    });
+  }
 });
 
 function getArticles(cookie: string) {
@@ -354,6 +428,27 @@ function addComment(article_id: number, comment: string, cookie: string) {
       method: "post",
     },
   );
+}
+
+function updateComment(comment_id: number, comment: { comment: string }, cookie: string) {
+  return new APIContext("ArticlesDetailCommentsPut").fetch(`/api/comments/${comment_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    body: comment,
+    credentials: "include",
+    method: "put",
+  });
+}
+
+function deleteComment(comment_id: number, cookie: string) {
+  return new APIContext("ArticlesDetailCommentsDelete").fetch(`/api/comments/${comment_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "delete",
+  });
 }
 
 function getComments(article_id: number, cookie: string) {

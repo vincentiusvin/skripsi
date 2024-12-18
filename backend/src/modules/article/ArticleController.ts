@@ -22,10 +22,15 @@ const ArticleResponseSchema = z.object({
   description: z.string(),
   image: z.string().nullable().optional(),
   content: z.string(),
+  created_at: z.date(),
 });
 
 const ArticleParamSchema = z.object({
   article_id: zodStringReadableAsNumber("Nomor artikel tidak valid!"),
+});
+
+const CommentParamSchema = z.object({
+  comment_id: zodStringReadableAsNumber("Nomor komentar tidak valid!"),
 });
 
 const ArticleUpdateSchema = z
@@ -67,6 +72,10 @@ const ArticleCommentCreationSchema = z.object({
   comment: z.string(defaultError("Komentar tidak valid!")).min(1),
 });
 
+const ArticleCommentUpdateSchema = z.object({
+  comment: z.string(defaultError("Komentar tidak valid!")).min(1).optional(),
+});
+
 export class ArticleController extends Controller {
   private article_service: ArticleService;
   constructor(express_server: Express, article_service: ArticleService) {
@@ -87,6 +96,8 @@ export class ArticleController extends Controller {
       ArticlesDetailLikesDetailDelete: this.ArticlesDetailLikesDetailDelete,
       ArticlesDetailCommentsGet: this.ArticlesDetailCommentsGet,
       ArticlesDetailCommentsPost: this.ArticlesDetailCommentsPost,
+      ArticlesDetailCommentsDelete: this.ArticlesDetailCommentsDelete,
+      ArticlesDetailCommentsPut: this.ArticlesDetailCommentsPut,
     };
   }
 
@@ -306,6 +317,45 @@ export class ArticleController extends Controller {
 
       const result = await this.article_service.getCommentByID(id.id);
       res.status(201).json(result);
+    },
+  });
+
+  ArticlesDetailCommentsDelete = new Route({
+    method: "delete",
+    path: "/api/comments/:comment_id",
+    schema: {
+      Params: CommentParamSchema,
+      ResBody: z.object({
+        msg: z.string(),
+      }),
+    },
+    priors: [validateLogged],
+    handler: async (req, res) => {
+      const comment_id = Number(req.params.comment_id);
+      const user_id = req.session.user_id!;
+
+      await this.article_service.deleteComment(comment_id, user_id);
+      res.status(200).json({ msg: "Artikel berhasil dihapus! " });
+    },
+  });
+
+  ArticlesDetailCommentsPut = new Route({
+    method: "put",
+    path: "/api/comments/:comment_id",
+    schema: {
+      Params: CommentParamSchema,
+      ReqBody: ArticleCommentUpdateSchema,
+      ResBody: ArticleCommentResponseSchema,
+    },
+    priors: [validateLogged],
+    handler: async (req, res) => {
+      const comment_id = Number(req.params.comment_id);
+      const user_id = req.session.user_id!;
+      const { comment } = req.body;
+
+      await this.article_service.updateComment(comment_id, { comment }, user_id);
+      const result = await this.article_service.getCommentByID(comment_id);
+      res.status(200).json(result);
     },
   });
 }

@@ -9,6 +9,7 @@ const defaultArticleFields = [
   "articles.user_id",
   "articles.image as image",
   "articles.content as content",
+  "articles.created_at",
 ] as const;
 
 const defaultCommentFields = [
@@ -153,6 +154,7 @@ export class ArticleRepository {
       .selectFrom("comments")
       .select(defaultCommentFields)
       .where("comments.article_id", "=", articles_id)
+      .orderBy("id desc")
       .execute();
   }
 
@@ -180,5 +182,23 @@ export class ArticleRepository {
       throw new Error("Gagal memasukkan komentar!");
     }
     return res;
+  }
+
+  async updateComment(obj: { comment_id: number; comment?: string }) {
+    const { comment_id, comment } = obj;
+
+    if (comment !== undefined) {
+      await this.db
+        .updateTable("comments")
+        .set({
+          comment,
+        })
+        .where("comments.id", "=", comment_id)
+        .executeTakeFirst();
+    }
+  }
+
+  async deleteComment(comment_id: number) {
+    await this.db.deleteFrom("comments").where("comments.id", "=", comment_id).execute();
   }
 }

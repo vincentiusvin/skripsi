@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { z } from "zod";
 import { Controller, Route } from "../../helpers/controller.js";
-import { AuthError } from "../../helpers/error.js";
+import { AuthError, NotFoundError } from "../../helpers/error.js";
 import { validateLogged } from "../../helpers/validate.js";
 import {
   defaultError,
@@ -294,6 +294,9 @@ export class UserController extends Controller {
     handler: async (req, res) => {
       const id = Number(req.params.id);
       const result = await this.user_service.getUserDetail(id);
+      if (result == undefined) {
+        throw new NotFoundError("Gagal menemukan pengguna!");
+      }
       res.status(200).json(result);
     },
   });

@@ -105,6 +105,11 @@ export async function baseCase(db: Kysely<DB>) {
         password: hashed,
         email: "articleliker@example.com",
       },
+      {
+        name: "article commenter",
+        password: hashed,
+        email: "articlecommenter@example.com",
+      },
     ])
     .returning(["id", "name", "email"])
     .execute();
@@ -133,6 +138,7 @@ export async function baseCase(db: Kysely<DB>) {
   const email_chat_user = { ...user_ids[14], password: orig_password };
   const article_user = { ...user_ids[15], password: orig_password };
   const article_liker = { ...user_ids[16], password: orig_password };
+  const article_commenter = { ...user_ids[17], password: orig_password };
 
   await db
     .insertInto("orgs_users")
@@ -523,8 +529,19 @@ export async function baseCase(db: Kysely<DB>) {
     .returning(["article_id", "user_id"])
     .execute();
 
+  const comment = await db
+    .insertInto("comments")
+    .values({
+      article_id: article.id,
+      comment: "Testing comment",
+      user_id: article_commenter.id,
+    })
+    .returning(["id", "user_id", "comments.comment"])
+    .execute();
+
   return {
     article,
+    comment,
     article_liker,
     article_user,
     verified_otp,
@@ -553,6 +570,7 @@ export async function baseCase(db: Kysely<DB>) {
     chat,
     message,
     user_contribution,
+    article_commenter,
     admin_contribution,
     notifications,
     notif_user,

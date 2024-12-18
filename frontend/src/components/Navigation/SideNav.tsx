@@ -9,6 +9,7 @@ import {
   Logout,
   ManageAccounts,
   Message,
+  Newspaper,
   People,
   Settings,
   Shield,
@@ -265,6 +266,11 @@ function SideNavBrowse() {
       link: `/users`,
       name: `Cari Teman`,
       avatar: <People />,
+    },
+    {
+      link: `/articles`,
+      name: `Artikel`,
+      avatar: <Newspaper />,
     },
   );
 

@@ -109,7 +109,13 @@ function UserProfile(props: { viewed_id: number; our_id?: number }) {
               py: 2,
             }}
           >
-            <Typography variant="h4" fontWeight={"bold"}>
+            <Typography
+              variant="h4"
+              fontWeight={"bold"}
+              sx={{
+                wordBreak: "break-word",
+              }}
+            >
               {user.user_name}
             </Typography>
             <Grid container spacing={2} mt={2}>

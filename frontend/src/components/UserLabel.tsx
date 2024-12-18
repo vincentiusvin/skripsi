@@ -26,7 +26,16 @@ function UserLabel(props: {
             user_id={user_id}
           />
         ) : null}
-        {!disableName ? <Typography variant="body1">{user.user_name}</Typography> : null}
+        {!disableName ? (
+          <Typography
+            sx={{
+              wordBreak: "break-word",
+            }}
+            variant="body1"
+          >
+            {user.user_name}
+          </Typography>
+        ) : null}
       </Stack>
     );
   }
@@ -34,7 +43,16 @@ function UserLabel(props: {
   return (
     <Stack direction={"row"} textOverflow={"ellipsis"} alignItems={"center"} spacing={2}>
       {!disableImage ? <UserAvatar user_id={user_id} /> : null}
-      {!disableName ? <Typography variant="body1">{user.user_name}</Typography> : null}
+      {!disableName ? (
+        <Typography
+          sx={{
+            wordBreak: "break-word",
+          }}
+          variant="body1"
+        >
+          {user.user_name}
+        </Typography>
+      ) : null}
     </Stack>
   );
 }
