@@ -97,79 +97,60 @@ function NewestProjects() {
   return (
     <Box
       sx={{
-        position: "relative",
+        paddingY: 16,
       }}
     >
-      <Box
-        sx={{
-          position: "absolute",
-          height: "100%",
-          width: "200vw",
-          backgroundImage: (theme) =>
-            theme.palette.mode === "dark" ? `url("${blobDark}")` : `url("${blobLight}")`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          left: "-20%",
-          zIndex: -1,
-        }}
-      ></Box>
-      <Box
-        sx={{
-          paddingY: 16,
-        }}
-      >
-        <Typography variant="h4" fontWeight="bold">
-          Proyek Terbaru
-        </Typography>
-        <Typography variant="caption">
-          Proyek-proyek ini baru dimulai dan membutuhkan bantuan anda
-        </Typography>
-        <Grid container marginTop={4} spacing={2}>
-          {projects?.map((x) => (
-            <Grid
-              key={x.project_id}
-              size={{
-                xs: 12,
-                sm: 6,
-                lg: 4,
-              }}
-            >
-              <ProjectCard project_id={x.project_id} />
-            </Grid>
-          ))}
+      <Typography variant="h4" fontWeight="bold">
+        Proyek Terbaru
+      </Typography>
+      <Typography variant="caption">
+        Proyek-proyek ini baru dimulai dan membutuhkan bantuan anda
+      </Typography>
+      <Grid container marginTop={4} spacing={2}>
+        {projects?.map((x) => (
           <Grid
+            key={x.project_id}
             size={{
               xs: 12,
               sm: 6,
               lg: 4,
             }}
           >
-            <Card
+            <ProjectCard project_id={x.project_id} />
+          </Grid>
+        ))}
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6,
+            lg: 4,
+          }}
+        >
+          <Card
+            sx={{
+              height: "100%",
+            }}
+          >
+            <CardActionArea
               sx={{
                 height: "100%",
               }}
             >
-              <CardActionArea
-                sx={{
-                  height: "100%",
-                }}
-              >
-                <StyledLink to={"/projects"}>
-                  <Stack
-                    justifyContent={"center"}
-                    direction="column"
-                    height={"100%"}
-                    alignItems={"center"}
-                  >
-                    <ArrowRightAlt />
-                    <Typography variant="h6">Lihat lebih banyak</Typography>
-                  </Stack>
-                </StyledLink>
-              </CardActionArea>
-            </Card>
-          </Grid>
+              <StyledLink to={"/projects"}>
+                <Stack
+                  justifyContent={"center"}
+                  direction="column"
+                  height={"100%"}
+                  alignItems={"center"}
+                >
+                  <ArrowRightAlt />
+                  <Typography variant="h6">Lihat lebih banyak</Typography>
+                </Stack>
+              </StyledLink>
+            </CardActionArea>
+          </Card>
         </Grid>
-      </Box>
+      </Grid>
     </Box>
   );
 }
@@ -178,93 +159,85 @@ function HugeTitle() {
   const { data: session_data } = useSessionGet();
 
   return (
-    <Box
-      sx={{
-        position: "relative",
-        marginTop: -2,
-      }}
-    >
-      <Box
+    <Stack spacing={4} paddingY={20}>
+      <Typography
+        variant="h2"
+        fontWeight={"bold"}
+        textAlign={"center"}
         sx={{
-          position: "absolute",
-          height: "100%",
-          width: "200vw",
-          backgroundImage: (theme) =>
-            theme.palette.mode === "dark" ? `url("${blobDark}")` : `url("${blobLight}")`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          left: "-20%",
-          zIndex: -1,
+          background: (theme) =>
+            theme.palette.mode === "dark"
+              ? "linear-gradient(110deg, hsl(200, 70%, 30%) 20%, hsl(270, 70%, 60%) 90%)"
+              : "linear-gradient(110deg, hsl(280, 100%, 80%) 10%, hsl(200, 100%, 30%) 90%)",
+          backgroundClip: "text",
+          WebkitTextFillColor: "transparent",
         }}
-      ></Box>
-      <Stack spacing={4} paddingY={20}>
-        <Typography
-          variant="h2"
-          fontWeight={"bold"}
-          textAlign={"center"}
-          sx={{
-            background: (theme) =>
-              theme.palette.mode === "dark"
-                ? "linear-gradient(110deg, hsl(200, 70%, 30%) 20%, hsl(270, 70%, 60%) 90%)"
-                : "linear-gradient(110deg, hsl(280, 100%, 80%) 10%, hsl(200, 100%, 30%) 90%)",
-            backgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          Dev4You
-        </Typography>
-        <Typography variant="h6" fontWeight={"light"} textAlign={"center"}>
-          Di mana <b>developer relawan</b> dan <b>organisasi nirlaba</b> bertemu
-        </Typography>
-        {!session_data?.logged ? (
-          <Stack direction="row" justifyContent={"center"} spacing={4}>
-            <StyledLink to={"/login"}>
-              <Button
-                variant="contained"
-                sx={{
-                  fontSize: 16,
-                  paddingX: 8,
-                  paddingY: 1,
-                }}
-                color="secondary"
-              >
-                Masuk
-              </Button>
-            </StyledLink>
-            <StyledLink to="/register">
-              <Button
-                sx={{
-                  fontSize: 16,
-                  paddingX: 8,
-                  paddingY: 1,
-                }}
-                color="primary"
-                variant="contained"
-              >
-                Daftar
-              </Button>
-            </StyledLink>
-          </Stack>
-        ) : null}
-      </Stack>
-    </Box>
+      >
+        Dev4You
+      </Typography>
+      <Typography variant="h6" fontWeight={"light"} textAlign={"center"}>
+        Di mana <b>developer relawan</b> dan <b>organisasi nirlaba</b> bertemu
+      </Typography>
+      {!session_data?.logged ? (
+        <Stack direction="row" justifyContent={"center"} spacing={4}>
+          <StyledLink to={"/login"}>
+            <Button
+              variant="contained"
+              sx={{
+                fontSize: 16,
+                paddingX: 8,
+                paddingY: 1,
+              }}
+              color="secondary"
+            >
+              Masuk
+            </Button>
+          </StyledLink>
+          <StyledLink to="/register">
+            <Button
+              sx={{
+                fontSize: 16,
+                paddingX: 8,
+                paddingY: 1,
+              }}
+              color="primary"
+              variant="contained"
+            >
+              Daftar
+            </Button>
+          </StyledLink>
+        </Stack>
+      ) : null}
+    </Stack>
   );
 }
 
 function LandingPage() {
   const responsive = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
   return (
-    <Stack paddingX={`calc(15% - 24px)`}>
+    <Stack gap={8}>
+      <Box
+        sx={{
+          marginTop: -2,
+          paddingX: 2,
+          marginX: -2,
+          backgroundImage: (theme) =>
+            theme.palette.mode === "dark" ? `url("${blobDark}")` : `url("${blobLight}")`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+        }}
+      >
+        <HugeTitle />
+      </Box>
       <Grid
         container
+        paddingX={`calc(15% - 24px)`}
         justifyContent={"center"}
         alignItems={"center"}
         rowSpacing={8}
         columnSpacing={16}
       >
-        <Grid size={12}>
-          <HugeTitle />
-        </Grid>
+        <Grid size={12}></Grid>
         {landingData.map((x, i) => {
           const align_left = i % 2 === 0;
 
@@ -316,13 +289,24 @@ function LandingPage() {
 
           return order;
         })}
-        <Grid size={12}>
-          <NewestProjects />
-        </Grid>
-        <Grid size={12}>
-          <NewestContributions />
-        </Grid>
       </Grid>
+      <Box
+        sx={{
+          backgroundImage: (theme) =>
+            theme.palette.mode === "dark" ? `url("${blobDark}")` : `url("${blobLight}")`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          paddingX: 2,
+          marginX: -2,
+        }}
+      >
+        <Box paddingX={`calc(15% - 24px)`}>
+          <NewestProjects />
+        </Box>
+      </Box>
+      <Box paddingX={`calc(15% - 24px)`}>
+        <NewestContributions />
+      </Box>
     </Stack>
   );
 }
