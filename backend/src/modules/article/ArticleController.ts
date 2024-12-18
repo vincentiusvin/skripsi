@@ -22,6 +22,7 @@ const ArticleResponseSchema = z.object({
   description: z.string(),
   image: z.string().nullable().optional(),
   content: z.string(),
+  created_at: z.date(),
 });
 
 const ArticleParamSchema = z.object({

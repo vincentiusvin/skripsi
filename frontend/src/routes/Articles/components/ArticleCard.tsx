@@ -14,7 +14,7 @@ function ArticleCard(props: { article_id: number }) {
   const { data: article_data } = useArticlesDetailGet({ article_id: article_id });
 
   if (article_data == undefined) {
-    return <Skeleton></Skeleton>;
+    return <Skeleton />;
   }
 
   return (

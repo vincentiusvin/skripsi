@@ -1,9 +1,10 @@
 import { Box, Button, Divider, Skeleton, Stack, Typography } from "@mui/material";
-import Grid from "@mui/material/Grid2";
+import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { Redirect, useLocation, useParams } from "wouter";
 import RichViewer from "../../components/RichViewer";
 import StyledLink from "../../components/StyledLink.tsx";
+import UserLabel from "../../components/UserLabel.tsx";
 import { useArticlesDetailDelete, useArticlesDetailGet } from "../../queries/article_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks";
 import ArticleCommentSection from "./components/ArticleCommentSection";
@@ -41,42 +42,36 @@ function ArticlesDetail(props: { article_id: number }) {
         <Typography variant="h4" fontWeight="bold" textAlign="center">
           {article.name}
         </Typography>
+        <Stack direction={"row"} alignItems={"center"}>
+          <Box flexGrow={1}>
+            <Stack direction="row" gap={2}>
+              <UserLabel user_id={article.user_id} disableName />
+              <Box>
+                <UserLabel user_id={article.user_id} disableImage />
+                <Typography variant="caption" color="textDisabled">
+                  {dayjs(article.created_at).format("ddd, DD/MM/YY")}
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+          <ArticleLikeSection article_id={article_id} />
+        </Stack>
+        {user_id === article.user_id && (
+          <Stack direction="row" gap={2}>
+            <StyledLink to={`/articles/${article_id}/edit`}>
+              <Button variant="contained" color="primary">
+                Edit Artikel
+              </Button>
+            </StyledLink>
+            <Button variant="contained" color="error" onClick={() => deleteArticle()}>
+              Hapus Artikel
+            </Button>
+          </Stack>
+        )}
         <Divider />
-        <ArticleLikeSection article_id={article_id} />
-        <Divider />
-        <Box sx={{ marginY: 3 }}>
-          <Box
-            component="img"
-            src={article.image ?? ""}
-            alt="Article Banner"
-            sx={{
-              width: "100%",
-              height: "auto",
-              maxHeight: "400px",
-              objectFit: "cover",
-              borderRadius: 2,
-            }}
-          />
-        </Box>
         <Box sx={{ paddingY: 2 }}>
           <RichViewer>{article.content ?? ""}</RichViewer>
         </Box>
-        {user_id === article.user_id && (
-          <Grid container spacing={2} justifyContent="center">
-            <Grid>
-              <StyledLink to={`/articles/${article_id}/edit`}>
-                <Button variant="contained" color="primary">
-                  Edit Artikel
-                </Button>
-              </StyledLink>
-            </Grid>
-            <Grid>
-              <Button variant="contained" color="error" onClick={() => deleteArticle()}>
-                Hapus Artikel
-              </Button>
-            </Grid>
-          </Grid>
-        )}
         <Box sx={{ paddingY: 2, marginTop: 4 }}>
           <ArticleCommentSection article_id={article_id} />
         </Box>

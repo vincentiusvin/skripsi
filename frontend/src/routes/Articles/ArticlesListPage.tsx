@@ -2,6 +2,7 @@ import { Add, SearchOutlined } from "@mui/icons-material";
 import { Avatar, Button, InputAdornment, Paper, Stack, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useDebounce } from "use-debounce";
+import readImg from "../../assets/read.png";
 import QueryPagination from "../../components/QueryPagination";
 import useQueryPagination from "../../components/QueryPagination/hook";
 import StyledLink from "../../components/StyledLink";
@@ -46,9 +47,8 @@ function ArticlesListPage() {
               md: 8,
             }}
           >
-            <Typography marginBottom={4}>Anda dapat mencari artikel di halaman ini.</Typography>
             <Typography marginBottom={2}>
-              Anda juga dapat menambahkan artikel baru dan mengeditnya dihalaman ini.
+              Anda dapat mencari artikel di halaman ini atau menambahkan artikel baru.
             </Typography>
             <StyledLink to={"/articles/add"}>
               <Button startIcon={<Add />} variant="contained">
@@ -63,6 +63,7 @@ function ArticlesListPage() {
                 height: "100%",
               }}
               variant="square"
+              src={readImg}
             ></Avatar>
           </Grid>
         </Grid>

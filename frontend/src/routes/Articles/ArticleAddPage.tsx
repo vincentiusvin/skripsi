@@ -93,13 +93,13 @@ function ArticleAdd() {
             fullWidth
             onChange={(e) => setArticleDescription(e.target.value)}
             required
-            label="Deskripsi Artikel"
+            label="Deskripsi Singkat"
           />
         </Stack>
       </Grid>
       <Grid size={{ xs: 12 }}>
         <RichEditor
-          label="Isi Artikel"
+          label="Isi Artikel *"
           defaultValue={articleContent}
           onBlur={(content) => setArticleContent(content)}
         />

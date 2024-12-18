@@ -9,6 +9,7 @@ const defaultArticleFields = [
   "articles.user_id",
   "articles.image as image",
   "articles.content as content",
+  "articles.created_at",
 ] as const;
 
 const defaultCommentFields = [
@@ -153,6 +154,7 @@ export class ArticleRepository {
       .selectFrom("comments")
       .select(defaultCommentFields)
       .where("comments.article_id", "=", articles_id)
+      .orderBy("id desc")
       .execute();
   }
 

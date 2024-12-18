@@ -85,20 +85,20 @@ function ArticlesEdit(props: { article_id: number }) {
           <TextField
             fullWidth
             onChange={(e) => setArticleName(e.target.value)}
-            label="Article Name"
+            label="Judul Artikel"
             value={articleName ?? article_data.name}
           />
           <TextField
             fullWidth
             onChange={(e) => setArticleDescription(e.target.value)}
-            label="Description"
+            label="Deskripsi Singkat"
             value={articleDescription ?? article_data.description}
           />
         </Stack>
       </Grid>
       <Grid size={12}>
         <RichEditor
-          label="Article Content"
+          label="Isi Artikel *"
           defaultValue={articleContent ?? article_data.content}
           onBlur={(x) => setArticleContent(x)}
         />

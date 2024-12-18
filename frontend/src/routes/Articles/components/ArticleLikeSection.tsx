@@ -4,8 +4,8 @@ import { Box, IconButton, Skeleton, Typography } from "@mui/material";
 import {
   useArticleLike,
   useArticleLikeStatusGet,
-  useArticlesLikesGet,
   useArticleUnlike,
+  useArticlesLikesGet,
 } from "../../../queries/article_hooks.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 
@@ -52,13 +52,15 @@ function ArticleLikeSection(props: { article_id: number }) {
   }
 
   return (
-    <Box sx={{ textAlign: "center" }}>
+    <Box textAlign={"center"}>
       {session?.logged ? (
         <ArticleLikeFunctional article_id={article_id} user_id={session.user_id} />
       ) : (
         <ArticleLikeDecorative />
       )}
-      <Typography variant="body2">Disukai oleh {likes.likes} orang</Typography>
+      <Typography variant="body2" flexGrow={1}>
+        Disukai oleh {likes.likes} orang
+      </Typography>
     </Box>
   );
 }

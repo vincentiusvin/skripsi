@@ -1,7 +1,8 @@
-import { Button, Divider, Paper, Skeleton, Stack, Typography } from "@mui/material";
+import { Button, Divider, Paper, Skeleton, Stack, TextField, Typography } from "@mui/material";
+import dayjs from "dayjs";
 import { useState } from "react";
-import RichEditor from "../../../components/RichEditor";
-import RichViewer from "../../../components/RichViewer";
+import StyledLink from "../../../components/StyledLink.tsx";
+import UserLabel from "../../../components/UserLabel.tsx";
 import {
   useArticlesDetailCommentPost,
   useArticlesDetailCommentsGet,
@@ -18,13 +19,11 @@ function ArticleCommentSection(props: { article_id: number }) {
   const user_id = session_data?.logged ? session_data.user_id : undefined;
 
   const [newComment, setNewComment] = useState("");
-  const [isPosting, setIsPosting] = useState(false);
 
   const { mutate: addComment } = useArticlesDetailCommentPost({
     article_id,
     onSuccess: () => {
       setNewComment("");
-      setIsPosting(false);
     },
   });
 
@@ -32,6 +31,7 @@ function ArticleCommentSection(props: { article_id: number }) {
     addComment({
       comment: newComment,
     });
+    setNewComment("");
   };
 
   if (comments == undefined) {
@@ -40,10 +40,28 @@ function ArticleCommentSection(props: { article_id: number }) {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h5" fontWeight="medium">
-        Tambahkan Komentar
+      <Typography variant="h6" fontWeight="medium">
+        Komentar
       </Typography>
       <Divider />
+      {user_id ? (
+        <Stack spacing={2}>
+          <TextField
+            label="Komentar"
+            onChange={(e) => {
+              setNewComment(e.target.value);
+            }}
+            value={newComment}
+            minRows={3}
+            multiline
+          />
+          <Button variant="contained" onClick={handlePostComment}>
+            Tambah Komentar
+          </Button>
+        </Stack>
+      ) : (
+        <Typography color="error">Anda harus login untuk menambahkan komentar.</Typography>
+      )}
       <Stack sx={{ maxHeight: "300px", overflowY: "auto" }} spacing={2}>
         {comments.map((comment, index) => (
           <Paper
@@ -52,22 +70,19 @@ function ArticleCommentSection(props: { article_id: number }) {
               padding: 2,
             }}
           >
-            <Typography color="text.secondary">{`User ${comment.user_id}`}</Typography>
-            <RichViewer>{comment.comment}</RichViewer>
+            <Stack direction={"row"} gap={4} alignItems={"center"}>
+              <StyledLink to={`/users/${comment.user_id}`}>
+                <UserLabel user_id={comment.user_id} size="small"></UserLabel>
+              </StyledLink>
+              <Typography variant="caption" flexGrow={1} textAlign={"end"}>
+                {dayjs(comment.created_at).format("ddd, DD/MM/YY HH:mm")}
+              </Typography>
+            </Stack>
+            <br />
+            <Typography whiteSpace={"pre-wrap"}>{comment.comment}</Typography>
           </Paper>
         ))}
       </Stack>
-      <Divider />
-      {user_id ? (
-        <Stack spacing={2}>
-          <RichEditor label={"Komentar"} onBlur={(x) => setNewComment(x)}></RichEditor>
-          <Button variant="contained" onClick={handlePostComment} disabled={isPosting}>
-            Tambah Komentar
-          </Button>
-        </Stack>
-      ) : (
-        <Typography color="error">Anda harus login untuk menambahkan komentar.</Typography>
-      )}
     </Stack>
   );
 }
