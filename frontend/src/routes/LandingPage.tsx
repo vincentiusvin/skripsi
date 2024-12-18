@@ -106,7 +106,7 @@ function NewestProjects() {
           height: "100%",
           width: "200vw",
           backgroundImage: (theme) =>
-            theme.palette.mode === "dark" ? `url(${blobDark})` : `url(${blobLight})`,
+            theme.palette.mode === "dark" ? `url("${blobDark}")` : `url("${blobLight}")`,
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
           left: "-20%",
@@ -190,7 +190,7 @@ function HugeTitle() {
           height: "100%",
           width: "200vw",
           backgroundImage: (theme) =>
-            theme.palette.mode === "dark" ? `url(${blobDark})` : `url(${blobLight})`,
+            theme.palette.mode === "dark" ? `url("${blobDark}")` : `url("${blobLight}")`,
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
           left: "-20%",
