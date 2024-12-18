@@ -1,6 +1,6 @@
 import { AuthError, NotFoundError } from "../../helpers/error";
 import { TransactionManager } from "../../helpers/transaction/transaction.js";
-import { envUserServiceFactory, UserService } from "../user/UserService.js";
+import { UserService, envUserServiceFactory } from "../user/UserService.js";
 import { ArticleRepository } from "./ArticleRepository";
 
 export function articleServiceFactory(transaction_manager: TransactionManager) {
@@ -117,5 +117,28 @@ export class ArticleService {
 
   async addComment(obj: { article_id: number; user_id: number; comment: string }) {
     return await this.article_repo.addComment(obj);
+  }
+  async deleteComment(comment_id: number, sender_id: number) {
+    const comment = await this.article_repo.getCommentByID(comment_id);
+    if (comment == undefined) {
+      throw new NotFoundError("Gagal menemukan komentar!");
+    }
+    const is_admin = await this.user_service.isAdminUser(sender_id);
+    if (comment.user_id !== sender_id && !is_admin) {
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
+    }
+    await this.article_repo.deleteComment(comment_id);
+  }
+
+  async updateComment(comment_id: number, obj: { comment: string }, sender_id: number) {
+    const comment = await this.article_repo.getCommentByID(comment_id);
+    if (comment == undefined) {
+      throw new NotFoundError("Gagal menemukan komentar!");
+    }
+    const is_admin = await this.user_service.isAdminUser(sender_id);
+    if (comment.user_id !== sender_id && !is_admin) {
+      throw new AuthError("Anda tidak memiliki akses untuk melakukan hal ini!");
+    }
+    await this.article_repo.updateComment({ comment_id, comment: obj.comment });
   }
 }
