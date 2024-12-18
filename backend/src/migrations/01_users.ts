@@ -2,7 +2,7 @@ import { Kysely, sql } from "kysely";
 
 export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
-    .createTable("ms_users")
+    .createTable("users")
     .addColumn("id", "serial", (col) => col.primaryKey())
     .addColumn("name", "text", (col) => col.notNull().unique())
     .addColumn("password", "text", (col) => col.notNull())
@@ -19,5 +19,5 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
-  await db.schema.dropTable("ms_users").execute();
+  await db.schema.dropTable("users").execute();
 }

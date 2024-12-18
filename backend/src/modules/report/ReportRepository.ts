@@ -4,15 +4,15 @@ import { paginateQuery } from "../../helpers/pagination.js";
 import { ReportStatus, parseReportStatus } from "./ReportMisc.js";
 
 const defaultReportFields = [
-  "ms_reports.id",
-  "ms_reports.sender_id",
-  "ms_reports.title",
-  "ms_reports.description",
-  "ms_reports.status",
-  "ms_reports.created_at",
-  "ms_reports.resolved_at",
-  "ms_reports.resolution",
-  "ms_reports.chatroom_id",
+  "reports.id",
+  "reports.sender_id",
+  "reports.title",
+  "reports.description",
+  "reports.status",
+  "reports.created_at",
+  "reports.resolved_at",
+  "reports.resolution",
+  "reports.chatroom_id",
 ] as const;
 
 export class ReportRepository {
@@ -22,22 +22,22 @@ export class ReportRepository {
   }
 
   applyFilterToQuery<O>(
-    query: SelectQueryBuilder<DB, "ms_reports", O>,
+    query: SelectQueryBuilder<DB, "reports", O>,
     filter: { user_id?: number; status?: ReportStatus },
   ) {
     const { user_id, status } = filter;
     if (user_id != undefined) {
-      query = query.where("ms_reports.sender_id", "=", user_id);
+      query = query.where("reports.sender_id", "=", user_id);
     }
     if (status != undefined) {
-      query = query.where("ms_reports.status", "=", status);
+      query = query.where("reports.status", "=", status);
     }
     return query;
   }
 
   async countReports(opts: { user_id?: number; status?: ReportStatus }) {
     const { user_id, status } = opts;
-    let query = this.db.selectFrom("ms_reports").select((eb) => eb.fn.countAll().as("count"));
+    let query = this.db.selectFrom("reports").select((eb) => eb.fn.countAll().as("count"));
     query = this.applyFilterToQuery(query, { user_id, status });
     return await query.executeTakeFirstOrThrow();
   }
@@ -49,7 +49,7 @@ export class ReportRepository {
     status?: ReportStatus;
   }) {
     const { user_id, status, page, limit } = opts;
-    let query = this.db.selectFrom("ms_reports").select(defaultReportFields).orderBy("id asc");
+    let query = this.db.selectFrom("reports").select(defaultReportFields).orderBy("id asc");
     query = this.applyFilterToQuery(query, { user_id, status });
     query = paginateQuery(query, {
       limit,
@@ -65,7 +65,7 @@ export class ReportRepository {
 
   async getReportByID(report_id: number) {
     const ret = await this.db
-      .selectFrom("ms_reports")
+      .selectFrom("reports")
       .select(defaultReportFields)
       .where("id", "=", report_id)
       .executeTakeFirst();
@@ -89,7 +89,7 @@ export class ReportRepository {
     resolved_at?: Date;
     chatroom_id?: number;
   }) {
-    return await this.db.insertInto("ms_reports").values(opts).returning("id").executeTakeFirst();
+    return await this.db.insertInto("reports").values(opts).returning("id").executeTakeFirst();
   }
 
   async updateReport(
@@ -105,11 +105,11 @@ export class ReportRepository {
     },
   ) {
     if (Object.values(opts).some((x) => x != undefined)) {
-      await this.db.updateTable("ms_reports").set(opts).where("id", "=", report_id).execute();
+      await this.db.updateTable("reports").set(opts).where("id", "=", report_id).execute();
     }
   }
 
   async deleteReport(report_id: number) {
-    await this.db.deleteFrom("ms_reports").where("id", "=", report_id).execute();
+    await this.db.deleteFrom("reports").where("id", "=", report_id).execute();
   }
 }

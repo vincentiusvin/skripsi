@@ -92,7 +92,7 @@ export class NotificationRepository {
   }) {
     const { startDate, endDate, type, user_id, read } = opts;
     let query = this.db
-      .selectFrom("ms_notifications")
+      .selectFrom("notifications")
       .select(defaultNotificationFields)
       .orderBy("created_at desc");
 
@@ -125,9 +125,9 @@ export class NotificationRepository {
 
   async getNotification(notification_id: number) {
     const result = await this.db
-      .selectFrom("ms_notifications")
+      .selectFrom("notifications")
       .select(defaultNotificationFields)
-      .where("ms_notifications.id", "=", notification_id)
+      .where("notifications.id", "=", notification_id)
       .executeTakeFirst();
 
     if (!result) {
@@ -163,7 +163,7 @@ export class NotificationRepository {
     }
 
     return await this.db
-      .updateTable("ms_notifications")
+      .updateTable("notifications")
       .set({
         read,
         title,
@@ -177,11 +177,11 @@ export class NotificationRepository {
 
   async massUpdateNotificationStatus(read: boolean, user_id: number) {
     return await this.db
-      .updateTable("ms_notifications")
+      .updateTable("notifications")
       .set({
         read,
       })
-      .where("ms_notifications.user_id", "=", user_id)
+      .where("notifications.user_id", "=", user_id)
       .execute();
   }
 
@@ -195,7 +195,7 @@ export class NotificationRepository {
     const { title, description, type, user_id, type_id } = opts;
 
     return await this.db
-      .insertInto("ms_notifications")
+      .insertInto("notifications")
       .values({
         user_id,
         title,

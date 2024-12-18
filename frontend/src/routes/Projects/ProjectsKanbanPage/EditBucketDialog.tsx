@@ -9,7 +9,9 @@ import {
   IconButton,
   Skeleton,
   TextField,
+  Typography,
 } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import {
   useBucketsDetailDelete,
@@ -28,7 +30,15 @@ function EditBucketDialog(props: { bucket_id: number }) {
       reset();
     },
   });
-  const { mutate: deleteBucket } = useBucketsDetailDelete({ bucket_id });
+  const { mutate: deleteBucket } = useBucketsDetailDelete({
+    bucket_id,
+    onSuccess: () => {
+      enqueueSnackbar({
+        message: <Typography>Kategori dihapus!</Typography>,
+        variant: "success",
+      });
+    },
+  });
 
   function reset() {
     setNewName(undefined);

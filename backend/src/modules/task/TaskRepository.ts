@@ -2,12 +2,12 @@ import { ExpressionBuilder, Kysely } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { DB } from "../../db/db_types.js";
 
-function taskWithUsers(eb: ExpressionBuilder<DB, "ms_tasks">) {
+function taskWithUsers(eb: ExpressionBuilder<DB, "tasks">) {
   return jsonArrayFrom(
     eb
       .selectFrom("tasks_users")
       .select(["tasks_users.user_id"])
-      .whereRef("tasks_users.task_id", "=", "ms_tasks.id"),
+      .whereRef("tasks_users.task_id", "=", "tasks.id"),
   );
 }
 
@@ -19,9 +19,9 @@ export class TaskRepository {
 
   async getBucketByID(bucket_id: number) {
     const result = await this.db
-      .selectFrom("ms_task_buckets")
+      .selectFrom("task_buckets")
       .select(["name", "id", "project_id"])
-      .where("ms_task_buckets.id", "=", bucket_id)
+      .where("task_buckets.id", "=", bucket_id)
       .executeTakeFirst();
 
     return result;
@@ -30,45 +30,39 @@ export class TaskRepository {
   async updateBucket(bucket_id: number, data: { name?: string }) {
     if (data.name != undefined) {
       await this.db
-        .updateTable("ms_task_buckets")
+        .updateTable("task_buckets")
         .set({
           name: data.name,
         })
-        .where("ms_task_buckets.id", "=", bucket_id)
+        .where("task_buckets.id", "=", bucket_id)
         .executeTakeFirst();
     }
   }
 
   async deleteBucket(bucket_id: number) {
-    await this.db
-      .deleteFrom("ms_task_buckets")
-      .where("ms_task_buckets.id", "=", bucket_id)
-      .execute();
+    await this.db.deleteFrom("task_buckets").where("task_buckets.id", "=", bucket_id).execute();
   }
 
   async deleteTask(task_id: number) {
-    const result = await this.db
-      .deleteFrom("ms_tasks")
-      .where("ms_tasks.id", "=", task_id)
-      .execute();
+    const result = await this.db.deleteFrom("tasks").where("tasks.id", "=", task_id).execute();
 
     return result;
   }
 
   async getTaskByID(task_id: number) {
     const result = await this.db
-      .selectFrom("ms_tasks")
+      .selectFrom("tasks")
       .select((eb) => [
-        "ms_tasks.id",
-        "ms_tasks.name",
-        "ms_tasks.order",
-        "ms_tasks.description",
-        "ms_tasks.bucket_id",
-        "ms_tasks.start_at",
-        "ms_tasks.end_at",
+        "tasks.id",
+        "tasks.name",
+        "tasks.order",
+        "tasks.description",
+        "tasks.bucket_id",
+        "tasks.start_at",
+        "tasks.end_at",
         taskWithUsers(eb).as("users"),
       ])
-      .where("ms_tasks.id", "=", task_id)
+      .where("tasks.id", "=", task_id)
       .executeTakeFirst();
 
     return result;
@@ -77,27 +71,27 @@ export class TaskRepository {
   async getTasks(opts: { bucket_id?: number; user_id?: number }) {
     const { bucket_id, user_id } = opts;
     let query = this.db
-      .selectFrom("ms_tasks")
+      .selectFrom("tasks")
       .select((eb) => [
-        "ms_tasks.id",
-        "ms_tasks.name",
-        "ms_tasks.order",
-        "ms_tasks.description",
-        "ms_tasks.bucket_id",
-        "ms_tasks.start_at",
-        "ms_tasks.end_at",
+        "tasks.id",
+        "tasks.name",
+        "tasks.order",
+        "tasks.description",
+        "tasks.bucket_id",
+        "tasks.start_at",
+        "tasks.end_at",
         taskWithUsers(eb).as("users"),
       ])
       .orderBy(["order asc", "id asc"]);
 
     if (bucket_id != undefined) {
-      query = query.where("ms_tasks.bucket_id", "=", bucket_id);
+      query = query.where("tasks.bucket_id", "=", bucket_id);
     }
 
     if (user_id != undefined) {
       query = query.where((eb) =>
         eb(
-          "ms_tasks.id",
+          "tasks.id",
           "in",
           eb
             .selectFrom("tasks_users")
@@ -112,7 +106,7 @@ export class TaskRepository {
 
   async getMaxOrder(bucket_id: number) {
     const max_order = await this.db
-      .selectFrom("ms_tasks")
+      .selectFrom("tasks")
       .select((eb) => eb.fn.max("order").as("max"))
       .where("bucket_id", "=", bucket_id)
       .executeTakeFirst();
@@ -130,7 +124,7 @@ export class TaskRepository {
   }) {
     const { order, users, bucket_id, name, description, end_at, start_at } = data;
     const res = await this.db
-      .insertInto("ms_tasks")
+      .insertInto("tasks")
       .values({
         bucket_id: Number(bucket_id),
         order,
@@ -170,8 +164,8 @@ export class TaskRepository {
    */
   async bumpOrderBiggerThan(bucket_id: number, order: number) {
     return await this.db
-      .updateTable("ms_tasks")
-      .set((eb) => ({ order: eb("ms_tasks.order", "+", 1) }))
+      .updateTable("tasks")
+      .set((eb) => ({ order: eb("tasks.order", "+", 1) }))
       .where((eb) => eb.and([eb("order", ">=", order), eb("bucket_id", "=", bucket_id)]))
       .execute();
   }
@@ -198,7 +192,7 @@ export class TaskRepository {
       start_at !== undefined
     ) {
       this.db
-        .updateTable("ms_tasks")
+        .updateTable("tasks")
         .set({
           bucket_id,
           description,
@@ -207,7 +201,7 @@ export class TaskRepository {
           order,
           start_at,
         })
-        .where("ms_tasks.id", "=", task_id)
+        .where("tasks.id", "=", task_id)
         .execute();
     }
 
@@ -230,12 +224,12 @@ export class TaskRepository {
   async getBuckets(opts: { project_id?: number }) {
     const { project_id } = opts;
     let query = this.db
-      .selectFrom("ms_task_buckets")
+      .selectFrom("task_buckets")
       .select(["name", "id", "project_id"])
-      .orderBy("ms_task_buckets.id asc");
+      .orderBy("task_buckets.id asc");
 
     if (project_id != undefined) {
-      query = query.where("ms_task_buckets.project_id", "=", project_id);
+      query = query.where("task_buckets.project_id", "=", project_id);
     }
 
     return query.execute();
@@ -243,12 +237,12 @@ export class TaskRepository {
 
   async addBucket(project_id: number, name: string) {
     return this.db
-      .insertInto("ms_task_buckets")
+      .insertInto("task_buckets")
       .values({
         name: name,
         project_id: Number(project_id),
       })
-      .returning("ms_task_buckets.id")
+      .returning("task_buckets.id")
       .executeTakeFirst();
   }
 }

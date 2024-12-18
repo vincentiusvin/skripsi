@@ -21,7 +21,7 @@ class TransactionTest implements Transactable<TransactionTest> {
   async insertTest() {
     const db = this.tm.getDB();
     await db
-      .insertInto("ms_category_orgs")
+      .insertInto("category_orgs")
       .values({
         name: this.name,
       })
@@ -31,7 +31,7 @@ class TransactionTest implements Transactable<TransactionTest> {
   async findInserted() {
     const result = await this.tm
       .getDB()
-      .selectFrom("ms_category_orgs")
+      .selectFrom("category_orgs")
       .where("name", "=", this.name)
       .executeTakeFirst();
     return result != undefined;

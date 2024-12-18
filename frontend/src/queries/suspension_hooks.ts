@@ -98,6 +98,9 @@ export function useSuspensionsDetailDelete(opts: {
       queryClient.invalidateQueries({
         queryKey: suspensionKeys.all(),
       });
+      queryClient.cancelQueries({
+        queryKey: suspensionKeys.detail(suspension_id),
+      });
 
       if (onSuccess) {
         onSuccess();

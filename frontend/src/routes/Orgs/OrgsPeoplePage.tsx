@@ -102,7 +102,7 @@ function OrgsPeople(props: { org_id: number }) {
     {
       members: active_members,
       deleteOption: {
-        text: "Remove",
+        text: "Hapus",
       },
       putOption: undefined,
       name: "Anggota Aktif",
@@ -110,7 +110,7 @@ function OrgsPeople(props: { org_id: number }) {
     {
       members: invited_members,
       deleteOption: {
-        text: "Cancel",
+        text: "Batal",
       },
       putOption: undefined,
       name: "Anggota Diundang",

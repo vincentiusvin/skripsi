@@ -4,31 +4,34 @@ import { DB } from "../../db/db_types.js";
 import { paginateQuery } from "../../helpers/pagination.js";
 import { OrgRoles, parseRole } from "./OrgMisc.js";
 
-const defaultOrgFields = [
-  "ms_orgs.id as org_id",
-  "ms_orgs.name as org_name",
-  "ms_orgs.description as org_description",
-  "ms_orgs.address as org_address",
-  "ms_orgs.phone as org_phone",
-  "ms_orgs.image as org_image",
-] as const;
+const defaultOrgFields = (eb: ExpressionBuilder<DB, "orgs">) =>
+  [
+    "orgs.id as org_id",
+    "orgs.name as org_name",
+    "orgs.description as org_description",
+    "orgs.address as org_address",
+    "orgs.phone as org_phone",
+    "orgs.image as org_image",
+    orgWithCategories(eb).as("org_categories"),
+    orgWithUsers(eb).as("org_users"),
+  ] as const;
 
-function orgWithCategories(eb: ExpressionBuilder<DB, "ms_orgs">) {
+function orgWithCategories(eb: ExpressionBuilder<DB, "orgs">) {
   return jsonArrayFrom(
     eb
       .selectFrom("categories_orgs")
-      .innerJoin("ms_category_orgs", "categories_orgs.category_id", "ms_category_orgs.id")
-      .select(["ms_category_orgs.name as category_name", "ms_category_orgs.id as category_id"])
-      .whereRef("categories_orgs.org_id", "=", "ms_orgs.id"),
+      .innerJoin("category_orgs", "categories_orgs.category_id", "category_orgs.id")
+      .select(["category_orgs.name as category_name", "category_orgs.id as category_id"])
+      .whereRef("categories_orgs.org_id", "=", "orgs.id"),
   );
 }
 
-function orgWithUsers(eb: ExpressionBuilder<DB, "ms_orgs">) {
+function orgWithUsers(eb: ExpressionBuilder<DB, "orgs">) {
   return jsonArrayFrom(
     eb
       .selectFrom("orgs_users")
       .select(["orgs_users.user_id", "orgs_users.role as user_role"])
-      .whereRef("orgs_users.org_id", "=", "ms_orgs.id"),
+      .whereRef("orgs_users.org_id", "=", "orgs.id"),
   ) as RawBuilder<
     {
       user_id: number;
@@ -44,14 +47,14 @@ export class OrgRepository {
   }
 
   private applyFilterToQuery<O>(
-    query: SelectQueryBuilder<DB, "ms_orgs", O>,
+    query: SelectQueryBuilder<DB, "orgs", O>,
     filter?: { keyword?: string; user_id?: number },
   ) {
     const { user_id, keyword } = filter || {};
     if (user_id) {
       query = query.where((eb) =>
         eb(
-          "ms_orgs.id",
+          "orgs.id",
           "in",
           eb
             .selectFrom("orgs_users")
@@ -64,16 +67,16 @@ export class OrgRepository {
     if (keyword != undefined && keyword.length !== 0) {
       query = query.where((eb) =>
         eb.or([
-          eb("ms_orgs.name", "ilike", `%${keyword}%`),
-          eb("ms_orgs.address", "ilike", `%${keyword}%`),
+          eb("orgs.name", "ilike", `%${keyword}%`),
+          eb("orgs.address", "ilike", `%${keyword}%`),
           eb(
-            "ms_orgs.id",
+            "orgs.id",
             "in",
             eb
-              .selectFrom("ms_category_orgs")
-              .innerJoin("categories_orgs", "ms_category_orgs.id", "categories_orgs.category_id")
+              .selectFrom("category_orgs")
+              .innerJoin("categories_orgs", "category_orgs.id", "categories_orgs.category_id")
               .select("categories_orgs.org_id")
-              .where("ms_category_orgs.name", "ilike", `%${keyword}%`),
+              .where("category_orgs.name", "ilike", `%${keyword}%`),
           ),
         ]),
       );
@@ -84,7 +87,7 @@ export class OrgRepository {
 
   async countOrgs(filter?: { keyword?: string; user_id?: number }) {
     const { keyword, user_id } = filter || {};
-    let query = this.db.selectFrom("ms_orgs").select((eb) => eb.fn.countAll().as("count"));
+    let query = this.db.selectFrom("orgs").select((eb) => eb.fn.countAll().as("count"));
     query = this.applyFilterToQuery(query, { keyword, user_id });
     return await query.executeTakeFirstOrThrow();
   }
@@ -92,13 +95,7 @@ export class OrgRepository {
   getOrgs(filter?: { keyword?: string; user_id?: number; page?: number; limit?: number }) {
     const { keyword, user_id, page, limit } = filter ?? {};
 
-    let query = this.db
-      .selectFrom("ms_orgs")
-      .select((eb) => [
-        ...defaultOrgFields,
-        orgWithCategories(eb).as("org_categories"),
-        orgWithUsers(eb).as("org_users"),
-      ]);
+    let query = this.db.selectFrom("orgs").select(defaultOrgFields);
 
     query = this.applyFilterToQuery(query, { keyword, user_id });
 
@@ -112,42 +109,31 @@ export class OrgRepository {
 
   async getOrgsByID(id: number) {
     return await this.db
-      .selectFrom("ms_orgs")
-      .select((eb) => [
-        ...defaultOrgFields,
-        orgWithCategories(eb).as("org_categories"),
-        orgWithUsers(eb).as("org_users"),
-      ])
-      .where("ms_orgs.id", "=", id)
+      .selectFrom("orgs")
+      .select(defaultOrgFields)
+      .where("orgs.id", "=", id)
       .executeTakeFirst();
   }
 
   async getOrgsByName(name: string) {
     return await this.db
-      .selectFrom("ms_orgs")
-      .select((eb) => [
-        ...defaultOrgFields,
-        orgWithCategories(eb).as("org_categories"),
-        orgWithUsers(eb).as("org_users"),
-      ])
-      .where("ms_orgs.name", "=", name)
+      .selectFrom("orgs")
+      .select(defaultOrgFields)
+      .where("orgs.name", "=", name)
       .executeTakeFirst();
   }
 
-  async addOrg(
-    obj: {
-      org_name: string;
-      org_description: string;
-      org_address: string;
-      org_phone: string;
-      org_image?: string;
-      org_categories?: number[];
-    },
-    firstUser: number,
-  ) {
+  async addOrg(obj: {
+    org_name: string;
+    org_description: string;
+    org_address: string;
+    org_phone: string;
+    org_image?: string;
+    org_categories?: number[];
+  }) {
     const { org_name, org_address, org_description, org_phone, org_categories, org_image } = obj;
     const org = await this.db
-      .insertInto("ms_orgs")
+      .insertInto("orgs")
       .values({
         name: org_name,
         description: org_description,
@@ -155,7 +141,7 @@ export class OrgRepository {
         phone: org_phone,
         ...(org_image && { image: org_image }),
       })
-      .returning(["ms_orgs.id"])
+      .returning(["orgs.id"])
       .executeTakeFirst();
 
     if (!org) {
@@ -174,20 +160,12 @@ export class OrgRepository {
         .execute();
     }
 
-    await this.db
-      .insertInto("orgs_users")
-      .values({
-        user_id: firstUser,
-        org_id: org.id,
-        role: "Admin",
-      })
-      .execute();
     return org;
   }
 
   async getCategories() {
     return await this.db
-      .selectFrom("ms_category_orgs")
+      .selectFrom("category_orgs")
       .select(["id as category_id", "name as category_name"])
       .execute();
   }
@@ -210,7 +188,7 @@ export class OrgRepository {
     if (need_main_update) {
       const { org_name, org_description, org_address, org_phone, org_image } = rest;
       const org = await this.db
-        .updateTable("ms_orgs")
+        .updateTable("orgs")
         .set({
           name: org_name,
           description: org_description,
@@ -243,7 +221,7 @@ export class OrgRepository {
     }
   }
   async deleteOrg(id: number) {
-    await this.db.deleteFrom("ms_orgs").where("id", "=", id).execute();
+    await this.db.deleteFrom("orgs").where("id", "=", id).execute();
   }
   async getMemberRole(org_id: number, user_id: number): Promise<OrgRoles> {
     const res = await this.db

@@ -138,14 +138,6 @@ export class ContributionService implements Transactable<ContributionService> {
         );
       }
 
-      if (is_member === "Dev") {
-        if (!users.includes(sender_id)) {
-          throw new AuthError(
-            "Developer tidak memiliki akses untuk menambahkan kontribusi orang lain!",
-          );
-        }
-      }
-
       await serv.project_service.getProjectByID(obj.project_id);
       const res = await serv.cont_repo.addContributions({ ...obj, status: "Pending" }, users);
       await serv.sendNewContributionNotification(res.id);
@@ -216,9 +208,6 @@ export class ContributionService implements Transactable<ContributionService> {
     }
     if (old_contrib.status !== "Pending" && revision.status == undefined) {
       throw new AuthError("Anda hanya boleh mengubah kontribusi yang bersifat pending!");
-    }
-    if (revision.user_ids != undefined && !revision.user_ids.includes(user_id)) {
-      throw new AuthError("Anda tidak memiliki akses untuk menambahkan kontribusi orang lain!");
     }
     if (old_contrib.status === "Rejected") {
       throw new AuthError("Anda tidak dapat mengubah kontribusi yang sudah ditolak!");

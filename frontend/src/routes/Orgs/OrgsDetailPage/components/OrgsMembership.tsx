@@ -44,7 +44,7 @@ function OrgsMembership(props: { user_id: number; org_id: number }) {
           }}
           disabled={nav.type === "orgs" && nav.id === org_id && nav.open}
         >
-          Buka di Dashboard
+          Buka di Sidebar
         </Button>
       </Box>
     );

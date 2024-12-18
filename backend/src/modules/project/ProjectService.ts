@@ -163,7 +163,9 @@ export class ProjectService implements Transactable<ProjectService> {
       if (sender_role !== "Admin") {
         throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
       }
-      return await serv.project_repo.addProject(obj, sender_id);
+      const res = await serv.project_repo.addProject(obj);
+      await serv.project_repo.assignMember(res, sender_id, "Admin");
+      return res;
     });
   }
 

@@ -62,7 +62,7 @@ export class OrgService implements Transactable<OrgService> {
       org_image?: string;
       org_categories?: number[];
     },
-    firstUser: number,
+    sender_id: number,
   ) {
     return await this.transaction_manager.transaction(this as OrgService, async (serv) => {
       const { org_name } = obj;
@@ -70,7 +70,9 @@ export class OrgService implements Transactable<OrgService> {
       if (same_name != undefined) {
         throw new ClientError("Sudah ada organisasi dengan nama yang sama!");
       }
-      return await serv.org_repo.addOrg(obj, firstUser);
+      const res = await serv.org_repo.addOrg(obj);
+      await serv.org_repo.assignMember(res.id, sender_id, "Admin");
+      return res;
     });
   }
 

@@ -4,10 +4,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await db.schema
     .createTable("orgs_users")
     .addColumn("org_id", "integer", (build) =>
-      build.references("ms_orgs.id").notNull().onDelete("cascade").onUpdate("cascade"),
+      build.references("orgs.id").notNull().onDelete("cascade").onUpdate("cascade"),
     )
     .addColumn("user_id", "integer", (build) =>
-      build.references("ms_users.id").notNull().onDelete("cascade").onUpdate("cascade"),
+      build.references("users.id").notNull().onDelete("cascade").onUpdate("cascade"),
     )
     .addColumn("role", "text", (col) => col.notNull())
     .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`).notNull())
