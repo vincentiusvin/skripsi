@@ -140,7 +140,7 @@ export class UserRepository {
 
   async getUsers(opts?: { is_admin?: boolean; keyword?: string; limit?: number; page?: number }) {
     const { page, limit, is_admin, keyword } = opts ?? {};
-    let query = this.db.selectFrom("users").select(defaultUserFields);
+    let query = this.db.selectFrom("users").select(defaultUserFields).orderBy("id asc");
 
     query = this.applyFilterToQuery(query, { is_admin, keyword });
     query = paginateQuery(query, {

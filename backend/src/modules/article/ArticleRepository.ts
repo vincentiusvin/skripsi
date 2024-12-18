@@ -48,7 +48,7 @@ export class ArticleRepository {
 
   getArticles(filter?: { keyword?: string; page?: number; limit?: number }) {
     const { keyword, page, limit } = filter ?? {};
-    let query = this.db.selectFrom("articles").select(defaultArticleFields);
+    let query = this.db.selectFrom("articles").select(defaultArticleFields).orderBy("id desc");
 
     query = this.applyFilterToQuery(query, { keyword });
 

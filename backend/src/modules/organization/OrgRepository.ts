@@ -95,7 +95,7 @@ export class OrgRepository {
   getOrgs(filter?: { keyword?: string; user_id?: number; page?: number; limit?: number }) {
     const { keyword, user_id, page, limit } = filter ?? {};
 
-    let query = this.db.selectFrom("orgs").select(defaultOrgFields);
+    let query = this.db.selectFrom("orgs").select(defaultOrgFields).orderBy("id desc");
 
     query = this.applyFilterToQuery(query, { keyword, user_id });
 
