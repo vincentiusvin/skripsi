@@ -177,10 +177,7 @@ export class ProjectRepository {
   }) {
     const { page, limit } = filter ?? {};
 
-    let query = this.db
-      .selectFrom("projects")
-      .select(defaultProjectFields)
-      .orderBy("created_at desc");
+    let query = this.db.selectFrom("projects").select(defaultProjectFields).orderBy("id desc");
 
     query = this.applyFilterToQuery(query, filter);
 
