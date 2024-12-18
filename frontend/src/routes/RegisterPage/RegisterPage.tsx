@@ -184,13 +184,6 @@ function Register() {
 }
 
 function RegisterPage() {
-  const { data: session } = useSessionGet();
-  if (session == undefined) {
-    return <Skeleton />;
-  }
-  if (session.logged) {
-    return <Redirect to={"/"} />;
-  }
   return <Register />;
 }
 

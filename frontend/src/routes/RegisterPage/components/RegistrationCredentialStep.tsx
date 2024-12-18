@@ -40,7 +40,7 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
             email: e.target.value,
           }));
         }}
-        error={reg.email !== undefined && !isValid}
+        error={reg.email !== undefined && !!valid?.email}
         helperText={reg.email !== undefined ? valid?.email : undefined}
         required
         label="Email"
@@ -49,7 +49,7 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
       <TextField
         required
         fullWidth
-        error={reg.username !== undefined && !isValid}
+        error={reg.username !== undefined && !!valid?.name}
         helperText={reg.username !== undefined ? valid?.name : undefined}
         value={reg.username ?? ""}
         onChange={(e) =>
@@ -64,6 +64,8 @@ function RegistrationCredentialStep(props: { cont: () => void }) {
         required
         fullWidth
         type="password"
+        error={reg.password === ""}
+        helperText={reg.password === "" ? "Password tidak boleh kosong!" : ""}
         value={reg.password ?? ""}
         onChange={(e) =>
           setReg((x) => ({
