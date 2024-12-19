@@ -179,7 +179,7 @@ function HugeTitle() {
         Di mana <b>developer relawan</b> dan <b>organisasi nirlaba</b> bertemu
       </Typography>
       {!session_data?.logged ? (
-        <Stack direction="row" justifyContent={"center"} spacing={4} flexWrap={"wrap"}>
+        <Stack direction="row" justifyContent={"center"} gap={4} flexWrap={"wrap"}>
           <StyledLink to={"/login"}>
             <Button
               variant="contained"
