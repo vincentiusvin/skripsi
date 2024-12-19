@@ -46,7 +46,7 @@ function OrgsInfo(props: { org_id: number }) {
               <Chip color="secondary" label={category.category_name} key={category.category_id} />
             ))}
           </Stack>
-          <Stack direction={"row"} spacing={4}>
+          <Stack direction={"row"} spacing={4} flexWrap={"wrap"}>
             <StringLabel icon={<Place />} label="Lokasi" value={data.org_address} />
             <StringLabel icon={<Phone />} label="Telepon" value={data.org_phone} />
           </Stack>
