@@ -3,6 +3,7 @@ server {
     listen  [::]:80;
     server_name  localhost;
     gzip_static on;
+    client_max_body_size 50m;
 
     location / {
         root   /usr/share/nginx/html;

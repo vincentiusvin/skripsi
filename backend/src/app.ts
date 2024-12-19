@@ -1,4 +1,4 @@
-import express, { Request, json } from "express";
+import express, { Request } from "express";
 import session from "express-session";
 import { Kysely } from "kysely";
 import { createServer } from "node:http";
@@ -7,6 +7,7 @@ import { db, dbPool } from "./db/db";
 import { DB } from "./db/db_types.js";
 import { AuthError, errorHandler } from "./helpers/error";
 import { loggingMiddleware } from "./helpers/loggermiddleware";
+import { payloadMiddleware } from "./helpers/payloadmiddleware.js";
 import { registerControllers } from "./routes";
 import { ServerToClientEvents, ServerType, SocketData } from "./sockets.js";
 import connectPgSimple = require("connect-pg-simple");
@@ -60,7 +61,7 @@ export class Application {
 
     this.express_server.use(sessionMiddleware);
 
-    this.express_server.use(json({ limit: "50mb" }));
+    this.express_server.use(payloadMiddleware);
 
     this.socket_server.engine.use(sessionMiddleware);
 
