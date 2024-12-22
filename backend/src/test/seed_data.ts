@@ -12,6 +12,63 @@ function looper<T>(times: number, func: (i: number) => T) {
   return ret;
 }
 
+async function addArticles(db: Kysely<DB>) {
+  const articles_to_generate = 1000;
+
+  const users = await db.selectFrom("users").select("id").execute();
+
+  const articles = await db
+    .insertInto("articles")
+    .values(
+      looper(articles_to_generate, () => {
+        return {
+          name: faker.book.title(),
+          description: faker.book.series(),
+          user_id: faker.helpers.arrayElement(users).id,
+          content: faker.lorem.paragraph(),
+          image: faker.image.url(),
+        };
+      }),
+    )
+    .returning("id")
+    .execute();
+
+  const comments_to_generate = 2000;
+  await db
+    .insertInto("comments")
+    .values(
+      looper(comments_to_generate, () => {
+        return {
+          article_id: faker.helpers.arrayElement(articles).id,
+          comment: faker.lorem.sentence(),
+          user_id: faker.helpers.arrayElement(users).id,
+        };
+      }),
+    )
+    .execute();
+
+  const likes_to_generate = 10000;
+  const likes_raw = faker.helpers
+    .uniqueArray(
+      () => faker.helpers.arrayElement(articles).id + "-" + faker.helpers.arrayElement(users).id,
+      likes_to_generate,
+    )
+    .map((x) => {
+      const [article, user] = x.split("-");
+      return [Number(article), Number(user)];
+    });
+
+  await db
+    .insertInto("articles_likes")
+    .values(
+      likes_raw.map(([article_id, user_id]) => ({
+        article_id,
+        user_id,
+      })),
+    )
+    .execute();
+}
+
 async function addFriends(db: Kysely<DB>) {
   const friends_to_generate = 5000;
 
@@ -426,6 +483,7 @@ async function seedData(db: Kysely<DB>) {
   await addReports(db);
   await addFriends(db);
   await addTasks(db);
+  await addArticles(db);
 }
 
 export default seedData;
