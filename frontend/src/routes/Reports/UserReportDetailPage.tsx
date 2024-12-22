@@ -11,6 +11,7 @@ import { Box, Button, Skeleton, Stack, Tooltip, Typography } from "@mui/material
 import dayjs from "dayjs";
 import { useParams } from "wouter";
 import StyledLink from "../../components/StyledLink.tsx";
+import { formatTimeShort } from "../../helpers/misc.ts";
 import { useReportsDetailGet } from "../../queries/report_hooks.ts";
 import AuthorizeReports from "./components/AuthorizeReports.tsx";
 import ReportStatusChip from "./components/ReportStatus.tsx";
@@ -76,7 +77,7 @@ function UserReportDetail(props: { report_id: number }) {
       <Timeline>
         <TimelineItem>
           <TimelineOppositeContent>
-            <Typography>{report_created_at.format("ddd[,] D[/]M[/]YY")}</Typography>
+            <Typography>{formatTimeShort(report_created_at)}</Typography>
             <Typography>{report_created_at.format("HH:mm")}</Typography>
           </TimelineOppositeContent>
           <TimelineSeparator>
@@ -101,10 +102,12 @@ function UserReportDetail(props: { report_id: number }) {
         </TimelineItem>
         {report.status === "Rejected" ? (
           <TimelineItem>
-            <TimelineOppositeContent>
-              <Typography>{report_resolved_at?.format("ddd[,] D[/]M[/]YY")}</Typography>
-              <Typography>{report_resolved_at?.format("HH:mm")}</Typography>
-            </TimelineOppositeContent>
+            {report_resolved_at ? (
+              <TimelineOppositeContent>
+                <Typography>{formatTimeShort(report_resolved_at)}</Typography>
+                <Typography>{report_resolved_at.format("HH:mm")}</Typography>
+              </TimelineOppositeContent>
+            ) : null}
             <TimelineSeparator>
               <TimelineDot color="error" />
             </TimelineSeparator>
@@ -119,10 +122,12 @@ function UserReportDetail(props: { report_id: number }) {
           </TimelineItem>
         ) : report.status === "Resolved" ? (
           <TimelineItem>
-            <TimelineOppositeContent>
-              <Typography>{report_resolved_at?.format("ddd[,] D[/]M[/]YY")}</Typography>
-              <Typography>{report_resolved_at?.format("HH:mm")}</Typography>
-            </TimelineOppositeContent>
+            {report_resolved_at ? (
+              <TimelineOppositeContent>
+                <Typography>{formatTimeShort(report_resolved_at)}</Typography>
+                <Typography>{report_resolved_at.format("HH:mm")}</Typography>
+              </TimelineOppositeContent>
+            ) : null}
             <TimelineSeparator>
               <TimelineDot color="success" />
             </TimelineSeparator>

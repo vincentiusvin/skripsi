@@ -1,10 +1,10 @@
 import { Check, Close, Delete, Edit } from "@mui/icons-material";
 import { Box, IconButton, Paper, Stack, TextField, Typography } from "@mui/material";
-import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import StyledLink from "../../../components/StyledLink.tsx";
 import UserLabel from "../../../components/UserLabel.tsx";
+import { formatTimeLong } from "../../../helpers/misc.ts";
 import {
   useArticlesDetailCommentDelete,
   useArticlesDetailCommentPut,
@@ -102,7 +102,7 @@ function ArticleComment(props: Comment) {
           </>
         ) : null}
         <Typography variant="caption" textAlign={"end"}>
-          {dayjs(comment.created_at).format("ddd, DD/MM/YY HH:mm")}
+          {formatTimeLong(comment.created_at)}
         </Typography>
       </Stack>
       <br />

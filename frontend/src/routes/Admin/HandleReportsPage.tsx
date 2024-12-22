@@ -24,13 +24,12 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import useQueryPagination from "../../components/QueryPagination/hook.ts";
 import StyledLink from "../../components/StyledLink.tsx";
 import UserLabel from "../../components/UserLabel.tsx";
-import { restrictToEnum } from "../../helpers/misc.ts";
+import { formatTimeLong, restrictToEnum } from "../../helpers/misc.ts";
 import { useStateSearch } from "../../helpers/search.ts";
 import { useReportsGet, useReportsPut } from "../../queries/report_hooks.ts";
 import ReportStatusChip from "../Reports/components/ReportStatus.tsx";
@@ -176,11 +175,9 @@ function ReportRow(props: {
         <TableCell>
           <ReportStatusChip status={report.status} />
         </TableCell>
-        <TableCell>{dayjs(report.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}</TableCell>
+        <TableCell>{formatTimeLong(report.created_at)}</TableCell>
         <TableCell>
-          {report.resolved_at
-            ? dayjs(report.resolved_at).format("ddd[,] D[/]M[/]YY HH:mm")
-            : "Belum selesai"}
+          {report.resolved_at ? formatTimeLong(report.resolved_at) : "Belum selesai"}
         </TableCell>
         <TableCell>
           {open ? (

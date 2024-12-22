@@ -17,13 +17,12 @@ import {
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import dayjs from "dayjs";
 import { Redirect } from "wouter";
 import reportImg from "../../assets/report.png";
 import QueryPagination from "../../components/QueryPagination.tsx";
 import useQueryPagination from "../../components/QueryPagination/hook.ts";
 import StyledLink from "../../components/StyledLink.tsx";
-import { restrictToEnum } from "../../helpers/misc.ts";
+import { formatTimeLong, restrictToEnum } from "../../helpers/misc.ts";
 import { useStateSearch } from "../../helpers/search.ts";
 import { useReportsGet } from "../../queries/report_hooks.ts";
 import { useSessionGet } from "../../queries/sesssion_hooks.ts";
@@ -52,11 +51,11 @@ function ReportEntry(props: {
             primary={report.title}
             secondary={
               <>
-                Dibuat: {dayjs(report.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+                Dibuat: {formatTimeLong(report.created_at)}
                 {report.resolved_at ? (
                   <>
                     <br />
-                    Selesai: {dayjs(report.resolved_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+                    Selesai: {formatTimeLong(report.resolved_at)}
                   </>
                 ) : null}
               </>

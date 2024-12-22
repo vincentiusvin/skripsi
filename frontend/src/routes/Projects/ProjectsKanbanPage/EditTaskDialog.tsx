@@ -95,10 +95,10 @@ function EditTaskDialog(props: { task_id: number; project_id: number }) {
               <DatePicker
                 onChange={(x) => setTaskStartAt(x)}
                 label="Mulai"
-                value={taskStartAt ?? task.start_at != null ? dayjs(task.start_at) : null}
+                value={taskStartAt ?? (task.start_at != null ? dayjs(task.start_at) : null)}
               ></DatePicker>
               <DatePicker
-                value={taskEndAt ?? task.end_at != null ? dayjs(task.end_at) : null}
+                value={taskEndAt ?? (task.end_at != null ? dayjs(task.end_at) : null)}
                 onChange={(x) => setTaskEndAt(x)}
                 label="Selesai"
               ></DatePicker>

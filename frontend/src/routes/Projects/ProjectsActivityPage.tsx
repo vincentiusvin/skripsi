@@ -10,6 +10,7 @@ import {
 import { Box, Skeleton, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { useParams } from "wouter";
+import { formatTimeShort } from "../../helpers/misc.ts";
 import { useProjectsDetailEventsGet } from "../../queries/project_hooks.ts";
 import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
 
@@ -37,7 +38,7 @@ function ProjectTimeline(props: { project_id: number }) {
             return (
               <TimelineItem key={x.id}>
                 <TimelineOppositeContent>
-                  <Typography>{time.format("ddd[,] D[/]M[/]YY")}</Typography>
+                  <Typography>{formatTimeShort(time)}</Typography>
                   <Typography>{time.format("HH:mm")}</Typography>
                 </TimelineOppositeContent>
                 <TimelineSeparator>

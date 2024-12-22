@@ -87,7 +87,7 @@ export class SessionController extends Controller {
       if (susp !== undefined) {
         throw new ClientError(
           `Akun anda ditangguhkan hingga ${dayjs(susp.suspended_until).format(
-            "D[/]M[/]YY HH:mm",
+            "dddd[,] D MMM YYYY[,] HH:mm",
           )} dengan alasan: ${susp.reason}`,
         );
       }

@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { useState } from "react";
 
 export function restrictToEnum<T extends Readonly<unknown[]>>(
@@ -76,4 +77,12 @@ export function handleOptionalStringCreation(x: string | undefined): string | un
     return undefined;
   }
   return x;
+}
+
+export function formatTimeLong(x: Date | string | dayjs.Dayjs) {
+  return dayjs(x).format("dddd[,] D MMM YYYY[,] HH:mm");
+}
+
+export function formatTimeShort(x: Date | string | dayjs.Dayjs) {
+  return dayjs(x).format("dddd[,] D MMM YYYY");
 }

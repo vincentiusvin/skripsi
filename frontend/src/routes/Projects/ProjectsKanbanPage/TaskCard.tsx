@@ -1,9 +1,9 @@
 import { DragIndicator } from "@mui/icons-material";
 import { AvatarGroup, Box, IconButton, Paper, Skeleton, Stack, Typography } from "@mui/material";
-import dayjs from "dayjs";
 import { memo } from "react";
 import UserAvatar from "../../../components/UserAvatar.tsx";
 import avatarFallback from "../../../helpers/avatar_fallback.tsx";
+import { formatTimeShort } from "../../../helpers/misc.ts";
 import { useTasksDetailGet } from "../../../queries/task_hooks.ts";
 import EditTaskDialog from "./EditTaskDialog.tsx";
 
@@ -70,14 +70,14 @@ function Task(props: {
           {task.start_at && (
             <>
               <Typography variant="caption" color="gray">
-                Mulai: {dayjs(task.start_at).format("ddd, DD/MM/YY")}
+                Mulai: {formatTimeShort(task.start_at)}
               </Typography>
               <br />
             </>
           )}
           {task.end_at && (
             <Typography variant="caption" color="gray">
-              Berakhir: {dayjs(task.end_at).format("ddd, DD/MM/YY")}
+              Berakhir: {formatTimeShort(task.end_at)}
             </Typography>
           )}
         </Box>

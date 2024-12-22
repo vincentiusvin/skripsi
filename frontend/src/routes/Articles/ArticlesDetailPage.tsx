@@ -1,10 +1,10 @@
 import { Box, Button, Divider, Skeleton, Stack, Typography } from "@mui/material";
-import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import { Redirect, useLocation, useParams } from "wouter";
 import RichViewer from "../../components/RichViewer";
 import StyledLink from "../../components/StyledLink.tsx";
 import UserLabel from "../../components/UserLabel.tsx";
+import { formatTimeLong } from "../../helpers/misc.ts";
 import { useArticlesDetailDelete, useArticlesDetailGet } from "../../queries/article_hooks";
 import { useSessionGet } from "../../queries/sesssion_hooks";
 import AuthorizeArticle from "./AuthorizeArticle.tsx";
@@ -55,7 +55,7 @@ function ArticlesDetail(props: { article_id: number }) {
               <Box>
                 <UserLabel user_id={article.user_id} disableImage />
                 <Typography variant="caption" color="textDisabled">
-                  {dayjs(article.created_at).format("ddd, DD/MM/YY")}
+                  {formatTimeLong(article.created_at)}
                 </Typography>
               </Box>
             </Stack>

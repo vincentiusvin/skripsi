@@ -20,10 +20,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
 import type { MessageData } from "../../../../backend/src/sockets";
 import { fileToBase64DataURL } from "../../helpers/file.ts";
+import { formatTimeLong } from "../../helpers/misc.ts";
 import {
   useChatroomsDetailMessagesGet,
   useChatroomsDetailMessagesPost,
@@ -151,9 +151,7 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
                   ))}
                 </Stack>
               ) : null}
-              <Typography variant="caption">
-                {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
-              </Typography>
+              <Typography variant="caption">{formatTimeLong(message.created_at)}</Typography>
             </Box>
             <IconButton variant="outlined" onClick={update}>
               <Check />
@@ -195,7 +193,7 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
                 ) : null}
               </Paper>
               <Typography variant="caption">
-                {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+                {formatTimeLong(message.created_at)}
                 {message.is_edited ? " (Edited)" : ""}
               </Typography>
             </Stack>
@@ -248,7 +246,7 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
             ) : null}
           </Paper>
           <Typography variant="caption">
-            {dayjs(message.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+            {formatTimeLong(message.created_at)}
             {message.is_edited ? " (Edited)" : ""}
           </Typography>
         </Stack>

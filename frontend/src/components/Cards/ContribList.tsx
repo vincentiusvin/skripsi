@@ -9,7 +9,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import dayjs from "dayjs";
+import { formatTimeLong } from "../../helpers/misc.ts";
 import { useContributionsDetailGet } from "../../queries/contribution_hooks.ts";
 import ContributionChip from "../../routes/Contributions/components/ContributionChip.tsx";
 import StyledLink from "../StyledLink.tsx";
@@ -37,9 +37,7 @@ function ContribList(props: { contribution_id: number; hideStatus?: boolean }) {
                 <Typography variant="h6" fontWeight={"bold"}>
                   {contrib.name}
                 </Typography>
-                <Typography variant="caption">
-                  {dayjs(contrib.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
-                </Typography>
+                <Typography variant="caption">{formatTimeLong(contrib.created_at)}</Typography>
               </Grid>
               <Grid size={8}>
                 <Stack alignItems={"end"} spacing={1}>

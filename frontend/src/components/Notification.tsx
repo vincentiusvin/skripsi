@@ -16,8 +16,8 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import dayjs from "dayjs";
 import { useState } from "react";
+import { formatTimeLong } from "../helpers/misc.ts";
 import {
   useNotificationsGet,
   useNotificationsMassPut,
@@ -111,9 +111,7 @@ function NotificationEntry(props: { notification_data: NotificationData; onClick
           paddingY: 1,
         }}
       >
-        <Typography variant="caption">
-          {dayjs(notification_data.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
-        </Typography>
+        <Typography variant="caption">{formatTimeLong(notification_data.created_at)}</Typography>
         <Box flexGrow={1}></Box>
         {notification_data.read ? (
           <Button onClick={() => mutate({ read: false })}>

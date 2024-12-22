@@ -1,3 +1,7 @@
+import dayjs from "dayjs";
+import "dayjs/locale/id";
+dayjs.locale("id");
+
 import CloseIcon from "@mui/icons-material/Close";
 import { CssBaseline, IconButton } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";

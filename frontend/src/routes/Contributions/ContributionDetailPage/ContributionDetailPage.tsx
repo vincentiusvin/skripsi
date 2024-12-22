@@ -1,11 +1,11 @@
 import { Box, Divider, ListItemButton, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import dayjs from "dayjs";
 import { useParams } from "wouter";
 import ProjectCard from "../../../components/Cards/ProjectCard.tsx";
 import RichViewer from "../../../components/RichViewer.tsx";
 import StyledLink from "../../../components/StyledLink.tsx";
 import UserLabel from "../../../components/UserLabel.tsx";
+import { formatTimeLong } from "../../../helpers/misc.ts";
 import { useContributionsDetailGet } from "../../../queries/contribution_hooks.ts";
 import { useSessionGet } from "../../../queries/sesssion_hooks.ts";
 import AuthorizeContribution from "../AuthorizeContribution.tsx";
@@ -36,7 +36,7 @@ function ContributionDetail(props: { contribution_id: number }) {
           {contrib.name}
         </Typography>
         <Typography variant="caption" textAlign="center" display="block">
-          {dayjs(contrib.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}
+          {formatTimeLong(contrib.created_at)}
         </Typography>
         <Divider
           sx={{

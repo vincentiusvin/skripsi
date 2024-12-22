@@ -42,6 +42,7 @@ import { useDebounce } from "use-debounce";
 import useQueryPagination from "../../components/QueryPagination/hook.ts";
 import StyledLink from "../../components/StyledLink.tsx";
 import UserLabel from "../../components/UserLabel.tsx";
+import { formatTimeLong } from "../../helpers/misc.ts";
 import { useStateSearch } from "../../helpers/search.ts";
 import {
   useSuspensionsDetailDelete,
@@ -225,8 +226,8 @@ function SuspensionData(props: { user_id: number }) {
         <TableBody>
           {suspension_data.map((x) => (
             <TableRow key={x.id}>
-              <TableCell>{dayjs(x.created_at).format("ddd[,] D[/]M[/]YY HH:mm")}</TableCell>
-              <TableCell>{dayjs(x.suspended_until).format("ddd[,] D[/]M[/]YY HH:mm")}</TableCell>
+              <TableCell>{formatTimeLong(x.created_at)}</TableCell>
+              <TableCell>{formatTimeLong(x.suspended_until)}</TableCell>
               <TableCell>{x.reason}</TableCell>
               <TableCell width={"fit-content"}>
                 <Stack direction={"row"} spacing={1}>
@@ -280,12 +281,12 @@ function AccountRow(props: {
       const max_suspension = suspension_data
         .map((x) => dayjs(x.suspended_until))
         .reduce((x, v) => (x.isAfter(v) ? x : v));
-      suspended_string = dayjs(max_suspension).format("ddd[,] D[/]M[/]YY HH:mm");
+      suspended_string = formatTimeLong(max_suspension);
     } else {
       suspended_string = "Tidak ditangguhkan";
     }
   }
-  const created_string = dayjs(user.user_created_at).format("ddd[,] D[/]M[/]YY HH:mm");
+  const created_string = formatTimeLong(user.user_created_at);
 
   return (
     <>

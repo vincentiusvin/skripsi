@@ -1,3 +1,7 @@
+import dayjs from "dayjs";
+import "dayjs/locale/id";
+dayjs.locale("id");
+
 import express, { Request } from "express";
 import session from "express-session";
 import { Kysely } from "kysely";

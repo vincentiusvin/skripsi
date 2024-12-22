@@ -18,9 +18,9 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { DateCalendar, PickersDay } from "@mui/x-date-pickers";
-import dayjs from "dayjs";
 import { Redirect } from "wouter";
 import StyledLink from "../components/StyledLink.tsx";
+import { formatTimeLong } from "../helpers/misc.ts";
 import { useOrgDetailGet, useOrgsDetailMembersGet, useOrgsGet } from "../queries/org_hooks.ts";
 import {
   useProjectsDetailGet,
@@ -298,9 +298,7 @@ function TaskRow(props: { task_id: number }) {
       <TableCell>{task.data.name}</TableCell>
       <TableCell>{bucket.data.name}</TableCell>
       <TableCell>
-        {task.data.end_at != undefined
-          ? dayjs(task.data.end_at).format("ddd[,] D[/]M[/]YY HH:mm")
-          : "Tidak ada"}
+        {task.data.end_at != undefined ? formatTimeLong(task.data.end_at) : "Tidak ada"}
       </TableCell>
       <TableCell>
         <StyledLink to={`/projects/${project.data.project_id}/tasks`}>
