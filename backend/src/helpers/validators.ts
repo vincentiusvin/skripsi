@@ -34,3 +34,12 @@ export function zodPagination() {
 export function zodStringReadableAsDateTime(message: string) {
   return z.string(defaultError(message)).min(1).datetime();
 }
+
+/**
+ * Ganti dengan implementasi dari zod ketika v4 sudah release.
+ * https://github.com/colinhacks/zod/pull/3476
+ */
+const e164Regex = /^\+(?:[0-9]){6,14}[0-9]$/;
+export function zodPhoneNumber(message: string) {
+  return z.string(defaultError(message)).min(1).regex(e164Regex, message);
+}

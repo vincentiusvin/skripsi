@@ -6,6 +6,7 @@ import { validateLogged } from "../../helpers/validate.js";
 import {
   defaultError,
   zodPagination,
+  zodPhoneNumber,
   zodStringReadableAsNumber,
 } from "../../helpers/validators.js";
 import { org_roles } from "./OrgMisc.js";
@@ -15,7 +16,7 @@ const OrgUpdateSchema = z.object({
   org_name: z.string(defaultError("Nama tidak valid!")).min(1).optional(),
   org_description: z.string(defaultError("Deskripsi tidak valid!")).min(1).optional(),
   org_address: z.string(defaultError("Alamat tidak valid!")).min(1).optional(),
-  org_phone: z.string(defaultError("Nomor telepon tidak valid!")).min(1).optional(),
+  org_phone: zodPhoneNumber("Nomor telepon tidak valid!").optional(),
   org_image: z.string(defaultError("Gambar tidak valid!")).nullable().optional(),
   org_categories: z.number(defaultError("Kategori organisasi tidak valid!")).array().optional(),
 });
@@ -24,7 +25,7 @@ const OrgCreationSchema = z.object({
   org_name: z.string(defaultError("Nama tidak valid!")).min(1),
   org_description: z.string(defaultError("Deskripsi tidak valid!")).min(1),
   org_address: z.string(defaultError("Alamat tidak valid!")).min(1),
-  org_phone: z.string(defaultError("Nomor telepon tidak valid!")).min(1),
+  org_phone: zodPhoneNumber("Nomor telepon tidak valid!"),
   org_image: z.string(defaultError("Gambar tidak valid!")).optional(),
   org_categories: z.number(defaultError("Kategori organisasi tidak valid!")).array().optional(),
 });
