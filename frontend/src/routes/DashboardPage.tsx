@@ -20,7 +20,7 @@ import Grid from "@mui/material/Grid2";
 import { DateCalendar, PickersDay } from "@mui/x-date-pickers";
 import { Redirect } from "wouter";
 import StyledLink from "../components/StyledLink.tsx";
-import { formatTimeLong } from "../helpers/misc.ts";
+import { formatTimeShort } from "../helpers/misc.ts";
 import { useOrgDetailGet, useOrgsDetailMembersGet, useOrgsGet } from "../queries/org_hooks.ts";
 import {
   useProjectsDetailGet,
@@ -298,7 +298,7 @@ function TaskRow(props: { task_id: number }) {
       <TableCell>{task.data.name}</TableCell>
       <TableCell>{bucket.data.name}</TableCell>
       <TableCell>
-        {task.data.end_at != undefined ? formatTimeLong(task.data.end_at) : "Tidak ada"}
+        {task.data.end_at != undefined ? formatTimeShort(task.data.end_at) : "Tidak ada"}
       </TableCell>
       <TableCell>
         <StyledLink to={`/projects/${project.data.project_id}/tasks`}>
@@ -351,7 +351,12 @@ function TaskInfoCard(props: { user_id: number }) {
               lg: 9,
             }}
           >
-            <TableContainer component={Paper}>
+            <TableContainer
+              component={Paper}
+              sx={{
+                height: 400,
+              }}
+            >
               <Table>
                 <TableHead>
                   <TableRow>
