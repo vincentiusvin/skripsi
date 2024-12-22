@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import { MuiTelInput } from "mui-tel-input";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
@@ -138,13 +139,16 @@ function OrgsEdit(props: { org_id: number }) {
             label="Alamat"
             value={orgAddress ?? org_data.org_address}
           ></TextField>
-          <TextField
+          <MuiTelInput
             fullWidth
-            onChange={(e) => setOrgPhone(e.target.value)}
+            onChange={(_, i) => {
+              setOrgPhone(i.numberValue ?? undefined);
+            }}
             required
-            label="Nomor Telepon"
             value={orgPhone ?? org_data.org_phone}
-          ></TextField>
+            defaultCountry="ID"
+            label="Nomor Telepon"
+          ></MuiTelInput>
           <FormControl>
             <InputLabel>Kategori</InputLabel>
             <Select
