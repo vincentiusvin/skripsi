@@ -61,6 +61,9 @@ export class Application {
       resave: false,
       saveUninitialized: false,
       store: store,
+      cookie: {
+        maxAge: 24 * 60 * 60 * 1000,
+      },
     });
 
     this.express_server.use(sessionMiddleware);
