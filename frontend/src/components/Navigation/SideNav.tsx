@@ -31,6 +31,7 @@ import {
   Select,
   Skeleton,
   Theme,
+  alpha,
   useMediaQuery,
 } from "@mui/material";
 import { ReactNode, useEffect } from "react";
@@ -75,7 +76,7 @@ function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
   }[] = [
     {
       title: "Jelajah",
-      icon: <Language />,
+      icon: <Language fontSize="inherit" />,
       entries: [
         {
           value: "browse",
@@ -89,7 +90,7 @@ function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
   if (user && user.user_is_admin) {
     options.push({
       title: "Admin",
-      icon: <Shield />,
+      icon: <Shield fontSize="inherit" />,
       entries: [
         {
           value: `admin`,
@@ -123,7 +124,7 @@ function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
     if (filtered_projects.length) {
       options.push({
         title: "Proyek",
-        icon: <Work />,
+        icon: <Work fontSize="inherit" />,
         entries: filtered_projects.map((x) => {
           return {
             value: `project-${x.project_id}`,
@@ -158,7 +159,7 @@ function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
     if (filtered_orgs.length) {
       options.push({
         title: "Organisasi",
-        icon: <CorporateFare />,
+        icon: <CorporateFare fontSize="inherit" />,
         entries: filtered_orgs.map((x) => {
           return {
             value: `orgs-${x.org_id}`,
@@ -180,6 +181,15 @@ function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
       onChange={(x) => {
         setNav((oldNav) => navRaw2NavData(x.target.value as NavigationRaw, oldNav.open));
       }}
+      MenuProps={{
+        slotProps: {
+          paper: {
+            sx: {
+              backgroundColor: (theme) => theme.palette.background.default,
+            },
+          },
+        },
+      }}
     >
       {options.map((cat) => [
         <ListSubheader key={cat.title}>{cat.title}</ListSubheader>,
@@ -189,13 +199,39 @@ function SideNavSelector(props: { user_id: number; showAll?: boolean }) {
               component={"div"}
               dense
               sx={{
-                width: 240,
+                maxWidth: 240,
               }}
             >
-              <ListItemAvatar>
-                <Avatar>{cat.icon}</Avatar>
+              <ListItemAvatar
+                sx={{
+                  minWidth: 48,
+                }}
+              >
+                <Avatar
+                  sx={(theme) => ({
+                    bgcolor: theme.palette.background.paper,
+                    border: "solid 1px",
+                    borderColor: alpha(theme.palette.primary.main, 0.4),
+                    color:
+                      theme.palette.mode === "dark"
+                        ? theme.palette.text.primary
+                        : theme.palette.text.secondary,
+                    padding: 2,
+                    width: 8,
+                    height: 8,
+                    fontSize: "20px",
+                  })}
+                >
+                  {cat.icon}
+                </Avatar>
               </ListItemAvatar>
-              <ListItemText primary={entry.primary} secondary={entry.secondary} />
+              <ListItemText
+                primary={entry.primary}
+                primaryTypographyProps={{
+                  noWrap: true,
+                }}
+                secondary={entry.secondary}
+              />
             </ListItem>
           </MenuItem>
         )),

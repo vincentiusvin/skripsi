@@ -66,15 +66,11 @@ function _ChatroomSelection(props: { chatroom_id: number; user_id: number }) {
       <ListItemText
         primary={chatroom.chatroom_name}
         primaryTypographyProps={{
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
+          noWrap: true,
         }}
         secondary={subheader}
         secondaryTypographyProps={{
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
+          noWrap: true,
         }}
       ></ListItemText>
     </>
