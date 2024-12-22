@@ -194,7 +194,7 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
               </Paper>
               <Typography variant="caption">
                 {formatTimeLong(message.created_at)}
-                {message.is_edited ? " (Edited)" : ""}
+                {message.is_edited ? " (Diedit)" : ""}
               </Typography>
             </Stack>
             <Box>
@@ -247,7 +247,7 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
           </Paper>
           <Typography variant="caption">
             {formatTimeLong(message.created_at)}
-            {message.is_edited ? " (Edited)" : ""}
+            {message.is_edited ? " (Diedit)" : ""}
           </Typography>
         </Stack>
       </Stack>
