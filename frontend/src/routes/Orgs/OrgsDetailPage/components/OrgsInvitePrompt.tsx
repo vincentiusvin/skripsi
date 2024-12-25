@@ -41,8 +41,7 @@ function OrgsInvitePrompt(props: { org_id: number; user_id: number }) {
       <DialogTitle>Terima Undangan?</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Anda diundang oleh pengurus proyek ini untuk ikut berpartisipasi. Anda dapat menerima atau
-          menolak undangan ini.
+          Anda diundang untuk ikut menjadi pengurus. Anda dapat menerima atau menolak undangan ini.
         </DialogContentText>
       </DialogContent>
       <DialogActions>
