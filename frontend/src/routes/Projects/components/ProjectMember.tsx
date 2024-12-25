@@ -10,6 +10,14 @@ import {
 
 export type MemberRoles = API["ProjectsDetailMembersGet"]["ResBody"]["role"] | "Not Involved";
 
+const RoleMapping: Record<MemberRoles, string> = {
+  "Not Involved": "Tidak Terlibat",
+  Admin: "Admin",
+  Dev: "Developer",
+  Invited: "Diundang",
+  Pending: "Pending",
+};
+
 function ProjectMember(props: {
   user_id: number;
   project_id: number;
@@ -30,9 +38,10 @@ function ProjectMember(props: {
     project_id: project_id,
     user_id: user_id,
     onSuccess: (x) => {
+      const mapped = RoleMapping[x.role];
       enqueueSnackbar({
         variant: "success",
-        message: <Typography>User berhasil ditambahkan sebagai {x.role}!</Typography>,
+        message: <Typography>User berhasil ditambahkan sebagai {mapped}!</Typography>,
       });
     },
   });
@@ -82,7 +91,7 @@ function ProjectMember(props: {
   return (
     <UserCard
       user_id={user_id}
-      subtitle={member_data?.role}
+      subtitle={member_data != undefined ? RoleMapping[member_data.role] : undefined}
       sidebar={sidebar.length ? sidebar : undefined}
     />
   );

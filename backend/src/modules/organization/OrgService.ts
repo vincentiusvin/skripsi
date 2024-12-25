@@ -172,7 +172,7 @@ export class OrgService implements Transactable<OrgService> {
       return;
     }
     return this.notification_service.addNotification({
-      title: `Undangan Admin di ${org.org_id}`,
+      title: `Undangan Admin di ${org.org_name}`,
       user_id,
       description: `Anda diundang untuk menjadi "Admin" di organisasi "${org.org_name}".
 Anda dapat menerima tawaran ini dan mengelola projek yang dijalankan oleh organisasi.`,
