@@ -79,7 +79,7 @@ function ArticleAdd() {
       <Grid
         size={{
           xs: 12,
-          md: 4,
+          md: 8,
         }}
       >
         <Stack spacing={4}>
