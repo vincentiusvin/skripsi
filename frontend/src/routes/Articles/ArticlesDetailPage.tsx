@@ -50,15 +50,17 @@ function ArticlesDetail(props: { article_id: number }) {
         </Typography>
         <Stack direction={"row"} alignItems={"center"}>
           <Box flexGrow={1}>
-            <Stack direction="row" gap={2}>
-              <UserLabel user_id={article.user_id} disableName />
-              <Box>
-                <UserLabel user_id={article.user_id} disableImage />
-                <Typography variant="caption" color="textDisabled">
-                  {formatTimeLong(article.created_at)}
-                </Typography>
-              </Box>
-            </Stack>
+            <StyledLink to={`/users/${article.user_id}`}>
+              <Stack direction="row" gap={2}>
+                <UserLabel user_id={article.user_id} disableName />
+                <Box>
+                  <UserLabel user_id={article.user_id} disableImage />
+                  <Typography variant="caption" color="textDisabled">
+                    {formatTimeLong(article.created_at)}
+                  </Typography>
+                </Box>
+              </Stack>
+            </StyledLink>
           </Box>
           <ArticleLikeSection article_id={article_id} />
         </Stack>
