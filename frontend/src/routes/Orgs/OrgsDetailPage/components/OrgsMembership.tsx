@@ -1,5 +1,5 @@
 import { Cancel, Check, Visibility } from "@mui/icons-material";
-import { Box, Button, Skeleton, Typography } from "@mui/material";
+import { Box, Button, Skeleton, Stack, Typography } from "@mui/material";
 import { useNavigation } from "../../../../components/Navigation/NavigationContext.ts";
 import {
   useOrgsDetailMembersDelete,
@@ -54,28 +54,30 @@ function OrgsMembership(props: { user_id: number; org_id: number }) {
     return (
       <Box mt={2}>
         <Typography>Anda diundang untuk menjadi pengurus organisasi ini.</Typography>
-        <Button
-          color="success"
-          variant="contained"
-          startIcon={<Check />}
-          onClick={() => {
-            acceptInvite({
-              role: "Admin",
-            });
-          }}
-        >
-          Terima
-        </Button>
-        <Button
-          color="error"
-          variant="contained"
-          startIcon={<Cancel />}
-          onClick={() => {
-            rejectInvite();
-          }}
-        >
-          Tolak
-        </Button>
+        <Stack direction={"row"} gap={1}>
+          <Button
+            color="success"
+            variant="contained"
+            startIcon={<Check />}
+            onClick={() => {
+              acceptInvite({
+                role: "Admin",
+              });
+            }}
+          >
+            Terima
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            startIcon={<Cancel />}
+            onClick={() => {
+              rejectInvite();
+            }}
+          >
+            Tolak
+          </Button>
+        </Stack>
       </Box>
     );
   }
