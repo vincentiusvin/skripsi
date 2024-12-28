@@ -1,6 +1,10 @@
 import dayjs from "dayjs";
 import "dayjs/locale/id";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 dayjs.locale("id");
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 import express, { Request } from "express";
 import session from "express-session";

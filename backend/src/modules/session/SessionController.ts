@@ -86,9 +86,9 @@ export class SessionController extends Controller {
       const susp = await this.suspension_service.getLongestActiveSuspension(user.id);
       if (susp !== undefined) {
         throw new ClientError(
-          `Akun anda ditangguhkan hingga ${dayjs(susp.suspended_until).format(
-            "dddd[,] D MMM YYYY[,] HH:mm",
-          )} dengan alasan: ${susp.reason}`,
+          `Akun anda ditangguhkan hingga ${dayjs(susp.suspended_until)
+            .tz("Asia/Jakarta") // maybe can be an env someday
+            .format("dddd[,] D MMM YYYY[,] HH:mm")} dengan alasan: ${susp.reason}`,
         );
       }
 
