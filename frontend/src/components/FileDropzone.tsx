@@ -16,6 +16,7 @@ function FileDropzone(props: FileDropzoneProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { getRootProps, getInputProps } = useDropzone({
     multiple: true,
+    noClick: disableClick,
     onDrop: () => {
       setIsHovered(false);
     },
@@ -34,14 +35,7 @@ function FileDropzone(props: FileDropzoneProps) {
 
   return (
     <Box {...getRootProps()} sx={sx}>
-      <input
-        {...getInputProps()}
-        onClick={(e) => {
-          if (disableClick) {
-            e.preventDefault();
-          }
-        }}
-      />
+      <input {...getInputProps()} />
       {children}
       {isHovered ? (
         <Backdrop open={isHovered} onClick={() => setIsHovered(() => false)}>

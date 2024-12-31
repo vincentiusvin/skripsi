@@ -87,7 +87,7 @@ function ProjectsEdit(props: { project_id: number }) {
             value={projectDesc ?? oldData.project_desc}
           ></TextField>
           <FormControl>
-            <InputLabel>Category</InputLabel>
+            <InputLabel>Kategori</InputLabel>
             <Select
               value={projectCategory ?? oldData.project_categories.map((x) => x.category_id)}
               label="Kategori"

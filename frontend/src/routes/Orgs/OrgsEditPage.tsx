@@ -169,7 +169,7 @@ function OrgsEdit(props: { org_id: number }) {
       </Grid>
       <Grid size={12}>
         <RichEditor
-          label={"Tentang Organisasi"}
+          label={"Tentang Organisasi*"}
           defaultValue={orgDesc ?? org_data.org_description}
           onBlur={(x) => setOrgDesc(x)}
         ></RichEditor>
