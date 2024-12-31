@@ -1,5 +1,7 @@
 import { expect } from "chai";
+import { readFileSync } from "fs";
 import { before, describe } from "mocha";
+import path from "path";
 import { Application } from "../../app.js";
 import { NotificationTester } from "../../test/NotificationTester.js";
 import { baseCase } from "../../test/fixture_data.js";
@@ -168,12 +170,13 @@ describe("chatting api", () => {
   });
 
   it("should allow users to attach files", async () => {
+    const in_img = getImage();
     const in_data = {
       message: "test",
       files: [
         {
-          filename: "def.txt",
-          content: "data:text/plain;base64,abc",
+          filename: in_img.filename,
+          content: in_img.mimeprefix + in_img.content,
         },
       ],
     };
@@ -183,21 +186,27 @@ describe("chatting api", () => {
     const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await sendMessage(in_room.id, in_data, cookie);
     const result = await send_req.json();
+    const file = result.files[0];
+    const file_req = await getFileData(file.id, cookie);
+    const file_result = await file_req.blob();
+    const file_buffer = await file_result.arrayBuffer();
+    const stored_file = Buffer.from(file_buffer).toString("base64");
 
     expect(send_req.status).to.eq(201);
-    expect(result.files).to.containSubset(
-      in_data.files.map((x) => ({
-        filename: x.filename,
-      })),
-    );
+    expect(file).to.containSubset({
+      filename: in_img.filename,
+      filetype: in_img.mimetype,
+    });
+    expect(stored_file).to.eq(in_img.content);
   });
 
   it("should allow users to attach files to sent messages", async () => {
+    const in_img = getImage();
     const in_data = {
       files: [
         {
-          filename: "abc.txt",
-          content: "data:text/plain;base64,abc",
+          filename: in_img.filename,
+          content: in_img.mimeprefix + in_img.content,
         },
       ],
     };
@@ -209,13 +218,18 @@ describe("chatting api", () => {
     const cookie = await getLoginCookie(in_user.name, in_user.password);
     const send_req = await updateMessage(in_room.id, in_msg.id, in_data, cookie);
     const result = await send_req.json();
+    const file = result.files[0];
+    const file_req = await getFileData(file.id, cookie);
+    const file_result = await file_req.blob();
+    const file_buffer = await file_result.arrayBuffer();
+    const stored_file = Buffer.from(file_buffer).toString("base64");
 
     expect(send_req.status).to.eq(200);
-    expect(result.files).to.containSubset(
-      in_data.files.map((x) => ({
-        filename: x.filename,
-      })),
-    );
+    expect(file).to.containSubset({
+      filename: in_img.filename,
+      filetype: in_img.mimetype,
+    });
+    expect(stored_file).to.eq(in_img.content);
   });
 
   describe("notifications", () => {
@@ -263,15 +277,15 @@ describe("chatting api", () => {
   });
 });
 
-// function getFileData(file_id: number, cookie: string) {
-//   return new APIContext("FileDetailGet").fetch(`/api/files/${file_id}`, {
-//     headers: {
-//       cookie: cookie,
-//     },
-//     credentials: "include",
-//     method: "get",
-//   });
-// }
+function getFileData(file_id: number, cookie: string) {
+  return new APIContext("FileDetailGet").fetch(`/api/files/${file_id}`, {
+    headers: {
+      cookie: cookie,
+    },
+    credentials: "include",
+    method: "get",
+  });
+}
 
 function addChatroom(
   opts: {
@@ -424,4 +438,25 @@ function deleteRoom(chatroom_id: number, cookie: string) {
     credentials: "include",
     method: "delete",
   });
+}
+
+let image:
+  | {
+      mimeprefix: string;
+      mimetype: string;
+      content: string;
+      filename: string;
+    }
+  | undefined = undefined;
+function getImage() {
+  if (image == undefined) {
+    const filepath = path.resolve(__dirname, "./test_img.jpg");
+    image = {
+      mimeprefix: "data:image/jpeg;base64,",
+      mimetype: "image/jpeg",
+      content: readFileSync(filepath, "base64"),
+      filename: "test_img.jpg",
+    };
+  }
+  return image;
 }

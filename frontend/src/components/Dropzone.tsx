@@ -14,9 +14,7 @@ function ImageDropzone(props: ImageDropzoneProps) {
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,
     accept: {
-      "image/png": [".png"],
-      "image/jpg": [".jpg"],
-      "image/jpeg": [".jpeg"],
+      "image/*": [],
     },
     onDropAccepted: (files) => {
       const file = files.length === 1 ? files[0] : null;

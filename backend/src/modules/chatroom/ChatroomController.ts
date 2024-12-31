@@ -25,6 +25,7 @@ const MessageResponseSchema = z.object({
     .object({
       id: z.number(),
       filename: z.string(),
+      filetype: z.string(),
     })
     .array(),
 });
