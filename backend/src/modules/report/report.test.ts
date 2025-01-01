@@ -88,7 +88,7 @@ describe("report api", () => {
     },
     {
       user_key: "admin_user",
-      statement: "should be able to update regular report data as other user",
+      statement: "should be able to update regular report data as admin",
       ok: true,
       in_data: {
         title: "new update title",

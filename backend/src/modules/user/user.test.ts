@@ -353,7 +353,7 @@ describe("user service", () => {
     {
       type: "Password",
       user_key: "plain_user",
-      name: "should be able to insert registration otp",
+      name: "should be able to insert password otp",
       ok: true,
     },
     {
