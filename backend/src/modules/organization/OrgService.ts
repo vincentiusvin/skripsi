@@ -1,4 +1,4 @@
-import { AuthError, ClientError } from "../../helpers/error.js";
+import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
   NotificationService,
@@ -89,12 +89,19 @@ export class OrgService implements Transactable<OrgService> {
     sender_id: number,
   ) {
     return await this.transaction_manager.transaction(this as OrgService, async (serv) => {
-      const { org_name } = obj;
+      const old_data = await serv.getOrgByID(id);
+      if (old_data == undefined) {
+        throw new NotFoundError("Gagal menemukan organisasi tersebut!");
+      }
+
       const sender_role = await serv.getMemberRole(id, sender_id);
+
       if (sender_role !== "Admin") {
         throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
       }
-      if (org_name) {
+
+      const { org_name } = obj;
+      if (org_name && org_name !== old_data.org_name) {
         const same_name = await serv.getOrgByName(org_name);
         if (same_name != undefined) {
           throw new ClientError("Sudah ada organisasi dengan nama yang sama!");
