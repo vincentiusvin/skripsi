@@ -14,6 +14,8 @@ import Grid from "@mui/material/Grid2";
 import { Fragment, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useParams } from "wouter";
+import QueryPagination from "../../components/QueryPagination.tsx";
+import useQueryPagination from "../../components/QueryPagination/hook.ts";
 import { useOrgDetailGet } from "../../queries/org_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
 import AuthorizeOrgs from "./components/AuthorizeOrgs.tsx";
@@ -24,9 +26,15 @@ function InviteMembersDialog(props: { org_id: number }) {
   const { data: org } = useOrgDetailGet({ id: org_id });
   const [keyword, setKeyword] = useState<string>("");
   const [debouncedKeyword] = useDebounce(keyword, 300);
+  const [page] = useQueryPagination();
+  const limit = 10;
+
   const { data: users_raw } = useUsersGet({
     keyword: debouncedKeyword,
+    page,
+    limit,
   });
+
   const users = users_raw?.result;
   const [inviteMembers, setInviteMembers] = useState(false);
 
@@ -77,6 +85,7 @@ function InviteMembersDialog(props: { org_id: number }) {
             ) : (
               <Skeleton />
             )}
+            <QueryPagination limit={limit} total={users_raw?.total} />
           </Stack>
         </DialogContent>
       </Dialog>
