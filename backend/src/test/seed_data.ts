@@ -12,6 +12,45 @@ function looper<T>(times: number, func: (i: number) => T) {
   return ret;
 }
 
+function imageGen() {
+  return `<img src="${faker.image.urlLoremFlickr()}" />`;
+}
+
+function contentGen() {
+  const img_string = imageGen();
+  return faker.lorem.paragraphs(2) + img_string + faker.lorem.paragraphs(3);
+}
+
+const task_name_1 = [
+  "Desain",
+  "Implementasi",
+  "Enhancement",
+  "Bugfix",
+  "Kontributor",
+  "Administrasi",
+  "Perapihan",
+  "Training",
+  "Testing",
+  "Pembuatan",
+];
+const task_name_2 = [
+  "ERD",
+  "Halaman Login",
+  "Halaman Daftar",
+  "Halaman Beranda",
+  "Footer",
+  "Header",
+  "Konten",
+  "API",
+  "Database",
+  "Dokumentasi",
+  "Infrastruktur",
+];
+
+function taskNameGen() {
+  return faker.helpers.arrayElement(task_name_1) + " " + faker.helpers.arrayElement(task_name_2);
+}
+
 async function addArticles(db: Kysely<DB>) {
   const articles_to_generate = 1000;
 
@@ -25,8 +64,8 @@ async function addArticles(db: Kysely<DB>) {
           name: faker.book.title(),
           description: faker.book.series(),
           user_id: faker.helpers.arrayElement(users).id,
-          content: faker.lorem.paragraph(),
-          image: faker.image.url(),
+          content: contentGen(),
+          image: faker.image.urlLoremFlickr(),
         };
       }),
     )
@@ -127,7 +166,7 @@ async function addTasks(db: Kysely<DB>) {
       looper(tasks_to_generate, () => {
         return {
           bucket_id: faker.helpers.arrayElement(buckets).id,
-          name: faker.commerce.productName(),
+          name: taskNameGen(),
           description: faker.hacker.phrase(),
           order: faker.number.int({
             min: 0,
@@ -309,10 +348,10 @@ async function addContribs(db: Kysely<DB>) {
     .insertInto("contributions")
     .values(
       looper(contribs_to_add, () => ({
-        name: faker.hacker.adjective() + " " + faker.hacker.noun(),
+        name: taskNameGen(),
         project_id: faker.helpers.arrayElement(projects).id,
         status: faker.helpers.arrayElement(["Approved", "Pending", "Revision", "Rejected"]),
-        description: faker.lorem.paragraphs(10),
+        description: contentGen(),
       })),
     )
     .returning("id")
@@ -346,13 +385,38 @@ async function addProjects(db: Kysely<DB>) {
   const orgs = await db.selectFrom("orgs").select("id").execute();
   const cats = await db.selectFrom("category_projects").select("id").execute();
 
+  const project_name_1 = [
+    "Website",
+    "Website Profil",
+    "Website Donasi",
+    "Aplikasi",
+    "Aplikasi Manajemen",
+    "Aplikasi Pencatatan",
+    "Aplikasi Akuntansi",
+    "Aplikasi Absensi",
+  ];
+  const project_name_2 = [
+    "Panti Asuhan",
+    "Panti Jompo",
+    "Komunitas",
+    "Yayasan",
+    "Forum",
+    "Sanggar",
+  ];
+
+  function projectNameMaker() {
+    return (
+      faker.helpers.arrayElement(project_name_1) + " " + faker.helpers.arrayElement(project_name_2)
+    );
+  }
+
   const project_ids = await db
     .insertInto("projects")
     .values(
       looper(projects_to_gen, () => ({
         description: faker.company.buzzPhrase(),
-        name: faker.internet.domainWord(),
-        content: faker.lorem.paragraphs(10),
+        name: projectNameMaker(),
+        content: contentGen(),
         org_id: faker.helpers.arrayElement(orgs).id,
         archived: faker.datatype.boolean(0.25),
       })),
@@ -401,7 +465,13 @@ async function addOrgs(db: Kysely<DB>) {
   const users = await db.selectFrom("users").select("id").execute();
   const cats = await db.selectFrom("category_orgs").select("id").execute();
 
-  const names = faker.helpers.uniqueArray(faker.company.name, orgs_to_gen);
+  const names = faker.helpers.uniqueArray(() => {
+    const prefix = ["Panti Asuhan", "Panti Jompo", "Komunitas", "Yayasan", "Forum", "Sanggar"];
+    const pref = faker.helpers.arrayElement(prefix);
+    const name = faker.company.name();
+
+    return pref + " " + name;
+  }, orgs_to_gen);
 
   const org_ids = await db
     .insertInto("orgs")
