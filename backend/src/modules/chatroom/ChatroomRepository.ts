@@ -285,30 +285,31 @@ export class ChatRepository {
     return room_id.id;
   }
 
-  async updateChatroom(chatroom_id: number, opts: { name?: string; user_ids?: number[] }) {
-    const { name, user_ids } = opts;
+  async addChatroomMember(chatroom_id: number, user_id: number) {
+    await this.db
+      .insertInto("chatrooms_users")
+      .values({
+        chatroom_id: chatroom_id,
+        user_id: user_id,
+      })
+      .execute();
+  }
+
+  async deleteChatroomMember(chatroom_id: number, user_id: number) {
+    await this.db
+      .deleteFrom("chatrooms_users")
+      .where((eb) => eb.and([eb("chatroom_id", "=", chatroom_id), eb("user_id", "=", user_id)]))
+      .execute();
+  }
+
+  async updateChatroom(chatroom_id: number, opts: { name?: string }) {
+    const { name } = opts;
     if (name) {
       await this.db
         .updateTable("chatrooms")
         .set("name", name)
         .where("id", "=", chatroom_id)
         .execute();
-    }
-
-    if (user_ids != undefined) {
-      await this.db.deleteFrom("chatrooms_users").where("chatroom_id", "=", chatroom_id).execute();
-
-      if (user_ids.length) {
-        await this.db
-          .insertInto("chatrooms_users")
-          .values(
-            user_ids.map((user_id) => ({
-              chatroom_id: chatroom_id,
-              user_id: user_id,
-            })),
-          )
-          .execute();
-      }
     }
   }
 
