@@ -264,9 +264,24 @@ export class ChatService implements Transactable<ChatService> {
 
   async deleteChatroomMember(chatroom_id: number, user_id: number, sender_id: number) {
     await this.transaction_manager.transaction(this as ChatService, async (serv) => {
+      const room = await serv.getChatroomByID(chatroom_id);
+      if (room == undefined) {
+        throw new NotFoundError("Gagal menemukan ruangan tersebut!");
+      }
+
       const val = await serv.isAllowed(chatroom_id, sender_id);
       if (!val) {
         throw new AuthError("Anda tidak memiliki akses untuk mengubah chat ini!");
+      }
+
+      if (room.project_id) {
+        throw new ClientError(
+          "Anda tidak dapat mengkonfigurasi anggota untuk ruang diskusi proyek!",
+        );
+      }
+      const members = await serv.repo.getMembers(chatroom_id);
+      if (!members.includes(user_id)) {
+        throw new ClientError("Pengguna ini belum menjadi anggota ruangan!");
       }
 
       await serv.repo.deleteChatroomMember(chatroom_id, user_id);
