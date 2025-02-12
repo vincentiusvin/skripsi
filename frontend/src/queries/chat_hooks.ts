@@ -96,14 +96,59 @@ export function useChatroomsDetailMessagesPut(opts: { chatroom_id: number; messa
 export function useChatroomsDetailPut(opts: { chatroom_id: number; onSuccess?: () => void }) {
   const { chatroom_id, onSuccess } = opts;
   return useMutation({
-    mutationFn: async (opts: { name?: string; user_ids?: number[] }) => {
+    mutationFn: async (opts: { name?: string }) => {
       const res = await new APIContext("ChatroomsDetailPut").fetch(
         `/api/chatrooms/${chatroom_id}`,
         {
           method: "PUT",
           body: {
             name: opts.name,
-            user_ids: opts.user_ids,
+          },
+        },
+      );
+      return res;
+    },
+    onSuccess: onSuccess,
+  });
+}
+
+export function useChatroomsDetailUserDetailPut(opts: {
+  chatroom_id: number;
+  user_id: number;
+  onSuccess?: () => void;
+}) {
+  const { chatroom_id, user_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: async () => {
+      const res = await new APIContext("ChatroomsDetailUsersDetailPut").fetch(
+        `/api/chatrooms/${chatroom_id}/users/${user_id}`,
+        {
+          method: "PUT",
+          body: {
+            role: "Member",
+          },
+        },
+      );
+      return res;
+    },
+    onSuccess: onSuccess,
+  });
+}
+
+export function useChatroomsDetailUserDetailDelete(opts: {
+  chatroom_id: number;
+  user_id: number;
+  onSuccess?: () => void;
+}) {
+  const { chatroom_id, user_id, onSuccess } = opts;
+  return useMutation({
+    mutationFn: async () => {
+      const res = await new APIContext("ChatroomsDetailUsersDetailDelete").fetch(
+        `/api/chatrooms/${chatroom_id}/users/${user_id}`,
+        {
+          method: "DELETE",
+          body: {
+            role: "Member",
           },
         },
       );
