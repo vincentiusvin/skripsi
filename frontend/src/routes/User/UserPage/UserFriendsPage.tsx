@@ -2,6 +2,7 @@ import { Button, Skeleton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { enqueueSnackbar } from "notistack";
 import { useParams } from "wouter";
+import { API } from "../../../../../backend/src/routes.ts";
 import UserCard from "../../../components/Cards/UserCard.tsx";
 import {
   useFriendsDelete,
@@ -10,6 +11,15 @@ import {
   useFriendsPut,
 } from "../../../queries/friend_hooks.ts";
 import AuthorizeUser from "../AuthorizeUser.tsx";
+
+type FriendStatus = API["UsersDetailFriendsDetailGet"]["ResBody"]["status"];
+
+const StatusMapping: Record<FriendStatus, string> = {
+  Pending: "Pending",
+  Accepted: "Teman",
+  Sent: "Dikirim",
+  None: "-",
+};
 
 function UserFriends(props: { user_id: number }) {
   const { user_id } = props;
@@ -129,7 +139,7 @@ function FriendManage(props: {
   return (
     <UserCard
       user_id={with_id}
-      subtitle={friend_data?.status}
+      subtitle={friend_data != undefined ? StatusMapping[friend_data.status] : undefined}
       sidebar={
         <>
           {putOption && (

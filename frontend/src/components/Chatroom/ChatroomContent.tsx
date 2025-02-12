@@ -35,10 +35,9 @@ import FileDropzone from "../FileDropzone.tsx";
 import StyledLink from "../StyledLink.tsx";
 import UserAvatar from "../UserAvatar.tsx";
 
-function DownloadableFile(props: { filename: string; file_id: number }) {
-  const { filename, file_id } = props;
-  const isImage =
-    filename.endsWith(".jpeg") || filename.endsWith(".jpg") || filename.endsWith(".png");
+function DownloadableFile(props: { filename: string; file_id: number; filetype: string }) {
+  const { filename, file_id, filetype } = props;
+  const isImage = filetype.startsWith("image");
 
   if (isImage) {
     return (
@@ -147,7 +146,12 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
                 <Stack spacing={1} marginTop={1} direction="column">
                   <Divider />
                   {message.files.map((file) => (
-                    <DownloadableFile key={file.id} file_id={file.id} filename={file.filename} />
+                    <DownloadableFile
+                      key={file.id}
+                      file_id={file.id}
+                      filename={file.filename}
+                      filetype={file.filetype}
+                    />
                   ))}
                 </Stack>
               ) : null}
@@ -187,7 +191,12 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
                   <Stack spacing={1} marginTop={1} direction="column">
                     <Divider />
                     {message.files.map((file) => (
-                      <DownloadableFile key={file.id} file_id={file.id} filename={file.filename} />
+                      <DownloadableFile
+                        key={file.id}
+                        file_id={file.id}
+                        filename={file.filename}
+                        filetype={file.filetype}
+                      />
                     ))}
                   </Stack>
                 ) : null}
@@ -240,7 +249,12 @@ function Message(props: { message: MessageData; chatroom_id: number }) {
               <Stack spacing={1} marginTop={1} direction="column">
                 <Divider />
                 {message.files.map((file) => (
-                  <DownloadableFile key={file.id} file_id={file.id} filename={file.filename} />
+                  <DownloadableFile
+                    key={file.id}
+                    file_id={file.id}
+                    filename={file.filename}
+                    filetype={file.filetype}
+                  />
                 ))}
               </Stack>
             ) : null}
@@ -262,7 +276,7 @@ type FileData = {
 
 function FileDisplay(props: FileData & { onDelete?: () => void }) {
   const { onDelete, b64, file } = props;
-  const isRenderableImage = ["image/png", "image/jpeg", "image/jpg"].includes(file.type) && b64;
+  const isRenderableImage = file.type.startsWith("image") && b64;
 
   return (
     <Paper

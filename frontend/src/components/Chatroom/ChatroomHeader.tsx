@@ -48,6 +48,7 @@ function ChatroomHeader(props: {
           sx={{
             wordWrap: "break-word",
           }}
+          textAlign={"center"}
         >
           {room.chatroom_name}
         </Typography>

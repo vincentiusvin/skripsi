@@ -285,6 +285,7 @@ async function addChatrooms(db: Kysely<DB>) {
 
           return looper(files_to_add, () => ({
             filename: faker.system.commonFileName(),
+            filetype: faker.system.mimeType(),
             content: randomBytes(
               faker.number.int({
                 min: 1,

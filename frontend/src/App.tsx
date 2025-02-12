@@ -11,7 +11,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { SnackbarProvider, closeSnackbar } from "notistack";
 import { useState } from "react";
-import { Route, Switch } from "wouter";
+import { Redirect, Route, Switch } from "wouter";
 import "./App.css";
 import Navigation from "./components/Navigation/Navigation.tsx";
 import { queryClient } from "./helpers/queryclient";
@@ -168,6 +168,7 @@ function App() {
                   <Route path={"/articles/add"} component={ArticleAddPage} />
                   <Route path={"/articles/:article_id"} component={ArticlesDetailPage} />
                   <Route path={"/articles/:article_id/edit"} component={ArticlesEditPage} />
+                  <Route path={"*"} component={() => <Redirect to="/" />} />
                 </Switch>
               </Navigation>
             </LocalizationProvider>

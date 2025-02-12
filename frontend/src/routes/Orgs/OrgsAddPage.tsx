@@ -161,7 +161,7 @@ function OrgsAdd() {
       </Grid>
       <Grid size={12}>
         <RichEditor
-          label={"Tentang Organisasi"}
+          label={"Tentang Organisasi*"}
           defaultValue={orgDesc}
           onBlur={(x) => setOrgDesc(x)}
         ></RichEditor>

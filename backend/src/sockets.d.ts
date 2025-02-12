@@ -8,6 +8,7 @@ export type MessageData = {
   is_edited: boolean;
   files: {
     id: number;
+    filetype: string;
     filename: string;
   }[];
 };

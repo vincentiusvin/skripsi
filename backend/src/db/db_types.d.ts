@@ -61,6 +61,7 @@ export interface CategoryProjects {
 export interface ChatroomFiles {
   content: Buffer;
   filename: string;
+  filetype: string;
   id: Generated<number>;
   message_id: number;
 }

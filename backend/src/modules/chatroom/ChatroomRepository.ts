@@ -34,7 +34,7 @@ function messageWithAttachments(eb: ExpressionBuilder<DB, "messages">) {
   return jsonArrayFrom(
     eb
       .selectFrom("chatroom_files as f")
-      .select(["f.id", "f.filename"])
+      .select(["f.id", "f.filename", "f.filetype"])
       .whereRef("f.message_id", "=", "messages.id"),
   );
 }
@@ -83,6 +83,28 @@ export class ChatRepository {
     return query.execute();
   }
 
+  private base64ToData(x: string) {
+    const [b64prefix, b64data] = x.split(",");
+    if (b64prefix == undefined || b64data == undefined) {
+      throw new Error("Gagal memproses file!");
+    }
+    const [almostMime, b64] = b64prefix.split(";");
+    if (b64 != "base64") {
+      throw new Error("Data tidak diencode menggunakan base64!");
+    }
+    const [dataLiteral, mime] = almostMime.split(":");
+    if (dataLiteral != "data") {
+      throw new Error("Format data tidak diketahui!");
+    }
+
+    const buf = Buffer.from(b64data, "base64");
+
+    return {
+      content: buf,
+      mime: mime,
+    };
+  }
+
   async addMessage(
     chatroom_id: number,
     data: {
@@ -114,17 +136,14 @@ export class ChatRepository {
 
     if (files != undefined && files.length) {
       const files_cleaned = files.flatMap((x) => {
-        const b64_data = x.content.split(",")[1];
-        if (b64_data == undefined) {
-          return [];
-        }
-        const buf = Buffer.from(b64_data, "base64");
+        const { mime, content } = this.base64ToData(x.content);
 
         return [
           {
-            content: buf,
             message_id: res.id,
             filename: x.filename,
+            content,
+            filetype: mime,
           },
         ];
       });
@@ -190,17 +209,14 @@ export class ChatRepository {
       await this.db.deleteFrom("chatroom_files").where("id", "=", message_id).execute();
 
       const files_cleaned = files.flatMap((x) => {
-        const b64_data = x.content.split(",")[1];
-        if (b64_data == undefined) {
-          return [];
-        }
-        const buf = Buffer.from(b64_data, "base64url");
+        const { mime, content } = this.base64ToData(x.content);
 
         return [
           {
-            content: buf,
+            content,
             message_id: message_id,
             filename: x.filename,
+            filetype: mime,
           },
         ];
       });

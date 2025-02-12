@@ -68,7 +68,7 @@ function ArticlesListPage() {
           </Grid>
         </Grid>
       </Paper>
-      <Stack direction="row" alignItems={"center"}>
+      <Stack direction="row" alignItems={"center"} flexWrap={"wrap"} gap={1}>
         <Typography flexGrow={1} variant="h6">
           Daftar Artikel
         </Typography>
