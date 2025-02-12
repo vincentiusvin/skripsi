@@ -14,8 +14,7 @@ import Grid from "@mui/material/Grid2";
 import { Fragment, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useParams } from "wouter";
-import QueryPagination from "../../components/QueryPagination.tsx";
-import useQueryPagination from "../../components/QueryPagination/hook.ts";
+import BasicPagination from "../../components/Pagination.tsx";
 import { useProjectsDetailGet } from "../../queries/project_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
 import AuthorizeProjects from "./components/AuthorizeProjects.tsx";
@@ -27,7 +26,7 @@ function InviteMembersDialog(props: { project_id: number }) {
   const [inviteMembers, setInviteMembers] = useState(false);
   const [keyword, setKeyword] = useState<string>("");
   const [debouncedKeyword] = useDebounce(keyword, 300);
-  const [page] = useQueryPagination();
+  const [page, setPage] = useState(1);
   const limit = 10;
 
   const { data: users_raw } = useUsersGet({
@@ -47,6 +46,7 @@ function InviteMembersDialog(props: { project_id: number }) {
   function reset() {
     setInviteMembers(false);
     setKeyword("");
+    setPage(1);
   }
 
   return (
@@ -57,7 +57,10 @@ function InviteMembersDialog(props: { project_id: number }) {
           <Stack spacing={2} mt={1}>
             <TextField
               label="Cari pengguna"
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                setPage(1);
+              }}
               value={keyword}
               slotProps={{
                 input: {
@@ -84,7 +87,7 @@ function InviteMembersDialog(props: { project_id: number }) {
             ) : (
               <Skeleton />
             )}
-            <QueryPagination limit={limit} total={users_raw?.total} />
+            <BasicPagination limit={limit} total={users_raw?.total} page={page} setPage={setPage} />
           </Stack>
         </DialogContent>
       </Dialog>

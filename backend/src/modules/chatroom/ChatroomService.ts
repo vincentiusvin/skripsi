@@ -253,6 +253,10 @@ export class ChatService implements Transactable<ChatService> {
           "Anda tidak dapat mengkonfigurasi anggota untuk ruang diskusi proyek!",
         );
       }
+      const members = await serv.repo.getMembers(chatroom_id);
+      if (members.includes(user_id)) {
+        throw new ClientError("Pengguna ini sudah menjadi anggota ruangan!");
+      }
       await this.validateChatroomMember(user_id, sender_id);
       await serv.repo.addChatroomMember(chatroom_id, user_id);
     });

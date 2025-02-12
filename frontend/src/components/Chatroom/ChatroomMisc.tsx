@@ -1,4 +1,4 @@
-import { AddCircle, Delete, Edit, Logout, People } from "@mui/icons-material";
+import { AddCircle, Delete, Edit, Logout, People, SearchOutlined } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -6,6 +6,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  InputAdornment,
   ListItemIcon,
   ListItemText,
   MenuItem,
@@ -26,6 +27,7 @@ import {
   useChatroomsPost,
 } from "../../queries/chat_hooks.ts";
 import { useUsersGet } from "../../queries/user_hooks.ts";
+import BasicPagination from "../Pagination.tsx";
 import UserLabel from "../UserLabel.tsx";
 
 function ActiveMember(props: { chatroom_id: number; user_id: number }) {
@@ -50,15 +52,15 @@ function ActiveMember(props: { chatroom_id: number; user_id: number }) {
   );
 }
 
-function AddMember(props: { chatroom_id: number; user_id: number }) {
-  const { chatroom_id, user_id } = props;
+function AddMember(props: { chatroom_id: number; user_id: number; disabled: boolean }) {
+  const { chatroom_id, user_id, disabled } = props;
   const { mutate: addMember } = useChatroomsDetailUserDetailPut({
     chatroom_id,
     user_id,
     onSuccess: () => {
       enqueueSnackbar({
         variant: "success",
-        message: <Typography>Berhasil menghapus anggota!</Typography>,
+        message: <Typography>Berhasil menambah anggota!</Typography>,
       });
     },
   });
@@ -67,7 +69,9 @@ function AddMember(props: { chatroom_id: number; user_id: number }) {
     <Stack direction={"row"}>
       <UserLabel size="small" user_id={user_id} />
       <Box flexGrow={1} />
-      <Button onClick={() => addMember()}>Tambah</Button>
+      <Button disabled={disabled} onClick={() => addMember()}>
+        Tambah
+      </Button>
     </Stack>
   );
 }
@@ -79,7 +83,7 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
 
   const [keyword, setKeyword] = useState<string>("");
   const [debouncedKeyword] = useDebounce(keyword, 300);
-  const [page] = useState(1);
+  const [page, setPage] = useState(1);
   const limit = 10;
 
   const { data: user_data } = useUsersGet({
@@ -87,12 +91,19 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
     limit,
     keyword: debouncedKeyword,
   });
+  const users = user_data?.result;
+  const { data: chatroom } = useChatroomsDetailGet({ chatroom_id });
 
   function reset() {
     setAddRoomMembersOpen(false);
     setKeyword("");
   }
-  const users = user_data?.result;
+
+  if (!chatroom) {
+    return <Skeleton />;
+  }
+
+  const chatroom_users = chatroom.chatroom_users.map((x) => x.user_id);
 
   return (
     <>
@@ -109,10 +120,36 @@ export function AddMembersDialog(props: { chatroom_id: number }) {
             minWidth: 350,
           }}
         >
-          <Stack rowGap={1}>
-            {users?.map((x) => (
-              <AddMember key={x.user_id} chatroom_id={chatroom_id} user_id={x.user_id} />
-            ))}
+          <Stack mt={2} gap={2}>
+            <TextField
+              label="Cari pengguna"
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                setPage(1);
+              }}
+              value={keyword}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="start">
+                      <SearchOutlined />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+
+            <Stack rowGap={1}>
+              {users?.map((x) => (
+                <AddMember
+                  key={x.user_id}
+                  chatroom_id={chatroom_id}
+                  user_id={x.user_id}
+                  disabled={chatroom_users.includes(x.user_id)}
+                />
+              ))}
+            </Stack>
+            <BasicPagination limit={limit} page={page} setPage={setPage} total={user_data?.total} />
           </Stack>
         </DialogContent>
       </Dialog>
