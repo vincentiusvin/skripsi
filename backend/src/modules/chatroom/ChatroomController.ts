@@ -99,6 +99,8 @@ export class ChatController extends Controller {
       ChatroomsDetailMessagesPut: this.ChatroomsDetailMessagesPut,
       ChatroomsDetailMessagesGet: this.ChatroomsDetailMessagesGet,
       FileDetailGet: this.FileDetailGet,
+      ChatroomsDetailUsersDetailPut: this.ChatroomsDetailUsersDetailPut,
+      ChatroomsDetailUsersDetailDelete: this.ChatroomsDetailUsersDetailDelete,
     };
   }
 
@@ -213,7 +215,10 @@ export class ChatController extends Controller {
     schema: {
       Params: ChatroomMembersParamSchema,
       ResBody: z.object({
-        role: z.literal("member"),
+        role: z.literal("Member"),
+      }),
+      ReqBody: z.object({
+        role: z.literal("Member"),
       }),
     },
     handler: async (req, res) => {
@@ -231,7 +236,7 @@ export class ChatController extends Controller {
       await this.broadcastEvent(users_to_notify, "roomUpdate");
 
       res.status(200).json({
-        role: "member",
+        role: "Member",
       });
     },
   });
@@ -243,7 +248,7 @@ export class ChatController extends Controller {
     schema: {
       Params: ChatroomMembersParamSchema,
       ResBody: z.object({
-        role: z.literal("member"),
+        msg: z.string(),
       }),
     },
     handler: async (req, res) => {
@@ -261,7 +266,7 @@ export class ChatController extends Controller {
       await this.broadcastEvent(users_to_notify, "roomUpdate");
 
       res.status(200).json({
-        role: "member",
+        msg: "User removed!",
       });
     },
   });
