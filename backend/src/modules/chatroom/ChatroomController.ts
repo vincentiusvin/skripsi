@@ -62,6 +62,11 @@ const ChatroomParamsSchema = z.object({
   chatroom_id: zodStringReadableAsNumber("Nomor ruang chat tidak valid!"),
 });
 
+const ChatroomMembersParamSchema = z.object({
+  chatroom_id: zodStringReadableAsNumber("Nomor ruang chat tidak valid!"),
+  user_id: zodStringReadableAsNumber("Nomor pengguna tidak valid!"),
+});
+
 const ChatroomResponseSchema = z.object({
   project_id: z.number().nullable(),
   chatroom_id: z.number(),
@@ -95,6 +100,8 @@ export class ChatController extends Controller {
       ChatroomsDetailMessagesPut: this.ChatroomsDetailMessagesPut,
       ChatroomsDetailMessagesGet: this.ChatroomsDetailMessagesGet,
       FileDetailGet: this.FileDetailGet,
+      ChatroomsDetailUsersDetailPut: this.ChatroomsDetailUsersDetailPut,
+      ChatroomsDetailUsersDetailDelete: this.ChatroomsDetailUsersDetailDelete,
     };
   }
 
@@ -202,6 +209,69 @@ export class ChatController extends Controller {
     },
   });
 
+  ChatroomsDetailUsersDetailPut = new Route({
+    method: "put",
+    path: "/api/chatrooms/:chatroom_id/users/:user_id",
+    priors: [validateLogged],
+    schema: {
+      Params: ChatroomMembersParamSchema,
+      ResBody: z.object({
+        role: z.literal("Member"),
+      }),
+      ReqBody: z.object({
+        role: z.literal("Member"),
+      }),
+    },
+    handler: async (req, res) => {
+      const { chatroom_id: chatroom_id_raw, user_id: user_id_raw } = req.params;
+      const user_id = Number(user_id_raw);
+      const chatroom_id = Number(chatroom_id_raw);
+      const sender_id = req.session.user_id!;
+
+      const old_members = await this.chat_service.getAllowedListeners(chatroom_id);
+      await this.chat_service.addChatroomMember(chatroom_id, user_id, sender_id);
+      const new_members = await this.chat_service.getAllowedListeners(chatroom_id);
+
+      const users_to_notify = [...old_members, ...new_members];
+
+      await this.broadcastEvent(users_to_notify, "roomUpdate");
+
+      res.status(200).json({
+        role: "Member",
+      });
+    },
+  });
+
+  ChatroomsDetailUsersDetailDelete = new Route({
+    method: "delete",
+    path: "/api/chatrooms/:chatroom_id/users/:user_id",
+    priors: [validateLogged],
+    schema: {
+      Params: ChatroomMembersParamSchema,
+      ResBody: z.object({
+        msg: z.string(),
+      }),
+    },
+    handler: async (req, res) => {
+      const { chatroom_id: chatroom_id_raw, user_id: user_id_raw } = req.params;
+      const user_id = Number(user_id_raw);
+      const chatroom_id = Number(chatroom_id_raw);
+      const sender_id = req.session.user_id!;
+
+      const old_members = await this.chat_service.getAllowedListeners(chatroom_id);
+      await this.chat_service.deleteChatroomMember(chatroom_id, user_id, sender_id);
+      const new_members = await this.chat_service.getAllowedListeners(chatroom_id);
+
+      const users_to_notify = [...old_members, ...new_members];
+
+      await this.broadcastEvent(users_to_notify, "roomUpdate");
+
+      res.status(200).json({
+        msg: "User removed!",
+      });
+    },
+  });
+
   ChatroomsDetailPut = new Route({
     method: "put",
     path: "/api/chatrooms/:chatroom_id",
@@ -210,18 +280,17 @@ export class ChatController extends Controller {
       Params: ChatroomParamsSchema,
       ReqBody: z.object({
         name: z.string(defaultError("Nama ruang chat tidak valid!")).min(1).optional(),
-        user_ids: z.number(defaultError("Nomor pengguna tidak valid!")).array().optional(),
       }),
       ResBody: ChatroomResponseSchema,
     },
     handler: async (req, res) => {
-      const { name, user_ids } = req.body;
+      const { name } = req.body;
       const { chatroom_id: chatroom_id_str } = req.params;
       const chatroom_id = Number(chatroom_id_str);
       const sender_id = req.session.user_id!;
 
       const old_members = await this.chat_service.getAllowedListeners(chatroom_id);
-      await this.chat_service.updateChatroom(chatroom_id, { name, user_ids }, sender_id);
+      await this.chat_service.updateChatroom(chatroom_id, { name }, sender_id);
       const new_members = await this.chat_service.getAllowedListeners(chatroom_id);
 
       const users_to_notify = [...old_members, ...new_members];

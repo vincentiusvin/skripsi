@@ -220,13 +220,8 @@ export class ChatService implements Transactable<ChatService> {
     });
   }
 
-  async updateChatroom(
-    chatroom_id: number,
-    opts: { name?: string; user_ids?: number[] },
-    sender_id: number,
-  ) {
+  async updateChatroom(chatroom_id: number, opts: { name?: string }, sender_id: number) {
     return await this.transaction_manager.transaction(this as ChatService, async (serv) => {
-      const { user_ids } = opts;
       const val = await serv.isAllowed(chatroom_id, sender_id);
       if (!val) {
         throw new AuthError("Anda tidak memiliki akses untuk mengubah chat ini!");
@@ -236,23 +231,60 @@ export class ChatService implements Transactable<ChatService> {
       if (chatroom == undefined) {
         throw new NotFoundError("Gagal menemukan ruangan tersebut!");
       }
-      if (user_ids != undefined) {
-        if (chatroom.project_id != undefined) {
-          throw new ClientError(
-            "Anda tidak dapat mengkonfigurasi anggota untuk ruang diskusi proyek!",
-          );
-        }
-
-        const old_members = chatroom.chatroom_users.map((x) => x.user_id);
-        for (const user_id of user_ids) {
-          if (old_members.includes(user_id)) {
-            continue;
-          }
-          await this.validateChatroomMember(user_id, sender_id);
-        }
-      }
 
       await serv.repo.updateChatroom(chatroom_id, opts);
+    });
+  }
+
+  async addChatroomMember(chatroom_id: number, user_id: number, sender_id: number) {
+    await this.transaction_manager.transaction(this as ChatService, async (serv) => {
+      const room = await serv.getChatroomByID(chatroom_id);
+      if (room == undefined) {
+        throw new NotFoundError("Gagal menemukan ruangan tersebut!");
+      }
+
+      const val = await serv.isAllowed(chatroom_id, sender_id);
+      if (!val) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengubah chat ini!");
+      }
+
+      if (room.project_id) {
+        throw new ClientError(
+          "Anda tidak dapat mengkonfigurasi anggota untuk ruang diskusi proyek!",
+        );
+      }
+      const members = await serv.repo.getMembers(chatroom_id);
+      if (members.includes(user_id)) {
+        throw new ClientError("Pengguna ini sudah menjadi anggota ruangan!");
+      }
+      await this.validateChatroomMember(user_id, sender_id);
+      await serv.repo.addChatroomMember(chatroom_id, user_id);
+    });
+  }
+
+  async deleteChatroomMember(chatroom_id: number, user_id: number, sender_id: number) {
+    await this.transaction_manager.transaction(this as ChatService, async (serv) => {
+      const room = await serv.getChatroomByID(chatroom_id);
+      if (room == undefined) {
+        throw new NotFoundError("Gagal menemukan ruangan tersebut!");
+      }
+
+      const val = await serv.isAllowed(chatroom_id, sender_id);
+      if (!val) {
+        throw new AuthError("Anda tidak memiliki akses untuk mengubah chat ini!");
+      }
+
+      if (room.project_id) {
+        throw new ClientError(
+          "Anda tidak dapat mengkonfigurasi anggota untuk ruang diskusi proyek!",
+        );
+      }
+      const members = await serv.repo.getMembers(chatroom_id);
+      if (!members.includes(user_id)) {
+        throw new ClientError("Pengguna ini belum menjadi anggota ruangan!");
+      }
+
+      await serv.repo.deleteChatroomMember(chatroom_id, user_id);
     });
   }
 

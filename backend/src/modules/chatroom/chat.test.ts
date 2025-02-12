@@ -139,20 +139,75 @@ describe("chatting api", () => {
     expect(send_result.message).to.eq(in_edited);
   });
 
-  it("shouldn't allow users that disabled stranger messaging to be invited", async () => {
-    const in_chat = caseData.chat;
-    const in_user = caseData.chat_user;
-    const in_disabled_user = caseData.pref_user;
+  const invite_cases = [
+    {
+      msg: "should allow users to be invited",
+      user_key: "plain_user",
+      sender_key: "chat_user",
+      ok: true,
+    },
+    {
+      msg: "shouldn't allow users that disabled stranger messaging to be invited",
+      user_key: "pref_user",
+      sender_key: "chat_user",
+      ok: false,
+    },
+    {
+      msg: "shouldn't allow uninvolved users to add chatroom users",
+      user_key: "plain_user",
+      sender_key: "article_user",
+      ok: false,
+    },
+  ] as const;
 
-    const cookie = await getLoginCookie(in_user.name, in_user.password);
-    const send_req = await updateRoom(
-      in_chat.id,
-      { user_ids: [in_user.id, in_disabled_user.id] },
-      cookie,
-    );
+  for (const { ok, msg, user_key, sender_key } of invite_cases) {
+    it(msg, async () => {
+      const in_chat = caseData.chat;
+      const in_user = caseData[sender_key];
+      const in_disabled_user = caseData[user_key];
 
-    expect(send_req.status).to.eq(400);
-  });
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const send_req = await addMember(in_chat.id, in_disabled_user.id, cookie);
+
+      if (ok) {
+        expect(send_req.status).to.eq(200);
+      } else {
+        expect(send_req.status).oneOf([400, 401]);
+      }
+    });
+  }
+
+  const remove_cases = [
+    {
+      msg: "should allow users to be removed",
+      user_key: "chat_user_2",
+      sender_key: "chat_user",
+      ok: true,
+    },
+    {
+      msg: "shouldn't allow uninvolved users to remove chatroom users",
+      user_key: "plain_user",
+      sender_key: "article_user",
+      ok: false,
+    },
+  ] as const;
+
+  for (const { ok, msg, user_key, sender_key } of remove_cases) {
+    it(msg, async () => {
+      const in_chat = caseData.chat;
+      const in_user = caseData[sender_key];
+      const in_disabled_user = caseData[user_key];
+
+      const cookie = await getLoginCookie(in_user.name, in_user.password);
+      const send_req = await deleteMember(in_chat.id, in_disabled_user.id, cookie);
+
+      if (ok) {
+        expect(send_req.status).to.eq(200);
+      } else {
+        expect(send_req.status).oneOf([400, 401]);
+      }
+    });
+  }
 
   it("should reject unauthorized viewers", async () => {
     const in_member = caseData.org_user;
@@ -412,11 +467,7 @@ function updateMessage(
   );
 }
 
-function updateRoom(
-  chatroom_id: number,
-  opts: { name?: string; user_ids?: number[] },
-  cookie: string,
-) {
+function updateRoom(chatroom_id: number, opts: { name?: string }, cookie: string) {
   return new APIContext("ChatroomsDetailPut").fetch(`/api/chatrooms/${chatroom_id}`, {
     headers: {
       cookie: cookie,
@@ -425,9 +476,37 @@ function updateRoom(
     method: "put",
     body: {
       name: opts.name,
-      user_ids: opts.user_ids,
     },
   });
+}
+
+function addMember(chatroom_id: number, user_id: number, cookie: string) {
+  return new APIContext("ChatroomsDetailUsersDetailPut").fetch(
+    `/api/chatrooms/${chatroom_id}/users/${user_id}`,
+    {
+      headers: {
+        cookie: cookie,
+      },
+      credentials: "include",
+      method: "put",
+      body: {
+        role: "Member",
+      },
+    },
+  );
+}
+
+function deleteMember(chatroom_id: number, user_id: number, cookie: string) {
+  return new APIContext("ChatroomsDetailUsersDetailDelete").fetch(
+    `/api/chatrooms/${chatroom_id}/users/${user_id}`,
+    {
+      headers: {
+        cookie: cookie,
+      },
+      credentials: "include",
+      method: "delete",
+    },
+  );
 }
 
 function deleteRoom(chatroom_id: number, cookie: string) {

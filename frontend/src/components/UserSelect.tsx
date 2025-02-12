@@ -7,7 +7,7 @@ import UserLabel from "./UserLabel.tsx";
 function UserSelect(props: {
   label?: string;
   current_users: number[];
-  allowed_users?: number[]; // Additional filter for users. If undefined will allow everyone.
+  allowed_users: number[];
   onChange?: (x: number[]) => void;
   required?: boolean;
 }) {
