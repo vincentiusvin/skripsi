@@ -20,6 +20,7 @@ function ArticlesDetail(props: { article_id: number }) {
 
   const { data: session_data } = useSessionGet();
 
+  const [, setLocation] = useLocation();
   const { mutate: deleteArticle } = useArticlesDetailDelete({
     article_id,
     onSuccess: () => {
@@ -30,8 +31,6 @@ function ArticlesDetail(props: { article_id: number }) {
       setLocation("/articles");
     },
   });
-
-  const [, setLocation] = useLocation();
 
   if (!article) {
     return <Skeleton />;

@@ -170,7 +170,14 @@ export function useChatroomsDetailDelete(opts: { chatroom_id: number; onSuccess?
       );
       return res;
     },
-    onSuccess: onSuccess,
+    onSuccess: () => {
+      queryClient.cancelQueries({
+        queryKey: chatKeys.detail(chatroom_id),
+      });
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
   });
 }
 

@@ -84,8 +84,9 @@ export function useArticlesDetailDelete(opts: { article_id: number; onSuccess?: 
       new APIContext("ArticlesDetailDelete").fetch(`/api/articles/${article_id}`, {
         method: "DELETE",
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: articleKeys.all() });
+    onSuccess: async () => {
+      // remove instead of invalidate + cancel because we change pages
+      queryClient.removeQueries({ queryKey: articleKeys.all() });
       if (onSuccess) {
         onSuccess();
       }
