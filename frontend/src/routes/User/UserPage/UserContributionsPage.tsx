@@ -40,12 +40,6 @@ function UserContributions(props: { user_id: number }) {
     return <Skeleton />;
   }
 
-  if (contribs.total === 0) {
-    return (
-      <Typography textAlign={"center"}>Pengguna ini belum memiliki laporan kontribusi.</Typography>
-    );
-  }
-
   let options = [
     <MenuItem key={"Approved"} value={"Approved"}>
       Diterima
@@ -90,9 +84,13 @@ function UserContributions(props: { user_id: number }) {
           {options}
         </Select>
       </FormControl>
-      {contribs.result.map((x) => (
-        <ContribList contribution_id={x.id} key={x.id} />
-      ))}
+      {contribs.total === 0 ? (
+        <Typography textAlign={"center"}>
+          Pengguna ini belum memiliki laporan kontribusi.
+        </Typography>
+      ) : (
+        contribs.result.map((x) => <ContribList contribution_id={x.id} key={x.id} />)
+      )}
       <QueryPagination limit={limit} total={contribs?.total} />
     </Stack>
   );
