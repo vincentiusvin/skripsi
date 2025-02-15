@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { AuthError, ClientError, NotFoundError } from "../../helpers/error.js";
 import { Transactable, TransactionManager } from "../../helpers/transaction/transaction.js";
 import {
@@ -150,6 +151,17 @@ export class TaskService implements Transactable<TaskService> {
         }
       }
 
+      const end_at_or_old = data.end_at ?? old_data.end_at;
+      const start_at_or_old = data.start_at ?? old_data.start_at;
+
+      if (end_at_or_old != undefined && start_at_or_old != undefined) {
+        const end_dayjs = dayjs(end_at_or_old);
+        const start_dayjs = dayjs(start_at_or_old);
+        if (end_dayjs.isBefore(start_dayjs)) {
+          throw new ClientError("Tanggal mulai harus sebelum tanggal selesai!");
+        }
+      }
+
       await serv.task_repo.editTask(task_id, {
         bucket_id,
         description,
@@ -221,6 +233,16 @@ export class TaskService implements Transactable<TaskService> {
       const sender_role = await serv.project_service.getMemberRole(bucket.project_id, sender_id);
       if (sender_role !== "Admin" && sender_role !== "Dev") {
         throw new AuthError("Anda tidak memiliki akses untuk melakukan aksi ini!");
+      }
+
+      const { end_at, start_at } = data;
+
+      if (end_at !== undefined && start_at !== undefined) {
+        const end_dayjs = dayjs(end_at);
+        const start_dayjs = dayjs(start_at);
+        if (end_dayjs.isBefore(start_dayjs)) {
+          throw new ClientError("Tanggal mulai harus sebelum tanggal selesai!");
+        }
       }
 
       const order = await serv.task_repo.getMaxOrder(bucket_id);
