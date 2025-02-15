@@ -48,6 +48,13 @@ export class SuspensionService {
     if (!allowed) {
       throw new AuthError("Anda tidak diperbolehkan untuk mengatur suspensi!");
     }
+
+    const is_banning_admin = await this.user_service.isAdminUser(opts.user_id);
+
+    if (is_banning_admin) {
+      throw new AuthError("Anda tidak diperbolehkan untuk menangguhkan akun admin!");
+    }
+
     const res = await this.suspension_repo.addSuspension(opts);
     if (res == undefined) {
       throw new Error("Gagal memasukkan data penangguhan!");

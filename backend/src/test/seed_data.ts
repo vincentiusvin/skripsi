@@ -230,7 +230,7 @@ async function addReports(db: Kysely<DB>) {
 }
 
 async function addBans(db: Kysely<DB>) {
-  const users = await db.selectFrom("users").select("id").execute();
+  const users = await db.selectFrom("users").select("id").where("is_admin", "=", false).execute();
   const bans_to_add = 250;
   await db
     .insertInto("suspensions")

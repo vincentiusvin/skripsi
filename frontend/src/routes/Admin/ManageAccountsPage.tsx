@@ -64,14 +64,20 @@ function AddSuspension(props: { user_id: number; user_name: string }) {
       enqueueSnackbar({
         variant: "success",
         message: <Typography>Pengguna berhasil ditangguhkan!</Typography>,
-      }),
-        setOpen(false);
+      });
+      reset();
     },
   });
 
+  function reset() {
+    setOpen(false);
+    setBanName("");
+    setEndDate(null);
+  }
+
   return (
     <>
-      <Dialog open={open} onClose={() => setOpen(false)}>
+      <Dialog open={open} onClose={reset}>
         <DialogTitle>Tambah Penangguhan - {user_name}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} marginTop={2}>
