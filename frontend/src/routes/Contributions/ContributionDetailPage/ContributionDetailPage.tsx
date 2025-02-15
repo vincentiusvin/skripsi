@@ -60,6 +60,7 @@ function ContributionDetail(props: { contribution_id: number }) {
         <Stack spacing={2} divider={<Divider />}>
           {user_id != undefined ? (
             <ContributionInvolved
+              is_site_admin={!!session?.logged && session.is_admin}
               status={contrib.status}
               contribution_users={contrib.user_ids.map((x) => x.user_id)}
               user_id={user_id}

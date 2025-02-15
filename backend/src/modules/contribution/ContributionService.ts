@@ -204,7 +204,10 @@ export class ContributionService implements Transactable<ContributionService> {
     user_id: number,
   ) {
     if (!old_contrib.user_ids.map((x) => x.user_id).includes(user_id)) {
-      throw new AuthError("Anda tidak boleh mengubah kontribusi milik orang lain!");
+      const is_site_admin = await this.user_service.isAdminUser(user_id);
+      if (!is_site_admin) {
+        throw new AuthError("Anda tidak boleh mengubah kontribusi milik orang lain!");
+      }
     }
     if (old_contrib.status !== "Pending" && revision.status == undefined) {
       throw new AuthError("Anda hanya boleh mengubah kontribusi yang bersifat pending!");

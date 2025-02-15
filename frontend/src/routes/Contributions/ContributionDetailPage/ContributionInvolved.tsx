@@ -18,8 +18,9 @@ function ContributionInvolved(props: {
   contribution_id: number;
   contribution_users: number[];
   status: "Pending" | "Approved" | "Revision" | "Rejected";
+  is_site_admin: boolean;
 }) {
-  const { user_id, project_id, contribution_users, contribution_id, status } = props;
+  const { is_site_admin, user_id, project_id, contribution_users, contribution_id, status } = props;
   const { data: project_role } = useProjectsDetailMembersGet({
     project_id,
     user_id,
@@ -30,7 +31,7 @@ function ContributionInvolved(props: {
 
   return (
     <Stack spacing={2} divider={<Divider />}>
-      {is_author ? (
+      {is_author || is_site_admin ? (
         <StyledLink to={`/contributions/${contribution_id}/edit`}>
           <Button fullWidth variant="contained">
             Edit
